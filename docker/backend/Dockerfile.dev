@@ -1,0 +1,19 @@
+
+# Use Maven with Eclipse Temurin (JDK 21) as base image for development
+FROM maven:3.9.9-eclipse-temurin-21
+
+WORKDIR /app
+
+# Copy pom.xml to cache dependencies
+COPY pom.xml /app/
+
+# Pre-download dependencies offline
+RUN mvn dependency:go-offline -B
+
+# Copy the source code
+COPY src /app/src
+
+EXPOSE 8080
+
+# Run the Spring Boot application using the spring-boot-maven-plugin
+CMD ["mvn", "spring-boot:run"]

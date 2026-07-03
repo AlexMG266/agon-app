@@ -1,0 +1,90 @@
+services:
+  # Database: PostgreSQL Container
+  db:
+    build:
+      context: ./docker/db
+      dockerfile: Dockerfile.dev
+    container_name: agon_db
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: agon
+      POSTGRES_PASSWORD: agon
+      POSTGRES_DB: agon
+    ports:
+      - "5433:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      # Map only the PostgreSQL SQL files directly to initialize the DB
+      - ./backend/src/sql/1-PostgreSQLCreateTables.sql:/docker-entrypoint-initdb.d/1-PostgreSQLCreateTables.sql:ro
+      - ./backend/src/sql/2-PostgreSQLCreateData-init.sql:/docker-entrypoint-initdb.d/2-PostgreSQLCreateData-init.sql:ro
+    networks:
+      - agon_network
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U agon -d agon" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 20s
+    labels:
+      - "com.agon.environment=development"
+      - "com.agon.service=database"
+
+  # Backend: Java Spring Boot API
+  backend:
+    build:
+      context: ./backend
+      dockerfile: ../docker/backend/Dockerfile.dev
+    container_name: agon_backend
+    restart: unless-stopped
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://db:5432/agon
+      SPRING_DATASOURCE_USERNAME: agon
+      SPRING_DATASOURCE_PASSWORD: agon
+    volumes:
+      # Synchronize code changes in real-time
+      - ./backend:/app
+      # Cache downloaded Maven compiler dependencies
+      - maven_cache:/root/.m2
+    ports:
+      - "8080:8080"
+    depends_on:
+      db:
+        condition: service_healthy
+    networks:
+      - agon_network
+    labels:
+      - "com.agon.environment=development"
+      - "com.agon.service=backend"
+
+  # Frontend: React/Vite Application
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: ../docker/frontend/Dockerfile.dev
+    container_name: agon_frontend
+    restart: unless-stopped
+    volumes:
+      # Synchronize source code in real-time
+      - ./frontend:/app
+      # Keep container node_modules isolated from the host
+      - /app/node_modules
+    ports:
+      - "5173:5173"
+    depends_on:
+      - backend
+    networks:
+      - agon_network
+    labels:
+      - "com.agon.environment=development"
+      - "com.agon.service=frontend"
+
+networks:
+  agon_network:
+    driver: bridge
+    name: agon_dev_network
+
+volumes:
+  postgres_data:
+    name: agon_dev_postgres_data
+  maven_cache:
+    name: agon_dev_maven_cache
