@@ -1,0 +1,35 @@
+# IDE
+.idea/
+.vscode/
+*.iml
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+
+# Backend (Maven / Spring Boot)
+/backend/target/
+*.class
+
+# Frontend (Vite / Node)
+/frontend/node_modules/
+/frontend/dist/
+/frontend/.vite/
+/frontend/.eslintcache
+
+# Environment files
+.env
+.env.*
+!/frontend/.env.example
+!/backend/.env.example
+
+# Docker / local volumes
+docker-data/
+postgres_data/
+*.pid
+
+# Misc
+/.mvn/wrapper/maven-wrapper.jar

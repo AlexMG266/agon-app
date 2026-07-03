@@ -1,0 +1,31 @@
+logging:
+  level:
+    org:
+      hibernate:
+        SQL: debug
+spring:
+  datasource:
+    url: @dataSource.url@
+    username: @dataSource.user@
+    password: @dataSource.password@
+    hikari:
+      maximum-pool-size: 4
+  devtools:
+    restart:
+      trigger-file: reload
+    livereload:
+      enabled: false
+  jackson:
+    default-property-inclusion: NON_NULL
+  jpa:
+    properties:
+      hibernate:
+        format_sql: true
+    hibernate:
+      ddl-auto: none
+      naming:
+        physical-strategy: org.hibernate.boot.model.naming.PhysicalNamingStrategyStandardImpl
+project:
+  jwt:
+    signKey: W27sJe29ATI7dR3juV5lWkT9WgS2C8RT
+    expirationMinutes: 1440
