@@ -7,10 +7,18 @@ import NavDropdown from 'react-bootstrap/NavDropdown';
 import Container from "react-bootstrap/Container";
 
 import users from '../../users';
+import './Header.css';
 
 const Header = () => {
 
-    const userName = useSelector(users.selectors.getUserName);
+    const user = useSelector(users.selectors.getUser);
+
+    const getProfileImageUrl = () => {
+        if (user?.imagenPerfil) {
+            return user.imagenPerfil;
+        }
+        return null;
+    };
 
     return (
 
@@ -20,18 +28,34 @@ const Header = () => {
                 <Navbar.Toggle aria-controls="navbarSupportedContent" className="mb-3" />
                 <Navbar.Collapse id="navbarSupportedContent">
 
-                    {userName ? (
+                    {user ? (
                         <Nav className="ms-auto">
-                            <NavDropdown title={<><span className="fa-solid fa-user"></span>&nbsp;{userName}</>} align="end" id="user-dropdown">
-                                <NavDropdown.Item as={Link} to="/users/update-profile">
-                                    <FormattedMessage id="project.users.UpdateProfile.title" />
-                                </NavDropdown.Item>
-                                <NavDropdown.Item as={Link} to="/users/change-password">
-                                    <FormattedMessage id="project.users.ChangePassword.title" />
+                            <NavDropdown 
+                                title={
+                                    <div className="profile-nav-container">
+                                        {getProfileImageUrl() ? (
+                                            <img 
+                                                src={getProfileImageUrl()} 
+                                                alt="Profile" 
+                                                className="profile-nav-image"
+                                            />
+                                        ) : (
+                                            <div className="profile-nav-placeholder">
+                                                <i className="fa-solid fa-user"></i>
+                                            </div>
+                                        )}
+                                        <span className="profile-username">{user.nombre}</span>
+                                    </div>
+                                } 
+                                align="end" 
+                                id="user-dropdown"
+                            >
+                                <NavDropdown.Item as={Link} to="/users/profile">
+                                    <i className="fa-solid fa-user"></i> <FormattedMessage id="project.users.Profile.title" />
                                 </NavDropdown.Item>
                                 <NavDropdown.Divider />
                                 <NavDropdown.Item as={Link} to="/users/logout">
-                                    <FormattedMessage id="project.app.Header.logout" />
+                                    <i className="fa-solid fa-sign-out-alt"></i> <FormattedMessage id="project.app.Header.logout" />
                                 </NavDropdown.Item>
                             </NavDropdown>
                         </Nav>

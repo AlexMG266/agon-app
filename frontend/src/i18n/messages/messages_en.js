@@ -34,6 +34,14 @@ export default {
     'project.users.Login.title': 'Login',
     'project.users.SignUp.fields.confirmPassword': 'Confirm password',
     'project.users.SignUp.title': 'Sign up',
-    'project.users.UpdateProfile.title': 'Update profile'
+    'project.users.UpdateProfile.title': 'Update profile',
+    'project.users.Profile.title': 'My Profile',
+    'project.users.Profile.tabs.profileInfo': 'Profile Information',
+    'project.users.Profile.tabs.changePassword': 'Change Password',
+    'project.users.Profile.fields.profileImage': 'Profile Image',
+    'project.users.Profile.buttons.removeImage': 'Remove Image',
+    'project.users.Profile.fields.userNameDisabled': 'Username cannot be modified',
+    'project.users.Profile.success.profileUpdated': 'Profile updated successfully',
+    'project.users.Profile.success.passwordChanged': 'Password changed successfully'
 
 }

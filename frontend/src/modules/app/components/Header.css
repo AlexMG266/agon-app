@@ -1,0 +1,61 @@
+.profile-nav-container {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    cursor: pointer;
+    padding: 0.25rem 0.5rem;
+    border-radius: 0.25rem;
+    transition: background-color 0.2s ease;
+}
+
+.profile-nav-container:hover {
+    background-color: rgba(0, 123, 255, 0.1);
+}
+
+.profile-nav-image,
+.profile-nav-placeholder {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 2px solid #007bff;
+    background-color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.profile-nav-placeholder {
+    background-color: #e9ecef;
+    color: #6c757d;
+    font-size: 1.25rem;
+}
+
+.profile-username {
+    font-weight: 500;
+    color: #333;
+    max-width: 120px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.dropdown-menu {
+    min-width: 180px;
+}
+
+.dropdown-menu .dropdown-item {
+    padding: 0.75rem 1rem;
+    transition: all 0.2s ease;
+}
+
+.dropdown-menu .dropdown-item:hover {
+    background-color: #f0f6ff;
+    color: #007bff;
+}
+
+.dropdown-menu .dropdown-item i {
+    margin-right: 0.5rem;
+    width: 16px;
+}

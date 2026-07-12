@@ -70,7 +70,7 @@ public class UserDto {
 		this.email = email != null ? email.trim() : null;
 	}
 
-	@Size(max=255, groups={AllValidations.class, UpdateValidations.class})
+	@Size(max=2097152, groups={AllValidations.class, UpdateValidations.class})
 	public String getImagenPerfil() {
 		return imagenPerfil;
 	}
