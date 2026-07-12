@@ -5,15 +5,17 @@ FROM maven:3.9.9-eclipse-temurin-21
 WORKDIR /app
 
 # Copy pom.xml to cache dependencies
-COPY pom.xml /app/
+COPY backend/pom.xml /app/
 
 # Pre-download dependencies offline
 RUN mvn dependency:go-offline -B
 
 # Copy the source code
-COPY src /app/src
+COPY backend/src /app/src
+
+COPY docker/backend/entrypoint.dev.sh /entrypoint.dev.sh
+RUN chmod +x /entrypoint.dev.sh
 
 EXPOSE 8080
 
-# Run the Spring Boot application using the spring-boot-maven-plugin
-CMD ["mvn", "spring-boot:run"]
+ENTRYPOINT ["/entrypoint.dev.sh"]

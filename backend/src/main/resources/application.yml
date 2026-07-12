@@ -12,9 +12,9 @@ spring:
       maximum-pool-size: 4
   devtools:
     restart:
-      trigger-file: reload
-    livereload:
-      enabled: false
+      enabled: true
+      poll-interval: 2s
+      quiet-period: 1s
   jackson:
     default-property-inclusion: NON_NULL
   jpa:

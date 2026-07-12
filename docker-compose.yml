@@ -33,14 +33,17 @@ services:
   # Backend: Java Spring Boot API
   backend:
     build:
-      context: ./backend
-      dockerfile: ../docker/backend/Dockerfile.dev
+      context: .
+      dockerfile: docker/backend/Dockerfile.dev
     container_name: agon_backend
     restart: unless-stopped
     environment:
       SPRING_DATASOURCE_URL: jdbc:postgresql://db:5432/agon
       SPRING_DATASOURCE_USERNAME: agon
       SPRING_DATASOURCE_PASSWORD: agon
+      SPRING_DEVTOOLS_RESTART_ENABLED: "true"
+      SPRING_DEVTOOLS_RESTART_POLL_INTERVAL: "2s"
+      SPRING_DEVTOOLS_RESTART_QUIET_PERIOD: "1s"
     volumes:
       # Synchronize code changes in real-time
       - ./backend:/app
@@ -64,6 +67,9 @@ services:
       dockerfile: ../docker/frontend/Dockerfile.dev
     container_name: agon_frontend
     restart: unless-stopped
+    environment:
+      CHOKIDAR_USEPOLLING: "true"
+      WATCHPACK_POLLING: "true"
     volumes:
       # Synchronize source code in real-time
       - ./frontend:/app

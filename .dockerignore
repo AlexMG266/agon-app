@@ -1,0 +1,6 @@
+.git
+frontend
+**/target
+**/node_modules
+**/.idea
+**/.vscode
