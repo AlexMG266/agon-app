@@ -22,6 +22,25 @@ docker compose up --build -d
 docker compose ps
 ```
 
+### Desarrollo con recarga en caliente
+
+Los volúmenes de `docker-compose.yml` sincronizan el código del host con los contenedores. Tras el primer `docker compose up --build -d`, **no hace falta reconstruir** los contenedores al editar archivos:
+
+- **Frontend**: Vite recarga automáticamente al guardar cambios en `frontend/`.
+- **Backend**: un watcher recompila y Spring Boot DevTools reinicia la API al guardar cambios en `backend/src/`.
+
+Para el día a día:
+
+```bash
+docker compose up -d
+```
+
+Solo vuelve a construir si se cambian dependencias o algun dockerfile
+
+```bash
+docker compose up --build -d
+```
+
 ## Acceso a la aplicación
 
 - Frontend: `http://localhost:5173`

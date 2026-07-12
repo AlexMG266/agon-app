@@ -31,7 +31,7 @@ export const tryLoginFromServiceToken = async reauthenticationCallback => {
 }
 
 export const signUp = async (user, reauthenticationCallback) => {
-    const response = await appFetch('POST', '/users/signUp', user);
+    const response = await appFetch('POST', '/users/signup', user);
     if (response.ok) {
         setServiceToken(response.payload.serviceToken);
         setReauthenticationCallback(reauthenticationCallback);

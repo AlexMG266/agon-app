@@ -4,7 +4,7 @@ import Container from 'react-bootstrap/Container';
 
 import AppGlobalComponents from './AppGlobalComponents';
 import Home from './Home';
-import { Login, SignUp, Profile, Logout, Notifications } from '../../users';
+import { Login, SignUp, Profile, Logout, Notifications, NotificationDetail } from '../../users';
 import users from '../../users';
 
 const Body = () => {
@@ -19,6 +19,7 @@ const Body = () => {
                 <Route path="/*" element={<Home />} />
                 {loggedIn && <Route path="/users/profile" element={<Profile />} />}
                 {loggedIn && <Route path="/users/notifications" element={<Notifications />} />}
+                {loggedIn && <Route path="/users/notifications/:notificationId" element={<NotificationDetail />} />}
                 {loggedIn && <Route path="/users/logout" element={<Logout />} />}
                 {!loggedIn && <Route path="/users/login" element={<Login />} />}
                 {!loggedIn && <Route path="/users/signup" element={<SignUp />} />}

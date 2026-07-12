@@ -1,6 +1,6 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useSelector } from 'react-redux';
-import { Link } from 'react-router';
+import { Link, useLocation } from 'react-router';
 import { FormattedMessage } from 'react-intl';
 import Navbar from 'react-bootstrap/Navbar';
 import Nav from 'react-bootstrap/Nav';
@@ -10,23 +10,34 @@ import Badge from 'react-bootstrap/Badge';
 
 import users from '../../users';
 import backend from '../../../backend';
+import { NOTIFICATIONS_UPDATED_EVENT } from '../../../backend/notificationService';
 import './Header.css';
 
 const Header = () => {
 
     const user = useSelector(users.selectors.getUser);
+    const location = useLocation();
     const [unreadCount, setUnreadCount] = useState(0);
 
-    useEffect(() => {
-        if (user) {
-            backend.notificationService.getNotifications().then(response => {
-                if (response.ok && response.payload) {
-                    const unread = response.payload.filter(n => !n.leido).length;
-                    setUnreadCount(unread);
-                }
-            }).catch(() => { });
+    const fetchUnreadCount = useCallback(() => {
+        if (!user) {
+            setUnreadCount(0);
+            return;
         }
+
+        backend.notificationService.getNotifications().then(response => {
+            if (response.ok && response.payload) {
+                const unread = response.payload.filter(n => !n.leido).length;
+                setUnreadCount(unread);
+            }
+        }).catch(() => { });
     }, [user]);
+
+    useEffect(() => {
+        fetchUnreadCount();
+        window.addEventListener(NOTIFICATIONS_UPDATED_EVENT, fetchUnreadCount);
+        return () => window.removeEventListener(NOTIFICATIONS_UPDATED_EVENT, fetchUnreadCount);
+    }, [fetchUnreadCount, location.pathname]);
 
     const getProfileImageUrl = () => {
         if (user?.imagenPerfil) {

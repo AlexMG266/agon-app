@@ -1,14 +1,15 @@
 import { useState, useEffect } from 'react';
-import { FormattedMessage } from 'react-intl';
+import { Link } from 'react-router';
 import Card from 'react-bootstrap/Card';
 import Container from 'react-bootstrap/Container';
 import Form from 'react-bootstrap/Form';
 import backend from '../../../backend';
+import { getTipoLabel, formatTimestamp, truncateMessage } from './notificationUtils';
 import './Notifications.css';
 
 const Notifications = () => {
     const [notifications, setNotifications] = useState([]);
-    const [filter, setFilter] = useState('ALL'); // ALL, UNREAD, READ
+    const [filter, setFilter] = useState('ALL');
 
     useEffect(() => {
         fetchNotifications();
@@ -32,14 +33,8 @@ const Notifications = () => {
     const filteredNotifications = notifications.filter(n => {
         if (filter === 'UNREAD') return !n.leido;
         if (filter === 'READ') return n.leido;
-        return true; // ALL
+        return true;
     });
-
-    const formatTimestamp = (ts) => {
-        if (!ts) return '';
-        const d = new Date(ts);
-        return d.toLocaleDateString() + ' ' + d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-    };
 
     return (
         <Container className="py-4">
@@ -62,21 +57,28 @@ const Notifications = () => {
                         </div>
                     ) : (
                         filteredNotifications.map(notification => (
-                            <div key={notification.id} className={`list-group-item notification-item px-4 py-3 ${!notification.leido ? 'unread' : 'read'}`}>
+                            <Link
+                                key={notification.id}
+                                to={`/users/notifications/${notification.id}`}
+                                className={`list-group-item notification-item notification-link px-4 py-3 ${!notification.leido ? 'unread' : 'read'}`}
+                            >
                                 <div className="d-flex w-100 justify-content-between align-items-center">
                                     <div className="d-flex align-items-center mb-1">
                                         {!notification.leido && <span className="unread-dot me-2"></span>}
-                                        <h6 className="mb-0">{notification.tipo === 'SYSTEM' ? 'Sistema' : 'Aviso'}</h6>
+                                        <h6 className="mb-0">{getTipoLabel(notification.tipo)}</h6>
+                                        {notification.pendienteDeAccion && (
+                                            <span className="badge bg-warning text-dark ms-2 action-badge">Acción pendiente</span>
+                                        )}
                                     </div>
                                     <small className="text-muted timestamp">{formatTimestamp(notification.fechaCreacion)}</small>
                                 </div>
-                                <p className="mb-0 mt-1 ms-3 text-secondary message-text">{notification.mensaje}</p>
-                                {notification.pendienteDeAccion && (
-                                    <div className="mt-2 ms-3">
-                                        <button className="btn btn-sm btn-outline-primary action-btn">Revisar</button>
-                                    </div>
-                                )}
-                            </div>
+                                <p className="mb-0 mt-1 ms-3 text-secondary message-preview">{truncateMessage(notification.mensaje)}</p>
+                                <div className="mt-1 ms-3">
+                                    <small className="text-muted">
+                                        <i className="fa-solid fa-chevron-right me-1"></i> Ver detalle
+                                    </small>
+                                </div>
+                            </Link>
                         ))
                     )}
                 </div>
