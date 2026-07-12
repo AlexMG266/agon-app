@@ -1,4 +1,98 @@
+:root {
+  --apple-bg: #f5f5f7;
+  --apple-element: #ffffff;
+  --apple-text: #1d1d1f;
+  --apple-text-secondary: #86868b;
+  --apple-border: #d2d2d7;
+  --apple-accent: #0071e3;
+  --apple-accent-hover: #0077ed;
+  --apple-danger: #ff3b30;
+  
+  --shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.04);
+  --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.05), 0 1px 3px rgba(0, 0, 0, 0.1);
+  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.05), 0 4px 6px -2px rgba(0, 0, 0, 0.025);
+  
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 18px;
+}
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", Roboto, Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
+  background-color: var(--apple-bg);
+  color: var(--apple-text);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+}
+
+.card {
+  border: 1px solid var(--apple-border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm);
+  background-color: var(--apple-element);
+  overflow: hidden;
+  transition: all 0.2s ease-in-out;
+}
+
+.card:hover {
+  box-shadow: var(--shadow-md);
+}
+
+.btn-primary {
+  background-color: var(--apple-accent) !important;
+  border-color: var(--apple-accent) !important;
+  border-radius: 980px !important; 
+  padding: 8px 16px;
+  font-weight: 500;
+  font-size: 14px;
+  transition: all 0.2s;
+}
+
+.btn-primary:hover {
+  background-color: var(--apple-accent-hover) !important;
+  border-color: var(--apple-accent-hover) !important;
+  transform: scale(1.02);
+}
+
+.btn-danger {
+  background-color: var(--apple-danger) !important;
+  border-color: var(--apple-danger) !important;
+  border-radius: 980px !important;
+}
+
+.form-control {
+  border: 1px solid var(--apple-border);
+  border-radius: var(--radius-md);
+  padding: 10px 14px;
+  font-size: 15px;
+  background-color: rgba(255, 255, 255, 0.5);
+  transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+}
+
+.form-control:focus {
+  border-color: var(--apple-accent);
+  box-shadow: 0 0 0 4px rgba(0, 113, 227, 0.15);
+}
+
+.navbar {
+  background-color: rgba(255, 255, 255, 0.72) !important;
+  backdrop-filter: saturate(180%) blur(20px);
+  border-bottom: 1px solid rgba(0, 0, 0, 0.05) !important;
+}
+
+.navbar-brand {
+  font-weight: 600;
+  letter-spacing: -0.01em;
+}
+
 a:not([class]) {
+    color: var(--apple-accent);
     text-decoration: none;
 }
 

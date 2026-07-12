@@ -19,30 +19,32 @@ public class User {
 	private String imagenPerfil;
 	private String password;
 	private LocalDate fechaNacimiento;
+	private boolean eloProvisional;
 
 	public User() {
 	}
 
 	public User(int elo, String nombre, String email, String imagenPerfil, String password,
-		LocalDate fechaNacimiento) {
+			LocalDate fechaNacimiento, boolean eloProvisional) {
 		this.elo = elo;
 		this.nombre = nombre;
 		this.email = email;
 		this.imagenPerfil = imagenPerfil;
 		this.password = password;
 		this.fechaNacimiento = fechaNacimiento;
+		this.eloProvisional = eloProvisional;
 	}
 
 	public User(String nombre, String email, String imagenPerfil, String password, LocalDate fechaNacimiento) {
-		this(0, nombre, email, imagenPerfil, password, fechaNacimiento);
+		this(1500, nombre, email, imagenPerfil, password, fechaNacimiento, true);
 	}
 
 	public User(String nombre, String email, String imagenPerfil) {
-		this(0, nombre, email, imagenPerfil, null, null);
+		this(1500, nombre, email, imagenPerfil, null, null, true);
 	}
 
 	public User(String userName, String password, String firstName, String lastName, String email) {
-		this(0, userName, email, null, password, null);
+		this(1500, userName, email, null, password, null, true);
 	}
 
 	@Id
@@ -101,6 +103,14 @@ public class User {
 
 	public void setFechaNacimiento(LocalDate fechaNacimiento) {
 		this.fechaNacimiento = fechaNacimiento;
+	}
+
+	public boolean isEloProvisional() {
+		return eloProvisional;
+	}
+
+	public void setEloProvisional(boolean eloProvisional) {
+		this.eloProvisional = eloProvisional;
 	}
 
 }
