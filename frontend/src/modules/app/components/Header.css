@@ -1,61 +1,104 @@
 .profile-nav-container {
     display: flex;
     align-items: center;
-    gap: 0.75rem;
+    gap: 0.5rem;
     cursor: pointer;
-    padding: 0.25rem 0.5rem;
-    border-radius: 0.25rem;
-    transition: background-color 0.2s ease;
+    padding: 0.2rem 0.6rem;
+    border-radius: 999px;
+    background-color: transparent;
+    transition: background-color 0.2s ease, transform 0.2s ease;
 }
 
 .profile-nav-container:hover {
-    background-color: rgba(0, 123, 255, 0.1);
+    background-color: rgba(0, 0, 0, 0.05);
 }
 
 .profile-nav-image,
 .profile-nav-placeholder {
-    width: 40px;
-    height: 40px;
+    width: 32px;
+    height: 32px;
     border-radius: 50%;
     object-fit: cover;
-    border: 2px solid #007bff;
-    background-color: white;
+    background-color: var(--apple-border);
     display: flex;
     align-items: center;
     justify-content: center;
     flex-shrink: 0;
+    border: 1px solid rgba(0, 0, 0, 0.1);
 }
 
 .profile-nav-placeholder {
-    background-color: #e9ecef;
-    color: #6c757d;
-    font-size: 1.25rem;
+    color: var(--apple-text-secondary);
+    font-size: 1rem;
 }
 
 .profile-username {
     font-weight: 500;
-    color: #333;
-    max-width: 120px;
+    color: var(--apple-text);
+    font-size: 0.95rem;
+    max-width: 100px;
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
 }
 
 .dropdown-menu {
-    min-width: 180px;
+    border: none;
+    border-radius: var(--radius-md);
+    box-shadow: var(--shadow-lg);
+    padding: 0.5rem 0;
+    min-width: 200px;
 }
 
 .dropdown-menu .dropdown-item {
-    padding: 0.75rem 1rem;
-    transition: all 0.2s ease;
+    padding: 0.5rem 1rem;
+    font-size: 0.95rem;
+    font-weight: 400;
+    color: var(--apple-text);
+    transition: background-color 0.15s ease, color 0.15s ease;
 }
 
-.dropdown-menu .dropdown-item:hover {
-    background-color: #f0f6ff;
-    color: #007bff;
+.dropdown-menu .dropdown-item:hover,
+.dropdown-menu .dropdown-item:focus {
+    background-color: var(--apple-accent);
+    color: #ffffff;
 }
 
 .dropdown-menu .dropdown-item i {
-    margin-right: 0.5rem;
-    width: 16px;
+    width: 20px;
+    text-align: center;
+}
+
+/* Red dot badge fix */
+.navbar-badge {
+    position: absolute;
+    top: -2px;
+    right: -4px;
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background-color: var(--apple-danger);
+    border: 2px solid #ffffff;
+    padding: 0;
+}
+
+.navbar-icon-btn {
+    text-decoration: none;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background-color 0.2s ease, transform 0.2s ease;
+}
+
+.navbar-icon-btn:hover {
+    background-color: rgba(0, 0, 0, 0.05);
+    transform: scale(1.05);
+}
+
+/* Hide Bootstrap dropdown caret for cleaner look */
+.navbar .dropdown-toggle::after {
+    display: none;
 }

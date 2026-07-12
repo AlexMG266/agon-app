@@ -1,7 +1,7 @@
 import {appFetch, setServiceToken, getServiceToken, removeServiceToken, setReauthenticationCallback} from './appFetch';
 
-export const login = async (userName, password, reauthenticationCallback) => {
-    const response = await appFetch('POST', '/users/login', {userName, password});
+export const login = async (nombre, password, reauthenticationCallback) => {
+    const response = await appFetch('POST', '/users/login', {nombre, password});
     if (response.ok) {
         setServiceToken(response.payload.serviceToken);
         setReauthenticationCallback(reauthenticationCallback);

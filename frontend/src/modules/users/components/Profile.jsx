@@ -1,6 +1,6 @@
-import {useState} from 'react';
-import {useSelector, useDispatch} from 'react-redux';
-import {FormattedMessage} from 'react-intl';
+import { useState } from 'react';
+import { useSelector, useDispatch } from 'react-redux';
+import { FormattedMessage } from 'react-intl';
 import Card from 'react-bootstrap/Card';
 import Button from 'react-bootstrap/Button';
 import Form from 'react-bootstrap/Form';
@@ -8,7 +8,7 @@ import Row from 'react-bootstrap/Row';
 import Col from 'react-bootstrap/Col';
 import Container from 'react-bootstrap/Container';
 
-import {Errors} from '../../common';
+import { Errors } from '../../common';
 import * as actions from '../actions';
 import * as selectors from '../selectors';
 import backend from '../../../backend';
@@ -18,14 +18,15 @@ const Profile = () => {
 
     const user = useSelector(selectors.getUser);
     const dispatch = useDispatch();
-    
+
     // Profile info state
     const [profileImage, setProfileImage] = useState(user.imagenPerfil || '');
     const [email, setEmail] = useState(user.email || '');
+    const [fechaNacimiento, setFechaNacimiento] = useState(user.fechaNacimiento || '');
     const [profileFormValidated, setProfileFormValidated] = useState(false);
     const [profileBackendErrors, setProfileBackendErrors] = useState(null);
     const [profileSuccess, setProfileSuccess] = useState(false);
-    
+
     // Password change state
     const [oldPassword, setOldPassword] = useState('');
     const [newPassword, setNewPassword] = useState('');
@@ -34,9 +35,9 @@ const Profile = () => {
     const [passwordBackendErrors, setPasswordBackendErrors] = useState(null);
     const [passwordSuccess, setPasswordSuccess] = useState(false);
     const [passwordsDoNotMatch, setPasswordsDoNotMatch] = useState(false);
-    
+
     const [activeTab, setActiveTab] = useState('profile');
-    
+
     let profileForm;
     let passwordForm;
 
@@ -64,9 +65,9 @@ const Profile = () => {
                 nombre: user.nombre,
                 email: email.trim(),
                 imagenPerfil: profileImage || null,
-                fechaNacimiento: user.fechaNacimiento
+                fechaNacimiento: fechaNacimiento
             };
-            
+
             const response = await backend.userService.updateProfile(updatedUser);
 
             if (response.ok) {
@@ -136,9 +137,9 @@ const Profile = () => {
                     <Col lg={3} className="text-center mb-4">
                         <div className="profile-image-container">
                             {getProfileImageUrl() ? (
-                                <img 
-                                    src={getProfileImageUrl()} 
-                                    alt="Profile" 
+                                <img
+                                    src={getProfileImageUrl()}
+                                    alt="Profile"
                                     className="profile-image"
                                 />
                             ) : (
@@ -150,64 +151,66 @@ const Profile = () => {
                         <h4 className="mt-3">{user.nombre}</h4>
                         <p className="text-muted">{user.email}</p>
                         {user.elo !== undefined && (
-                            <p className="text-info"><strong>Elo: {user.elo}</strong></p>
+                            <p className="text-info fw-semibold" style={{ color: 'var(--apple-accent) !important' }}>
+                                Elo: {user.elo}{user.eloProvisional ? ' (Provisional ?)' : ''}
+                            </p>
                         )}
                     </Col>
 
                     <Col lg={9}>
                         <div className="profile-tabs">
                             <div className="nav nav-tabs" role="tablist">
-                                <button 
+                                <button
                                     className={`nav-link ${activeTab === 'profile' ? 'active' : ''}`}
                                     onClick={() => setActiveTab('profile')}
                                     role="tab"
                                 >
-                                    <FormattedMessage id="project.users.Profile.tabs.profileInfo"/>
+                                    <FormattedMessage id="project.users.Profile.tabs.profileInfo" />
                                 </button>
-                                <button 
+                                <button
                                     className={`nav-link ${activeTab === 'password' ? 'active' : ''}`}
                                     onClick={() => setActiveTab('password')}
                                     role="tab"
                                 >
-                                    <FormattedMessage id="project.users.Profile.tabs.changePassword"/>
+                                    <FormattedMessage id="project.users.Profile.tabs.changePassword" />
                                 </button>
                             </div>
 
                             {activeTab === 'profile' && (
                                 <Card className="mt-3">
                                     <Card.Header as="h5">
-                                        <FormattedMessage id="project.users.UpdateProfile.title"/>
+                                        <FormattedMessage id="project.users.UpdateProfile.title" />
                                     </Card.Header>
                                     <Card.Body>
                                         {profileSuccess && (
                                             <div className="alert alert-success alert-dismissible fade show" role="alert">
-                                                <FormattedMessage id="project.users.Profile.success.profileUpdated"/>
+                                                <FormattedMessage id="project.users.Profile.success.profileUpdated" />
                                                 <button type="button" className="btn-close" onClick={() => setProfileSuccess(false)}></button>
                                             </div>
                                         )}
-                                        <Errors errors={profileBackendErrors} onClose={() => setProfileBackendErrors(null)}/>
-                                        
+                                        <Errors errors={profileBackendErrors} onClose={() => setProfileBackendErrors(null)} />
+
                                         <Form ref={node => profileForm = node}
-                                              noValidate validated={profileFormValidated} onSubmit={e => handleProfileSubmit(e)}>
-                                            
+                                            noValidate validated={profileFormValidated} onSubmit={e => handleProfileSubmit(e)}>
+
                                             <Form.Group as={Row} className="mb-3" controlId="profileImage">
                                                 <Form.Label column md={3}>
-                                                    <FormattedMessage id="project.users.Profile.fields.profileImage"/>
+                                                    <FormattedMessage id="project.users.Profile.fields.profileImage" />
                                                 </Form.Label>
                                                 <Col md={4}>
-                                                    <Form.Control 
+                                                    <Form.Control
                                                         type="file"
                                                         accept="image/*"
                                                         onChange={handleProfileImageChange}
                                                     />
                                                     {profileImage && (
-                                                        <Button 
-                                                            variant="danger" 
-                                                            size="sm" 
+                                                        <Button
+                                                            variant="danger"
+                                                            size="sm"
                                                             className="mt-2"
                                                             onClick={handleRemoveProfileImage}
                                                         >
-                                                            <FormattedMessage id="project.users.Profile.buttons.removeImage"/>
+                                                            <FormattedMessage id="project.users.Profile.buttons.removeImage" />
                                                         </Button>
                                                     )}
                                                 </Col>
@@ -215,29 +218,44 @@ const Profile = () => {
 
                                             <Form.Group as={Row} className="mb-3" controlId="email">
                                                 <Form.Label column md={3}>
-                                                    <FormattedMessage id="project.global.fields.email"/>
+                                                    <FormattedMessage id="project.global.fields.email" />
                                                 </Form.Label>
                                                 <Col md={4}>
                                                     <Form.Control type="email"
                                                         value={email}
                                                         onChange={e => setEmail(e.target.value)}
-                                                        required/>
+                                                        required />
                                                     <Form.Control.Feedback type="invalid">
-                                                        <FormattedMessage id='project.global.validator.email'/>
+                                                        <FormattedMessage id='project.global.validator.email' />
+                                                    </Form.Control.Feedback>
+                                                </Col>
+                                            </Form.Group>
+
+                                            <Form.Group as={Row} className="mb-3" controlId="fechaNacimiento">
+                                                <Form.Label column md={3}>
+                                                    <FormattedMessage id="project.global.fields.fechaNacimiento" defaultMessage="Fecha de Nacimiento" />
+                                                </Form.Label>
+                                                <Col md={4}>
+                                                    <Form.Control type="date"
+                                                        value={fechaNacimiento}
+                                                        onChange={e => setFechaNacimiento(e.target.value)}
+                                                        required />
+                                                    <Form.Control.Feedback type="invalid">
+                                                        <FormattedMessage id='project.global.validator.required' />
                                                     </Form.Control.Feedback>
                                                 </Col>
                                             </Form.Group>
 
                                             <Form.Group as={Row} className="mb-3" controlId="userName">
                                                 <Form.Label column md={3}>
-                                                    <FormattedMessage id="project.global.fields.userName"/>
+                                                    <FormattedMessage id="project.global.fields.userName" />
                                                 </Form.Label>
                                                 <Col md={4}>
                                                     <Form.Control type="text"
                                                         value={user.nombre}
-                                                        disabled/>
+                                                        disabled />
                                                     <Form.Text className="text-muted">
-                                                        <FormattedMessage id="project.users.Profile.fields.userNameDisabled"/>
+                                                        <FormattedMessage id="project.users.Profile.fields.userNameDisabled" />
                                                     </Form.Text>
                                                 </Col>
                                             </Form.Group>
@@ -245,7 +263,7 @@ const Profile = () => {
                                             <Form.Group as={Row}>
                                                 <Col md={{ span: 4, offset: 3 }}>
                                                     <Button type="submit" variant="primary">
-                                                        <FormattedMessage id="project.global.buttons.save"/>
+                                                        <FormattedMessage id="project.global.buttons.save" />
                                                     </Button>
                                                 </Col>
                                             </Form.Group>
@@ -257,23 +275,23 @@ const Profile = () => {
                             {activeTab === 'password' && (
                                 <Card className="mt-3">
                                     <Card.Header as="h5">
-                                        <FormattedMessage id="project.users.ChangePassword.title"/>
+                                        <FormattedMessage id="project.users.ChangePassword.title" />
                                     </Card.Header>
                                     <Card.Body>
                                         {passwordSuccess && (
                                             <div className="alert alert-success alert-dismissible fade show" role="alert">
-                                                <FormattedMessage id="project.users.Profile.success.passwordChanged"/>
+                                                <FormattedMessage id="project.users.Profile.success.passwordChanged" />
                                                 <button type="button" className="btn-close" onClick={() => setPasswordSuccess(false)}></button>
                                             </div>
                                         )}
-                                        <Errors errors={passwordBackendErrors} onClose={() => setPasswordBackendErrors(null)}/>
-                                        
+                                        <Errors errors={passwordBackendErrors} onClose={() => setPasswordBackendErrors(null)} />
+
                                         <Form ref={node => passwordForm = node}
-                                              noValidate validated={passwordFormValidated} onSubmit={e => handlePasswordSubmit(e)}>
-                                            
+                                            noValidate validated={passwordFormValidated} onSubmit={e => handlePasswordSubmit(e)}>
+
                                             <Form.Group as={Row} className="mb-3" controlId="oldPassword">
                                                 <Form.Label column md={3}>
-                                                    <FormattedMessage id="project.users.ChangePassword.fields.oldPassword"/>
+                                                    <FormattedMessage id="project.users.ChangePassword.fields.oldPassword" />
                                                 </Form.Label>
                                                 <Col md={4}>
                                                     <Form.Control type="password"
@@ -281,32 +299,32 @@ const Profile = () => {
                                                         onChange={e => setOldPassword(e.target.value)}
                                                         autoFocus
                                                         autoComplete="current-password"
-                                                        required/>
+                                                        required />
                                                     <Form.Control.Feedback type="invalid">
-                                                        <FormattedMessage id='project.global.validator.required'/>
+                                                        <FormattedMessage id='project.global.validator.required' />
                                                     </Form.Control.Feedback>
                                                 </Col>
                                             </Form.Group>
 
                                             <Form.Group as={Row} className="mb-3" controlId="newPassword">
                                                 <Form.Label column md={3}>
-                                                    <FormattedMessage id="project.users.ChangePassword.fields.newPassword"/>
+                                                    <FormattedMessage id="project.users.ChangePassword.fields.newPassword" />
                                                 </Form.Label>
                                                 <Col md={4}>
                                                     <Form.Control type="password"
                                                         value={newPassword}
                                                         onChange={e => setNewPassword(e.target.value)}
                                                         autoComplete="new-password"
-                                                        required/>
+                                                        required />
                                                     <Form.Control.Feedback type="invalid">
-                                                        <FormattedMessage id='project.global.validator.required'/>
+                                                        <FormattedMessage id='project.global.validator.required' />
                                                     </Form.Control.Feedback>
                                                 </Col>
                                             </Form.Group>
 
                                             <Form.Group as={Row} className="mb-3" controlId="confirmNewPassword">
                                                 <Form.Label column md={3}>
-                                                    <FormattedMessage id="project.users.SignUp.fields.confirmPassword"/>
+                                                    <FormattedMessage id="project.users.SignUp.fields.confirmPassword" />
                                                 </Form.Label>
                                                 <Col md={4}>
                                                     <Form.Control
@@ -315,11 +333,11 @@ const Profile = () => {
                                                         onChange={e => handleConfirmNewPasswordChange(e.target.value)}
                                                         autoComplete="new-password"
                                                         isInvalid={passwordsDoNotMatch}
-                                                        required/>
+                                                        required />
                                                     <Form.Control.Feedback type="invalid">
                                                         {passwordsDoNotMatch ?
-                                                            <FormattedMessage id='project.global.validator.passwordsDoNotMatch'/> :
-                                                            <FormattedMessage id='project.global.validator.required'/>}
+                                                            <FormattedMessage id='project.global.validator.passwordsDoNotMatch' /> :
+                                                            <FormattedMessage id='project.global.validator.required' />}
                                                     </Form.Control.Feedback>
                                                 </Col>
                                             </Form.Group>
@@ -327,7 +345,7 @@ const Profile = () => {
                                             <Form.Group as={Row}>
                                                 <Col md={{ span: 4, offset: 3 }}>
                                                     <Button type="submit" variant="primary">
-                                                        <FormattedMessage id="project.global.buttons.save"/>
+                                                        <FormattedMessage id="project.global.buttons.save" />
                                                     </Button>
                                                 </Col>
                                             </Form.Group>

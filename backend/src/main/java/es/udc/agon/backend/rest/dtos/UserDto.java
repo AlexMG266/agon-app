@@ -8,10 +8,12 @@ import jakarta.validation.constraints.Past;
 import jakarta.validation.constraints.Size;
 
 public class UserDto {
-	
-	public interface AllValidations {}
-	
-	public interface UpdateValidations {}
+
+	public interface AllValidations {
+	}
+
+	public interface UpdateValidations {
+	}
 
 	private Long id;
 	private int elo;
@@ -20,17 +22,21 @@ public class UserDto {
 	private String imagenPerfil;
 	private String password;
 	private LocalDate fechaNacimiento;
-	
-	public UserDto() {}
+	private boolean eloProvisional;
 
-	public UserDto(Long id, int elo, String nombre, String email, String imagenPerfil, LocalDate fechaNacimiento) {
+	public UserDto() {
+	}
+
+	public UserDto(Long id, int elo, String nombre, String email, String imagenPerfil, LocalDate fechaNacimiento,
+			boolean eloProvisional) {
 		this.id = id;
 		this.elo = elo;
 		this.nombre = nombre != null ? nombre.trim() : null;
 		this.email = email != null ? email.trim() : null;
 		this.imagenPerfil = imagenPerfil != null ? imagenPerfil.trim() : null;
 		this.fechaNacimiento = fechaNacimiento;
-		
+		this.eloProvisional = eloProvisional;
+
 	}
 
 	public Long getId() {
@@ -49,8 +55,8 @@ public class UserDto {
 		this.elo = elo;
 	}
 
-	@NotNull(groups={AllValidations.class, UpdateValidations.class})
-	@Size(min=1, max=60, groups={AllValidations.class, UpdateValidations.class})
+	@NotNull(groups = { AllValidations.class, UpdateValidations.class })
+	@Size(min = 1, max = 60, groups = { AllValidations.class, UpdateValidations.class })
 	public String getNombre() {
 		return nombre;
 	}
@@ -59,9 +65,9 @@ public class UserDto {
 		this.nombre = nombre != null ? nombre.trim() : null;
 	}
 
-	@NotNull(groups={AllValidations.class, UpdateValidations.class})
-	@Size(min=1, max=120, groups={AllValidations.class, UpdateValidations.class})
-	@Email(groups={AllValidations.class, UpdateValidations.class})
+	@NotNull(groups = { AllValidations.class, UpdateValidations.class })
+	@Size(min = 1, max = 120, groups = { AllValidations.class, UpdateValidations.class })
+	@Email(groups = { AllValidations.class, UpdateValidations.class })
 	public String getEmail() {
 		return email;
 	}
@@ -70,7 +76,7 @@ public class UserDto {
 		this.email = email != null ? email.trim() : null;
 	}
 
-	@Size(max=2097152, groups={AllValidations.class, UpdateValidations.class})
+	@Size(max = 2097152, groups = { AllValidations.class, UpdateValidations.class })
 	public String getImagenPerfil() {
 		return imagenPerfil;
 	}
@@ -79,8 +85,8 @@ public class UserDto {
 		this.imagenPerfil = imagenPerfil != null ? imagenPerfil.trim() : null;
 	}
 
-	@NotNull(groups={AllValidations.class})
-	@Size(min=1, max=60, groups={AllValidations.class})
+	@NotNull(groups = { AllValidations.class })
+	@Size(min = 1, max = 60, groups = { AllValidations.class })
 	public String getPassword() {
 		return password;
 	}
@@ -89,14 +95,22 @@ public class UserDto {
 		this.password = password;
 	}
 
-	@NotNull(groups={AllValidations.class, UpdateValidations.class})
-	@Past(groups={AllValidations.class, UpdateValidations.class})
+	@NotNull(groups = { AllValidations.class, UpdateValidations.class })
+	@Past(groups = { AllValidations.class, UpdateValidations.class })
 	public LocalDate getFechaNacimiento() {
 		return fechaNacimiento;
 	}
 
 	public void setFechaNacimiento(LocalDate fechaNacimiento) {
 		this.fechaNacimiento = fechaNacimiento;
+	}
+
+	public boolean isEloProvisional() {
+		return eloProvisional;
+	}
+
+	public void setEloProvisional(boolean eloProvisional) {
+		this.eloProvisional = eloProvisional;
 	}
 
 }

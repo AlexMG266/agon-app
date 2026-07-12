@@ -1,3 +1,4 @@
+import { useState, useEffect } from 'react';
 import { useSelector } from 'react-redux';
 import { Link } from 'react-router';
 import { FormattedMessage } from 'react-intl';
@@ -5,13 +6,27 @@ import Navbar from 'react-bootstrap/Navbar';
 import Nav from 'react-bootstrap/Nav';
 import NavDropdown from 'react-bootstrap/NavDropdown';
 import Container from "react-bootstrap/Container";
+import Badge from 'react-bootstrap/Badge';
 
 import users from '../../users';
+import backend from '../../../backend';
 import './Header.css';
 
 const Header = () => {
 
     const user = useSelector(users.selectors.getUser);
+    const [unreadCount, setUnreadCount] = useState(0);
+
+    useEffect(() => {
+        if (user) {
+            backend.notificationService.getNotifications().then(response => {
+                if (response.ok && response.payload) {
+                    const unread = response.payload.filter(n => !n.leido).length;
+                    setUnreadCount(unread);
+                }
+            }).catch(() => { });
+        }
+    }, [user]);
 
     const getProfileImageUrl = () => {
         if (user?.imagenPerfil) {
@@ -29,14 +44,22 @@ const Header = () => {
                 <Navbar.Collapse id="navbarSupportedContent">
 
                     {user ? (
-                        <Nav className="ms-auto">
-                            <NavDropdown 
+                        <Nav className="ms-auto align-items-center">
+
+                            <Nav.Link as={Link} to="/users/notifications" className="navbar-icon-btn me-3 position-relative">
+                                <i className="fa-solid fa-inbox fs-4" style={{ color: 'var(--apple-text)' }}></i>
+                                {unreadCount > 0 && (
+                                    <span className="navbar-badge" title="Unread notifications"></span>
+                                )}
+                            </Nav.Link>
+
+                            <NavDropdown
                                 title={
                                     <div className="profile-nav-container">
                                         {getProfileImageUrl() ? (
-                                            <img 
-                                                src={getProfileImageUrl()} 
-                                                alt="Profile" 
+                                            <img
+                                                src={getProfileImageUrl()}
+                                                alt="Profile"
                                                 className="profile-nav-image"
                                             />
                                         ) : (
@@ -46,16 +69,19 @@ const Header = () => {
                                         )}
                                         <span className="profile-username">{user.nombre}</span>
                                     </div>
-                                } 
-                                align="end" 
+                                }
+                                align="end"
                                 id="user-dropdown"
                             >
                                 <NavDropdown.Item as={Link} to="/users/profile">
-                                    <i className="fa-solid fa-user"></i> <FormattedMessage id="project.users.Profile.title" />
+                                    <i className="fa-solid fa-user me-2"></i> <FormattedMessage id="project.users.Profile.title" />
+                                </NavDropdown.Item>
+                                <NavDropdown.Item as={Link} to="/users/notifications">
+                                    <i className="fa-solid fa-bell me-2"></i> Consultar Notificaciones
                                 </NavDropdown.Item>
                                 <NavDropdown.Divider />
                                 <NavDropdown.Item as={Link} to="/users/logout">
-                                    <i className="fa-solid fa-sign-out-alt"></i> <FormattedMessage id="project.app.Header.logout" />
+                                    <i className="fa-solid fa-sign-out-alt me-2"></i> <FormattedMessage id="project.app.Header.logout" />
                                 </NavDropdown.Item>
                             </NavDropdown>
                         </Nav>
