@@ -4,11 +4,14 @@ import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestAttribute;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import es.udc.agon.backend.model.exceptions.InstanceNotFoundException;
+import es.udc.agon.backend.model.exceptions.PermissionException;
 import es.udc.agon.backend.model.services.NotificationService;
 import es.udc.agon.backend.rest.dtos.NotificationConversor;
 import es.udc.agon.backend.rest.dtos.NotificationDto;
@@ -23,5 +26,19 @@ public class NotificationController {
     @GetMapping
     public List<NotificationDto> getNotifications(@RequestAttribute Long userId) throws InstanceNotFoundException {
         return NotificationConversor.toNotificationDtos(notificationService.getNotifications(userId));
+    }
+
+    @GetMapping("/{notificationId}")
+    public NotificationDto getNotification(@RequestAttribute Long userId, @PathVariable Long notificationId)
+            throws InstanceNotFoundException, PermissionException {
+        return NotificationConversor.toNotificationDto(
+                notificationService.getNotification(userId, notificationId));
+    }
+
+    @PutMapping("/{notificationId}")
+    public NotificationDto markAsRead(@RequestAttribute Long userId, @PathVariable Long notificationId)
+            throws InstanceNotFoundException, PermissionException {
+        return NotificationConversor.toNotificationDto(
+                notificationService.markAsRead(userId, notificationId));
     }
 }

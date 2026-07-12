@@ -17,10 +17,10 @@ import jakarta.persistence.Table;
 public class Notification {
 
 	public enum TipoNotificacion {
-		FRIEND_REQUEST,
-		GAME_INVITATION,
-		GAME_RESULT,
-		MESSAGE,
+		INVITACION,
+		RECORDATORIO_PARTIDO,
+		RESULTADO_PARTIDO,
+		SOLICITUD_APLAZAMIENTO,
 		SYSTEM
 	}
 

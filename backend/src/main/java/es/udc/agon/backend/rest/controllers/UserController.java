@@ -80,7 +80,7 @@ public class UserController {
 
 	}
 
-	@PostMapping("/signUp")
+	@PostMapping("/signup")
 	public ResponseEntity<AuthenticatedUserDto> signUp(
 			@Validated({ UserDto.AllValidations.class }) @RequestBody UserDto userDto)
 			throws DuplicateInstanceException {
@@ -142,7 +142,6 @@ public class UserController {
 		}
 
 		userService.changePassword(id, params.getOldPassword(), params.getNewPassword());
-
 	}
 
 	private String generateServiceToken(User user) {

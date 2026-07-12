@@ -1,7 +1,9 @@
 package es.udc.agon.backend.test.model.services;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -18,6 +20,7 @@ import es.udc.agon.backend.model.entities.NotificationDao;
 import es.udc.agon.backend.model.entities.User;
 import es.udc.agon.backend.model.exceptions.DuplicateInstanceException;
 import es.udc.agon.backend.model.exceptions.InstanceNotFoundException;
+import es.udc.agon.backend.model.exceptions.PermissionException;
 import es.udc.agon.backend.model.services.NotificationService;
 import es.udc.agon.backend.model.services.UserService;
 
@@ -47,20 +50,73 @@ public class NotificationServiceTest {
         User user = createUser("user");
         userService.signUp(user);
 
-        Notification n1 = new Notification(user, "Message 1", TipoNotificacion.SYSTEM);
-        Notification n2 = new Notification(user, "Message 2", TipoNotificacion.FRIEND_REQUEST);
+        Notification n1 = new Notification(user, "Invitacion", TipoNotificacion.INVITACION);
+        Notification n2 = new Notification(user, "Recordatorio partido", TipoNotificacion.RECORDATORIO_PARTIDO);
 
         notificationDao.save(n1);
         notificationDao.save(n2);
 
         List<Notification> notifications = notificationService.getNotifications(user.getId());
 
+        // aqui contamos la notificacion de bienvenida que se crea automaticamente
         assertEquals(3, notifications.size());
     }
 
     @Test
     public void testGetNotificationsWithNonExistentId() {
         assertThrows(InstanceNotFoundException.class, () -> notificationService.getNotifications(NON_EXISTENT_ID));
+    }
+
+    @Test
+    public void testGetNotification() throws DuplicateInstanceException, InstanceNotFoundException, PermissionException {
+        User user = createUser("userGet");
+        userService.signUp(user);
+
+        Notification notification = new Notification(user, "Invitacion", TipoNotificacion.INVITACION);
+        notificationDao.save(notification);
+
+        Notification found = notificationService.getNotification(user.getId(), notification.getId());
+
+        assertEquals("Invitacion", found.getMensaje());
+    }
+
+    @Test
+    public void testGetNotificationWithNonExistentId() throws DuplicateInstanceException, InstanceNotFoundException {
+        User user = createUser("userGetNotFound");
+        userService.signUp(user);
+
+        assertThrows(InstanceNotFoundException.class,
+                () -> notificationService.getNotification(user.getId(), NON_EXISTENT_ID));
+    }
+
+    @Test
+    public void testGetNotificationWithPermissionException()
+            throws DuplicateInstanceException, InstanceNotFoundException {
+        User user1 = createUser("userPerm1");
+        User user2 = createUser("userPerm2");
+        userService.signUp(user1);
+        userService.signUp(user2);
+
+        Notification notification = new Notification(user1, "Privada", TipoNotificacion.SYSTEM);
+        notificationDao.save(notification);
+
+        assertThrows(PermissionException.class,
+                () -> notificationService.getNotification(user2.getId(), notification.getId()));
+    }
+
+    @Test
+    public void testMarkAsRead() throws DuplicateInstanceException, InstanceNotFoundException, PermissionException {
+        User user = createUser("userRead");
+        userService.signUp(user);
+
+        Notification notification = new Notification(user, "No leida", TipoNotificacion.SYSTEM);
+        notificationDao.save(notification);
+
+        assertFalse(notification.isLeido());
+
+        Notification updated = notificationService.markAsRead(user.getId(), notification.getId());
+
+        assertTrue(updated.isLeido());
     }
 
 }
