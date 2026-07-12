@@ -1,0 +1,121 @@
+erDiagram
+    USUARIO ||--o{ EQUIPO : "crea"
+    USUARIO ||--o{ TORNEO : "organiza"
+    USUARIO ||--o{ NOTIFICACION : "recibe"
+    USUARIO ||--o{ INVITACION : "remitente"
+    USUARIO ||--o{ INVITACION : "destino"
+    
+    EQUIPO ||--o{ INVITACION : "recibe"
+    EQUIPO ||--o{ INSCRIPCION : "participa"
+    EQUIPO ||--o{ ENCUENTRO : "local"
+    EQUIPO ||--o{ ENCUENTRO : "visitante"
+    
+    TORNEO ||--o{ GRUPO : "posee"
+    TORNEO ||--o{ JORNADA : "planifica"
+    TORNEO ||--o{ INSCRIPCION : "gestiona"
+    
+    GRUPO ||--o{ INSCRIPCION : "agrupa"
+    
+    JORNADA ||--o{ ENCUENTRO : "contiene"
+    
+    ENCUENTRO ||--o{ SET : "tiene"
+    ENCUENTRO ||--o{ SOLICITUD_APLAZAMIENTO : "gestiona"
+    
+    USUARIO {
+        int id PK
+        string nombre
+        string email
+		string imagenPerfil
+        string password
+        int elo
+        date fechaNacimiento
+    }
+
+    NOTIFICACION {
+        int id PK
+        int idUsuario FK
+        string mensaje
+        boolean leida
+        boolean pendienteDeAccion
+        int referenciaId
+        string tipo
+    }
+
+    INVITACION {
+        int id PK
+        int idUsuarioRemitente FK
+        int idUsuarioDestino FK
+        int idEquipo FK
+        string estado
+    }
+
+    EQUIPO {
+        int id PK
+        int idCreador FK
+        string nombreEquipo
+        string estado
+    }
+
+    TORNEO {
+        int id PK
+        int idOrganizador FK
+        string nombre
+        int numGrupos
+        int equiposPorGrupo
+        boolean tienePlayoff
+        string estado
+    }
+
+    GRUPO {
+        int id PK
+        int idTorneo FK
+        string nombreGrupo
+    }
+
+    INSCRIPCION {
+        int id PK
+        int idTorneo FK
+        int idEquipo FK
+        int idGrupo FK
+		int partidosJugados
+        string estadoInscripcion
+        int puntosLiga
+        int setsGanados
+        int setsPerdidos
+    }
+
+    JORNADA {
+        int id PK
+        int idTorneo FK
+        int numeroJornada
+        string tipoFase
+        string formatoJornada
+        string estado
+		date fechaInicio
+		date fechaFin
+    }
+
+    ENCUENTRO {
+        int id PK
+        int idJornada FK
+        int idEquipoLocal FK
+        int idEquipoVisitante FK
+        string estadoEncuentro
+        datetime fechaRealizacion
+    }
+
+    SET {
+        int id PK
+        int idEncuentro FK
+        int numeroSet
+        int golesLocal
+        int golesVisitante
+    }
+
+    SOLICITUD_APLAZAMIENTO {
+        int id PK
+        int idEncuentro FK
+        int idEquipoSolicitante FK
+        datetime fechaSolicitada
+        string estado
+    }

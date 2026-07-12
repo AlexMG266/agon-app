@@ -1,7 +1,6 @@
 import {useState} from 'react';
 import {useSelector, useDispatch} from 'react-redux';
 import {FormattedMessage} from 'react-intl';
-import {useNavigate} from 'react-router';
 import Card from 'react-bootstrap/Card';
 import Button from 'react-bootstrap/Button';
 import Form from 'react-bootstrap/Form';
@@ -19,7 +18,6 @@ const Profile = () => {
 
     const user = useSelector(selectors.getUser);
     const dispatch = useDispatch();
-    const navigate = useNavigate();
     
     // Profile info state
     const [profileImage, setProfileImage] = useState(user.imagenPerfil || '');

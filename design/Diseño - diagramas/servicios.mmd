@@ -1,0 +1,125 @@
+classDiagram
+    direction TB
+
+    %% --- Controladores (Capa REST - Endpoints) --- %%
+    class UsuarioController {
+        -IUsuarioService usuarioService
+        +registrar(UsuarioDto dto) ResponseEntity
+        +login(LoginDto dto) ResponseEntity
+        +consultarPerfil(Long id) ResponseEntity
+        +editarPerfil(Long id, UsuarioDto dto) ResponseEntity
+        +consultarNotificaciones(Long userId) ResponseEntity
+        +gestionarNotificacion(Long notifId, boolean aceptar) ResponseEntity
+    }
+
+    class EquipoController {
+        -IEquipoService equipoService
+        +crearEquipo(Long capitanId, EquipoDto dto) ResponseEntity
+        +invitarMiembro(Long capitanId, Long equipoId, Long usuarioId) ResponseEntity
+        +responderInvitacion(Long invitacionId, boolean aceptar) ResponseEntity
+        +abandonarEquipo(Long userId, Long equipoId) ResponseEntity
+        +disolverEquipo(Long capitanId, Long equipoId) ResponseEntity
+    }
+
+    class TorneoController {
+        -ITorneoService torneoService
+        +buscarTorneos(String filtro) ResponseEntity
+        +consultarTorneo(Long torneoId) ResponseEntity
+        +crearTorneo(Long orgId, TorneoDto dto) ResponseEntity
+        +inscribirYValidarEquipo(Long capitanId, Long torneoId, Long equipoId) ResponseEntity
+        +cerrarInscripciones(Long torneoId) ResponseEntity
+        +generarCalendario(Long torneoId) ResponseEntity
+        +generarCodigoQR(Long torneoId) ResponseEntity
+        +gestionarJornadas(Long torneoId, Long jornadaId, EstadoJornada nuevoEstado) ResponseEntity
+    }
+
+    class EncuentroController {
+        -IEncuentroService encuentroService
+        +consultarEncuentrosPropios(Long userId) ResponseEntity
+        +registrarResultado(Long encuentroId, List~SetDto~ sets) ResponseEntity
+        +solicitarAplazamiento(Long capitanId, Long encuentroId, AplazamientoDto dto) ResponseEntity
+    }
+
+    %% --- DTOs (Data Transfer Objects) con atributos completos --- %%
+    class UsuarioDto {
+        <<DTO>>
+        +Long id
+        +String nombre
+        +String email
+        +String imagenPerfil
+        +int elo
+        +LocalDate fechaNacimiento
+    }
+
+    class LoginDto {
+        <<DTO>>
+        +String email
+        +String password
+    }
+    
+    class NotificacionDto {
+        <<DTO>>
+        +Long id
+        +String mensaje
+        +boolean leida
+        +boolean pendienteDeAccion
+        +TipoNotificacion tipo
+    }
+
+    class EquipoDto {
+        <<DTO>>
+        +Long id
+        +String nombreEquipo
+        +EstadoEquipo estado
+    }
+
+    class TorneoDto {
+        <<DTO>>
+        +Long id
+        +String nombre
+        +int numGrupos
+        +int equiposPorGrupo
+        +boolean tienePlayoff
+        +EstadoTorneo estado
+    }
+
+    class EncuentroDto {
+        <<DTO>>
+        +Long id
+        +Long equipoLocalId
+        +Long equipoVisitanteId
+        +EstadoEncuentro estadoEncuentro
+        +LocalDateTime fechaRealizacion
+    }
+
+    class SetDto {
+        <<DTO>>
+        +int numeroSet
+        +int golesLocal
+        +int golesVisitante
+    }
+
+    class AplazamientoDto {
+        <<DTO>>
+        +LocalDateTime fechaSolicitada
+        +String motivo
+    }
+
+    %% --- Dependencias Controladores -> Interfaces de Servicio --- %%
+    UsuarioController --> IUsuarioService : @Autowired
+    EquipoController --> IEquipoService : @Autowired
+    TorneoController --> ITorneoService : @Autowired
+    EncuentroController --> IEncuentroService : @Autowired
+
+    %% --- Dependencias Controladores -> DTOs --- %%
+    UsuarioController ..> UsuarioDto : usa
+    UsuarioController ..> LoginDto : usa
+    UsuarioController ..> NotificacionDto : devuelve
+    
+    EquipoController ..> EquipoDto : usa
+    
+    TorneoController ..> TorneoDto : usa
+    
+    EncuentroController ..> EncuentroDto : devuelve
+    EncuentroController ..> SetDto : recibe
+    EncuentroController ..> AplazamientoDto : recibe	

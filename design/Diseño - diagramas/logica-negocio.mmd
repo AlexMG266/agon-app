@@ -1,0 +1,98 @@
+classDiagram
+    direction TB
+
+    %% --- Interfaces de servicios (Contratos de Negocio) --- %%
+    class IUsuarioService {
+        <<interface>>
+        +registrar(Usuario u) Usuario
+        +login(String email, String password) Usuario
+        +consultarPerfil(Long id) Usuario
+        +editarPerfil(Long id, Usuario u) Usuario
+        +consultarNotificaciones(Long userId) List~Notificacion~
+        +gestionarNotificacion(Long notificacionId, boolean aceptar) void
+    }
+
+    class IEquipoService {
+        <<interface>>
+        +crearEquipo(Long capitanId, String nombreEquipo) Equipo
+        +invitarMiembro(Long capitanId, Long equipoId, Long usuarioId) void
+        +responderInvitacion(Long invitacionId, boolean aceptar) void
+        +abandonarEquipo(Long userId, Long equipoId) void
+        +disolverEquipo(Long capitanId, Long equipoId) void
+    }
+
+    class ITorneoService {
+        <<interface>>
+        +buscarTorneos(String filtro) List~Torneo~
+        +consultarTorneo(Long torneoId) Torneo
+        +crearTorneo(Long orgId, Torneo t) Torneo
+        +inscribirYValidarEquipo(Long capitanId, Long torneoId, Long equipoId) void
+        +cerrarInscripciones(Long torneoId) void
+        +generarCalendario(Long torneoId) void
+        +generarCodigoQR(Long torneoId) String
+        +gestionarJornadas(Long torneoId, Long jornadaId, EstadoJornada nuevoEstado) void
+    }
+
+    class IEncuentroService {
+        <<interface>>
+        +consultarEncuentrosPropios(Long userId) List~Encuentro~
+        +registrarResultado(Long encuentroId, List~Set~ sets) void
+        +solicitarAplazamiento(Long capitanId, Long encuentroId, LocalDateTime fecha, String motivo) void
+    }
+
+    %% --- Implementaciones --- %%
+    class UsuarioServiceImpl {
+        -UsuarioDao usuarioDao
+        -NotificacionDao notifDao
+        -PermissionChecker pc
+    }
+    class EquipoServiceImpl {
+        -EquipoDao equipoDao
+        -InvitacionDao invitacionDao
+        -PermissionChecker pc
+    }
+    class TorneoServiceImpl {
+        -TorneoDao torneoDao
+        -InscripcionDao inscripcionDao
+        -JornadaDao jornadaDao
+        -PermissionChecker pc
+    }
+    class EncuentroServiceImpl {
+        -EncuentroDao encuentroDao
+        -SolicitudAplazamientoDao solicitudAplazamientoDao
+        -InscripcionDao inscripcionDao
+        -UsuarioDao usuarioDao
+        -PermissionChecker pc
+    }
+
+    %% --- Implementación de Relaciones --- %%
+    IUsuarioService <|.. UsuarioServiceImpl
+    IEquipoService <|.. EquipoServiceImpl
+    ITorneoService <|.. TorneoServiceImpl
+    IEncuentroService <|.. EncuentroServiceImpl
+
+    %% --- Inyección de DAOs reales --- %%
+    UsuarioServiceImpl ..> UsuarioDao : @Autowired
+    UsuarioServiceImpl ..> NotificacionDao : @Autowired
+    
+    EquipoServiceImpl ..> EquipoDao : @Autowired
+    EquipoServiceImpl ..> InvitacionDao : @Autowired
+    
+    TorneoServiceImpl ..> TorneoDao : @Autowired
+    TorneoServiceImpl ..> InscripcionDao : @Autowired
+    TorneoServiceImpl ..> JornadaDao : @Autowired
+    
+    EncuentroServiceImpl ..> EncuentroDao : @Autowired
+    EncuentroServiceImpl ..> SolicitudAplazamientoDao : @Autowired
+    EncuentroServiceImpl ..> InscripcionDao : @Autowired
+    EncuentroServiceImpl ..> UsuarioDao : @Autowired
+    
+    %% --- Componente de Control de Acceso --- %%
+    class PermissionChecker {
+        +check(Long userId, String action) void
+    }
+    
+    UsuarioServiceImpl --> PermissionChecker : @Autowired
+    EquipoServiceImpl --> PermissionChecker : @Autowired
+    TorneoServiceImpl --> PermissionChecker : @Autowired
+    EncuentroServiceImpl --> PermissionChecker : @Autowired
