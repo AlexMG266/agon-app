@@ -77,3 +77,9 @@ docker compose down --rmi all --volumes --remove-orphans
 - Usuario PostgreSQL: `agon`
 - Contraseña PostgreSQL: `agon`
 - Base de datos: `agon`
+
+Para conectarte a la base de datos (con las credenciales por defecto): 
+
+```bash
+docker compose exec db psql -U agon -d agon
+```
