@@ -1,5 +1,5 @@
 import { useSelector } from 'react-redux';
-import { Route, Routes, NavLink } from 'react-router';
+import { Route, Routes, NavLink, useLocation } from 'react-router'; 
 import AppGlobalComponents from './AppGlobalComponents';
 import Home from './Home';
 import { Login, SignUp, Profile, Logout, Notifications, NotificationDetail } from '../../users';
@@ -8,6 +8,7 @@ import './Body.css';
 
 const Body = () => {
     const loggedIn = useSelector(users.selectors.isLoggedIn);
+    const location = useLocation(); // obtener la ruta actual
 
     return (
         <div className="main-layout-wrapper">
@@ -45,7 +46,7 @@ const Body = () => {
                 </aside>
             )}
 
-            <main className="app-content-area">
+            <main key={location.pathname} className="app-content-area animate-page-entry">
                 <Routes>
                     <Route path="/*" element={<Home />} />
                     {loggedIn && <Route path="/users/profile" element={<Profile />} />}

@@ -8,6 +8,7 @@ import FloatingLabel from 'react-bootstrap/FloatingLabel';
 import Row from "react-bootstrap/Row";
 import Col from "react-bootstrap/Col";
 import Container from "react-bootstrap/Container";
+import Spinner from "react-bootstrap/Spinner";
 
 import { Errors } from '../../common';
 import * as actions from '../actions';
@@ -24,6 +25,9 @@ const SignUp = () => {
     const [formValidated, setFormValidated] = useState(false);
     const [backendErrors, setBackendErrors] = useState(null);
     const [passwordsDoNotMatch, setPasswordsDoNotMatch] = useState(false);
+    
+    const [isSubmitting, setIsSubmitting] = useState(false); 
+    
     const formRef = useRef(null);
 
     const handleSubmit = async event => {
@@ -31,6 +35,9 @@ const SignUp = () => {
         const form = formRef.current;
 
         if (form && form.checkValidity() && checkConfirmPassword()) {
+            setIsSubmitting(true);
+            setBackendErrors(null);
+
             const user = {
                 nombre: nombre.trim(),
                 password: password,
@@ -38,16 +45,22 @@ const SignUp = () => {
                 fechaNacimiento: fechaNacimiento || null
             };
 
-            const response = await backend.userService.signUp(user, () => {
-                navigate('/users/login');
-                dispatch(actions.logout());
-            });
+            try {
+                const response = await backend.userService.signUp(user, () => {
+                    navigate('/users/login');
+                    dispatch(actions.logout());
+                });
 
-            if (response.ok) {
-                dispatch(actions.signUpCompleted(response.payload));
-                navigate('/');
-            } else {
-                setBackendErrors(response.payload);
+                if (response.ok) {
+                    dispatch(actions.signUpCompleted(response.payload));
+                    navigate('/');
+                } else {
+                    setBackendErrors(response.payload);
+                    setIsSubmitting(false);
+                }
+            } catch (error) {
+                setBackendErrors({ globalError: "Error de conexión con el servidor" });
+                setIsSubmitting(false);
             }
         } else {
             setBackendErrors(null);
@@ -70,11 +83,11 @@ const SignUp = () => {
     };
 
     return (
-        <Container fluid className="p-0 w-100 position-absolute start-0 end-0 bottom-0"
+        <Container fluid className="p-0 w-100 position-absolute start-0 end-0 bottom-0 fade-in-page"
                    style={{
                        fontFamily: '-apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI", Roboto, sans-serif',
                        backgroundColor: '#ffffff',
-                       top: '56px',
+                       top: '0', // Cambiado top: '56px' a top: '0' para ajustar por completo a la pantalla
                        overflow: 'hidden'
                    }}>
             <Row className="g-0 h-100 align-items-stretch">
@@ -85,7 +98,6 @@ const SignUp = () => {
 
                     <div></div>
 
-                    {/* Centrado horizontal (mx-auto), vertical (my-auto) y alineación interna centrada (align-items-center d-flex flex-column) */}
                     <div className="w-100 my-auto mx-auto d-flex flex-column align-items-center justify-content-center px-4" style={{ maxWidth: '540px' }}>
                         <div className="w-100 text-start">
                             <h1 className="fw-bold text-dark mb-4" style={{ fontSize: '2.5rem', letterSpacing: '-0.04em', lineHeight: '1.15', fontWeight: '700' }}>
@@ -96,7 +108,6 @@ const SignUp = () => {
                             </p>
                         </div>
 
-                        {/* Rejilla 2x2 de características */}
                         <Row className="g-3 mt-2 w-100">
                             <Col sm={6}>
                                 <div className="bg-white p-3 h-100 rounded-4 border border-light shadow-sm">
@@ -161,17 +172,13 @@ const SignUp = () => {
 
                         <Form ref={formRef} noValidate validated={formValidated} onSubmit={handleSubmit}>
 
-                            <FloatingLabel
-                                controlId="nombre"
-                                label={<FormattedMessage id="project.global.fields.firstName" />}
-                                className="mb-2 text-muted"
-                                style={{ fontSize: '0.85rem' }}
-                            >
+                            <FloatingLabel controlId="nombre" label={<FormattedMessage id="project.global.fields.firstName" />} className="mb-2 text-muted" style={{ fontSize: '0.85rem' }}>
                                 <Form.Control
                                     type="text"
                                     placeholder="Nombre"
                                     value={nombre}
                                     onChange={e => setNombre(e.target.value)}
+                                    disabled={isSubmitting} // Deshabilitar durante el envío
                                     autoFocus
                                     autoComplete="username"
                                     className="bg-white border rounded-3 shadow-none custom-input"
@@ -183,17 +190,13 @@ const SignUp = () => {
                                 </Form.Control.Feedback>
                             </FloatingLabel>
 
-                            <FloatingLabel
-                                controlId="email"
-                                label={<FormattedMessage id="project.global.fields.email" />}
-                                className="mb-2 text-muted"
-                                style={{ fontSize: '0.85rem' }}
-                            >
+                            <FloatingLabel controlId="email" label={<FormattedMessage id="project.global.fields.email" />} className="mb-2 text-muted" style={{ fontSize: '0.85rem' }}>
                                 <Form.Control
                                     type="email"
                                     placeholder="Email"
                                     value={email}
                                     onChange={e => setEmail(e.target.value)}
+                                    disabled={isSubmitting} // Deshabilitar durante el envío
                                     className="bg-white border rounded-3 shadow-none custom-input"
                                     style={{ fontSize: '0.92rem', borderColor: '#d2d2d7', height: '50px', color: '#1d1d1f' }}
                                     required
@@ -203,17 +206,13 @@ const SignUp = () => {
                                 </Form.Control.Feedback>
                             </FloatingLabel>
 
-                            <FloatingLabel
-                                controlId="fechaNacimiento"
-                                label={<FormattedMessage id="project.global.fields.fechaNacimiento" defaultMessage="Fecha de Nacimiento" />}
-                                className="mb-2 text-muted"
-                                style={{ fontSize: '0.85rem' }}
-                            >
+                            <FloatingLabel controlId="fechaNacimiento" label={<FormattedMessage id="project.global.fields.fechaNacimiento" defaultMessage="Fecha de Nacimiento" />} className="mb-2 text-muted" style={{ fontSize: '0.85rem' }}>
                                 <Form.Control
                                     type="date"
                                     placeholder="Fecha de Nacimiento"
                                     value={fechaNacimiento}
                                     onChange={e => setFechaNacimiento(e.target.value)}
+                                    disabled={isSubmitting} // Deshabilitar durante el envío
                                     className="bg-white border rounded-3 shadow-none custom-input"
                                     style={{ fontSize: '0.92rem', borderColor: '#d2d2d7', height: '50px', color: '#1d1d1f' }}
                                     required
@@ -223,17 +222,13 @@ const SignUp = () => {
                                 </Form.Control.Feedback>
                             </FloatingLabel>
 
-                            <FloatingLabel
-                                controlId="password"
-                                label={<FormattedMessage id="project.global.fields.password" />}
-                                className="mb-2 text-muted"
-                                style={{ fontSize: '0.85rem' }}
-                            >
+                            <FloatingLabel controlId="password" label={<FormattedMessage id="project.global.fields.password" />} className="mb-2 text-muted" style={{ fontSize: '0.85rem' }}>
                                 <Form.Control
                                     type="password"
                                     placeholder="Contraseña"
                                     value={password}
                                     onChange={e => setPassword(e.target.value)}
+                                    disabled={isSubmitting} // Deshabilitar durante el envío
                                     autoComplete="new-password"
                                     className="bg-white border rounded-3 shadow-none custom-input"
                                     style={{ fontSize: '0.92rem', borderColor: '#d2d2d7', height: '50px', color: '#1d1d1f' }}
@@ -244,17 +239,13 @@ const SignUp = () => {
                                 </Form.Control.Feedback>
                             </FloatingLabel>
 
-                            <FloatingLabel
-                                controlId="confirmPassword"
-                                label={<FormattedMessage id="project.users.SignUp.fields.confirmPassword" />}
-                                className="mb-4 text-muted"
-                                style={{ fontSize: '0.85rem' }}
-                            >
+                            <FloatingLabel controlId="confirmPassword" label={<FormattedMessage id="project.users.SignUp.fields.confirmPassword" />} className="mb-4 text-muted" style={{ fontSize: '0.85rem' }}>
                                 <Form.Control
                                     type="password"
                                     placeholder="Confirmar Contraseña"
                                     value={confirmPassword}
                                     onChange={e => handleConfirmPasswordChange(e.target.value)}
+                                    disabled={isSubmitting} // Deshabilitar durante el envío
                                     autoComplete="new-password"
                                     isInvalid={passwordsDoNotMatch}
                                     className="bg-white border rounded-3 shadow-none custom-input"
@@ -270,10 +261,18 @@ const SignUp = () => {
 
                             <Button
                                 type="submit"
-                                className="w-100 btn-primary rounded-pill fw-medium"
+                                className="w-100 btn-primary rounded-pill fw-medium d-flex align-items-center justify-content-center"
+                                disabled={isSubmitting}
                                 style={{ fontSize: '0.92rem', height: '44px', transition: 'background-color 0.2s ease' }}
                             >
-                                <FormattedMessage id="project.users.SignUp.title" defaultMessage="Registrarse" />
+                                {isSubmitting ? (
+                                    <>
+                                        <Spinner as="span" animation="border" size="sm" role="status" aria-hidden="true" className="me-2" />
+                                        <FormattedMessage id="project.global.buttons.processing" defaultMessage="Procesando..." />
+                                    </>
+                                ) : (
+                                    <FormattedMessage id="project.users.SignUp.title" defaultMessage="Registrarse" />
+                                )}
                             </Button>
                         </Form>
 
@@ -288,6 +287,19 @@ const SignUp = () => {
             </Row>
 
             <style>{`
+                .fade-in-page {
+                    animation: fadeInPage 0.4s cubic-bezier(0.25, 1, 0.5, 1) forwards;
+                }
+                @keyframes fadeInPage {
+                    from {
+                        opacity: 0;
+                        transform: translateY(6px);
+                    }
+                    to {
+                        opacity: 1;
+                        transform: translateY(0);
+                    }
+                }
                 .custom-input {
                     transition: border-color 0.2s ease, box-shadow 0.2s ease !important;
                 }

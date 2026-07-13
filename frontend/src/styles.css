@@ -99,3 +99,53 @@ a:not([class]) {
 a:not([class]):hover {
     text-decoration: underline;
 }
+
+/* animacion fade-in para los modales */ 
+.animate-page-entry {
+    animation: pageFadeInUp 0.35s cubic-bezier(0.25, 1, 0.5, 1) forwards;
+}
+
+@keyframes pageFadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(8px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* retoque visual componente de error de validacion en formulario */
+.was-validated .form-control:invalid {
+  border-color: var(--apple-danger) !important;
+  background-image: none !important; 
+  box-shadow: none !important;
+}
+
+.was-validated .form-control:invalid:focus {
+  border-color: var(--apple-danger) !important;
+  box-shadow: 0 0 0 4px rgba(255, 59, 48, 0.15) !important;
+}
+
+.was-validated .form-control:valid {
+  border-color: var(--apple-border) !important;
+  background-image: none !important;
+  box-shadow: none !important;
+}
+
+.was-validated .form-control:valid:focus {
+  border-color: var(--apple-accent) !important;
+  box-shadow: 0 0 0 4px rgba(0, 113, 227, 0.15) !important;
+}
+
+.invalid-feedback {
+  color: var(--apple-danger) !important;
+  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", sans-serif;
+  font-size: 13px !important;
+  font-weight: 500;
+  margin-top: 6px !important;
+  padding-left: 2px;
+  letter-spacing: -0.01em;
+  text-align: left;
+}

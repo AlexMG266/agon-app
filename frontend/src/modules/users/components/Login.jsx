@@ -9,6 +9,7 @@ import FloatingLabel from 'react-bootstrap/FloatingLabel';
 import Row from 'react-bootstrap/Row';
 import Col from 'react-bootstrap/Col';
 import Container from 'react-bootstrap/Container';
+import Spinner from 'react-bootstrap/Spinner';
 
 import { Errors } from '../../common';
 import * as actions from '../actions';
@@ -21,6 +22,9 @@ const Login = () => {
     const [password, setPassword] = useState('');
     const [formValidated, setFormValidated] = useState(false);
     const [backendErrors, setBackendErrors] = useState(null);
+    
+    const [isSubmitting, setIsSubmitting] = useState(false);
+    
     const formRef = useRef(null);
 
     const handleSubmit = async event => {
@@ -28,16 +32,25 @@ const Login = () => {
         const form = formRef.current;
 
         if (form && form.checkValidity()) {
-            const response = await backend.userService.login(userName, password, () => {
-                navigate('/users/login');
-                dispatch(actions.logout());
-            });
+            setIsSubmitting(true);
+            setBackendErrors(null);
 
-            if (response.ok) {
-                dispatch(actions.loginCompleted(response.payload));
-                navigate('/');
-            } else {
-                setBackendErrors(response.payload);
+            try {
+                const response = await backend.userService.login(userName, password, () => {
+                    navigate('/users/login');
+                    dispatch(actions.logout());
+                });
+
+                if (response.ok) {
+                    dispatch(actions.loginCompleted(response.payload));
+                    navigate('/');
+                } else {
+                    setBackendErrors(response.payload);
+                    setIsSubmitting(false);
+                }
+            } catch (error) {
+                setBackendErrors({ globalError: "Error de conexión con el servidor" });
+                setIsSubmitting(false);
             }
         } else {
             setBackendErrors(null);
@@ -46,22 +59,21 @@ const Login = () => {
     };
 
     return (
-        <Container fluid className="p-0 w-100 position-absolute start-0 end-0 bottom-0"
+        <Container fluid className="p-0 w-100 position-absolute start-0 end-0 bottom-0 fade-in-page"
                    style={{
                        fontFamily: '-apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI", Roboto, sans-serif',
                        backgroundColor: '#ffffff',
-                       top: '56px',
+                       top: '0', // Corregido top: '56px' a top: '0' para ocupar toda la pantalla
                        overflow: 'hidden'
                    }}>
             <Row className="g-0 h-100 align-items-stretch">
 
-                {/* COLUMNA IZQUIERDA: Panel de Características Centrado */}
+                {/* COLUMNA IZQUIERDA: Panel */}
                 <Col lg={6} className="d-none d-lg-flex flex-column justify-content-between p-5"
                      style={{ backgroundColor: '#f5f5f7', borderRight: '1px solid #e2e2e7' }}>
 
                     <div></div>
 
-                    {/* Centrado horizontal (mx-auto), vertical (my-auto) y alineación interna centrada (align-items-center d-flex flex-column) */}
                     <div className="w-100 my-auto mx-auto d-flex flex-column align-items-center justify-content-center px-4" style={{ maxWidth: '540px' }}>
                         <div className="w-100 text-start">
                             <h1 className="fw-bold text-dark mb-4" style={{ fontSize: '2.5rem', letterSpacing: '-0.04em', lineHeight: '1.15', fontWeight: '700' }}>
@@ -72,7 +84,6 @@ const Login = () => {
                             </p>
                         </div>
 
-                        {/* Rejilla 2x2 de características */}
                         <Row className="g-3 mt-2 w-100">
                             <Col sm={6}>
                                 <div className="bg-white p-3 h-100 rounded-4 border border-light shadow-sm">
@@ -148,6 +159,7 @@ const Login = () => {
                                     placeholder="Usuario"
                                     value={userName}
                                     onChange={e => setUserName(e.target.value)}
+                                    disabled={isSubmitting}
                                     autoFocus
                                     autoComplete="username"
                                     className="bg-white border rounded-3 shadow-none custom-input"
@@ -170,6 +182,7 @@ const Login = () => {
                                     placeholder="Contraseña"
                                     value={password}
                                     onChange={e => setPassword(e.target.value)}
+                                    disabled={isSubmitting}
                                     autoComplete="current-password"
                                     className="bg-white border rounded-3 shadow-none custom-input"
                                     style={{ fontSize: '0.92rem', borderColor: '#d2d2d7', height: '50px', color: '#1d1d1f' }}
@@ -182,10 +195,18 @@ const Login = () => {
 
                             <Button
                                 type="submit"
-                                className="w-100 btn-primary rounded-pill fw-medium"
+                                className="w-100 btn-primary rounded-pill fw-medium d-flex align-items-center justify-content-center"
+                                disabled={isSubmitting}
                                 style={{ fontSize: '0.92rem', height: '44px', transition: 'background-color 0.2s ease' }}
                             >
-                                <FormattedMessage id="project.users.Login.title" defaultMessage="Autenticarse" />
+                                {isSubmitting ? (
+                                    <>
+                                        <Spinner as="span" animation="border" size="sm" role="status" aria-hidden="true" className="me-2" />
+                                        <FormattedMessage id="project.global.buttons.processing" defaultMessage="Procesando..." />
+                                    </>
+                                ) : (
+                                    <FormattedMessage id="project.users.Login.title" defaultMessage="Autenticarse" />
+                                )}
                             </Button>
                         </Form>
 
@@ -200,6 +221,19 @@ const Login = () => {
             </Row>
 
             <style>{`
+                .fade-in-page {
+                    animation: fadeInPage 0.4s cubic-bezier(0.25, 1, 0.5, 1) forwards;
+                }
+                @keyframes fadeInPage {
+                    from {
+                        opacity: 0;
+                        transform: translateY(6px);
+                    }
+                    to {
+                        opacity: 1;
+                        transform: translateY(0);
+                    }
+                }
                 .custom-input {
                     transition: border-color 0.2s ease, box-shadow 0.2s ease !important;
                 }
