@@ -1,3 +1,13 @@
+.smart-topbar {
+    position: sticky;
+    top: 0;
+    z-index: 1030;
+    background-color: rgba(255, 255, 255, 0.8) !important;
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border-bottom: 1px solid #d2d2d7;
+}
+
 .profile-nav-container {
     display: flex;
     align-items: center;
@@ -43,37 +53,46 @@
 }
 
 .dropdown-menu {
-    border: none;
-    border-radius: var(--radius-md);
+    border: 1px solid #d2d2d7 !important;
+    border-radius: 12px !important;
     box-shadow: var(--shadow-lg);
     padding: 0.5rem 0;
-    min-width: 200px;
+    min-width: 210px;
+    background-color: #ffffff;
 }
 
 .dropdown-menu .dropdown-item {
     padding: 0.5rem 1rem;
-    font-size: 0.95rem;
+    font-size: 0.9rem;
     font-weight: 400;
     color: var(--apple-text);
     transition: background-color 0.15s ease, color 0.15s ease;
+    display: flex;
+    align-items: center;
 }
 
 .dropdown-menu .dropdown-item:hover,
 .dropdown-menu .dropdown-item:focus {
-    background-color: var(--apple-accent);
-    color: #ffffff;
+    background-color: #f5f5f7 !important;
+    color: var(--apple-text) !important;
+}
+
+.dropdown-menu .dropdown-item.text-danger:hover,
+.dropdown-menu .dropdown-item.text-danger:focus {
+    background-color: rgba(255, 69, 58, 0.08) !important;
+    color: #ff453a !important;
 }
 
 .dropdown-menu .dropdown-item i {
-    width: 20px;
+    width: 18px;
     text-align: center;
 }
 
 /* Red dot badge fix */
 .navbar-badge {
     position: absolute;
-    top: -2px;
-    right: -4px;
+    top: 4px;
+    right: 4px;
     width: 10px;
     height: 10px;
     border-radius: 50%;

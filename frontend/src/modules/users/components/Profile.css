@@ -1,7 +1,15 @@
 .profile-container {
-    background-color: #f8f9fa;
-    min-height: calc(100vh - 200px);
-    padding: 20px 0;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    background-color: transparent !important; 
+    width: 100%;
+    padding-top: 1rem;
+    padding-bottom: 3rem;
+}
+.profile-container .container {
+    background-color: transparent !important;
+    background: none !important;
+    box-shadow: none !important;
+    border: none !important;
 }
 
 .profile-image-container {
@@ -13,59 +21,99 @@
 
 .profile-image,
 .profile-image-placeholder {
-    width: 150px;
-    height: 150px;
+    width: 120px;
+    height: 120px;
     border-radius: 50%;
     object-fit: cover;
-    border: 4px solid #007bff;
-    background-color: white;
+    background-color: #ffffff;
     display: flex;
     align-items: center;
     justify-content: center;
+    border: 1px solid rgba(0, 0, 0, 0.08);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.05);
 }
 
 .profile-image-placeholder {
-    background-color: #e9ecef;
-    color: #6c757d;
-    font-size: 3rem;
+    font-size: 3.5rem;
+    color: #86868b;
 }
 
-.profile-tabs .nav-tabs {
-    border-bottom: 2px solid #dee2e6;
-    background-color: white;
-    border-radius: 0.25rem 0.25rem 0 0;
-    padding: 0.5rem;
+.profile-display-name {
+    font-weight: 700;
+    color: #1d1d1f;
+    letter-spacing: -0.02em;
 }
 
-.profile-tabs .nav-link {
-    color: #6c757d;
-    border: none;
-    border-bottom: 3px solid transparent;
-    padding: 0.75rem 1.5rem;
-    font-weight: 500;
-    cursor: pointer;
-    transition: all 0.3s ease;
+.profile-elo-card {
+    border: 1px solid rgba(0, 0, 0, 0.08) !important;
+    background-color: #ffffff !important;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03) !important;
 }
 
-.profile-tabs .nav-link:hover {
-    color: #007bff;
-    background-color: #f8f9fa;
+.segmented-control {
+    background-color: rgba(0, 0, 0, 0.06);
+    border: 1px solid rgba(0, 0, 0, 0.02);
 }
 
-.profile-tabs .nav-link.active {
-    color: #007bff;
+.segmented-btn {
     background-color: transparent;
-    border-bottom-color: #007bff;
+    font-size: 0.88rem;
+    cursor: pointer;
+    outline: none;
+    transition: all 0.2s ease;
 }
 
-.profile-tabs .card {
-    border-top-left-radius: 0;
-    border-top-right-radius: 0;
-    border-top: none;
+.segmented-btn.active {
+    background-color: #ffffff;
 }
 
-.profile-tabs .card-header {
-    background-color: #f8f9fa;
-    border-bottom: 1px solid #dee2e6;
-    font-weight: 600;
+.form-control-apple {
+    border-radius: 8px !important;
+    border: 1px solid rgba(0, 0, 0, 0.15) !important;
+    padding: 0.55rem 0.75rem !important;
+    font-size: 0.9rem !important;
+    color: #1d1d1f !important;
+    background-color: #ffffff !important;
+    box-shadow: none !important;
+    transition: border-color 0.2s ease-in-out !important;
+}
+
+.form-control-apple:focus {
+    border-color: #0071e3 !important;
+    background-color: #ffffff !important;
+}
+
+.form-control-apple-file {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    opacity: 0;
+    cursor: pointer;
+    z-index: 2;
+}
+
+.btn-apple-dark {
+    background-color: #1d1d1f !important;
+    color: #ffffff !important;
+    border: none !important;
+    font-weight: 500;
+    transition: background-color 0.2s ease;
+}
+
+.btn-apple-dark:hover {
+    background-color: #000000 !important;
+}
+
+.was-validated .form-control-apple:valid,
+.form-control-apple.is-valid {
+    border-color: rgba(0, 0, 0, 0.15) !important;
+    background-image: none !important;
+}
+
+.was-validated .form-control-apple:invalid,
+.form-control-apple.is-invalid {
+    border-color: #ff453a !important;
+    background-image: none !important;
 }

@@ -1,35 +1,33 @@
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { useDispatch } from 'react-redux';
 import { Link } from 'react-router';
 import { FormattedMessage } from 'react-intl';
 import { useNavigate } from 'react-router';
-import Card from 'react-bootstrap/Card';
 import Button from 'react-bootstrap/Button';
 import Form from 'react-bootstrap/Form';
+import FloatingLabel from 'react-bootstrap/FloatingLabel';
 import Row from 'react-bootstrap/Row';
 import Col from 'react-bootstrap/Col';
+import Container from 'react-bootstrap/Container';
 
 import { Errors } from '../../common';
 import * as actions from '../actions';
 import backend from '../../../backend';
 
-
 const Login = () => {
-
     const dispatch = useDispatch();
     const navigate = useNavigate();
     const [userName, setUserName] = useState('');
     const [password, setPassword] = useState('');
     const [formValidated, setFormValidated] = useState(false);
     const [backendErrors, setBackendErrors] = useState(null);
-    let form;
+    const formRef = useRef(null);
 
     const handleSubmit = async event => {
-
         event.preventDefault();
+        const form = formRef.current;
 
-        if (form.checkValidity()) {
-
+        if (form && form.checkValidity()) {
             const response = await backend.userService.login(userName, password, () => {
                 navigate('/users/login');
                 dispatch(actions.logout());
@@ -41,74 +39,187 @@ const Login = () => {
             } else {
                 setBackendErrors(response.payload);
             }
-
-
         } else {
             setBackendErrors(null);
             setFormValidated(true);
         }
-
-    }
+    };
 
     return (
-        <div className="col-md-10 mx-auto">
-            <p className="text-center">
-                <Link to="/users/signup">
-                    <FormattedMessage id="project.users.SignUp.title" />
-                </Link>
-            </p>
-            <Errors errors={backendErrors} onClose={() => setBackendErrors(null)} />
-            <Card className="bg-light border-dark">
-                <Card.Header as="h5">
-                    <FormattedMessage id="project.users.Login.title" />
-                </Card.Header>
-                <Card.Body>
-                    <Form ref={node => form = node}
-                        noValidate validated={formValidated} onSubmit={e => handleSubmit(e)}>
-                        <Form.Group as={Row} className="mb-3" controlId="userName">
-                            <Form.Label column md={3} >
-                                <FormattedMessage id="project.global.fields.userName" />
-                            </Form.Label>
-                            <Col md={4}>
-                                <Form.Control type="text"
+        <Container fluid className="p-0 w-100 position-absolute start-0 end-0 bottom-0"
+                   style={{
+                       fontFamily: '-apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI", Roboto, sans-serif',
+                       backgroundColor: '#ffffff',
+                       top: '56px',
+                       overflow: 'hidden'
+                   }}>
+            <Row className="g-0 h-100 align-items-stretch">
+
+                {/* COLUMNA IZQUIERDA: Panel de Características Centrado */}
+                <Col lg={6} className="d-none d-lg-flex flex-column justify-content-between p-5"
+                     style={{ backgroundColor: '#f5f5f7', borderRight: '1px solid #e2e2e7' }}>
+
+                    <div></div>
+
+                    {/* Centrado horizontal (mx-auto), vertical (my-auto) y alineación interna centrada (align-items-center d-flex flex-column) */}
+                    <div className="w-100 my-auto mx-auto d-flex flex-column align-items-center justify-content-center px-4" style={{ maxWidth: '540px' }}>
+                        <div className="w-100 text-start">
+                            <h1 className="fw-bold text-dark mb-4" style={{ fontSize: '2.5rem', letterSpacing: '-0.04em', lineHeight: '1.15', fontWeight: '700' }}>
+                                Organiza, inscríbete<br />y domina la mesa.
+                            </h1>
+                            <p className="text-secondary mb-4" style={{ fontSize: '0.92rem', lineHeight: '1.5', color: '#86868b' }}>
+                                La plataforma definitiva para la gestión de tus partidas de futbolín. Toma el control de la competición con herramientas diseñadas para llevar tu comunidad al siguiente nivel.
+                            </p>
+                        </div>
+
+                        {/* Rejilla 2x2 de características */}
+                        <Row className="g-3 mt-2 w-100">
+                            <Col sm={6}>
+                                <div className="bg-white p-3 h-100 rounded-4 border border-light shadow-sm">
+                                    <div className="bg-dark text-white rounded-3 d-flex align-items-center justify-content-center mb-2" style={{ width: '36px', height: '36px' }}>
+                                        <i className="fa-solid fa-trophy" style={{ fontSize: '0.9rem' }}></i>
+                                    </div>
+                                    <div className="text-dark small fw-bold mb-1">Gestión de Torneos</div>
+                                    <div className="text-muted" style={{ fontSize: '0.75rem', lineHeight: '1.3' }}>Crea formatos competitivos a tu medida fácilmente.</div>
+                                </div>
+                            </Col>
+                            <Col sm={6}>
+                                <div className="bg-white p-3 h-100 rounded-4 border border-light shadow-sm">
+                                    <div className="bg-dark text-white rounded-3 d-flex align-items-center justify-content-center mb-2" style={{ width: '36px', height: '36px' }}>
+                                        <i className="fa-solid fa-file-signature" style={{ fontSize: '0.9rem' }}></i>
+                                    </div>
+                                    <div className="text-dark small fw-bold mb-1">Inscripción Inmediata</div>
+                                    <div className="text-muted" style={{ fontSize: '0.75rem', lineHeight: '1.3' }}>Explora las mesas activas y asegura tu plaza con un clic.</div>
+                                </div>
+                            </Col>
+                            <Col sm={6}>
+                                <div className="bg-white p-3 h-100 rounded-4 border border-light shadow-sm">
+                                    <div className="bg-dark text-white rounded-3 d-flex align-items-center justify-content-center mb-2" style={{ width: '36px', height: '36px' }}>
+                                        <i className="fa-solid fa-chart-simple" style={{ fontSize: '0.9rem' }}></i>
+                                    </div>
+                                    <div className="text-dark small fw-bold mb-1">Sistema ELO Nativo</div>
+                                    <div className="text-muted" style={{ fontSize: '0.75rem', lineHeight: '1.3' }}>Cálculo preciso de tu nivel tras cada enfrentamiento.</div>
+                                </div>
+                            </Col>
+                            <Col sm={6}>
+                                <div className="bg-white p-3 h-100 rounded-4 border border-light shadow-sm">
+                                    <div className="bg-dark text-white rounded-3 d-flex align-items-center justify-content-center mb-2" style={{ width: '36px', height: '36px' }}>
+                                        <i className="fa-solid fa-users" style={{ fontSize: '0.9rem' }}></i>
+                                    </div>
+                                    <div className="text-dark small fw-bold mb-1">Perfil de Jugador</div>
+                                    <div className="text-muted" style={{ fontSize: '0.75rem', lineHeight: '1.3' }}>Historial centralizado con todas tus estadísticas.</div>
+                                </div>
+                            </Col>
+                        </Row>
+                    </div>
+
+                    <div className="text-muted small w-100 text-start" style={{ fontSize: '0.75rem' }}>
+                        © {new Date().getFullYear()} Agón Arena.
+                    </div>
+                </Col>
+
+                {/* COLUMNA DERECHA: Formulario */}
+                <Col lg={6} className="d-flex align-items-center justify-content-center p-4 bg-white">
+                    <div className="w-100" style={{ maxWidth: '360px' }}>
+
+                        <div className="mb-4 text-start">
+                            <h2 className="fw-bold text-dark mb-2" style={{ letterSpacing: '-0.03em', fontSize: '1.75rem', fontWeight: '700' }}>
+                                <FormattedMessage id="project.users.Login.title" defaultMessage="Autenticarse" />
+                            </h2>
+                            <p className="text-secondary mb-0" style={{ fontSize: '0.85rem', color: '#86868b' }}>
+                                Introduce tus datos de acceso para continuar.
+                            </p>
+                        </div>
+
+                        <div className="mb-3">
+                            <Errors errors={backendErrors} onClose={() => setBackendErrors(null)} />
+                        </div>
+
+                        <Form ref={formRef} noValidate validated={formValidated} onSubmit={handleSubmit}>
+
+                            <FloatingLabel
+                                controlId="userName"
+                                label={<FormattedMessage id="project.global.fields.userName" />}
+                                className="mb-2 text-muted"
+                                style={{ fontSize: '0.85rem' }}
+                            >
+                                <Form.Control
+                                    type="text"
+                                    placeholder="Usuario"
                                     value={userName}
                                     onChange={e => setUserName(e.target.value)}
                                     autoFocus
                                     autoComplete="username"
-                                    required />
-                                <Form.Control.Feedback type="invalid">
+                                    className="bg-white border rounded-3 shadow-none custom-input"
+                                    style={{ fontSize: '0.92rem', borderColor: '#d2d2d7', height: '50px', color: '#1d1d1f' }}
+                                    required
+                                />
+                                <Form.Control.Feedback type="invalid" className="small mt-1 text-danger" style={{ fontSize: '0.75rem' }}>
                                     <FormattedMessage id='project.global.validator.required' />
                                 </Form.Control.Feedback>
-                            </Col>
-                        </Form.Group>
-                        <Form.Group as={Row} className="mb-3" controlId="password">
-                            <Form.Label column md={3}>
-                                <FormattedMessage id="project.global.fields.password" />
-                            </Form.Label>
-                            <Col md={4}>
-                                <Form.Control type="password"
+                            </FloatingLabel>
+
+                            <FloatingLabel
+                                controlId="password"
+                                label={<FormattedMessage id="project.global.fields.password" />}
+                                className="mb-4 text-muted"
+                                style={{ fontSize: '0.85rem' }}
+                            >
+                                <Form.Control
+                                    type="password"
+                                    placeholder="Contraseña"
                                     value={password}
                                     onChange={e => setPassword(e.target.value)}
                                     autoComplete="current-password"
-                                    required />
-                                <Form.Control.Feedback type="invalid">
+                                    className="bg-white border rounded-3 shadow-none custom-input"
+                                    style={{ fontSize: '0.92rem', borderColor: '#d2d2d7', height: '50px', color: '#1d1d1f' }}
+                                    required
+                                />
+                                <Form.Control.Feedback type="invalid" className="small mt-1 text-danger" style={{ fontSize: '0.75rem' }}>
                                     <FormattedMessage id='project.global.validator.required' />
                                 </Form.Control.Feedback>
-                            </Col>
-                        </Form.Group>
-                        <Form.Group as={Row}>
-                            <Col md={{ span: 4, offset: 3 }}>
-                                <Button type="submit">
-                                    <FormattedMessage id="project.users.Login.title" />
-                                </Button>
-                            </Col>
-                        </Form.Group>
-                    </Form>
-                </Card.Body>
-            </Card>
-        </div>
-    );
+                            </FloatingLabel>
 
-}
+                            <Button
+                                type="submit"
+                                className="w-100 btn-primary rounded-pill fw-medium"
+                                style={{ fontSize: '0.92rem', height: '44px', transition: 'background-color 0.2s ease' }}
+                            >
+                                <FormattedMessage id="project.users.Login.title" defaultMessage="Autenticarse" />
+                            </Button>
+                        </Form>
+
+                        <p className="mt-4 small text-secondary text-center" style={{ fontSize: '0.82rem', color: '#86868b' }}>
+                            ¿Eres nuevo en la plataforma?{' '}
+                            <Link to="/users/signup" className="text-decoration-none fw-semibold ms-1" style={{ color: '#0066cc' }}>
+                                <FormattedMessage id="project.users.SignUp.title" defaultMessage="Registrarse" />
+                            </Link>
+                        </p>
+                    </div>
+                </Col>
+            </Row>
+
+            <style>{`
+                .custom-input {
+                    transition: border-color 0.2s ease, box-shadow 0.2s ease !important;
+                }
+                .custom-input:focus {
+                    border-color: #86868b !important;
+                    box-shadow: 0 0 0 3px rgba(0, 0, 0, 0.04) !important;
+                }
+                .form-floating > .form-control:focus ~ label::after {
+                    background-color: transparent !important;
+                }
+                input:-webkit-autofill,
+                input:-webkit-autofill:hover, 
+                input:-webkit-autofill:focus,
+                input:-webkit-autofill:active {
+                    -webkit-box-shadow: 0 0 0 30px white inset !important;
+                    -webkit-text-fill-color: #1d1d1f !important;
+                }
+            `}</style>
+        </Container>
+    );
+};
 
 export default Login;

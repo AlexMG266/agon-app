@@ -6,7 +6,6 @@ import Navbar from 'react-bootstrap/Navbar';
 import Nav from 'react-bootstrap/Nav';
 import NavDropdown from 'react-bootstrap/NavDropdown';
 import Container from "react-bootstrap/Container";
-import Badge from 'react-bootstrap/Badge';
 
 import users from '../../users';
 import backend from '../../../backend';
@@ -14,7 +13,6 @@ import { NOTIFICATIONS_UPDATED_EVENT } from '../../../backend/notificationServic
 import './Header.css';
 
 const Header = () => {
-
     const user = useSelector(users.selectors.getUser);
     const location = useLocation();
     const [unreadCount, setUnreadCount] = useState(0);
@@ -47,23 +45,34 @@ const Header = () => {
     };
 
     return (
+        <Navbar expand="lg" className="smart-topbar py-2">
+            <Container fluid className="px-lg-5 d-flex justify-content-between align-items-center">
+                
+                {/* Lado Izquierdo: Marca/Logo (Siempre visible) */}
+                <Navbar.Brand as={Link} to="/" className="fw-bold text-dark m-0" style={{ letterSpacing: '-0.02em' }}>
+                    Agón
+                </Navbar.Brand>
 
-        <Navbar bg="light" expand="lg" className="border-bottom">
-            <Container fluid>
-                <Navbar.Brand as={Link} to="/">Agón</Navbar.Brand>
-                <Navbar.Toggle aria-controls="navbarSupportedContent" className="mb-3" />
+                {/* Si tienes enlaces de navegación general en el futuro, irían aquí dentro y solo colapsarían ellos */}
                 <Navbar.Collapse id="navbarSupportedContent">
+                    <Nav className="me-auto">
+                        {/* Espacio reservado para enlaces futuros como: Torneos, Clasificación, etc. */}
+                    </Nav>
+                </Navbar.Collapse>
 
+                {/* Lado Derecho: Interfaz de Usuario (FUERA del Collapse para que NUNCA se rompa en móvil) */}
+                <div className="d-flex align-items-center gap-1">
                     {user ? (
-                        <Nav className="ms-auto align-items-center">
-
-                            <Nav.Link as={Link} to="/users/notifications" className="navbar-icon-btn me-3 position-relative">
-                                <i className="fa-solid fa-inbox fs-4" style={{ color: 'var(--apple-text)' }}></i>
+                        <>
+                            {/* Buzón de entrada */}
+                            <Nav.Link as={Link} to="/users/notifications" className="navbar-icon-btn position-relative d-flex align-items-center justify-content-center">
+                                <i className="fa-solid fa-inbox fs-5" style={{ color: '#1d1d1f' }}></i>
                                 {unreadCount > 0 && (
-                                    <span className="navbar-badge" title="Unread notifications"></span>
+                                    <span className="navbar-badge" title="Notificaciones pendientes"></span>
                                 )}
                             </Nav.Link>
 
+                            {/* Desplegable del Perfil */}
                             <NavDropdown
                                 title={
                                     <div className="profile-nav-container">
@@ -78,37 +87,49 @@ const Header = () => {
                                                 <i className="fa-solid fa-user"></i>
                                             </div>
                                         )}
-                                        <span className="profile-username">{user.nombre}</span>
+                                        {/* Ocultamos el nombre de usuario mediante CSS en móviles para salvar espacio en pantalla */}
+                                        <span className="profile-username d-none d-sm-inline">{user.nombre}</span>
                                     </div>
                                 }
                                 align="end"
                                 id="user-dropdown"
                             >
-                                <NavDropdown.Item as={Link} to="/users/profile">
-                                    <i className="fa-solid fa-user me-2"></i> <FormattedMessage id="project.users.Profile.title" />
+                                <div className="px-3 pt-2 pb-1 text-muted small fw-bold" style={{ fontSize: '0.7rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                                    Cuenta
+                                </div>
+                                <NavDropdown.Item as={Link} to="/users/profile" className="py-2">
+                                    <i className="fa-solid fa-user-gear me-2 text-secondary" style={{ width: '18px', textAlign: 'center' }}></i> 
+                                    <FormattedMessage id="project.users.Profile.title" defaultMessage="Editar Perfil" />
                                 </NavDropdown.Item>
-                                <NavDropdown.Item as={Link} to="/users/notifications">
-                                    <i className="fa-solid fa-bell me-2"></i> Consultar Notificaciones
+
+                                <NavDropdown.Divider className="my-1" />
+
+                                <div className="px-3 pt-2 pb-1 text-muted small fw-bold" style={{ fontSize: '0.7rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                                    Competición
+                                </div>
+                                <NavDropdown.Item as={Link} to="/users/stats" className="py-2">
+                                    <i className="fa-solid fa-chart-line me-2 text-secondary" style={{ width: '18px', textAlign: 'center' }}></i> 
+                                    Mi Historial y ELO
                                 </NavDropdown.Item>
-                                <NavDropdown.Divider />
-                                <NavDropdown.Item as={Link} to="/users/logout">
-                                    <i className="fa-solid fa-sign-out-alt me-2"></i> <FormattedMessage id="project.app.Header.logout" />
+
+                                <NavDropdown.Divider className="my-1" />
+
+                                <NavDropdown.Item as={Link} to="/users/logout" className="text-danger py-2">
+                                    <i className="fa-solid fa-sign-out-alt me-2" style={{ width: '18px', textAlign: 'center' }}></i> 
+                                    <FormattedMessage id="project.app.Header.logout" defaultMessage="Cerrar Sesión" />
                                 </NavDropdown.Item>
                             </NavDropdown>
-                        </Nav>
+                        </>
                     ) : (
-                        <Nav className="ms-auto">
-                            <Nav.Link as={Link} to="/users/login">
-                                <FormattedMessage id="project.users.Login.title" />
-                            </Nav.Link>
-                        </Nav>
+                        <Link to="/users/login" className="btn btn-dark btn-sm rounded-pill text-white px-3 py-1" style={{ fontSize: '0.85rem' }}>
+                            <FormattedMessage id="project.users.Login.title" defaultMessage="Iniciar Sesión" />
+                        </Link>
                     )}
-                </Navbar.Collapse>
+                </div>
+
             </Container>
         </Navbar>
-
     );
-
 };
 
 export default Header;
