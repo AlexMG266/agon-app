@@ -7,8 +7,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import es.udc.agon.backend.model.entities.User;
 import es.udc.agon.backend.model.entities.Notification;
 import es.udc.agon.backend.model.entities.NotificationDao;
+import es.udc.agon.backend.model.entities.Notification.TipoNotificacion;
 import es.udc.agon.backend.model.exceptions.InstanceNotFoundException;
 import es.udc.agon.backend.model.exceptions.PermissionException;
 
@@ -21,6 +23,17 @@ public class NotificationServiceImpl implements NotificationService {
 
     @Autowired
     private NotificationDao notificationDao;
+
+    @Override
+    public void createWelcomeNotification(User user) {
+        String asunto = "¡Bienvenido a Agon!";
+
+        String cuerpo = "Estás a un paso de la competición. Primero, personaliza tu perfil en 'Ajustes' para que otros jugadores te identifiquen. Después, explora la sección de torneos activos para inscribirte con tu equipo. \n\n" +
+                "¡La reputación competitiva es tuya!";
+
+        Notification welcomeNotification = new Notification(user, asunto, cuerpo, TipoNotificacion.SYSTEM);
+        notificationDao.save(welcomeNotification);
+    }
 
     @Override
     @Transactional(readOnly = true)

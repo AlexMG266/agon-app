@@ -1,11 +1,14 @@
 package es.udc.agon.backend.model.services;
 
 import java.util.List;
+import es.udc.agon.backend.model.entities.User;
 import es.udc.agon.backend.model.entities.Notification;
 import es.udc.agon.backend.model.exceptions.InstanceNotFoundException;
 import es.udc.agon.backend.model.exceptions.PermissionException;
 
 public interface NotificationService {
+
+    void createWelcomeNotification(User user);
 
     List<Notification> getNotifications(Long userId) throws InstanceNotFoundException;
 
@@ -14,5 +17,4 @@ public interface NotificationService {
 
     Notification markAsRead(Long userId, Long notificationId)
             throws InstanceNotFoundException, PermissionException;
-
 }

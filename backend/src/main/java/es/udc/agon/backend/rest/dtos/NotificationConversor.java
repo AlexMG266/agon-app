@@ -14,7 +14,8 @@ public class NotificationConversor {
     public final static NotificationDto toNotificationDto(Notification notification) {
         return new NotificationDto(
                 notification.getId(),
-                notification.getMensaje(),
+                notification.getAsunto(),
+                notification.getCuerpo(),
                 notification.isLeido(),
                 notification.isPendienteDeAccion(),
                 notification.getReferenciaId(),

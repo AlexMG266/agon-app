@@ -19,7 +19,8 @@ CREATE INDEX UserIndexByNombre ON "User" (nombre);
 CREATE TABLE "Notification" (
     id BIGSERIAL NOT NULL,
     usuarioId BIGINT NOT NULL,
-    mensaje VARCHAR(500) NOT NULL,
+    asunto VARCHAR(100) NOT NULL,
+    cuerpo VARCHAR(500) NOT NULL,
     leido BOOLEAN NOT NULL DEFAULT FALSE,
     pendienteDeAccion BOOLEAN NOT NULL DEFAULT FALSE,
     referenciaId BIGINT,

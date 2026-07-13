@@ -3,7 +3,8 @@ package es.udc.agon.backend.rest.dtos;
 public class NotificationDto {
 
     private Long id;
-    private String mensaje;
+    private String asunto;
+    private String cuerpo; 
     private boolean leido;
     private boolean pendienteDeAccion;
     private Long referenciaId;
@@ -13,10 +14,11 @@ public class NotificationDto {
     public NotificationDto() {
     }
 
-    public NotificationDto(Long id, String mensaje, boolean leido, boolean pendienteDeAccion, Long referenciaId,
+    public NotificationDto(Long id, String asunto, String cuerpo, boolean leido, boolean pendienteDeAccion, Long referenciaId,
             String tipo, Long fechaCreacion) {
         this.id = id;
-        this.mensaje = mensaje;
+        this.asunto = asunto; 
+        this.cuerpo = cuerpo; 
         this.leido = leido;
         this.pendienteDeAccion = pendienteDeAccion;
         this.referenciaId = referenciaId;
@@ -32,12 +34,20 @@ public class NotificationDto {
         this.id = id;
     }
 
-    public String getMensaje() {
-        return mensaje;
+    public String getAsunto() {
+        return asunto;
     }
 
-    public void setMensaje(String mensaje) {
-        this.mensaje = mensaje;
+    public void setAsunto(String asunto) {
+        this.asunto = asunto;
+    }
+
+    public String getCuerpo() {
+        return cuerpo;
+    }
+
+    public void setCuerpo(String cuerpo) {
+        this.cuerpo = cuerpo;
     }
 
     public boolean isLeido() {

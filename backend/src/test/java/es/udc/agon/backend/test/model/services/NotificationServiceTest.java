@@ -50,15 +50,15 @@ public class NotificationServiceTest {
         User user = createUser("user");
         userService.signUp(user);
 
-        Notification n1 = new Notification(user, "Invitacion", TipoNotificacion.INVITACION);
-        Notification n2 = new Notification(user, "Recordatorio partido", TipoNotificacion.RECORDATORIO_PARTIDO);
+        // Actualizado: (usuario, asunto, cuerpo, tipo)
+        Notification n1 = new Notification(user, "Asunto 1", "Cuerpo 1", TipoNotificacion.INVITACION);
+        Notification n2 = new Notification(user, "Asunto 2", "Cuerpo 2", TipoNotificacion.RECORDATORIO_PARTIDO);
 
         notificationDao.save(n1);
         notificationDao.save(n2);
 
         List<Notification> notifications = notificationService.getNotifications(user.getId());
 
-        // aqui contamos la notificacion de bienvenida que se crea automaticamente
         assertEquals(3, notifications.size());
     }
 
@@ -72,12 +72,13 @@ public class NotificationServiceTest {
         User user = createUser("userGet");
         userService.signUp(user);
 
-        Notification notification = new Notification(user, "Invitacion", TipoNotificacion.INVITACION);
+        Notification notification = new Notification(user, "Asunto test", "Cuerpo test", TipoNotificacion.INVITACION);
         notificationDao.save(notification);
 
         Notification found = notificationService.getNotification(user.getId(), notification.getId());
 
-        assertEquals("Invitacion", found.getMensaje());
+        assertEquals("Asunto test", found.getAsunto());
+        assertEquals("Cuerpo test", found.getCuerpo());
     }
 
     @Test
@@ -97,7 +98,7 @@ public class NotificationServiceTest {
         userService.signUp(user1);
         userService.signUp(user2);
 
-        Notification notification = new Notification(user1, "Privada", TipoNotificacion.SYSTEM);
+        Notification notification = new Notification(user1, "Asunto", "Cuerpo", TipoNotificacion.SYSTEM);
         notificationDao.save(notification);
 
         assertThrows(PermissionException.class,
@@ -109,7 +110,7 @@ public class NotificationServiceTest {
         User user = createUser("userRead");
         userService.signUp(user);
 
-        Notification notification = new Notification(user, "No leida", TipoNotificacion.SYSTEM);
+        Notification notification = new Notification(user, "Asunto", "Cuerpo", TipoNotificacion.SYSTEM);
         notificationDao.save(notification);
 
         assertFalse(notification.isLeido());
@@ -118,5 +119,4 @@ public class NotificationServiceTest {
 
         assertTrue(updated.isLeido());
     }
-
 }

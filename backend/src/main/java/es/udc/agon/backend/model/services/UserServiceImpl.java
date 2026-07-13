@@ -30,9 +30,9 @@ public class UserServiceImpl implements UserService {
 
 	@Autowired
 	private UserDao userDao;
-
-	@Autowired
-	private NotificationDao notificationDao;
+	
+	@Autowired 
+	private NotificationService notificationService;
 
 	@Override
 	public void signUp(User user) throws DuplicateInstanceException {
@@ -42,15 +42,12 @@ public class UserServiceImpl implements UserService {
 		}
 
 		user.setPassword(passwordEncoder.encode(user.getPassword()));
-		user.setElo(1500);
+		user.setElo(800);
 		user.setEloProvisional(true);
 
 		userDao.save(user);
 
-		Notification welcomeNotification = new Notification(user,
-				"¡Bienvenido a Agón! Estamos encantados de tenerte aquí.", TipoNotificacion.SYSTEM);
-		notificationDao.save(welcomeNotification);
-
+		notificationService.createWelcomeNotification(user);
 	}
 
 	@Override

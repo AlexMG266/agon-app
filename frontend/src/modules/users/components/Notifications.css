@@ -1,103 +1,143 @@
-.notifications-card {
-    border-radius: var(--radius-lg) !important;
+.notifications-wrapper {
+    max-width: 800px;
+    margin: 2rem auto;
+    padding: 0 1rem;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
 }
 
-.notification-filter {
-    border-radius: var(--radius-sm);
-    min-width: 150px;
+.notifications-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 2rem;
 }
 
-.notification-filter:focus {
-    box-shadow: none;
-    border: 1px solid var(--apple-border);
+.notifications-header h3 {
+    margin: 0;
+    font-size: 1.75rem;
+    font-weight: 700;
+    color: #1d1d1f;
 }
 
-.notification-item {
-    transition: background-color 0.2s ease;
-    border-bottom: 1px solid var(--apple-border) !important;
+.custom-select {
+    padding: 0.5rem 1rem;
+    border-radius: 8px;
+    border: 1px solid #d2d2d7;
+    background: #fff;
+    font-size: 0.9rem;
+    outline: none;
+    color: #1d1d1f;
 }
 
-.notification-item:last-child {
-    border-bottom: none !important;
+/* Tarjeta base unificada */
+.notification-card {
+    display: block;
+    padding: 1.5rem;
+    background: #fff;
+    border: 1px solid rgba(0, 0, 0, 0.08);
+    border-radius: 12px;
+    margin-bottom: 1rem;
+    text-decoration: none;
+    color: #1d1d1f;
+    transition: all 0.2s ease;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.02);
 }
 
-.notification-item.unread {
-    background-color: #f0f7ff;
+/* Solo la lista interactúa al pasar el ratón */
+a.notification-card:hover {
+    border-color: #0071e3;
+    transform: translateY(-2px);
+    box-shadow: 0 8px 16px rgba(0,0,0,0.05);
 }
 
-.notification-item.read {
-    background-color: var(--apple-element);
+/* Variante estática para la vista detalle */
+.notification-card.detail-view {
+    cursor: default;
 }
 
-.notification-item:hover {
-    background-color: rgba(0, 0, 0, 0.02);
+.notification-meta {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 0.75rem;
 }
 
-.unread-dot {
-    display: inline-block;
+.unread-indicator, .unread-dot {
     width: 8px;
     height: 8px;
-    background-color: var(--apple-accent);
+    background: #0071e3;
     border-radius: 50%;
+    flex-shrink: 0;
+}
+
+.notification-type {
+    font-weight: 600;
+    font-size: 0.9rem;
+    color: #0071e3;
+    flex-grow: 1;
 }
 
 .timestamp {
     font-size: 0.8rem;
+    color: #86868b;
 }
 
-.message-text {
+.notification-content h5.notification-subject {
+    font-size: 1.15rem;
+    font-weight: 600;
+    margin: 0 0 0.5rem 0;
+    color: #1d1d1f;
+}
+
+.notification-body {
+    margin: 0;
+    color: #515154;
     font-size: 0.95rem;
     line-height: 1.5;
 }
 
-.message-preview {
-    font-size: 0.9rem;
-    line-height: 1.4;
-    display: -webkit-box;
-    -webkit-line-clamp: 2;
-    -webkit-box-orient: vertical;
-    overflow: hidden;
-}
-
-.notification-link {
-    text-decoration: none;
-    color: inherit;
-    cursor: pointer;
-}
-
-.notification-link:hover {
-    color: inherit;
-}
-
-.notification-back-link {
-    color: var(--apple-text);
-    font-size: 0.9rem;
-}
-
-.notification-back-link:hover {
-    color: var(--apple-accent);
-}
-
-.notification-detail-message {
-    font-size: 1rem;
+.notification-full-body {
+    margin: 0;
+    color: #1d1d1f;
+    font-size: 1.05rem;
     line-height: 1.6;
-    white-space: pre-wrap;
-    color: var(--apple-text);
+    white-space: pre-line;
+    word-wrap: break-word;
+    overflow-wrap: break-word;
 }
 
-.action-badge {
-    font-size: 0.65rem;
-    font-weight: 500;
-}
-
-.action-btn {
-    border-radius: 980px;
-    font-size: 0.8rem;
-    padding: 2px 10px;
-}
-
-.action-btn-primary {
-    border-radius: 980px;
+.detail-header-back {
+    display: inline-flex;
+    align-items: center;
+    text-decoration: none;
+    color: #86868b;
     font-size: 0.9rem;
-    padding: 6px 18px;
+    margin-bottom: 1.5rem;
+    transition: color 0.2s ease;
+}
+
+.detail-header-back:hover {
+    color: #0071e3;
+}
+
+.action-container {
+    margin-top: 1.5rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid rgba(0, 0, 0, 0.06);
+}
+
+.empty-state {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 4rem 2rem;
+    color: #86868b;
+    text-align: center;
+}
+
+.empty-state i {
+    font-size: 3rem;
+    margin-bottom: 1.5rem;
+    opacity: 0.5;
 }
