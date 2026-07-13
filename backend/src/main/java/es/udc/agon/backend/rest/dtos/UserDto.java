@@ -6,111 +6,126 @@ import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Past;
 import jakarta.validation.constraints.Size;
+import jakarta.validation.constraints.Pattern;
 
 public class UserDto {
 
-	public interface AllValidations {
-	}
+    public interface AllValidations {
+    }
 
-	public interface UpdateValidations {
-	}
+    public interface UpdateValidations {
+    }
 
-	private Long id;
-	private int elo;
-	private String nombre;
-	private String email;
-	private String imagenPerfil;
-	private String password;
-	private LocalDate fechaNacimiento;
-	private boolean eloProvisional;
+    private Long id;
+    private int elo;
 
-	public UserDto() {
-	}
+    @NotNull(groups = { AllValidations.class, UpdateValidations.class })
+    @Size(min = 3, max = 15, groups = { AllValidations.class, UpdateValidations.class })
+    @Pattern(
+        regexp = "^(?![0-9])(?![0-9]+$)[a-zA-Z0-9áéíóúÁÉÍÓÚñÑ]+(?: [a-zA-Z0-9áéíóúÁÉÍÓÚñÑ]+)*$",
+        message = "El nombre no puede empezar ni ser solo números, y solo permite caracteres alfanuméricos con espacios intermedios.",
+        groups = { AllValidations.class, UpdateValidations.class }
+    )
+    private String nombre;
 
-	public UserDto(Long id, int elo, String nombre, String email, String imagenPerfil, LocalDate fechaNacimiento,
-			boolean eloProvisional) {
-		this.id = id;
-		this.elo = elo;
-		this.nombre = nombre != null ? nombre.trim() : null;
-		this.email = email != null ? email.trim() : null;
-		this.imagenPerfil = imagenPerfil != null ? imagenPerfil.trim() : null;
-		this.fechaNacimiento = fechaNacimiento;
-		this.eloProvisional = eloProvisional;
+    @NotNull(groups = { AllValidations.class, UpdateValidations.class })
+    @Size(min = 1, max = 120, groups = { AllValidations.class, UpdateValidations.class })
+    @Email(groups = { AllValidations.class, UpdateValidations.class })
+    private String email;
 
-	}
+    @Size(max = 2097152, groups = { AllValidations.class, UpdateValidations.class })
+    private String imagenPerfil;
 
-	public Long getId() {
-		return id;
-	}
+    @NotNull(groups = { AllValidations.class })
+    @Size(min = 8, max = 60, groups = { AllValidations.class })
+    @Pattern(
+        regexp = "^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)(?=.*[@$!%*?&._\\-#\\+=\\[\\]\\{\\}\\(\\)\\^\\~/])[A-Za-z\\d@$!%*?&._\\-#\\+=\\[\\]\\{\\}\\(\\)\\^\\~/]{8,}$",
+        message = "La contraseña debe tener al menos 8 caracteres, una mayúscula, una minúscula, un número y un carácter especial.",
+        groups = { AllValidations.class }
+    )
+    private String password;
 
-	public void setId(Long id) {
-		this.id = id;
-	}
+    @NotNull(groups = { AllValidations.class, UpdateValidations.class })
+    @Past(groups = { AllValidations.class, UpdateValidations.class })
+    private LocalDate fechaNacimiento;
 
-	public int getElo() {
-		return elo;
-	}
+    private boolean eloProvisional;
 
-	public void setElo(int elo) {
-		this.elo = elo;
-	}
+    public UserDto() {
+    }
 
-	@NotNull(groups = { AllValidations.class, UpdateValidations.class })
-	@Size(min = 1, max = 60, groups = { AllValidations.class, UpdateValidations.class })
-	public String getNombre() {
-		return nombre;
-	}
+    public UserDto(Long id, int elo, String nombre, String email, String imagenPerfil, LocalDate fechaNacimiento,
+            boolean eloProvisional) {
+        this.id = id;
+        this.elo = elo;
+        this.nombre = nombre != null ? nombre.trim() : null;
+        this.email = email != null ? email.trim() : null;
+        this.imagenPerfil = imagenPerfil != null ? imagenPerfil.trim() : null;
+        this.fechaNacimiento = fechaNacimiento;
+        this.eloProvisional = eloProvisional;
+    }
 
-	public void setNombre(String nombre) {
-		this.nombre = nombre != null ? nombre.trim() : null;
-	}
+    public Long getId() {
+        return id;
+    }
 
-	@NotNull(groups = { AllValidations.class, UpdateValidations.class })
-	@Size(min = 1, max = 120, groups = { AllValidations.class, UpdateValidations.class })
-	@Email(groups = { AllValidations.class, UpdateValidations.class })
-	public String getEmail() {
-		return email;
-	}
+    public void setId(Long id) {
+        this.id = id;
+    }
 
-	public void setEmail(String email) {
-		this.email = email != null ? email.trim() : null;
-	}
+    public int getElo() {
+        return elo;
+    }
 
-	@Size(max = 2097152, groups = { AllValidations.class, UpdateValidations.class })
-	public String getImagenPerfil() {
-		return imagenPerfil;
-	}
+    public void setElo(int elo) {
+        this.elo = elo;
+    }
 
-	public void setImagenPerfil(String imagenPerfil) {
-		this.imagenPerfil = imagenPerfil != null ? imagenPerfil.trim() : null;
-	}
+    public String getNombre() {
+        return nombre;
+    }
 
-	@NotNull(groups = { AllValidations.class })
-	@Size(min = 1, max = 60, groups = { AllValidations.class })
-	public String getPassword() {
-		return password;
-	}
+    public void setNombre(String nombre) {
+        this.nombre = nombre != null ? nombre.trim() : null;
+    }
 
-	public void setPassword(String password) {
-		this.password = password;
-	}
+    public String getEmail() {
+        return email;
+    }
 
-	@NotNull(groups = { AllValidations.class, UpdateValidations.class })
-	@Past(groups = { AllValidations.class, UpdateValidations.class })
-	public LocalDate getFechaNacimiento() {
-		return fechaNacimiento;
-	}
+    public void setEmail(String email) {
+        this.email = email != null ? email.trim() : null;
+    }
 
-	public void setFechaNacimiento(LocalDate fechaNacimiento) {
-		this.fechaNacimiento = fechaNacimiento;
-	}
+    public String getImagenPerfil() {
+        return imagenPerfil;
+    }
 
-	public boolean isEloProvisional() {
-		return eloProvisional;
-	}
+    public void setImagenPerfil(String imagenPerfil) {
+        this.imagenPerfil = imagenPerfil != null ? imagenPerfil.trim() : null;
+    }
 
-	public void setEloProvisional(boolean eloProvisional) {
-		this.eloProvisional = eloProvisional;
-	}
+    public String getPassword() {
+        return password;
+    }
 
+    public void setPassword(String password) {
+        this.password = password;
+    }
+
+    public LocalDate getFechaNacimiento() {
+        return fechaNacimiento;
+    }
+
+    public void setFechaNacimiento(LocalDate fechaNacimiento) {
+        this.fechaNacimiento = fechaNacimiento;
+    }
+
+    public boolean isEloProvisional() {
+        return eloProvisional;
+    }
+
+    public void setEloProvisional(boolean eloProvisional) {
+        this.eloProvisional = eloProvisional;
+    }
 }

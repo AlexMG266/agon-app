@@ -6,12 +6,16 @@ import static es.udc.agon.backend.rest.dtos.UserConversor.toUserDto;
 
 import java.net.URI;
 import java.util.Locale;
+import java.util.HashMap;
+import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.MessageSource;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.FieldError;
 import org.springframework.validation.annotation.Validated;
+import org.springframework.web.bind.MethodArgumentNotValidException; // IMPORTANTE
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -43,113 +47,109 @@ import es.udc.agon.backend.rest.dtos.UserDto;
 @RequestMapping("/users")
 public class UserController {
 
-	private final static String INCORRECT_LOGIN_EXCEPTION_CODE = "project.exceptions.IncorrectLoginException";
-	private final static String INCORRECT_PASSWORD_EXCEPTION_CODE = "project.exceptions.IncorrectPasswordException";
-	private final static String SERVICE_ROLE = "USER";
+    private final static String INCORRECT_LOGIN_EXCEPTION_CODE = "project.exceptions.IncorrectLoginException";
+    private final static String INCORRECT_PASSWORD_EXCEPTION_CODE = "project.exceptions.IncorrectPasswordException";
+    private final static String SERVICE_ROLE = "USER";
 
-	@Autowired
-	private MessageSource messageSource;
+    @Autowired
+    private MessageSource messageSource;
 
-	@Autowired
-	private JwtGenerator jwtGenerator;
+    @Autowired
+    private JwtGenerator jwtGenerator;
 
-	@Autowired
-	private UserService userService;
+    @Autowired
+    private UserService userService;
 
-	@ExceptionHandler(IncorrectLoginException.class)
-	@ResponseStatus(HttpStatus.NOT_FOUND)
-	@ResponseBody
-	public ErrorsDto handleIncorrectLoginException(IncorrectLoginException exception, Locale locale) {
+    @ExceptionHandler(MethodArgumentNotValidException.class)
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    @ResponseBody
+    public Map<String, String> handleValidationExceptions(MethodArgumentNotValidException exception) {
+        Map<String, String> errors = new HashMap<>();
+        
+        exception.getBindingResult().getAllErrors().forEach((error) -> {
+            String fieldName = ((FieldError) error).getField();
+            String errorMessage = error.getDefaultMessage();
+            errors.put(fieldName, errorMessage);
+        });
+        
+        return errors;
+    }
 
-		String errorMessage = messageSource.getMessage(INCORRECT_LOGIN_EXCEPTION_CODE, null,
-				INCORRECT_LOGIN_EXCEPTION_CODE, locale);
+    @ExceptionHandler(IncorrectLoginException.class)
+    @ResponseStatus(HttpStatus.NOT_FOUND)
+    @ResponseBody
+    public ErrorsDto handleIncorrectLoginException(IncorrectLoginException exception, Locale locale) {
+        String errorMessage = messageSource.getMessage(INCORRECT_LOGIN_EXCEPTION_CODE, null,
+                INCORRECT_LOGIN_EXCEPTION_CODE, locale);
+        return new ErrorsDto(errorMessage);
+    }
 
-		return new ErrorsDto(errorMessage);
+    @ExceptionHandler(IncorrectPasswordException.class)
+    @ResponseStatus(HttpStatus.NOT_FOUND)
+    @ResponseBody
+    public ErrorsDto handleIncorrectPasswordException(IncorrectPasswordException exception, Locale locale) {
+        String errorMessage = messageSource.getMessage(INCORRECT_PASSWORD_EXCEPTION_CODE, null,
+                INCORRECT_PASSWORD_EXCEPTION_CODE, locale);
+        return new ErrorsDto(errorMessage);
+    }
 
-	}
+    @PostMapping("/signup")
+    public ResponseEntity<AuthenticatedUserDto> signUp(
+            @Validated({ UserDto.AllValidations.class }) @RequestBody UserDto userDto)
+            throws DuplicateInstanceException {
 
-	@ExceptionHandler(IncorrectPasswordException.class)
-	@ResponseStatus(HttpStatus.NOT_FOUND)
-	@ResponseBody
-	public ErrorsDto handleIncorrectPasswordException(IncorrectPasswordException exception, Locale locale) {
+        User user = toUser(userDto);
+        userService.signUp(user);
 
-		String errorMessage = messageSource.getMessage(INCORRECT_PASSWORD_EXCEPTION_CODE, null,
-				INCORRECT_PASSWORD_EXCEPTION_CODE, locale);
+        URI location = ServletUriComponentsBuilder
+                .fromCurrentRequest().path("/{id}")
+                .buildAndExpand(user.getId()).toUri();
 
-		return new ErrorsDto(errorMessage);
+        return ResponseEntity.created(location).body(toAuthenticatedUserDto(generateServiceToken(user), user));
+    }
 
-	}
+    @PostMapping("/login")
+    public AuthenticatedUserDto login(@Validated @RequestBody LoginParamsDto params)
+            throws IncorrectLoginException {
+        User user = userService.login(params.getNombre(), params.getPassword());
+        return toAuthenticatedUserDto(generateServiceToken(user), user);
+    }
 
-	@PostMapping("/signup")
-	public ResponseEntity<AuthenticatedUserDto> signUp(
-			@Validated({ UserDto.AllValidations.class }) @RequestBody UserDto userDto)
-			throws DuplicateInstanceException {
+    @PostMapping("/loginFromServiceToken")
+    public AuthenticatedUserDto loginFromServiceToken(@RequestAttribute Long userId,
+            @RequestAttribute String serviceToken) throws InstanceNotFoundException {
+        User user = userService.loginFromId(userId);
+        return toAuthenticatedUserDto(serviceToken, user);
+    }
 
-		User user = toUser(userDto);
+    @PutMapping("/{id}")
+    public UserDto updateProfile(@RequestAttribute Long userId, @PathVariable Long id,
+            @Validated({ UserDto.UpdateValidations.class }) @RequestBody UserDto userDto)
+            throws InstanceNotFoundException, PermissionException {
 
-		userService.signUp(user);
+        if (!id.equals(userId)) {
+            throw new PermissionException();
+        }
 
-		URI location = ServletUriComponentsBuilder
-				.fromCurrentRequest().path("/{id}")
-				.buildAndExpand(user.getId()).toUri();
+        return toUserDto(userService.updateProfile(id, userDto.getNombre(), userDto.getEmail(),
+                userDto.getImagenPerfil(), userDto.getFechaNacimiento()));
+    }
 
-		return ResponseEntity.created(location).body(toAuthenticatedUserDto(generateServiceToken(user), user));
+    @PostMapping("/{id}/changePassword")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void changePassword(@RequestAttribute Long userId, @PathVariable Long id,
+            @Validated @RequestBody ChangePasswordParamsDto params)
+            throws PermissionException, InstanceNotFoundException, IncorrectPasswordException {
 
-	}
+        if (!id.equals(userId)) {
+            throw new PermissionException();
+        }
 
-	@PostMapping("/login")
-	public AuthenticatedUserDto login(@Validated @RequestBody LoginParamsDto params)
-			throws IncorrectLoginException {
+        userService.changePassword(id, params.getOldPassword(), params.getNewPassword());
+    }
 
-		User user = userService.login(params.getNombre(), params.getPassword());
-
-		return toAuthenticatedUserDto(generateServiceToken(user), user);
-
-	}
-
-	@PostMapping("/loginFromServiceToken")
-	public AuthenticatedUserDto loginFromServiceToken(@RequestAttribute Long userId,
-			@RequestAttribute String serviceToken) throws InstanceNotFoundException {
-
-		User user = userService.loginFromId(userId);
-
-		return toAuthenticatedUserDto(serviceToken, user);
-
-	}
-
-	@PutMapping("/{id}")
-	public UserDto updateProfile(@RequestAttribute Long userId, @PathVariable Long id,
-			@Validated({ UserDto.UpdateValidations.class }) @RequestBody UserDto userDto)
-			throws InstanceNotFoundException, PermissionException {
-
-		if (!id.equals(userId)) {
-			throw new PermissionException();
-		}
-
-		return toUserDto(userService.updateProfile(id, userDto.getNombre(), userDto.getEmail(),
-				userDto.getImagenPerfil(), userDto.getFechaNacimiento()));
-
-	}
-
-	@PostMapping("/{id}/changePassword")
-	@ResponseStatus(HttpStatus.NO_CONTENT)
-	public void changePassword(@RequestAttribute Long userId, @PathVariable Long id,
-			@Validated @RequestBody ChangePasswordParamsDto params)
-			throws PermissionException, InstanceNotFoundException, IncorrectPasswordException {
-
-		if (!id.equals(userId)) {
-			throw new PermissionException();
-		}
-
-		userService.changePassword(id, params.getOldPassword(), params.getNewPassword());
-	}
-
-	private String generateServiceToken(User user) {
-
-		JwtInfo jwtInfo = new JwtInfo(user.getId(), SERVICE_ROLE);
-
-		return jwtGenerator.generate(jwtInfo);
-
-	}
-
+    private String generateServiceToken(User user) {
+        JwtInfo jwtInfo = new JwtInfo(user.getId(), SERVICE_ROLE);
+        return jwtGenerator.generate(jwtInfo);
+    }
 }

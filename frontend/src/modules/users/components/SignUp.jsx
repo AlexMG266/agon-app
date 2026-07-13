@@ -30,6 +30,8 @@ const SignUp = () => {
     
     const formRef = useRef(null);
 
+    const today = new Date().toISOString().split('T')[0];
+
     const handleSubmit = async event => {
         event.preventDefault();
         const form = formRef.current;
@@ -82,12 +84,31 @@ const SignUp = () => {
         setPasswordsDoNotMatch(false);
     };
 
+    const getNombreErrorMessage = () => {
+        if (!nombre) return "El nombre es obligatorio.";
+        if (nombre.length < 3) return "El nombre debe tener al menos 3 caracteres.";
+        if (nombre.length > 15) return "El nombre no puede superar los 15 caracteres.";
+        if (/^\d/.test(nombre)) return "El nombre no puede empezar con un número.";
+        if (/^\d+$/.test(nombre)) return "El nombre no puede estar compuesto solo por números.";
+        return "Formato de nombre inválido.";
+    };
+
+    const getPasswordErrorMessage = () => {
+        if (!password) return "La contraseña es obligatoria.";
+        if (password.length < 8) return "Debe tener al menos 8 caracteres.";
+        if (!/[A-Z]/.test(password)) return "Debe incluir al menos una mayúscula.";
+        if (!/[a-z]/.test(password)) return "Debe incluir al menos una minúscula.";
+        if (!/\d/.test(password)) return "Debe incluir al menos un número.";
+        if (!/[@$!%*?&._\-\#\+\=\[\]\{\}\(\)\^\~\/]/.test(password)) return "Debe incluir al menos un símbolo (ej. @, $, !, %).";
+        return "Formato de contraseña inválido.";
+    };
+
     return (
         <Container fluid className="p-0 w-100 position-absolute start-0 end-0 bottom-0 fade-in-page"
                    style={{
                        fontFamily: '-apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI", Roboto, sans-serif',
                        backgroundColor: '#ffffff',
-                       top: '0', // Cambiado top: '56px' a top: '0' para ajustar por completo a la pantalla
+                       top: '0',
                        overflow: 'hidden'
                    }}>
             <Row className="g-0 h-100 align-items-stretch">
@@ -178,15 +199,18 @@ const SignUp = () => {
                                     placeholder="Nombre"
                                     value={nombre}
                                     onChange={e => setNombre(e.target.value)}
-                                    disabled={isSubmitting} // Deshabilitar durante el envío
+                                    disabled={isSubmitting}
                                     autoFocus
                                     autoComplete="username"
                                     className="bg-white border rounded-3 shadow-none custom-input"
                                     style={{ fontSize: '0.92rem', borderColor: '#d2d2d7', height: '50px', color: '#1d1d1f' }}
                                     required
+                                    minLength={3}
+                                    maxLength={15}
+                                    pattern="^(?![0-9])(?![0-9]+$)[a-zA-Z0-9áéíóúÁÉÍÓÚñÑ]+(?: [a-zA-Z0-9áéíóúÁÉÍÓÚñÑ]+)*$"
                                 />
                                 <Form.Control.Feedback type="invalid" className="small mt-1 text-danger" style={{ fontSize: '0.75rem' }}>
-                                    <FormattedMessage id='project.global.validator.required' />
+                                    {getNombreErrorMessage()}
                                 </Form.Control.Feedback>
                             </FloatingLabel>
 
@@ -196,13 +220,14 @@ const SignUp = () => {
                                     placeholder="Email"
                                     value={email}
                                     onChange={e => setEmail(e.target.value)}
-                                    disabled={isSubmitting} // Deshabilitar durante el envío
+                                    disabled={isSubmitting}
                                     className="bg-white border rounded-3 shadow-none custom-input"
                                     style={{ fontSize: '0.92rem', borderColor: '#d2d2d7', height: '50px', color: '#1d1d1f' }}
                                     required
+                                    pattern="^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$"
                                 />
                                 <Form.Control.Feedback type="invalid" className="small mt-1 text-danger" style={{ fontSize: '0.75rem' }}>
-                                    <FormattedMessage id='project.global.validator.email' />
+                                    {!email ? "El correo electrónico es obligatorio." : "Introduce una dirección de correo válida (ejemplo@dominio.com)."}
                                 </Form.Control.Feedback>
                             </FloatingLabel>
 
@@ -212,13 +237,14 @@ const SignUp = () => {
                                     placeholder="Fecha de Nacimiento"
                                     value={fechaNacimiento}
                                     onChange={e => setFechaNacimiento(e.target.value)}
-                                    disabled={isSubmitting} // Deshabilitar durante el envío
+                                    disabled={isSubmitting}
                                     className="bg-white border rounded-3 shadow-none custom-input"
                                     style={{ fontSize: '0.92rem', borderColor: '#d2d2d7', height: '50px', color: '#1d1d1f' }}
                                     required
+                                    max={today}
                                 />
                                 <Form.Control.Feedback type="invalid" className="small mt-1 text-danger" style={{ fontSize: '0.75rem' }}>
-                                    <FormattedMessage id='project.global.validator.required' />
+                                    {!fechaNacimiento ? "La fecha de nacimiento es obligatoria." : "La fecha de nacimiento no puede ser una fecha futura."}
                                 </Form.Control.Feedback>
                             </FloatingLabel>
 
@@ -228,14 +254,15 @@ const SignUp = () => {
                                     placeholder="Contraseña"
                                     value={password}
                                     onChange={e => setPassword(e.target.value)}
-                                    disabled={isSubmitting} // Deshabilitar durante el envío
+                                    disabled={isSubmitting}
                                     autoComplete="new-password"
                                     className="bg-white border rounded-3 shadow-none custom-input"
                                     style={{ fontSize: '0.92rem', borderColor: '#d2d2d7', height: '50px', color: '#1d1d1f' }}
                                     required
+                                    pattern="^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&._\-\#\+\=\[\]\{\}\(\)\^\~\/])[A-Za-z\d@$!%*?&._\-\#\+\=\[\]\{\}\(\)\^\~\/]{8,}$"
                                 />
                                 <Form.Control.Feedback type="invalid" className="small mt-1 text-danger" style={{ fontSize: '0.75rem' }}>
-                                    <FormattedMessage id='project.global.validator.required' />
+                                    {getPasswordErrorMessage()}
                                 </Form.Control.Feedback>
                             </FloatingLabel>
 
@@ -245,7 +272,7 @@ const SignUp = () => {
                                     placeholder="Confirmar Contraseña"
                                     value={confirmPassword}
                                     onChange={e => handleConfirmPasswordChange(e.target.value)}
-                                    disabled={isSubmitting} // Deshabilitar durante el envío
+                                    disabled={isSubmitting}
                                     autoComplete="new-password"
                                     isInvalid={passwordsDoNotMatch}
                                     className="bg-white border rounded-3 shadow-none custom-input"
