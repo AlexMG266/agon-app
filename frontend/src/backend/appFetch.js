@@ -8,12 +8,12 @@ export const init = callback => networkErrorCallback = callback;
 export const setReauthenticationCallback = callback => reauthenticationCallback = callback;
 
 export const setServiceToken = serviceToken => 
-    sessionStorage.setItem(SERVICE_TOKEN_NAME, serviceToken);
+    localStorage.setItem(SERVICE_TOKEN_NAME, serviceToken);
 
-export const getServiceToken = () => sessionStorage.getItem(SERVICE_TOKEN_NAME);
+export const getServiceToken = () => localStorage.getItem(SERVICE_TOKEN_NAME);
 
 export const removeServiceToken = () => 
-    sessionStorage.removeItem(SERVICE_TOKEN_NAME);
+    localStorage.removeItem(SERVICE_TOKEN_NAME);
 
 const isJson = response => {
 
