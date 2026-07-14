@@ -1,4 +1,4 @@
-package es.udc.agon.backend.test.rest.dtos;
+package es.udc.agon.backend.test.model.services;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
