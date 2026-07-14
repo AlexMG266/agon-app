@@ -1,5 +1,8 @@
-DROP TABLE IF EXISTS "Notification";
-DROP TABLE IF EXISTS "User";
+DROP TABLE IF EXISTS Invitacion CASCADE;
+DROP TABLE IF EXISTS Equipo_Miembros CASCADE;
+DROP TABLE IF EXISTS Equipo CASCADE;
+DROP TABLE IF EXISTS Notification CASCADE;
+DROP TABLE IF EXISTS "User" CASCADE;
 
 CREATE TABLE "User" (
     id BIGSERIAL NOT NULL,
@@ -16,7 +19,7 @@ CREATE TABLE "User" (
 
 CREATE INDEX UserIndexByNombre ON "User" (nombre);
 
-CREATE TABLE "Notification" (
+CREATE TABLE Notification (
     id BIGSERIAL NOT NULL,
     usuarioId BIGINT NOT NULL,
     asunto VARCHAR(100) NOT NULL,
@@ -30,4 +33,35 @@ CREATE TABLE "Notification" (
     CONSTRAINT NotificationUsuarioIdFK FOREIGN KEY (usuarioId) REFERENCES "User"(id) ON DELETE CASCADE
 );
 
-CREATE INDEX NotificationIndexByUsuarioId ON "Notification" (usuarioId);
+CREATE INDEX NotificationIndexByUsuarioId ON Notification (usuarioId);
+
+CREATE TABLE Equipo (
+    id BIGSERIAL NOT NULL,
+    nombreEquipo VARCHAR(60) NOT NULL,
+    estado VARCHAR(20) NOT NULL,
+    creador_id BIGINT NOT NULL,
+    CONSTRAINT EquipoPK PRIMARY KEY (id),
+    CONSTRAINT EquipoNombreUniqueKey UNIQUE (nombreEquipo),
+    CONSTRAINT EquipoCreadorIdFK FOREIGN KEY (creador_id) REFERENCES "User"(id) ON DELETE CASCADE
+);
+
+CREATE TABLE Equipo_Miembros (
+    equipo_id BIGINT NOT NULL,
+    usuario_id BIGINT NOT NULL,
+    CONSTRAINT EquipoMiembrosPK PRIMARY KEY (equipo_id, usuario_id),
+    CONSTRAINT EquipoMiembrosEquipoIdFK FOREIGN KEY (equipo_id) REFERENCES Equipo(id) ON DELETE CASCADE,
+    CONSTRAINT EquipoMiembrosUsuarioIdFK FOREIGN KEY (usuario_id) REFERENCES "User"(id) ON DELETE CASCADE
+);
+
+CREATE TABLE Invitacion (
+    id BIGSERIAL NOT NULL,
+    usuario_destino_id BIGINT NOT NULL,
+    usuario_remitente_id BIGINT NOT NULL,
+    equipo_id BIGINT NOT NULL,
+    estado VARCHAR(20) NOT NULL,
+    fechaEnvio TIMESTAMP NOT NULL,
+    CONSTRAINT InvitacionPK PRIMARY KEY (id),
+    CONSTRAINT InvitacionDestinoIdFK FOREIGN KEY (usuario_destino_id) REFERENCES "User"(id) ON DELETE CASCADE,
+    CONSTRAINT InvitacionRemitenteIdFK FOREIGN KEY (usuario_remitente_id) REFERENCES "User"(id) ON DELETE CASCADE,
+    CONSTRAINT InvitacionEquipoIdFK FOREIGN KEY (equipo_id) REFERENCES Equipo(id) ON DELETE CASCADE
+);

@@ -13,7 +13,7 @@ import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 
 @Entity
-@Table(name = "\"Notification\"")
+@Table(name = "notification")
 public class Notification {
 
 	public enum TipoNotificacion {
@@ -26,7 +26,7 @@ public class Notification {
 
 	private Long id;
 	private User usuario;
-	private String asunto; 
+	private String asunto;
 	private String cuerpo;
 	private boolean leido;
 	private boolean pendienteDeAccion;
@@ -38,26 +38,26 @@ public class Notification {
 	}
 
 	public Notification(User usuario, String asunto, String cuerpo, TipoNotificacion tipo) {
-        this.usuario = usuario;
-        this.asunto = asunto;
-        this.cuerpo = cuerpo;
-        this.tipo = tipo;
-        this.leido = false;
-        this.pendienteDeAccion = false;
-        this.fechaCreacion = LocalDateTime.now();
-    }
+		this.usuario = usuario;
+		this.asunto = asunto;
+		this.cuerpo = cuerpo;
+		this.tipo = tipo;
+		this.leido = false;
+		this.pendienteDeAccion = false;
+		this.fechaCreacion = LocalDateTime.now();
+	}
 
 	public Notification(User usuario, String asunto, String cuerpo, boolean leido, boolean pendienteDeAccion,
-            Long referenciaId, TipoNotificacion tipo) {
-        this.usuario = usuario;
-        this.asunto = asunto;
-        this.cuerpo = cuerpo;
-        this.leido = leido;
-        this.pendienteDeAccion = pendienteDeAccion;
-        this.referenciaId = referenciaId;
-        this.tipo = tipo;
-        this.fechaCreacion = LocalDateTime.now();
-    }
+			Long referenciaId, TipoNotificacion tipo) {
+		this.usuario = usuario;
+		this.asunto = asunto;
+		this.cuerpo = cuerpo;
+		this.leido = leido;
+		this.pendienteDeAccion = pendienteDeAccion;
+		this.referenciaId = referenciaId;
+		this.tipo = tipo;
+		this.fechaCreacion = LocalDateTime.now();
+	}
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -88,7 +88,7 @@ public class Notification {
 	}
 
 	public String getCuerpo() {
-		return cuerpo; 
+		return cuerpo;
 	}
 
 	public void setCuerpo(String cuerpo) {
