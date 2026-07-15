@@ -1,7 +1,7 @@
 package es.udc.agon.backend.model.services;
 
 import es.udc.agon.backend.model.entities.Equipo;
-import es.udc.agon.backend.model.entities.Invitacion;
+import es.udc.agon.backend.model.entities.Solicitud;
 import es.udc.agon.backend.model.exceptions.InstanceNotFoundException;
 import es.udc.agon.backend.model.exceptions.PermissionException;
 
@@ -10,72 +10,86 @@ import java.util.List;
 public interface EquipoService {
 
     /**
-     *
-     * @param userId
-     * @param nombreEquipo
-     * @return equipo creado
-     * @throws InstanceNotFoundException
+     * Crea un equipo manualmente en el sistema.
+     * * @param userId Id del creador.
+     * @param nombreEquipo Nombre del equipo.
+     * @return El equipo creado.
+     * @throws InstanceNotFoundException Si el usuario creador no existe.
      */
     Equipo crearEquipo(Long userId, String nombreEquipo) throws InstanceNotFoundException;
 
     /**
-     *
-     * @param remitenteId
-     * @param equipoId
-     * @param destinoId
-     * @returns
-     * @throws InstanceNotFoundException
-     * @throws PermissionException
-     * @throws IllegalArgumentException
+     * Flujo PROPUESTA: El creador de un equipo invita activamente a un jugador.
+     * El decisor de esta solicitud será el propio jugador invitado.
+     * * @param creadorId Id del creador del equipo (quien envía la propuesta).
+     * @param equipoId Id del equipo.
+     * @param jugadorId Id del jugador al que se propone unirse.
+     * @return La solicitud creada en estado PENDIENTE de tipo PROPUESTA.
+     * @throws InstanceNotFoundException Si no existe el equipo o alguno de los usuarios.
+     * @throws PermissionException Si el creadorId no es el creador del equipo.
+     * @throws IllegalArgumentException Si el jugador ya está en el equipo o ya existe una propuesta pendiente.
      */
-    Invitacion invitarMiembro(Long remitenteId, Long equipoId, Long destinoId)
+    Solicitud crearPropuestaDeUnion(Long creadorId, Long equipoId, Long jugadorId)
             throws InstanceNotFoundException, PermissionException, IllegalArgumentException;
 
     /**
-     *
-     * @param usuarioId
-     * @param invitacionId
-     * @param aceptar
-     * @throws InstanceNotFoundException
-     * @throws PermissionException
-     * @throws IllegalArgumentException
+     * Flujo PETICION: Un jugador introduce el código único del equipo para solicitar unirse.
+     * El decisor de esta solicitud será el creador del equipo.
+     * * @param jugadorId Id del jugador que introduce el código (quien realiza la petición).
+     * @param codigoEquipo Código único del equipo al que se quiere unir.
+     * @return La solicitud creada en estado PENDIENTE de tipo PETICION.
+     * @throws InstanceNotFoundException Si el jugador o el equipo no existen.
+     * @throws IllegalArgumentException Si el jugador ya está en el equipo o ya tiene una petición de unión pendiente.
      */
-    void responderInvitacion(Long usuarioId, Long invitacionId, boolean aceptar)
+    Solicitud crearPeticionDeUnion(Long jugadorId, String codigoEquipo)
+            throws InstanceNotFoundException, IllegalArgumentException;
+
+    /**
+     * Responde (acepta o rechaza) a una solicitud (sea tipo PROPUESTA o PETICION).
+     * El servicio comprobará que el usuario que responde coincide con el decisor de la solicitud.
+     * * @param usuarioId Id del usuario que toma la decisión.
+     * @param solicitudId Id de la solicitud a responder.
+     * @param aceptar True si acepta entrar/unir, False para rechazar.
+     * @throws InstanceNotFoundException Si la solicitud o el usuario no existen.
+     * @throws PermissionException Si el usuarioId no coincide con el decisor asignado a la solicitud.
+     * @throws IllegalArgumentException Si la solicitud no está pendiente o el equipo ya está completo.
+     */
+    void responderSolicitud(Long usuarioId, Long solicitudId, boolean aceptar)
             throws InstanceNotFoundException, PermissionException, IllegalArgumentException;
 
     /**
-     *
-     * @param usuarioId
-     * @param equipoId
-     * @throws InstanceNotFoundException
-     * @throws PermissionException
-     * @throws IllegalArgumentException
+     * Un jugador abandona un equipo al que pertenece.
+     * * @param usuarioId Id del jugador.
+     * @param equipoId Id del equipo.
+     * @throws InstanceNotFoundException Si el equipo o usuario no existen.
+     * @throws PermissionException Si el usuario no pertenece a dicho equipo.
+     * @throws IllegalArgumentException Si se intenta abandonar un equipo que ya no cumple reglas básicas.
      */
     void abandonarEquipo(Long usuarioId, Long equipoId)
             throws InstanceNotFoundException, PermissionException, IllegalArgumentException;
 
     /**
-     *
-     * @param usuarioId
-     * @param equipoId
-     * @throws InstanceNotFoundException
-     * @throws PermissionException
+     * El creador disuelve por completo el equipo.
+     * * @param usuarioId Id del creador del equipo.
+     * @param equipoId Id del equipo.
+     * @throws InstanceNotFoundException Si el equipo o creador no existen.
+     * @throws PermissionException Si el usuarioId no coincide con el creador del equipo.
      */
     void disolverEquipo(Long usuarioId, Long equipoId)
             throws InstanceNotFoundException, PermissionException;
 
     /**
-     *
-     * @param usuarioId
-     * @return los equipos a los que pertenece el usuario
+     * Obtiene todos los equipos de los que forma parte activa el usuario.
+     * * @param usuarioId Id del usuario.
+     * @return Lista de equipos asociados.
      */
     List<Equipo> obtenerEquiposDeUsuario(Long usuarioId);
 
     /**
-     *
-     * @param equipoId
-     * @return equipo con id equipoId
-     * @throws InstanceNotFoundException
+     * Obtiene la información detallada de un equipo.
+     * * @param equipoId Id del equipo.
+     * @return El equipo en cuestión.
+     * @throws InstanceNotFoundException Si el equipo no existe.
      */
     Equipo obtenerEquipo(Long equipoId) throws InstanceNotFoundException;
 }

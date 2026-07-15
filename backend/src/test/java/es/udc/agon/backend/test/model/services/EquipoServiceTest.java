@@ -2,42 +2,30 @@ package es.udc.agon.backend.test.model.services;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.time.LocalDate;
-import java.util.List;
 
+import es.udc.agon.backend.model.entities.*;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.transaction.annotation.Transactional;
 
-import es.udc.agon.backend.model.entities.Equipo;
-import es.udc.agon.backend.model.entities.EstadoEquipo;
-import es.udc.agon.backend.model.entities.EstadoInvitacion;
-import es.udc.agon.backend.model.entities.Invitacion;
-import es.udc.agon.backend.model.entities.User;
-import es.udc.agon.backend.model.entities.UserDao;
-import es.udc.agon.backend.model.entities.NotificationDao;
 import es.udc.agon.backend.model.exceptions.InstanceNotFoundException;
 import es.udc.agon.backend.model.exceptions.PermissionException;
 import es.udc.agon.backend.model.services.EquipoService;
-import es.udc.agon.backend.model.services.UserService;
 
 @SpringBootTest
 @ActiveProfiles("test")
 @Transactional
 public class EquipoServiceTest {
 
-    private final Long NON_EXISTENT_ID = Long.valueOf(-1);
-
     @Autowired
     private EquipoService equipoService;
-
-    @Autowired
-    private UserService userService;
 
     @Autowired
     private UserDao userDao;
@@ -52,7 +40,7 @@ public class EquipoServiceTest {
         return user;
     }
 
-    // CU06: crear equipo
+    // CU06: Crear equipo
     @Test
     public void testCrearEquipo() throws InstanceNotFoundException {
         User creador = createUser("creador1");
@@ -63,81 +51,143 @@ public class EquipoServiceTest {
         assertEquals(creador.getId(), equipo.getCreador().getId());
         assertEquals(EstadoEquipo.ACTIVO, equipo.getEstado());
         assertTrue(equipo.getMiembros().contains(creador));
+
+        // Verificación crítica: Comprobar que se autogenera el código de invitación de 8 caracteres
+        assertNotNull(equipo.getCodigoInvitacion());
+        assertEquals(8, equipo.getCodigoInvitacion().length());
     }
 
-    // CU07: invitar miembro
+    // CU07: Propuesta de unión (El creador invita al jugador)
     @Test
-    public void testInvitarMiembro() throws InstanceNotFoundException, PermissionException {
+    public void testCrearPropuestaDeUnion() throws InstanceNotFoundException, PermissionException {
         User creador = createUser("creador_equipo");
-        User destino = createUser("destino_invitacion");
+        User jugador = createUser("destino_invitacion");
         Equipo equipo = equipoService.crearEquipo(creador.getId(), "Equipo Invita");
 
-        Invitacion invitacion = equipoService.invitarMiembro(creador.getId(), equipo.getId(), destino.getId());
+        Solicitud solicitud = equipoService.crearPropuestaDeUnion(creador.getId(), equipo.getId(), jugador.getId());
 
-        assertEquals(destino.getId(), invitacion.getUsuarioDestino().getId());
-        assertEquals(creador.getId(), invitacion.getUsuarioRemitente().getId());
-        assertEquals(equipo.getId(), invitacion.getEquipo().getId());
-        assertEquals(EstadoInvitacion.PENDIENTE, invitacion.getEstado());
+        // En PROPUESTA: el candidato es el jugador y el decisor es el jugador
+        assertEquals(jugador.getId(), solicitud.getCandidato().getId());
+        assertEquals(jugador.getId(), solicitud.getDecisor().getId());
+        assertEquals(equipo.getId(), solicitud.getEquipo().getId());
+        assertEquals(EstadoSolicitud.PENDIENTE, solicitud.getEstado());
+        assertEquals(TipoSolicitud.PROPUESTA, solicitud.getTipoSolicitud());
 
-        long unreadNotifs = notificationDao.countUnreadByUsuarioId(destino.getId());
+        // La notificación va para el decisor (el jugador)
+        long unreadNotifs = notificationDao.countUnreadByUsuarioId(jugador.getId());
         assertEquals(1, unreadNotifs);
     }
 
     @Test
-    public void testInvitarMiembroPermissionException() throws InstanceNotFoundException {
+    public void testCrearPropuestaDeUnionPermissionException() throws InstanceNotFoundException {
         User creador = createUser("creador2");
-        User destino = createUser("destino2");
+        User jugador = createUser("destino2");
         User otroUser = createUser("otro2");
         Equipo equipo = equipoService.crearEquipo(creador.getId(), "Equipo 2");
 
+        // alguien que no es el creador intenta proponer unirse a un jugador
         assertThrows(PermissionException.class,
-                () -> equipoService.invitarMiembro(otroUser.getId(), equipo.getId(), destino.getId()));
+                () -> equipoService.crearPropuestaDeUnion(otroUser.getId(), equipo.getId(), jugador.getId()));
     }
 
-    // CU08: responder invitacion
+    // CU07: Petición de unión (El jugador solicita unirse usando el código alfanumérico del equipo)
     @Test
-    public void testResponderInvitacionAceptar() throws InstanceNotFoundException, PermissionException {
+    public void testCrearPeticionDeUnion() throws InstanceNotFoundException {
+        User creador = createUser("creador_peticion");
+        User jugador = createUser("jugador_solicitante");
+        Equipo equipo = equipoService.crearEquipo(creador.getId(), "Equipo Solicitado");
+
+        // CORRECCIÓN: Ahora el jugador se une usando el código único String de 8 caracteres
+        Solicitud solicitud = equipoService.crearPeticionDeUnion(jugador.getId(), equipo.getCodigoInvitacion());
+
+        // en PETICION: el candidato es el jugador y el decisor es el creador del equipo
+        assertEquals(jugador.getId(), solicitud.getCandidato().getId());
+        assertEquals(creador.getId(), solicitud.getDecisor().getId());
+        assertEquals(equipo.getId(), solicitud.getEquipo().getId());
+        assertEquals(EstadoSolicitud.PENDIENTE, solicitud.getEstado());
+        assertEquals(TipoSolicitud.PETICION, solicitud.getTipoSolicitud());
+
+        // la notificacion va para el decisor (el creador)
+        long unreadNotifs = notificationDao.countUnreadByUsuarioId(creador.getId());
+        assertEquals(1, unreadNotifs);
+    }
+
+    // CU08: Responder a solicitudes
+    @Test
+    public void testResponderSolicitudPropuestaAceptar() throws InstanceNotFoundException, PermissionException {
         User creador = createUser("creador3");
-        User destino = createUser("destino3");
+        User jugador = createUser("destino3");
         Equipo equipo = equipoService.crearEquipo(creador.getId(), "Equipo 3");
 
-        Invitacion invitacion = equipoService.invitarMiembro(creador.getId(), equipo.getId(), destino.getId());
+        Solicitud solicitud = equipoService.crearPropuestaDeUnion(creador.getId(), equipo.getId(), jugador.getId());
 
-        equipoService.responderInvitacion(destino.getId(), invitacion.getId(), true);
+        // el jugador (decisor) responde a la propuesta
+        equipoService.responderSolicitud(jugador.getId(), solicitud.getId(), true);
 
-        assertEquals(EstadoInvitacion.ACEPTADO, invitacion.getEstado());
+        assertEquals(EstadoSolicitud.ACEPTADO, solicitud.getEstado());
 
         Equipo equipoEncontrado = equipoService.obtenerEquipo(equipo.getId());
-        assertTrue(equipoEncontrado.getMiembros().contains(destino));
+        assertTrue(equipoEncontrado.getMiembros().contains(jugador));
     }
 
     @Test
-    public void testResponderInvitacionRechazar() throws InstanceNotFoundException, PermissionException {
-        User creador = createUser("creador4");
-        User destino = createUser("destino4");
-        Equipo equipo = equipoService.crearEquipo(creador.getId(), "Equipo 4");
+    public void testResponderSolicitudPeticionAceptar() throws InstanceNotFoundException, PermissionException {
+        User creador = createUser("creador_peticion_acc");
+        User jugador = createUser("jugador_peticion_acc");
+        Equipo equipo = equipoService.crearEquipo(creador.getId(), "Equipo Peticion");
 
-        Invitacion invitacion = equipoService.invitarMiembro(creador.getId(), equipo.getId(), destino.getId());
+        // CORRECCIÓN: Se usa el código de invitación String
+        Solicitud solicitud = equipoService.crearPeticionDeUnion(jugador.getId(), equipo.getCodigoInvitacion());
 
-        equipoService.responderInvitacion(destino.getId(), invitacion.getId(), false);
+        // el creador (decisor) responde a la petición del jugador
+        equipoService.responderSolicitud(creador.getId(), solicitud.getId(), true);
 
-        assertEquals(EstadoInvitacion.RECHAZADO, invitacion.getEstado());
+        assertEquals(EstadoSolicitud.ACEPTADO, solicitud.getEstado());
 
         Equipo equipoEncontrado = equipoService.obtenerEquipo(equipo.getId());
-        assertFalse(equipoEncontrado.getMiembros().contains(destino));
+        assertTrue(equipoEncontrado.getMiembros().contains(jugador));
     }
 
-    // CU09: abandonar equipo
+    @Test
+    public void testResponderSolicitudPropuestaRechazar() throws InstanceNotFoundException, PermissionException {
+        User creador = createUser("creador4");
+        User jugador = createUser("destino4");
+        Equipo equipo = equipoService.crearEquipo(creador.getId(), "Equipo 4");
+
+        Solicitud solicitud = equipoService.crearPropuestaDeUnion(creador.getId(), equipo.getId(), jugador.getId());
+
+        // el jugador (decisor) rechaza
+        equipoService.responderSolicitud(jugador.getId(), solicitud.getId(), false);
+
+        assertEquals(EstadoSolicitud.RECHAZADO, solicitud.getEstado());
+
+        Equipo equipoEncontrado = equipoService.obtenerEquipo(equipo.getId());
+        assertFalse(equipoEncontrado.getMiembros().contains(jugador));
+    }
+
+    @Test
+    public void testResponderSolicitudPermissionException() throws InstanceNotFoundException, PermissionException {
+        User creador = createUser("creador_error");
+        User jugador = createUser("jugador_error");
+        Equipo equipo = equipoService.crearEquipo(creador.getId(), "Equipo Error");
+
+        Solicitud solicitud = equipoService.crearPropuestaDeUnion(creador.getId(), equipo.getId(), jugador.getId());
+
+        // el creador (que no es el decisor en la propuesta) intenta responderla
+        assertThrows(PermissionException.class,
+                () -> equipoService.responderSolicitud(creador.getId(), solicitud.getId(), true));
+    }
+
+    // CU09: Abandonar equipo
     @Test
     public void testAbandonarEquipo() throws InstanceNotFoundException, PermissionException {
         User creador = createUser("creador5");
         User miembro = createUser("miembro5");
         Equipo equipo = equipoService.crearEquipo(creador.getId(), "Equipo 5");
 
-        Invitacion invitacion = equipoService.invitarMiembro(creador.getId(), equipo.getId(), miembro.getId());
-        equipoService.responderInvitacion(miembro.getId(), invitacion.getId(), true);
+        Solicitud solicitud = equipoService.crearPropuestaDeUnion(creador.getId(), equipo.getId(), miembro.getId());
+        equipoService.responderSolicitud(miembro.getId(), solicitud.getId(), true);
 
-        // Assert he is member
         assertTrue(equipoService.obtenerEquipo(equipo.getId()).getMiembros().contains(miembro));
 
         equipoService.abandonarEquipo(miembro.getId(), equipo.getId());
@@ -154,7 +204,7 @@ public class EquipoServiceTest {
                 () -> equipoService.abandonarEquipo(creador.getId(), equipo.getId()));
     }
 
-    // CU10: disolver equipo
+    // CU10: Disolver equipo
     @Test
     public void testDisolverEquipo() throws InstanceNotFoundException, PermissionException {
         User creador = createUser("creador7");

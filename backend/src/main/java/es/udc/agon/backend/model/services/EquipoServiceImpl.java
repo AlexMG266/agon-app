@@ -18,7 +18,7 @@ public class EquipoServiceImpl implements EquipoService {
     private EquipoDao equipoDao;
 
     @Autowired
-    private InvitacionDao invitacionDao;
+    private SolicitudDao solicitudDao;
 
     @Autowired
     private UserDao userDao;
@@ -46,19 +46,19 @@ public class EquipoServiceImpl implements EquipoService {
     }
 
     @Override
-    public Invitacion invitarMiembro(Long remitenteId, Long equipoId, Long destinoId)
+    public Solicitud crearPropuestaDeUnion(Long creadorId, Long equipoId, Long jugadorId)
             throws InstanceNotFoundException, PermissionException, IllegalArgumentException {
 
-        User remitente = userDao.findById(remitenteId)
-                .orElseThrow(() -> new InstanceNotFoundException("project.entities.user", remitenteId));
+        User creador = userDao.findById(creadorId)
+                .orElseThrow(() -> new InstanceNotFoundException("project.entities.user", creadorId));
         Equipo equipo = equipoDao.findById(equipoId)
                 .orElseThrow(() -> new InstanceNotFoundException("project.entities.equipo", equipoId));
-        User destino = userDao.findById(destinoId)
-                .orElseThrow(() -> new InstanceNotFoundException("project.entities.user", destinoId));
+        User jugador = userDao.findById(jugadorId)
+                .orElseThrow(() -> new InstanceNotFoundException("project.entities.user", jugadorId));
 
         validarEquipoActivo(equipo);
 
-        if (!equipo.getCreador().equals(remitente)) {
+        if (!equipo.getCreador().equals(creador)) {
             throw new PermissionException();
         }
 
@@ -66,43 +66,85 @@ public class EquipoServiceImpl implements EquipoService {
             throw new IllegalArgumentException("El equipo ya está completo (máximo 2 miembros)");
         }
 
-        if (equipo.getMiembros().contains(destino)) {
+        if (equipo.getMiembros().contains(jugador)) {
             throw new IllegalArgumentException("El usuario ya es miembro del equipo");
         }
 
-        Optional<Invitacion> pending = invitacionDao.findByUsuarioDestinoIdAndEquipoIdAndEstado(destinoId, equipoId,
-                EstadoInvitacion.PENDIENTE);
+        Optional<Solicitud> pending = solicitudDao.findByCandidatoIdAndEquipoIdAndEstado(
+                jugadorId, equipoId, EstadoSolicitud.PENDIENTE);
         if (pending.isPresent()) {
-            throw new IllegalArgumentException("Ya hay una invitación pendiente para este usuario en este equipo");
+            throw new IllegalArgumentException("Ya hay una solicitud activa pendiente para este jugador");
         }
 
-        Invitacion invitacion = new Invitacion(destino, remitente, equipo);
-        invitacionDao.save(invitacion);
+        Solicitud solicitud = new Solicitud(jugador, jugador, equipo, TipoSolicitud.PROPUESTA);
+        solicitudDao.save(solicitud);
 
-        String asunto = "Invitación al equipo " + equipo.getNombreEquipo();
-        String cuerpo = "El usuario " + remitente.getNombre() + " te ha invitado a unirte al equipo " + equipo.getNombreEquipo() + ".";
-        Notification notificacion = new Notification(destino, asunto, cuerpo, false, true, invitacion.getId(), Notification.TipoNotificacion.INVITACION);
+        String asunto = "Propuesta de unión al equipo " + equipo.getNombreEquipo();
+        String cuerpo = "El creador " + creador.getNombre() + " te ha propuesto unirte a su equipo " + equipo.getNombreEquipo() + ".";
+        Notification notificacion = new Notification(
+                jugador, asunto, cuerpo, false, true, solicitud.getId(), Notification.TipoNotificacion.INVITACION);
         notificationDao.save(notificacion);
 
-        return invitacion;
+        return solicitud;
     }
 
     @Override
-    public void responderInvitacion(Long usuarioId, Long invitacionId, boolean aceptar)
+    public Solicitud crearPeticionDeUnion(Long jugadorId, String codigoEquipo)
+            throws InstanceNotFoundException, IllegalArgumentException {
+
+        User jugador = userDao.findById(jugadorId)
+                .orElseThrow(() -> new InstanceNotFoundException("project.entities.user", jugadorId));
+
+        // buscamos el equipo usando el código alfanumérico unico
+        Equipo equipo = equipoDao.findByCodigoInvitacion(codigoEquipo)
+                .orElseThrow(() -> new InstanceNotFoundException("project.entities.equipo", codigoEquipo));
+
+        validarEquipoActivo(equipo);
+
+        if (equipo.getMiembros().size() >= 2) {
+            throw new IllegalArgumentException("El equipo ya está completo (máximo 2 miembros)");
+        }
+
+        if (equipo.getMiembros().contains(jugador)) {
+            throw new IllegalArgumentException("Ya formas parte de este equipo");
+        }
+
+        // usamos el ID recuperado del equipo para verificar si hay solicitudes pendientes
+        Optional<Solicitud> pending = solicitudDao.findByCandidatoIdAndEquipoIdAndEstado(
+                jugadorId, equipo.getId(), EstadoSolicitud.PENDIENTE);
+        if (pending.isPresent()) {
+            throw new IllegalArgumentException("Ya has enviado una petición de unión a este equipo que está pendiente");
+        }
+
+        User creador = equipo.getCreador();
+        Solicitud solicitud = new Solicitud(jugador, creador, equipo, TipoSolicitud.PETICION);
+        solicitudDao.save(solicitud);
+
+        String asunto = "Petición de unión al equipo " + equipo.getNombreEquipo();
+        String cuerpo = "El jugador " + jugador.getNombre() + " ha solicitado unirse a tu equipo con código " + codigoEquipo + ".";
+        Notification notificacion = new Notification(
+                creador, asunto, cuerpo, false, true, solicitud.getId(), Notification.TipoNotificacion.INVITACION);
+        notificationDao.save(notificacion);
+
+        return solicitud;
+    }
+
+    @Override
+    public void responderSolicitud(Long usuarioId, Long solicitudId, boolean aceptar)
             throws InstanceNotFoundException, PermissionException, IllegalArgumentException {
 
-        Invitacion invitacion = invitacionDao.findById(invitacionId)
-                .orElseThrow(() -> new InstanceNotFoundException("project.entities.invitacion", invitacionId));
+        Solicitud solicitud = solicitudDao.findById(solicitudId)
+                .orElseThrow(() -> new InstanceNotFoundException("project.entities.solicitud", solicitudId));
 
-        if (!invitacion.getUsuarioDestino().getId().equals(usuarioId)) {
+        if (!solicitud.getDecisor().getId().equals(usuarioId)) {
             throw new PermissionException();
         }
 
-        if (invitacion.getEstado() != EstadoInvitacion.PENDIENTE) {
-            throw new IllegalArgumentException("La invitación ya fue respondida");
+        if (solicitud.getEstado() != EstadoSolicitud.PENDIENTE) {
+            throw new IllegalArgumentException("La solicitud ya fue respondida");
         }
 
-        Equipo equipo = invitacion.getEquipo();
+        Equipo equipo = solicitud.getEquipo();
 
         if (aceptar) {
             validarEquipoActivo(equipo);
@@ -111,14 +153,14 @@ public class EquipoServiceImpl implements EquipoService {
                 throw new IllegalArgumentException("El equipo ya se encuentra completo");
             }
 
-            invitacion.aceptar();
-            equipo.addMiembro(invitacion.getUsuarioDestino());
+            solicitud.aceptar();
+            equipo.addMiembro(solicitud.getCandidato());
         } else {
-            invitacion.rechazar();
+            solicitud.rechazar();
         }
 
         Optional<Notification> notificationOpt = notificationDao.findByUsuarioIdAndReferenciaIdAndTipo(
-                usuarioId, invitacionId, Notification.TipoNotificacion.INVITACION);
+                usuarioId, solicitudId, Notification.TipoNotificacion.INVITACION);
 
         if (notificationOpt.isPresent()) {
             Notification notification = notificationOpt.get();
