@@ -25,6 +25,14 @@ spring:
       ddl-auto: none
       naming:
         physical-strategy: org.hibernate.boot.model.naming.PhysicalNamingStrategyStandardImpl
+
+springdoc:
+  swagger-ui:
+    path: /docs
+    operationsSorter: method
+  api-docs:
+    path: /api-docs
+
 project:
   jwt:
     signKey: W27sJe29ATI7dR3juV5lWkT9WgS2C8RT
