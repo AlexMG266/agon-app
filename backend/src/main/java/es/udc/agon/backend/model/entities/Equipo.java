@@ -1,8 +1,10 @@
 package es.udc.agon.backend.model.entities;
 
+import java.security.SecureRandom;
 import java.util.HashSet;
 import java.util.Set;
 
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
@@ -19,10 +21,14 @@ import jakarta.persistence.Table;
 @Table(name = "equipo")
 public class Equipo {
 
+    private static final String ALFANUMERICO = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+    private static final SecureRandom RANDOM = new SecureRandom();
+
     private Long id;
     private String nombreEquipo;
     private EstadoEquipo estado;
     private User creador;
+    private String codigoInvitacion;
     private Set<User> miembros = new HashSet<>();
 
     public Equipo() {
@@ -33,6 +39,16 @@ public class Equipo {
         this.estado = EstadoEquipo.ACTIVO;
         this.creador = creador;
         this.miembros.add(creador);
+        this.codigoInvitacion = generarCodigoAlfanumerico(8);
+    }
+
+    private String generarCodigoAlfanumerico(int longitud) {
+        StringBuilder sb = new StringBuilder(longitud);
+        for (int i = 0; i < longitud; i++) {
+            int index = RANDOM.nextInt(ALFANUMERICO.length());
+            sb.append(ALFANUMERICO.charAt(index));
+        }
+        return sb.toString();
     }
 
     @Id
@@ -45,6 +61,7 @@ public class Equipo {
         this.id = id;
     }
 
+    @Column(name = "nombreequipo")
     public String getNombreEquipo() {
         return nombreEquipo;
     }
@@ -72,8 +89,21 @@ public class Equipo {
         this.creador = creador;
     }
 
+    @Column(name = "codigo_invitacion", nullable = false, unique = true, length = 8)
+    public String getCodigoInvitacion() {
+        return codigoInvitacion;
+    }
+
+    public void setCodigoInvitacion(String codigoInvitacion) {
+        this.codigoInvitacion = codigoInvitacion;
+    }
+
     @ManyToMany
-    @JoinTable(name = "equipo_miembros", joinColumns = @JoinColumn(name = "equipo_id"), inverseJoinColumns = @JoinColumn(name = "usuario_id"))
+    @JoinTable(
+            name = "equipo_miembros",
+            joinColumns = @JoinColumn(name = "equipo_id"),
+            inverseJoinColumns = @JoinColumn(name = "usuario_id")
+    )
     public Set<User> getMiembros() {
         return miembros;
     }
