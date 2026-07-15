@@ -1,7 +1,7 @@
 package es.udc.agon.backend.rest.controllers;
 
 import es.udc.agon.backend.model.entities.Equipo;
-import es.udc.agon.backend.model.entities.Invitacion;
+import es.udc.agon.backend.model.entities.Solicitud;
 import es.udc.agon.backend.model.exceptions.InstanceNotFoundException;
 import es.udc.agon.backend.model.exceptions.PermissionException;
 import es.udc.agon.backend.model.services.EquipoService;
@@ -26,7 +26,7 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/teams")
-@Tag(name = "Equipo Controller", description = "Endpoints para la creación, disolución, abandono de equipos y gestión del flujo de invitaciones de miembros")
+@Tag(name = "Equipo Controller", description = "Endpoints para la creación, disolución, abandono de equipos y gestión del flujo híbrido de solicitudes de unión (Propuestas y Peticiones)")
 @SecurityRequirement(name = "bearerAuth")
 public class EquipoController {
 
@@ -59,56 +59,81 @@ public class EquipoController {
         return EquipoConversor.toEquipoDto(equipo);
     }
 
-    @PostMapping("/{id}/invitations")
+    @PostMapping("/{id}/propuestas")
     @ResponseStatus(HttpStatus.CREATED)
     @Operation(
-            summary = "Invitar un miembro al equipo",
-            description = "Envía una solicitud de unión de equipo a un jugador destino. Solo puede realizarlo el creador del equipo."
+            summary = "Proponer unirse a un miembro (Invitación proactiva)",
+            description = "Envía una propuesta de unión a un jugador específico. Solo puede realizarlo el creador del equipo."
     )
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "201", description = "Invitación generada correctamente",
-                    content = @Content(schema = @Schema(implementation = InvitacionDto.class))),
-            @ApiResponse(responseCode = "400", description = "La invitación no es válida (ej. el equipo ya está lleno, el usuario destino ya pertenece a un equipo o tiene invitaciones pendientes)",
+            @ApiResponse(responseCode = "201", description = "Propuesta de unión generada correctamente",
+                    content = @Content(schema = @Schema(implementation = SolicitudDto.class))),
+            @ApiResponse(responseCode = "400", description = "La propuesta no es válida (ej. el equipo está lleno, el usuario ya tiene solicitudes activas)",
                     content = @Content),
             @ApiResponse(responseCode = "401", description = "No autorizado",
                     content = @Content),
-            @ApiResponse(responseCode = "403", description = "Solo el creador del equipo tiene permisos para invitar",
+            @ApiResponse(responseCode = "403", description = "Solo el creador del equipo tiene permisos para proponer unión",
                     content = @Content),
-            @ApiResponse(responseCode = "404", description = "Equipo o jugador destino no encontrado",
+            @ApiResponse(responseCode = "404", description = "Equipo o jugador no encontrado",
                     content = @Content)
     })
-    public InvitacionDto invitarMiembro(
+    public SolicitudDto crearPropuestaDeUnion(
             @Parameter(hidden = true) @RequestAttribute Long userId,
             @Parameter(description = "ID del equipo al cual invitar", example = "1") @PathVariable Long id,
-            @Parameter(description = "ID del usuario invitado", example = "87") @RequestParam Long destinoId)
+            @Parameter(description = "ID del jugador invitado", example = "87") @RequestParam Long jugadorId)
             throws InstanceNotFoundException, PermissionException, IllegalArgumentException {
-        Invitacion invitacion = equipoService.invitarMiembro(userId, id, destinoId);
-        return EquipoConversor.toInvitacionDto(invitacion);
+        Solicitud solicitud = equipoService.crearPropuestaDeUnion(userId, id, jugadorId);
+        return EquipoConversor.toSolicitudDto(solicitud);
     }
 
-    @PostMapping("/invitations/{invitacionId}/respond")
-    @ResponseStatus(HttpStatus.NO_CONTENT)
+    @PostMapping("/peticiones")
+    @ResponseStatus(HttpStatus.CREATED)
     @Operation(
-            summary = "Responder a una invitación recibida",
-            description = "Acepta o rechaza la invitación de un equipo asociada al ID provisto."
+            summary = "Solicitar unirse a un equipo mediante código alfanumérico",
+            description = "Permite a un usuario autenticado enviar una petición de entrada utilizando el código de acceso único de 8 caracteres de un equipo."
     )
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "204", description = "Invitación respondida y procesada correctamente (Sin contenido de retorno)"),
-            @ApiResponse(responseCode = "400", description = "Petición incorrecta o parámetros inválidos",
+            @ApiResponse(responseCode = "201", description = "Petición de unión enviada al creador correctamente",
+                    content = @Content(schema = @Schema(implementation = SolicitudDto.class))),
+            @ApiResponse(responseCode = "400", description = "La petición no es válida (ej. ya formas parte del equipo o ya tienes una petición pendiente)",
                     content = @Content),
             @ApiResponse(responseCode = "401", description = "No autorizado",
                     content = @Content),
-            @ApiResponse(responseCode = "403", description = "Intento de responder a una invitación dirigida a otro usuario",
-                    content = @Content),
-            @ApiResponse(responseCode = "404", description = "Invitación no encontrada",
+            @ApiResponse(responseCode = "404", description = "El código de equipo no corresponde a ningún equipo activo",
                     content = @Content)
     })
-    public void responderInvitacion(
+    public SolicitudDto crearPeticionDeUnion(
             @Parameter(hidden = true) @RequestAttribute Long userId,
-            @Parameter(description = "ID de la invitación a responder", example = "101") @PathVariable Long invitacionId,
-            @Validated @RequestBody ResponderInvitacionParamsDto params)
+            @Parameter(description = "Código de invitación único del equipo (8 caracteres alfanuméricos)", example = "a7K9pX2L")
+            @RequestParam(name = "codigoEquipo", required = true) String codigoEquipo)
+            throws InstanceNotFoundException, IllegalArgumentException {
+        Solicitud solicitud = equipoService.crearPeticionDeUnion(userId, codigoEquipo);
+        return EquipoConversor.toSolicitudDto(solicitud);
+    }
+
+    @PostMapping("/solicitudes/{solicitudId}/responder")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    @Operation(
+            summary = "Responder a una solicitud (PROPUESTA o PETICION)",
+            description = "Permite al decisor (el jugador en caso de propuesta, o el creador en caso de petición) aceptar o rechazar la solicitud de unión."
+    )
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "204", description = "Solicitud respondida y procesada correctamente"),
+            @ApiResponse(responseCode = "400", description = "Petición incorrecta o lógica de negocio inválida (ej. equipo lleno)",
+                    content = @Content),
+            @ApiResponse(responseCode = "401", description = "No autorizado",
+                    content = @Content),
+            @ApiResponse(responseCode = "403", description = "No eres el decisor autorizado para responder a esta solicitud",
+                    content = @Content),
+            @ApiResponse(responseCode = "404", description = "Solicitud no encontrada",
+                    content = @Content)
+    })
+    public void responderSolicitud(
+            @Parameter(hidden = true) @RequestAttribute Long userId,
+            @Parameter(description = "ID de la solicitud a responder", example = "101") @PathVariable Long solicitudId,
+            @Validated @RequestBody ResponderSolicitudParamsDto params)
             throws InstanceNotFoundException, PermissionException, IllegalArgumentException {
-        equipoService.responderInvitacion(userId, invitacionId, params.getAceptar());
+        equipoService.responderSolicitud(userId, solicitudId, params.getAceptar());
     }
 
     @PostMapping("/{id}/leave")

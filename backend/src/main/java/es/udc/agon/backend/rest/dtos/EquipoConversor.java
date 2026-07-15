@@ -1,7 +1,7 @@
 package es.udc.agon.backend.rest.dtos;
 
 import es.udc.agon.backend.model.entities.Equipo;
-import es.udc.agon.backend.model.entities.Invitacion;
+import es.udc.agon.backend.model.entities.Solicitud;
 import es.udc.agon.backend.model.entities.User;
 
 import java.time.ZoneOffset;
@@ -26,13 +26,14 @@ public class EquipoConversor {
         return equipos.stream().map(EquipoConversor::toEquipoDto).collect(Collectors.toList());
     }
 
-    public static InvitacionDto toInvitacionDto(Invitacion invitacion) {
-        return new InvitacionDto(
-                invitacion.getId(),
-                invitacion.getUsuarioDestino().getId(),
-                invitacion.getUsuarioRemitente().getId(),
-                invitacion.getEquipo().getId(),
-                invitacion.getEstado().name(),
-                invitacion.getFechaEnvio().toInstant(ZoneOffset.UTC).toEpochMilli());
+    public static SolicitudDto toSolicitudDto(Solicitud solicitud) {
+        return new SolicitudDto(
+                solicitud.getId(),
+                solicitud.getCandidato().getId(),
+                solicitud.getDecisor().getId(),
+                solicitud.getEquipo().getId(),
+                solicitud.getEstado().name(),
+                solicitud.getTipoSolicitud().name(),
+                solicitud.getFechaCreacion().toInstant(ZoneOffset.UTC).toEpochMilli());
     }
 }
