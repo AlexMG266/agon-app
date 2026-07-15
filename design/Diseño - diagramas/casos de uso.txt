@@ -33,7 +33,7 @@ CU06: crear equipo (capitan)
 
 CU07: invitar miembro (capitan)
 
-CU08: responder invitacion (aceptar o rechazar) (usuario)
+CU08: responder solicitud (aceptar o rechazar) (usuario)
 
 CU09: abandonar equipo (usuario)
 

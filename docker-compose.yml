@@ -14,7 +14,6 @@ services:
       - "5433:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
-      # Map only the PostgreSQL SQL files directly to initialize the DB
       - ./backend/src/sql/1-PostgreSQLCreateTables.sql:/docker-entrypoint-initdb.d/1-PostgreSQLCreateTables.sql:ro
       - ./backend/src/sql/2-PostgreSQLCreateData-init.sql:/docker-entrypoint-initdb.d/2-PostgreSQLCreateData-init.sql:ro
       - ./backend/src/sql/3-PostgreSQLAlterTables.sql:/docker-entrypoint-initdb.d/3-PostgreSQLAlterTables.sql:ro
@@ -37,6 +36,8 @@ services:
       dockerfile: docker/backend/Dockerfile.dev
     container_name: agon_backend
     restart: unless-stopped
+    mem_limit: 1500m
+    mem_reservation: 512m
     environment:
       SPRING_DATASOURCE_URL: jdbc:postgresql://db:5432/agon
       SPRING_DATASOURCE_USERNAME: agon
@@ -44,10 +45,10 @@ services:
       SPRING_DEVTOOLS_RESTART_ENABLED: "true"
       SPRING_DEVTOOLS_RESTART_POLL_INTERVAL: "2s"
       SPRING_DEVTOOLS_RESTART_QUIET_PERIOD: "1s"
+      MAVEN_OPTS: "-Xmx512m -XX:MaxMetaspaceSize=256m"
+      JAVA_TOOL_OPTIONS: "-Xmx512m -XX:MaxMetaspaceSize=256m"
     volumes:
-      # Synchronize code changes in real-time
       - ./backend:/app
-      # Cache downloaded Maven compiler dependencies
       - maven_cache:/root/.m2
     ports:
       - "8080:8080"
