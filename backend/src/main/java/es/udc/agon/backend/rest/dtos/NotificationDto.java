@@ -1,6 +1,5 @@
 package es.udc.agon.backend.rest.dtos;
 
-// Importamos la anotación de OpenAPI para documentar el contrato
 import io.swagger.v3.oas.annotations.media.Schema;
 
 @Schema(description = "DTO que representa una notificación del sistema dirigida a un usuario")

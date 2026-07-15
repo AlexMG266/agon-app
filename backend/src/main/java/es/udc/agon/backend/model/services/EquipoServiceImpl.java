@@ -26,7 +26,6 @@ public class EquipoServiceImpl implements EquipoService {
     @Autowired
     private NotificationDao notificationDao;
 
-    // Validación centralizada para evitar inconsistencias de estado
     private void validarEquipoActivo(Equipo equipo) {
         if (equipo.getEstado() != EstadoEquipo.ACTIVO) {
             throw new IllegalArgumentException("Operación no permitida: El equipo no está activo (estado: " + equipo.getEstado() + ")");

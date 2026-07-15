@@ -7,7 +7,6 @@ import es.udc.agon.backend.model.exceptions.PermissionException;
 import es.udc.agon.backend.model.services.EquipoService;
 import es.udc.agon.backend.rest.dtos.*;
 
-// Imports de OpenAPI Swagger
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.ArraySchema;
