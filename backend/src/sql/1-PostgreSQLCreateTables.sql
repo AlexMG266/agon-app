@@ -1,4 +1,4 @@
-DROP TABLE IF EXISTS Invitacion CASCADE;
+DROP TABLE IF EXISTS Solicitud CASCADE; -- Antes era Invitacion
 DROP TABLE IF EXISTS Equipo_Miembros CASCADE;
 DROP TABLE IF EXISTS Equipo CASCADE;
 DROP TABLE IF EXISTS Notification CASCADE;
@@ -40,6 +40,7 @@ CREATE TABLE Equipo (
     nombreEquipo VARCHAR(60) NOT NULL,
     estado VARCHAR(20) NOT NULL,
     creador_id BIGINT NOT NULL,
+    codigo_invitacion VARCHAR(8) NOT NULL,
     CONSTRAINT EquipoPK PRIMARY KEY (id),
     CONSTRAINT EquipoNombreUniqueKey UNIQUE (nombreEquipo),
     CONSTRAINT EquipoCreadorIdFK FOREIGN KEY (creador_id) REFERENCES "User"(id) ON DELETE CASCADE
@@ -53,15 +54,19 @@ CREATE TABLE Equipo_Miembros (
     CONSTRAINT EquipoMiembrosUsuarioIdFK FOREIGN KEY (usuario_id) REFERENCES "User"(id) ON DELETE CASCADE
 );
 
-CREATE TABLE Invitacion (
+CREATE TABLE Solicitud (
     id BIGSERIAL NOT NULL,
-    usuario_destino_id BIGINT NOT NULL,
-    usuario_remitente_id BIGINT NOT NULL,
+    candidato_id BIGINT NOT NULL,
+    decisor_id BIGINT NOT NULL,
     equipo_id BIGINT NOT NULL,
     estado VARCHAR(20) NOT NULL,
-    fechaEnvio TIMESTAMP NOT NULL,
-    CONSTRAINT InvitacionPK PRIMARY KEY (id),
-    CONSTRAINT InvitacionDestinoIdFK FOREIGN KEY (usuario_destino_id) REFERENCES "User"(id) ON DELETE CASCADE,
-    CONSTRAINT InvitacionRemitenteIdFK FOREIGN KEY (usuario_remitente_id) REFERENCES "User"(id) ON DELETE CASCADE,
-    CONSTRAINT InvitacionEquipoIdFK FOREIGN KEY (equipo_id) REFERENCES Equipo(id) ON DELETE CASCADE
+    tipo_solicitud VARCHAR(20) NOT NULL,
+    fecha_creacion TIMESTAMP NOT NULL,
+    CONSTRAINT SolicitudPK PRIMARY KEY (id),
+    CONSTRAINT SolicitudCandidatoIdFK FOREIGN KEY (candidato_id) REFERENCES "User"(id) ON DELETE CASCADE,
+    CONSTRAINT SolicitudDecisorIdFK FOREIGN KEY (decisor_id) REFERENCES "User"(id) ON DELETE CASCADE,
+    CONSTRAINT SolicitudEquipoIdFK FOREIGN KEY (equipo_id) REFERENCES Equipo(id) ON DELETE CASCADE
 );
+
+CREATE INDEX SolicitudIndexByCandidatoId ON Solicitud (candidato_id);
+CREATE INDEX SolicitudIndexByDecisorId ON Solicitud (decisor_id);
