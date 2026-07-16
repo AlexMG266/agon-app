@@ -2,7 +2,7 @@ import { useSelector } from 'react-redux';
 import { Route, Routes, NavLink, useLocation } from 'react-router';
 import AppGlobalComponents from './AppGlobalComponents';
 import Home from './Home';
-import { Login, SignUp, Profile, Logout, Notifications, NotificationDetail } from '../../users';
+import { Login, SignUp, Profile, Logout, Notifications } from '../../users';
 import { CreateTeam } from '../../teams';
 import users from '../../users';
 import './Body.css';
@@ -57,7 +57,6 @@ const Body = () => {
                     <Route path="/*" element={<Home />} />
                     {loggedIn && <Route path="/users/profile" element={<Profile />} />}
                     {loggedIn && <Route path="/users/notifications" element={<Notifications />} />}
-                    {loggedIn && <Route path="/users/notifications/:notificationId" element={<NotificationDetail />} />}
                     {loggedIn && <Route path="/users/logout" element={<Logout />} />}
 
                     {loggedIn && <Route path="/teams/create" element={<CreateTeam />} />}

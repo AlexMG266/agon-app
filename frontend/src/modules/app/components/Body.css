@@ -96,3 +96,14 @@
 .app-content-area.no-padding {
     padding: 0 !important;
 }
+
+.nav-item-hover {
+    transition: background-color 0.15s ease, color 0.15s ease;
+    border-radius: 8px;
+    cursor: pointer;
+}
+
+.nav-item-hover:hover {
+    background-color: rgba(0, 0, 0, 0.04);
+    color: #000000;
+}
