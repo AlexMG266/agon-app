@@ -19,7 +19,10 @@ public class EquipoConversor {
                 equipo.getNombreEquipo(),
                 equipo.getEstado().name(),
                 equipo.getCreador().getId(),
-                equipo.getMiembros().stream().map(User::getId).collect(Collectors.toList()));
+                equipo.getMiembros().stream()
+                    .map(UserConversor::toUserDto) 
+                    .collect(Collectors.toList())
+        );
     }
 
     public static List<EquipoDto> toEquipoDtos(List<Equipo> equipos) {

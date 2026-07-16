@@ -4,7 +4,7 @@ import java.util.List;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 
-@Schema(description = "DTO que representa la información pública y simplificada de un equipo")
+@Schema(description = "DTO que representa la información pública y detallada de un equipo")
 public class EquipoDto {
 
     @Schema(description = "ID único del equipo", example = "1")
@@ -19,18 +19,18 @@ public class EquipoDto {
     @Schema(description = "ID del usuario que creó y administra el equipo", example = "42")
     private Long creadorId;
 
-    @Schema(description = "Lista con los IDs de los miembros que integran el equipo (máximo 2)", example = "[42, 87]")
-    private List<Long> miembrosIds;
+    @Schema(description = "Lista con los datos detallados de los miembros que integran el equipo", requiredMode = Schema.RequiredMode.REQUIRED)
+    private List<UserDto> miembros;
 
     public EquipoDto() {
     }
 
-    public EquipoDto(Long id, String nombreEquipo, String estado, Long creadorId, List<Long> miembrosIds) {
+    public EquipoDto(Long id, String nombreEquipo, String estado, Long creadorId, List<UserDto> miembros) {
         this.id = id;
         this.nombreEquipo = nombreEquipo;
         this.estado = estado;
         this.creadorId = creadorId;
-        this.miembrosIds = miembrosIds;
+        this.miembros = miembros;
     }
 
     public Long getId() {
@@ -65,11 +65,11 @@ public class EquipoDto {
         this.creadorId = creadorId;
     }
 
-    public List<Long> getMiembrosIds() {
-        return miembrosIds;
+    public List<UserDto> getMiembros() {
+        return miembros;
     }
 
-    public void setMiembrosIds(List<Long> miembrosIds) {
-        this.miembrosIds = miembrosIds;
+    public void setMiembros(List<UserDto> miembros) {
+        this.miembros = miembros;
     }
 }
