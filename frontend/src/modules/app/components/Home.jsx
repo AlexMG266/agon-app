@@ -1,5 +1,5 @@
-import 'react';
-import { useSelector } from 'react-redux';
+import  { useEffect } from 'react';
+import { useSelector, useDispatch } from 'react-redux';
 import { FormattedMessage } from 'react-intl';
 import { Link } from 'react-router';
 import Container from 'react-bootstrap/Container';
@@ -10,11 +10,20 @@ import Button from 'react-bootstrap/Button';
 import ListGroup from 'react-bootstrap/ListGroup';
 
 import users from '../../users';
+import teams from '../../teams';
 
 const Home = () => {
+    const dispatch = useDispatch();
     const user = useSelector(users.selectors.getUser);
     const loggedIn = useSelector(users.selectors.isLoggedIn);
 
+    /*
+    useEffect(() => {
+        if (loggedIn) {
+            dispatch(teams.actions.getMyTeams());
+        }
+    }, [loggedIn, dispatch]);
+     */
     const userTeams = useSelector(state => state.teams?.userTeams || []);
 
     if (loggedIn) {

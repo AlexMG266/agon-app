@@ -92,3 +92,7 @@
 .sidebar-link.text-danger-hover:hover i {
     color: #ff453a;
 }
+
+.app-content-area.no-padding {
+    padding: 0 !important;
+}

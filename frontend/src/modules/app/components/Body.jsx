@@ -1,8 +1,9 @@
 import { useSelector } from 'react-redux';
-import { Route, Routes, NavLink, useLocation } from 'react-router'; 
+import { Route, Routes, NavLink, useLocation } from 'react-router';
 import AppGlobalComponents from './AppGlobalComponents';
 import Home from './Home';
 import { Login, SignUp, Profile, Logout, Notifications, NotificationDetail } from '../../users';
+import { CreateTeam } from '../../teams';
 import users from '../../users';
 import './Body.css';
 
@@ -10,10 +11,12 @@ const Body = () => {
     const loggedIn = useSelector(users.selectors.isLoggedIn);
     const location = useLocation(); // obtener la ruta actual
 
+    const isNotificationRoute = location.pathname.startsWith('/users/notifications');
+
     return (
         <div className="main-layout-wrapper">
             <AppGlobalComponents />
-            
+
             {loggedIn && (
                 <aside className="app-sidebar">
                     <div className="sidebar-group">
@@ -31,7 +34,7 @@ const Body = () => {
                             <span>Notificaciones</span>
                         </NavLink>
                     </div>
-                    
+
                     <div className="sidebar-group mt-auto">
                         <span className="sidebar-title">Cuenta</span>
                         <NavLink to="/users/profile" className={({ isActive }) => `sidebar-link ${isActive ? 'active' : ''}`}>
@@ -46,13 +49,19 @@ const Body = () => {
                 </aside>
             )}
 
-            <main key={location.pathname} className="app-content-area animate-page-entry">
+            <main
+                key={location.pathname}
+                className={`app-content-area animate-page-entry ${isNotificationRoute ? 'no-padding' : ''}`}
+            >
                 <Routes>
                     <Route path="/*" element={<Home />} />
                     {loggedIn && <Route path="/users/profile" element={<Profile />} />}
                     {loggedIn && <Route path="/users/notifications" element={<Notifications />} />}
                     {loggedIn && <Route path="/users/notifications/:notificationId" element={<NotificationDetail />} />}
                     {loggedIn && <Route path="/users/logout" element={<Logout />} />}
+
+                    {loggedIn && <Route path="/teams/create" element={<CreateTeam />} />}
+
                     {!loggedIn && <Route path="/users/login" element={<Login />} />}
                     {!loggedIn && <Route path="/users/signup" element={<SignUp />} />}
                 </Routes>
