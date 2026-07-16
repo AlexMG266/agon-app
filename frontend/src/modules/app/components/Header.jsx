@@ -48,23 +48,18 @@ const Header = () => {
         <Navbar expand="lg" className="smart-topbar py-2">
             <Container fluid className="px-lg-5 d-flex justify-content-between align-items-center">
                 
-                {/* Lado Izquierdo: Marca/Logo (Siempre visible) */}
                 <Navbar.Brand as={Link} to="/" className="fw-bold text-dark m-0" style={{ letterSpacing: '-0.02em' }}>
                     Agón
                 </Navbar.Brand>
 
-                {/* Si tienes enlaces de navegación general en el futuro, irían aquí dentro y solo colapsarían ellos */}
                 <Navbar.Collapse id="navbarSupportedContent">
                     <Nav className="me-auto">
-                        {/* Espacio reservado para enlaces futuros como: Torneos, Clasificación, etc. */}
                     </Nav>
                 </Navbar.Collapse>
 
-                {/* Lado Derecho: Interfaz de Usuario (FUERA del Collapse para que NUNCA se rompa en móvil) */}
                 <div className="d-flex align-items-center gap-1">
                     {user ? (
                         <>
-                            {/* Buzón de entrada */}
                             <Nav.Link as={Link} to="/users/notifications" className="navbar-icon-btn position-relative d-flex align-items-center justify-content-center">
                                 <i className="fa-solid fa-inbox fs-5" style={{ color: '#1d1d1f' }}></i>
                                 {unreadCount > 0 && (
@@ -72,7 +67,6 @@ const Header = () => {
                                 )}
                             </Nav.Link>
 
-                            {/* Desplegable del Perfil */}
                             <NavDropdown
                                 title={
                                     <div className="profile-nav-container">
@@ -83,11 +77,18 @@ const Header = () => {
                                                 className="profile-nav-image"
                                             />
                                         ) : (
-                                            <div className="profile-nav-placeholder">
-                                                <i className="fa-solid fa-user"></i>
+                                            <div 
+                                                className="rounded-circle bg-dark text-white d-flex align-items-center justify-content-center" 
+                                                style={{ 
+                                                    width: '32px', 
+                                                    height: '32px', 
+                                                    fontWeight: '600', 
+                                                    fontSize: '0.85rem' 
+                                                }}
+                                            >
+                                                {user?.nombre?.charAt(0).toUpperCase() || "U"}
                                             </div>
                                         )}
-                                        {/* Ocultamos el nombre de usuario mediante CSS en móviles para salvar espacio en pantalla */}
                                         <span className="profile-username d-none d-sm-inline">{user.nombre}</span>
                                     </div>
                                 }

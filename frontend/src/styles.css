@@ -4,8 +4,9 @@
   --apple-text: #1d1d1f;
   --apple-text-secondary: #86868b;
   --apple-border: #d2d2d7;
-  --apple-accent: #0071e3;
-  --apple-accent-hover: #0077ed;
+  /* Color principal cambiado a negro para eliminar el azul */
+  --apple-accent: #000000;
+  --apple-accent-hover: #333333;
   --apple-danger: #ff3b30;
   
   --shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.04);
@@ -44,6 +45,7 @@ h1, h2, h3, h4, h5, h6 {
   box-shadow: var(--shadow-md);
 }
 
+/* Botones corregidos a negro sólido */
 .btn-primary {
   background-color: var(--apple-accent) !important;
   border-color: var(--apple-accent) !important;
@@ -52,12 +54,18 @@ h1, h2, h3, h4, h5, h6 {
   font-weight: 500;
   font-size: 14px;
   transition: all 0.2s;
+  box-shadow: none !important;
 }
 
 .btn-primary:hover {
   background-color: var(--apple-accent-hover) !important;
   border-color: var(--apple-accent-hover) !important;
   transform: scale(1.02);
+}
+
+.btn-primary:focus, .btn-primary:active {
+  box-shadow: none !important;
+  outline: none !important;
 }
 
 .btn-danger {
@@ -76,8 +84,8 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 .form-control:focus {
-  border-color: var(--apple-accent);
-  box-shadow: 0 0 0 4px rgba(0, 113, 227, 0.15);
+  border-color: #000000 !important;
+  box-shadow: 0 0 0 4px rgba(0, 0, 0, 0.05) !important;
 }
 
 .navbar {
@@ -89,10 +97,11 @@ h1, h2, h3, h4, h5, h6 {
 .navbar-brand {
   font-weight: 600;
   letter-spacing: -0.01em;
+  color: var(--apple-text) !important;
 }
 
 a:not([class]) {
-    color: var(--apple-accent);
+    color: var(--apple-text);
     text-decoration: none;
 }
 
@@ -100,23 +109,16 @@ a:not([class]):hover {
     text-decoration: underline;
 }
 
-/* animacion fade-in para los modales */ 
+/* Animaciones y validaciones */ 
 .animate-page-entry {
     animation: pageFadeInUp 0.35s cubic-bezier(0.25, 1, 0.5, 1) forwards;
 }
 
 @keyframes pageFadeInUp {
-    from {
-        opacity: 0;
-        transform: translateY(8px);
-    }
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
+    from { opacity: 0; transform: translateY(8px); }
+    to { opacity: 1; transform: translateY(0); }
 }
 
-/* retoque visual componente de error de validacion en formulario */
 .was-validated .form-control:invalid {
   border-color: var(--apple-danger) !important;
   background-image: none !important; 
@@ -135,8 +137,8 @@ a:not([class]):hover {
 }
 
 .was-validated .form-control:valid:focus {
-  border-color: var(--apple-accent) !important;
-  box-shadow: 0 0 0 4px rgba(0, 113, 227, 0.15) !important;
+  border-color: #000000 !important;
+  box-shadow: 0 0 0 4px rgba(0, 0, 0, 0.05) !important;
 }
 
 .invalid-feedback {
