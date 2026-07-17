@@ -160,26 +160,23 @@ public class EquipoController {
         equipoService.abandonarEquipo(userId, id);
     }
 
-    @PostMapping("/{id}/disband")
+    @DeleteMapping("/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     @Operation(
-            summary = "Disolver el equipo",
-            description = "Disuelve de forma permanente un equipo. Solo el creador tiene autorización para ejecutar esta acción."
+            summary = "Eliminar un equipo",
+            description = "Elimina físicamente un equipo del sistema. Solo el creador tiene autorización."
     )
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "204", description = "Equipo disuelto con éxito"),
-            @ApiResponse(responseCode = "401", description = "No autorizado",
-                    content = @Content),
-            @ApiResponse(responseCode = "403", description = "No tienes permisos de creador para disolver este equipo",
-                    content = @Content),
-            @ApiResponse(responseCode = "404", description = "Equipo no encontrado",
-                    content = @Content)
+            @ApiResponse(responseCode = "204", description = "Equipo eliminado con éxito"),
+            @ApiResponse(responseCode = "401", description = "No autorizado"),
+            @ApiResponse(responseCode = "403", description = "No tienes permisos para eliminar este equipo"),
+            @ApiResponse(responseCode = "404", description = "Equipo no encontrado")
     })
-    public void disolverEquipo(
+    public void eliminarEquipo(
             @Parameter(hidden = true) @RequestAttribute Long userId,
-            @Parameter(description = "ID del equipo a disolver", example = "1") @PathVariable Long id)
+            @Parameter(description = "ID del equipo a eliminar", example = "1") @PathVariable Long id)
             throws InstanceNotFoundException, PermissionException {
-        equipoService.disolverEquipo(userId, id);
+        equipoService.eliminarEquipo(userId, id);
     }
 
     @GetMapping

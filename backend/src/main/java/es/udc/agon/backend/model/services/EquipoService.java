@@ -69,17 +69,17 @@ public interface EquipoService {
             throws InstanceNotFoundException, PermissionException, IllegalArgumentException;
 
     /**
-     * El creador disuelve por completo el equipo.
-     * * @param usuarioId Id del creador del equipo.
+     * El creador de un equipo elimina el equipo del sistema.
+     * * @param usuarioId Id del creador.
      * @param equipoId Id del equipo.
-     * @throws InstanceNotFoundException Si el equipo o creador no existen.
-     * @throws PermissionException Si el usuarioId no coincide con el creador del equipo.
+     * @throws InstanceNotFoundException Si el equipo o usuario no existen.
+     * @throws PermissionException Si el usuario no es el creador del equipo.
      */
-    void disolverEquipo(Long usuarioId, Long equipoId)
+    void eliminarEquipo(Long usuarioId, Long equipoId)
             throws InstanceNotFoundException, PermissionException;
 
     /**
-     * Obtiene todos los equipos de los que forma parte activa el usuario.
+     * Obtiene todos los equipos de los que forma parte activa el usuario
      * * @param usuarioId Id del usuario.
      * @return Lista de equipos asociados.
      */

@@ -13,5 +13,5 @@ public interface EquipoDao extends CrudRepository<Equipo, Long> {
     @Query("SELECT e FROM Equipo e JOIN e.miembros m WHERE m.id = :usuarioId")
     List<Equipo> findByMiembrosId(Long usuarioId);
 
-    Optional<Equipo> findByCodigoEquipo(String codigoEquipo);
+    Optional<Equipo> findByCodigoEquipo (String codigoEquipo);
 }

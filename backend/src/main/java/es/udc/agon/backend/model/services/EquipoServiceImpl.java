@@ -1,3 +1,4 @@
+// src/main/java/es/udc/agon/backend/model/services/EquipoServiceImpl.java
 package es.udc.agon.backend.model.services;
 
 import es.udc.agon.backend.model.entities.*;
@@ -95,7 +96,6 @@ public class EquipoServiceImpl implements EquipoService {
         User jugador = userDao.findById(jugadorId)
                 .orElseThrow(() -> new InstanceNotFoundException("project.entities.user", jugadorId));
 
-        // buscamos el equipo usando el código alfanumérico unico
         Equipo equipo = equipoDao.findByCodigoEquipo(codigoEquipo)
                 .orElseThrow(() -> new InstanceNotFoundException("project.entities.equipo", codigoEquipo));
 
@@ -109,7 +109,6 @@ public class EquipoServiceImpl implements EquipoService {
             throw new IllegalArgumentException("Ya formas parte de este equipo");
         }
 
-        // usamos el ID recuperado del equipo para verificar si hay solicitudes pendientes
         Optional<Solicitud> pending = solicitudDao.findByCandidatoIdAndEquipoIdAndEstado(
                 jugadorId, equipo.getId(), EstadoSolicitud.PENDIENTE);
         if (pending.isPresent()) {
@@ -192,18 +191,16 @@ public class EquipoServiceImpl implements EquipoService {
     }
 
     @Override
-    public void disolverEquipo(Long usuarioId, Long equipoId)
+    public void eliminarEquipo(Long usuarioId, Long equipoId)
             throws InstanceNotFoundException, PermissionException {
         Equipo equipo = equipoDao.findById(equipoId)
                 .orElseThrow(() -> new InstanceNotFoundException("project.entities.equipo", equipoId));
-        User usuario = userDao.findById(usuarioId)
-                .orElseThrow(() -> new InstanceNotFoundException("project.entities.user", usuarioId));
 
-        if (!equipo.getCreador().equals(usuario)) {
+        if (!equipo.getCreador().getId().equals(usuarioId)) {
             throw new PermissionException();
         }
 
-        equipo.setEstado(EstadoEquipo.DISUELTO);
+        equipoDao.delete(equipo);
     }
 
     @Override
