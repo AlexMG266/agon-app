@@ -53,8 +53,8 @@ public class EquipoServiceTest {
         assertTrue(equipo.getMiembros().contains(creador));
 
         // Verificación crítica: Comprobar que se autogenera el código de invitación de 8 caracteres
-        assertNotNull(equipo.getCodigoInvitacion());
-        assertEquals(8, equipo.getCodigoInvitacion().length());
+        assertNotNull(equipo.getCodigoEquipo());
+        assertEquals(8, equipo.getCodigoEquipo().length());
     }
 
     // CU07: Propuesta de unión (El creador invita al jugador)
@@ -98,7 +98,7 @@ public class EquipoServiceTest {
         Equipo equipo = equipoService.crearEquipo(creador.getId(), "Equipo Solicitado");
 
         // CORRECCIÓN: Ahora el jugador se une usando el código único String de 8 caracteres
-        Solicitud solicitud = equipoService.crearPeticionDeUnion(jugador.getId(), equipo.getCodigoInvitacion());
+        Solicitud solicitud = equipoService.crearPeticionDeUnion(jugador.getId(), equipo.getCodigoEquipo());
 
         // en PETICION: el candidato es el jugador y el decisor es el creador del equipo
         assertEquals(jugador.getId(), solicitud.getCandidato().getId());
@@ -136,8 +136,8 @@ public class EquipoServiceTest {
         User jugador = createUser("jugador_peticion_acc");
         Equipo equipo = equipoService.crearEquipo(creador.getId(), "Equipo Peticion");
 
-        // CORRECCIÓN: Se usa el código de invitación String
-        Solicitud solicitud = equipoService.crearPeticionDeUnion(jugador.getId(), equipo.getCodigoInvitacion());
+        // CORRECCIÓN: Se usa el código de equipo String
+        Solicitud solicitud = equipoService.crearPeticionDeUnion(jugador.getId(), equipo.getCodigoEquipo());
 
         // el creador (decisor) responde a la petición del jugador
         equipoService.responderSolicitud(creador.getId(), solicitud.getId(), true);

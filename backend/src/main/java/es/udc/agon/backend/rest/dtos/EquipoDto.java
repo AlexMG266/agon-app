@@ -19,17 +19,21 @@ public class EquipoDto {
     @Schema(description = "ID del usuario que creó y administra el equipo", example = "42")
     private Long creadorId;
 
+    @Schema(description = "Código único de invitación del equipo", example = "ABCD1234")
+    private String codigoEquipo;
+
     @Schema(description = "Lista con los datos detallados de los miembros que integran el equipo", requiredMode = Schema.RequiredMode.REQUIRED)
     private List<UserDto> miembros;
 
     public EquipoDto() {
     }
 
-    public EquipoDto(Long id, String nombreEquipo, String estado, Long creadorId, List<UserDto> miembros) {
+    public EquipoDto(Long id, String nombreEquipo, String estado, Long creadorId, String codigoEquipo, List<UserDto> miembros) {
         this.id = id;
         this.nombreEquipo = nombreEquipo;
         this.estado = estado;
         this.creadorId = creadorId;
+        this.codigoEquipo = codigoEquipo;
         this.miembros = miembros;
     }
 
@@ -63,6 +67,14 @@ public class EquipoDto {
 
     public void setCreadorId(Long creadorId) {
         this.creadorId = creadorId;
+    }
+
+    public String getCodigoEquipo() {
+        return codigoEquipo;
+    }
+
+    public void setCodigoEquipo(String codigoEquipo) {
+        this.codigoEquipo = codigoEquipo;
     }
 
     public List<UserDto> getMiembros() {

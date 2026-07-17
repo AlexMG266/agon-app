@@ -96,7 +96,7 @@ public class EquipoServiceImpl implements EquipoService {
                 .orElseThrow(() -> new InstanceNotFoundException("project.entities.user", jugadorId));
 
         // buscamos el equipo usando el código alfanumérico unico
-        Equipo equipo = equipoDao.findByCodigoInvitacion(codigoEquipo)
+        Equipo equipo = equipoDao.findByCodigoEquipo(codigoEquipo)
                 .orElseThrow(() -> new InstanceNotFoundException("project.entities.equipo", codigoEquipo));
 
         validarEquipoActivo(equipo);

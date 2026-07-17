@@ -19,6 +19,7 @@ public class EquipoConversor {
                 equipo.getNombreEquipo(),
                 equipo.getEstado().name(),
                 equipo.getCreador().getId(),
+                equipo.getCodigoEquipo(),
                 equipo.getMiembros().stream()
                     .map(UserConversor::toUserDto) 
                     .collect(Collectors.toList())

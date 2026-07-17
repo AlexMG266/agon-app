@@ -40,7 +40,7 @@ CREATE TABLE Equipo (
     nombreEquipo VARCHAR(60) NOT NULL,
     estado VARCHAR(20) NOT NULL,
     creador_id BIGINT NOT NULL,
-    codigo_invitacion VARCHAR(8) NOT NULL,
+    codigo_equipo VARCHAR(8) NOT NULL,
     CONSTRAINT EquipoPK PRIMARY KEY (id),
     CONSTRAINT EquipoNombreUniqueKey UNIQUE (nombreEquipo),
     CONSTRAINT EquipoCreadorIdFK FOREIGN KEY (creador_id) REFERENCES "User"(id) ON DELETE CASCADE
