@@ -138,7 +138,7 @@ const TeamDetail = () => {
 
     const isCaptain = user?.id === team.capitan?.id;
     const isMember = team.miembros?.some(m => m.id === user?.id);
-    const codigoEquipo = team.codigoEquipo || team.codigoInvitacion || 'No disponible';
+    const codigoEquipo = team.codigoEquipo || 'No disponible';
 
     return (
         <Container className="team-detail-container">
