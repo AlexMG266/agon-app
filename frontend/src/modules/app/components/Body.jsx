@@ -1,15 +1,16 @@
+// src/modules/app/components/Body.jsx
 import { useSelector } from 'react-redux';
 import { Route, Routes, NavLink, useLocation } from 'react-router';
 import AppGlobalComponents from './AppGlobalComponents';
 import Home from './Home';
 import { Login, SignUp, Profile, Logout, Notifications } from '../../users';
-import { CreateTeam } from '../../teams';
+import { CreateTeam, TeamDetail } from '../../teams';
 import users from '../../users';
 import './Body.css';
 
 const Body = () => {
     const loggedIn = useSelector(users.selectors.isLoggedIn);
-    const location = useLocation(); // obtener la ruta actual
+    const location = useLocation();
 
     const isNotificationRoute = location.pathname.startsWith('/users/notifications');
 
@@ -54,13 +55,12 @@ const Body = () => {
                 className={`app-content-area animate-page-entry ${isNotificationRoute ? 'no-padding' : ''}`}
             >
                 <Routes>
-                    <Route path="/*" element={<Home />} />
+                    <Route path="/" element={<Home />} />
                     {loggedIn && <Route path="/users/profile" element={<Profile />} />}
                     {loggedIn && <Route path="/users/notifications" element={<Notifications />} />}
                     {loggedIn && <Route path="/users/logout" element={<Logout />} />}
-
                     {loggedIn && <Route path="/teams/create" element={<CreateTeam />} />}
-
+                    {loggedIn && <Route path="/teams/view/:id" element={<TeamDetail />} />}
                     {!loggedIn && <Route path="/users/login" element={<Login />} />}
                     {!loggedIn && <Route path="/users/signup" element={<SignUp />} />}
                 </Routes>

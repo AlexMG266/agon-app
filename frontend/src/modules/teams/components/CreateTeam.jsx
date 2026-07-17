@@ -1,4 +1,4 @@
-import { useState, useRef } from 'react'; // Importamos useRef
+import { useState, useRef } from 'react';
 import { useDispatch } from 'react-redux';
 import { useNavigate } from 'react-router';
 import { FormattedMessage } from 'react-intl';
@@ -32,7 +32,7 @@ const CreateTeam = () => {
 
         if (formRef.current && formRef.current.checkValidity()) {
             setBackendErrors(null);
-            setShowConfirmModal(true); // Abrimos el modal si es válido
+            setShowConfirmModal(true);
         } else {
             setBackendErrors(null);
             setFormValidated(true);
@@ -45,10 +45,10 @@ const CreateTeam = () => {
             actions.createTeam(
                 nombre.trim(),
                 descripcion.trim(),
-                () => {
+                (team) => {
                     setIsSubmitting(false);
                     setShowConfirmModal(false);
-                    navigate('/teams');
+                    navigate(`/teams/view/${team.id}`);
                 },
                 (errors) => {
                     setBackendErrors(errors);
