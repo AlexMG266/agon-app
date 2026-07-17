@@ -32,35 +32,37 @@ public class SecurityConfig {
                 .sessionManagement(
                         (sessionManagement) -> sessionManagement.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .addFilterBefore(new JwtFilter(jwtGenerator), UsernamePasswordAuthenticationFilter.class)
+
                 .authorizeHttpRequests((authorize) -> authorize
-                        .requestMatchers(HttpMethod.POST, "/users/signup").permitAll()
-                        .requestMatchers(HttpMethod.POST, "/users/login").permitAll()
-                        .requestMatchers(HttpMethod.POST, "/users/loginFromServiceToken").permitAll()
-                        .requestMatchers("/api-docs/**").permitAll()
-                        .requestMatchers("/docs/**").permitAll()
-                        .requestMatchers("/swagger-ui/**").permitAll()
+                    .requestMatchers(HttpMethod.POST, "/users/signup").permitAll()
+                    .requestMatchers(HttpMethod.POST, "/users/login").permitAll()
+                    .requestMatchers(HttpMethod.POST, "/users/loginFromServiceToken").permitAll()
+                    .requestMatchers("/api-docs/**").permitAll()
+                    .requestMatchers("/docs/**").permitAll()
+                    .requestMatchers("/swagger-ui/**").permitAll()
 
-                        .requestMatchers(HttpMethod.PUT, "/users/*").authenticated()
-                        .requestMatchers(HttpMethod.POST, "/users/*/changePassword").authenticated()
+                    .requestMatchers(HttpMethod.PUT, "/users/*").hasRole("USER")  
+                    .requestMatchers(HttpMethod.POST, "/users/*/changePassword").hasRole("USER")  
 
-                        .requestMatchers(HttpMethod.GET, "/notifications").authenticated()
-                        .requestMatchers(HttpMethod.GET, "/notifications/*").authenticated()
-                        .requestMatchers(HttpMethod.POST, "/notifications").authenticated()
-                        .requestMatchers(HttpMethod.POST, "/notifications/*").authenticated()
-                        .requestMatchers(HttpMethod.PUT, "/notifications/*").authenticated()
+                    .requestMatchers(HttpMethod.GET, "/notifications").hasRole("USER")  
+                    .requestMatchers(HttpMethod.GET, "/notifications/*").hasRole("USER")  
+                    .requestMatchers(HttpMethod.POST, "/notifications").hasRole("USER")  
+                    .requestMatchers(HttpMethod.POST, "/notifications/*").hasRole("USER")  
+                    .requestMatchers(HttpMethod.PUT, "/notifications/*").hasRole("USER")  
 
-                        .requestMatchers(HttpMethod.POST, "/teams").authenticated()
-                        .requestMatchers(HttpMethod.GET, "/teams").authenticated()
-                        .requestMatchers(HttpMethod.GET, "/teams/*").authenticated()
-                        .requestMatchers(HttpMethod.PUT, "/teams/*").authenticated()
-                        .requestMatchers(HttpMethod.DELETE, "/teams/*").authenticated()
-                        .requestMatchers(HttpMethod.POST, "/teams/*/propuestas").authenticated()
-                        .requestMatchers(HttpMethod.POST, "/teams/peticiones").authenticated()
-                        .requestMatchers(HttpMethod.POST, "/teams/solicitudes/*/responder").authenticated()
-                        .requestMatchers(HttpMethod.POST, "/teams/*/leave").authenticated()
-                        .requestMatchers(HttpMethod.POST, "/teams/*/disband").authenticated()
+                    .requestMatchers(HttpMethod.POST, "/teams").hasRole("USER") 
+                    .requestMatchers(HttpMethod.GET, "/teams").hasRole("USER")  
+                    .requestMatchers(HttpMethod.GET, "/teams/*").hasRole("USER")  
+                    .requestMatchers(HttpMethod.PUT, "/teams/*").hasRole("USER")  
+                    .requestMatchers(HttpMethod.DELETE, "/teams/*").hasRole("USER")  
+                    .requestMatchers(HttpMethod.POST, "/teams/*/propuestas").hasRole("USER")  
+                    .requestMatchers(HttpMethod.POST, "/teams/peticiones").hasRole("USER")  
+                    .requestMatchers(HttpMethod.POST, "/teams/solicitudes/*/responder").hasRole("USER") 
+                    .requestMatchers(HttpMethod.POST, "/teams/*/leave").hasRole("USER")  
+                    .requestMatchers(HttpMethod.POST, "/teams/*/disband").hasRole("USER")  
 
-                        .anyRequest().denyAll());
+                    .anyRequest().denyAll()
+                );
 
         return http.build();
     }

@@ -14,7 +14,7 @@ public interface UserService {
 	 * @param user
 	 * @throws DuplicateInstanceException
 	 */
-	void signUp(User user) throws DuplicateInstanceException;
+	User signUp(User user) throws DuplicateInstanceException;
 
 	/**
 	 *
@@ -54,7 +54,7 @@ public interface UserService {
 	 * @throws InstanceNotFoundException
 	 * @throws IncorrectPasswordException
 	 */
-	void changePassword(Long id, String oldPassword, String newPassword)
+	User changePassword(Long id, String oldPassword, String newPassword)
 		throws InstanceNotFoundException, IncorrectPasswordException;
 
 }

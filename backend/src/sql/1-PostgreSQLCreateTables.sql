@@ -13,6 +13,7 @@ CREATE TABLE "User" (
     password VARCHAR(60) NOT NULL,
     fechaNacimiento DATE NOT NULL,
     eloProvisional BOOLEAN NOT NULL DEFAULT TRUE,
+    role VARCHAR(20) NOT NULL DEFAULT 'USER',  
     CONSTRAINT UserPK PRIMARY KEY (id),
     CONSTRAINT UserNombreUniqueKey UNIQUE (nombre)
 );

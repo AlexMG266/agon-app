@@ -35,7 +35,7 @@ public class UserServiceImpl implements UserService {
 	private NotificationService notificationService;
 
 	@Override
-	public void signUp(User user) throws DuplicateInstanceException {
+	public User signUp(User user) throws DuplicateInstanceException {
 
 		if (userDao.existsByNombre(user.getNombre())) {
 			throw new DuplicateInstanceException("project.entities.user", user.getNombre());
@@ -44,10 +44,12 @@ public class UserServiceImpl implements UserService {
 		user.setPassword(passwordEncoder.encode(user.getPassword()));
 		user.setElo(800);
 		user.setEloProvisional(true);
+		user.setRole("USER");
 
 		userDao.save(user);
 
 		notificationService.createWelcomeNotification(user);
+		return user;
 	}
 
 	@Override
@@ -90,7 +92,7 @@ public class UserServiceImpl implements UserService {
 	}
 
 	@Override
-	public void changePassword(Long id, String oldPassword, String newPassword)
+	public User changePassword(Long id, String oldPassword, String newPassword)
 			throws InstanceNotFoundException, IncorrectPasswordException {
 
 		User user = permissionChecker.checkUser(id);
@@ -101,6 +103,7 @@ public class UserServiceImpl implements UserService {
 			user.setPassword(passwordEncoder.encode(newPassword));
 		}
 
+		return user;
 	}
 
 }
