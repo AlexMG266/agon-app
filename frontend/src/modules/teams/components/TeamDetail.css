@@ -1,6 +1,6 @@
 /* src/modules/teams/components/TeamDetail.css */
 .team-detail-container {
-    max-width: 900px;
+    max-width: 600px;
     margin: 0 auto;
     padding: 2rem 1rem;
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
@@ -60,20 +60,20 @@
 }
 
 .team-detail-top {
-    padding: 2rem 2.5rem;
+    padding: 1.5rem 2rem;
     border-bottom: 1px solid #f1f3f5;
 }
 
 .team-detail-title-section {
     display: flex;
     align-items: center;
-    gap: 1rem;
-    margin-bottom: 1.5rem;
+    gap: 0.75rem;
+    margin-bottom: 1rem;
     flex-wrap: wrap;
 }
 
 .team-detail-name {
-    font-size: 1.75rem;
+    font-size: 1.5rem;
     font-weight: 700;
     color: #1d1d1f;
     margin: 0;
@@ -83,8 +83,8 @@
 .team-detail-edit-btn {
     border-radius: 50px !important;
     border: 1px solid #e5e5ea !important;
-    padding: 0.25rem 1rem !important;
-    font-size: 0.8rem !important;
+    padding: 0.2rem 0.75rem !important;
+    font-size: 0.75rem !important;
     font-weight: 500 !important;
     color: #1d1d1f !important;
     transition: all 0.2s ease !important;
@@ -158,18 +158,18 @@
 }
 
 .team-detail-code-section {
-    margin-top: 0.5rem;
+    margin-top: 0.25rem;
 }
 
 .team-detail-code-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 0.5rem;
+    margin-bottom: 0.35rem;
 }
 
 .team-detail-code-label {
-    font-size: 0.7rem;
+    font-size: 0.65rem;
     font-weight: 600;
     text-transform: uppercase;
     letter-spacing: 0.05em;
@@ -177,7 +177,7 @@
 }
 
 .team-detail-code-copied {
-    font-size: 0.75rem;
+    font-size: 0.7rem;
     font-weight: 500;
     color: #34c759;
 }
@@ -187,28 +187,28 @@
     align-items: center;
     gap: 0.75rem;
     background: #f5f5f7;
-    border-radius: 10px;
-    padding: 0.6rem 1rem;
+    border-radius: 8px;
+    padding: 0.4rem 0.75rem;
     border: 1px solid #e5e5ea;
 }
 
 .team-detail-code {
-    font-size: 1rem;
+    font-size: 0.95rem;
     font-weight: 600;
     color: #1d1d1f;
     background: transparent;
     padding: 0;
     border: none;
     flex: 1;
-    letter-spacing: 0.08em;
+    letter-spacing: 0.5em;
     font-family: 'SF Mono', 'Menlo', 'Monaco', monospace;
 }
 
 .team-detail-copy-btn {
     border-radius: 50px !important;
     border: 1px solid #e5e5ea !important;
-    padding: 0.3rem 1rem !important;
-    font-size: 0.8rem !important;
+    padding: 0.2rem 0.75rem !important;
+    font-size: 0.75rem !important;
     font-weight: 500 !important;
     background: #ffffff !important;
     color: #1d1d1f !important;
@@ -221,21 +221,17 @@
 }
 
 .team-detail-code-help {
-    font-size: 0.75rem;
+    font-size: 0.7rem;
     color: #6e6e73;
-    margin-top: 0.5rem;
+    margin-top: 0.35rem;
 }
 
 .team-detail-bottom {
-    padding: 2rem 2.5rem;
+    padding: 1.5rem 2rem;
 }
 
-.team-detail-section {
-    margin-bottom: 1.5rem;
-}
-
-.team-detail-section-title {
-    font-size: 0.85rem;
+.team-detail-members-title {
+    font-size: 0.8rem;
     font-weight: 600;
     color: #1d1d1f;
     margin-bottom: 0.75rem;
@@ -251,10 +247,11 @@
     display: flex;
     align-items: center;
     gap: 0.75rem;
-    padding: 0.5rem 0.75rem;
-    border-radius: 8px;
+    padding: 0.6rem 0.75rem;
+    border-radius: 10px;
     background: #f8f9fa;
-    transition: background 0.2s ease;
+    transition: all 0.2s ease;
+    border: 1px solid transparent;
 }
 
 .team-detail-member:hover {
@@ -262,13 +259,13 @@
 }
 
 .team-detail-member.captain {
-    background: #fff8e6;
-    border: 1px solid #ffd700;
+    background: #fff9e6;
+    border-color: #ffd700;
 }
 
 .team-detail-member-avatar {
-    width: 36px;
-    height: 36px;
+    width: 40px;
+    height: 40px;
     border-radius: 50%;
     background: #1d1d1f;
     color: #ffffff;
@@ -280,10 +277,24 @@
     flex-shrink: 0;
 }
 
+.team-detail-member.captain .team-detail-member-avatar {
+    background: #ffb800;
+    color: #1d1d1f;
+}
+
+.team-detail-member-info {
+    flex: 1;
+    min-width: 0;
+}
+
 .team-detail-member-name {
     font-weight: 500;
     color: #1d1d1f;
     font-size: 0.9rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    flex-wrap: wrap;
 }
 
 .team-detail-member-email {
@@ -295,17 +306,19 @@
     background-color: #ffd700 !important;
     color: #1d1d1f !important;
     font-weight: 600;
-    font-size: 0.55rem;
-    padding: 0.15rem 0.6rem;
+    font-size: 0.6rem;
+    padding: 0.2rem 0.6rem;
     border-radius: 50px;
-    margin-left: auto;
     border: 1px solid #e6b800;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.2rem;
 }
 
 .team-detail-no-members {
     color: #6e6e73;
     font-size: 0.85rem;
-    padding: 0.5rem 0;
+    padding: 1rem 0;
     text-align: center;
 }
 
@@ -349,15 +362,15 @@
 
 @media (max-width: 768px) {
     .team-detail-top {
-        padding: 1.5rem;
+        padding: 1.25rem;
     }
 
     .team-detail-bottom {
-        padding: 1.5rem;
+        padding: 1.25rem;
     }
 
     .team-detail-name {
-        font-size: 1.5rem;
+        font-size: 1.25rem;
     }
 
     .team-detail-title-section {
@@ -381,6 +394,7 @@
     .team-detail-code {
         font-size: 0.85rem;
         word-break: break-all;
+        letter-spacing: 0.3em;
     }
 
     .team-detail-actions {
@@ -391,6 +405,10 @@
     .team-detail-leave-btn {
         width: 100%;
         justify-content: center;
+    }
+
+    .team-detail-member {
+        flex-wrap: wrap;
     }
 }
 
@@ -407,11 +425,17 @@
         padding: 1rem;
     }
 
-    .team-detail-member {
-        flex-wrap: wrap;
+    .team-detail-code {
+        letter-spacing: 0.15em;
+        font-size: 0.8rem;
+    }
+
+    .team-detail-member-name {
+        font-size: 0.85rem;
     }
 
     .team-detail-captain-badge {
-        margin-left: 0;
+        font-size: 0.5rem;
+        padding: 0.15rem 0.5rem;
     }
 }
