@@ -10,37 +10,10 @@ import Spinner from 'react-bootstrap/Spinner';
 import users from '../../users';
 import teams from '../../teams';
 import ProfileAvatar from '../../common/components/ProfileAvatar';
+import Table from '../../common/components/Table';
 import './Home.css';
 
 const LandingPage = () => {
-    const teamBars = {
-        left: { gk: '6%', df: '20%', mf: '40%', fw: '70%' },
-        right: { gk: '94%', df: '80%', mf: '60%', fw: '30%' }
-    };
-
-    const PlayerBar = ({ position, color }) => (
-        <div className="position-absolute h-100" style={{ left: position, width: '1px', backgroundColor: '#e2e2e7' }}>
-            {[25, 50, 75].map((offset, i) => (
-                <div
-                    key={i}
-                    className="position-absolute rounded-circle"
-                    style={{
-                        top: `${offset}%`,
-                        left: '-5px',
-                        width: '10px',
-                        height: '10px',
-                        backgroundColor: color,
-                        boxShadow: i === 0 ? `0 0 12px ${color}40` : 'none'
-                    }}
-                />
-            ))}
-            {(position === '6%' || position === '94%') && (
-                <div className="position-absolute rounded-circle" 
-                     style={{ top: 'calc(50% - 5px)', left: '-5px', width: '10px', height: '10px', backgroundColor: color }} />
-            )}
-        </div>
-    );
-
     return (
         <Container className="mt-5 py-4" style={{ fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif' }}>
             <Row className="align-items-center g-5">
@@ -67,29 +40,7 @@ const LandingPage = () => {
                 </Col>
 
                 <Col lg={7}>
-                    <div className="position-relative w-100 rounded-4 shadow-sm border" 
-                         style={{ height: '400px', backgroundColor: '#f8f9fa', borderColor: '#dee2e6', overflow: 'hidden' }}>
-                        
-                        <div className="position-absolute h-100 border-start" 
-                             style={{ left: '50%', borderColor: '#dee2e6', borderStyle: 'dashed' }} />
-                        <div className="position-absolute rounded-circle border" 
-                             style={{ width: '80px', height: '80px', top: 'calc(50% - 40px)', left: 'calc(50% - 40px)', borderColor: '#dee2e6' }} />
-
-                        <div className="position-absolute border border-start-0" 
-                             style={{ width: '35px', height: '140px', top: 'calc(50% - 70px)', left: 0, borderColor: '#dee2e6', borderRadius: '0 8px 8px 0' }} />
-                        <div className="position-absolute border border-end-0" 
-                             style={{ width: '35px', height: '140px', top: 'calc(50% - 70px)', right: 0, borderColor: '#dee2e6', borderRadius: '8px 0 0 8px' }} />
-
-                        {Object.entries(teamBars.left).map(([key, pos]) => (
-                            <PlayerBar key={`left-${key}`} position={pos} color="#0071e3" />
-                        ))}
-                        {Object.entries(teamBars.right).map(([key, pos]) => (
-                            <PlayerBar key={`right-${key}`} position={pos} color="#ff453a" />
-                        ))}
-
-                        <div className="position-absolute rounded-circle bg-white shadow-sm border" 
-                             style={{ width: '14px', height: '14px', top: 'calc(50% - 7px)', left: 'calc(50% - 7px)', zIndex: 5 }} />
-                    </div>
+                    <Table />
                 </Col>
             </Row>
         </Container>
