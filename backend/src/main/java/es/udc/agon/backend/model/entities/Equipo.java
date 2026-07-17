@@ -27,6 +27,7 @@ public class Equipo {
     private Long id;
     private String nombreEquipo;
     private EstadoEquipo estado;
+    private String descripcion;
     private User creador;
     private String codigoEquipo;
     private Set<User> miembros = new HashSet<>();
@@ -34,9 +35,10 @@ public class Equipo {
     public Equipo() {
     }
 
-    public Equipo(String nombreEquipo, User creador) {
+    public Equipo(String nombreEquipo, String descripcion, User creador) {
         this.nombreEquipo = nombreEquipo;
         this.estado = EstadoEquipo.ACTIVO;
+        this.descripcion = descripcion;
         this.creador = creador;
         this.miembros.add(creador);
         this.codigoEquipo = generarCodigoAlfanumerico(8);
@@ -118,5 +120,14 @@ public class Equipo {
 
     public void removeMiembro(User user) {
         this.miembros.remove(user);
+    }
+
+    @Column(name = "descripcion")
+    public String getDescripcion() {
+        return descripcion; 
+    }
+
+    public void setDescripcion(String descripcion) {
+        this.descripcion = descripcion;
     }
 }

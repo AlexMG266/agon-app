@@ -17,6 +17,7 @@ public class EquipoConversor {
         return new EquipoDto(
                 equipo.getId(),
                 equipo.getNombreEquipo(),
+                equipo.getDescripcion(),
                 equipo.getEstado().name(),
                 equipo.getCreador().getId(),
                 equipo.getCodigoEquipo(),

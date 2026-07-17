@@ -16,6 +16,9 @@ public class EquipoDto {
     @Schema(description = "Estado actual del equipo en el sistema", example = "ACTIVO", allowableValues = {"ACTIVO", "DISUELTO"})
     private String estado;
 
+    @Schema(description = "Descripción del equipo, que puede incluir información adicional sobre su propósito o características", example = "Equipo de desarrollo de software especializado en aplicaciones web")
+    private String descripcion;
+
     @Schema(description = "ID del usuario que creó y administra el equipo", example = "42")
     private Long creadorId;
 
@@ -28,9 +31,10 @@ public class EquipoDto {
     public EquipoDto() {
     }
 
-    public EquipoDto(Long id, String nombreEquipo, String estado, Long creadorId, String codigoEquipo, List<UserDto> miembros) {
+    public EquipoDto(Long id, String nombreEquipo, String descripcion, String estado, Long creadorId, String codigoEquipo, List<UserDto> miembros) {
         this.id = id;
         this.nombreEquipo = nombreEquipo;
+        this.descripcion = descripcion;
         this.estado = estado;
         this.creadorId = creadorId;
         this.codigoEquipo = codigoEquipo;
@@ -83,5 +87,13 @@ public class EquipoDto {
 
     public void setMiembros(List<UserDto> miembros) {
         this.miembros = miembros;
+    }
+
+    public String getDescripcion() {
+        return descripcion;
+    }
+
+    public void setDescripcion(String descripcion) {
+        this.descripcion = descripcion;
     }
 }

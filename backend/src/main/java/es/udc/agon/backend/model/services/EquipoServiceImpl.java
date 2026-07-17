@@ -1,4 +1,3 @@
-// src/main/java/es/udc/agon/backend/model/services/EquipoServiceImpl.java
 package es.udc.agon.backend.model.services;
 
 import es.udc.agon.backend.model.entities.*;
@@ -34,11 +33,11 @@ public class EquipoServiceImpl implements EquipoService {
     }
 
     @Override
-    public Equipo crearEquipo(Long userId, String nombreEquipo) throws InstanceNotFoundException {
+    public Equipo crearEquipo(Long userId, String nombreEquipo, String descripcion) throws InstanceNotFoundException {
         User creador = userDao.findById(userId)
                 .orElseThrow(() -> new InstanceNotFoundException("project.entities.user", userId));
 
-        Equipo equipo = new Equipo(nombreEquipo, creador);
+        Equipo equipo = new Equipo(nombreEquipo, descripcion, creador);
         if (!equipo.getMiembros().contains(creador)) {
             equipo.addMiembro(creador);
         }

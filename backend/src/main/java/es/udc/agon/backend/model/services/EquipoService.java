@@ -14,9 +14,10 @@ public interface EquipoService {
      * * @param userId Id del creador.
      * @param nombreEquipo Nombre del equipo.
      * @return El equipo creado.
+     * @param descripcion Descripción del equipo.
      * @throws InstanceNotFoundException Si el usuario creador no existe.
      */
-    Equipo crearEquipo(Long userId, String nombreEquipo) throws InstanceNotFoundException;
+    Equipo crearEquipo(Long userId, String nombreEquipo, String descripcion) throws InstanceNotFoundException;
 
     /**
      * Flujo PROPUESTA: El creador de un equipo invita activamente a un jugador.

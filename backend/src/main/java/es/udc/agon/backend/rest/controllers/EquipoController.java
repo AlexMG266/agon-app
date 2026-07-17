@@ -55,7 +55,7 @@ public class EquipoController {
             @Parameter(hidden = true) @RequestAttribute Long userId,
             @Validated @RequestBody CrearEquipoParamsDto params)
             throws InstanceNotFoundException {
-        Equipo equipo = equipoService.crearEquipo(userId, params.getNombreEquipo());
+        Equipo equipo = equipoService.crearEquipo(userId, params.getNombreEquipo(), params.getDescripcion());
         return EquipoConversor.toEquipoDto(equipo);
     }
 

@@ -38,6 +38,7 @@ CREATE INDEX NotificationIndexByUsuarioId ON Notification (usuarioId);
 CREATE TABLE Equipo (
     id BIGSERIAL NOT NULL,
     nombreEquipo VARCHAR(60) NOT NULL,
+    descripcion VARCHAR(500) NOT NULL,
     estado VARCHAR(20) NOT NULL,
     creador_id BIGINT NOT NULL,
     codigo_equipo VARCHAR(8) NOT NULL,

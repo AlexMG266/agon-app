@@ -19,11 +19,21 @@ public class CrearEquipoParamsDto {
     )
     private String nombreEquipo;
 
+    @Size(max = 200)
+    @Schema(
+            description = "Lema o descripcion del equipo",
+            example = "Los Leones de Hercules, del club de futbolin de la UDC",
+            requiredMode = Schema.RequiredMode.NOT_REQUIRED,
+            maxLength = 200
+    )
+    private String descripcion;
+
     public CrearEquipoParamsDto() {
     }
 
-    public CrearEquipoParamsDto(String nombreEquipo) {
+    public CrearEquipoParamsDto(String nombreEquipo, String descripcion) {
         this.nombreEquipo = nombreEquipo;
+        this.descripcion = descripcion;
     }
 
     public String getNombreEquipo() {
@@ -32,5 +42,13 @@ public class CrearEquipoParamsDto {
 
     public void setNombreEquipo(String nombreEquipo) {
         this.nombreEquipo = nombreEquipo;
+    }
+
+    public String getDescripcion() {
+        return descripcion;
+    }
+
+    public void setDescripcion(String descripcion) {
+        this.descripcion = descripcion;
     }
 }
