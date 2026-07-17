@@ -9,6 +9,7 @@ import Col from 'react-bootstrap/Col';
 import Container from 'react-bootstrap/Container';
 
 import { Errors } from '../../common';
+import ProfileAvatar from '../../common/components/ProfileAvatar';
 import * as actions from '../actions';
 import * as selectors from '../selectors';
 import backend from '../../../backend';
@@ -134,17 +135,11 @@ const Profile = () => {
                 <Row className="g-4">
                     <Col lg={4} className="text-center d-flex flex-column align-items-center">
                         <div className="profile-image-container">
-                            {getProfileImageUrl() ? (
-                                <img
-                                    src={getProfileImageUrl()}
-                                    alt="Profile"
-                                    className="profile-image"
-                                />
-                            ) : (
-                                <div className="profile-image-placeholder">
-                                    <i className="fa-solid fa-user"></i>
-                                </div>
-                            )}
+                            <ProfileAvatar
+                                imageUrl={getProfileImageUrl()}
+                                name={user.nombre}
+                                size={120}
+                            />
                         </div>
                         <h2 className="profile-display-name mt-3">{user.nombre}</h2>
                         <p className="profile-email-text">{user.email}</p>

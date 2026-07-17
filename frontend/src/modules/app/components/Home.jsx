@@ -1,5 +1,4 @@
-// src/modules/app/components/Home.jsx
-import { useEffect, useMemo } from 'react';
+import { useEffect } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { Link } from 'react-router';
 import Container from 'react-bootstrap/Container';
@@ -10,6 +9,7 @@ import Badge from 'react-bootstrap/Badge';
 import Spinner from 'react-bootstrap/Spinner';
 import users from '../../users';
 import teams from '../../teams';
+import ProfileAvatar from '../../common/components/ProfileAvatar';
 import './Home.css';
 
 const LandingPage = () => {
@@ -177,9 +177,11 @@ const Dashboard = () => {
             <div className="dashboard-footer">
                 <div className="footer-card">
                     <div className="profile-summary">
-                        <div className="profile-avatar">
-                            {user?.nombre?.charAt(0).toUpperCase() || 'T'}
-                        </div>
+                        <ProfileAvatar
+                            imageUrl={user?.imagenPerfil}
+                            name={user?.nombre}
+                            size={42}
+                        />
                         <div className="profile-info">
                             <div className="profile-name">{user?.nombre || 'test'}</div>
                             <div className="profile-email">{user?.email || 'test@domain.com'}</div>

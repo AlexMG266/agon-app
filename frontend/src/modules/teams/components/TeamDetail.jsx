@@ -9,6 +9,8 @@ import Badge from 'react-bootstrap/Badge';
 import Spinner from 'react-bootstrap/Spinner';
 import Form from 'react-bootstrap/Form';
 import { Errors } from '../../common';
+import ConfirmationModal from '../../common/components/ConfirmationModal';
+import ProfileAvatar from '../../common/components/ProfileAvatar';
 import * as actions from '../actions';
 import backend from '../../../backend';
 import './TeamDetail.css';
@@ -26,6 +28,9 @@ const TeamDetail = () => {
     const [backendErrors, setBackendErrors] = useState(null);
     const [success, setSuccess] = useState(false);
     const [copied, setCopied] = useState(false);
+    const [showDeleteModal, setShowDeleteModal] = useState(false);
+    const [showLeaveModal, setShowLeaveModal] = useState(false);
+    const [isSubmitting, setIsSubmitting] = useState(false);
 
     useEffect(() => {
         loadTeam();
@@ -76,7 +81,7 @@ const TeamDetail = () => {
     };
 
     const handleCopyCode = () => {
-        const codigo = team?.codigoInvitacion || team?.codigo;
+        const codigo = team?.codigoEquipo || team?.codigoInvitacion || team?.codigo;
         if (codigo) {
             navigator.clipboard.writeText(codigo);
             setCopied(true);
@@ -84,31 +89,46 @@ const TeamDetail = () => {
         }
     };
 
-    const handleDeleteTeam = async () => {
-        if (!window.confirm('¿Estás seguro de que quieres eliminar este equipo?')) return;
-
+    const handleConfirmDelete = async () => {
+        setIsSubmitting(true);
         try {
             const response = await backend.teamService.deleteTeam(id);
             if (response.ok) {
                 dispatch(actions.deleteTeamSuccess(parseInt(id)));
+                setShowDeleteModal(false);
+                setIsSubmitting(false);
                 navigate('/');
+            } else {
+                console.error("Error al eliminar:", response);
+                setShowDeleteModal(false);
+                setIsSubmitting(false);
+                setBackendErrors(response.payload);
             }
         } catch (error) {
             console.error('Error eliminando equipo:', error);
+            setShowDeleteModal(false);
+            setIsSubmitting(false);
         }
     };
 
-    const handleLeaveTeam = async () => {
-        if (!window.confirm('¿Estás seguro de que quieres abandonar este equipo?')) return;
-
+    const handleConfirmLeave = async () => {
+        setIsSubmitting(true);
         try {
             const response = await backend.teamService.leaveTeam(id);
             if (response.ok) {
                 dispatch(actions.leaveTeamSuccess(parseInt(id)));
+                setShowLeaveModal(false);
+                setIsSubmitting(false);
                 navigate('/');
+            } else {
+                setShowLeaveModal(false);
+                setIsSubmitting(false);
+                setBackendErrors(response.payload);
             }
         } catch (error) {
             console.error('Error abandonando equipo:', error);
+            setShowLeaveModal(false);
+            setIsSubmitting(false);
         }
     };
 
@@ -136,9 +156,9 @@ const TeamDetail = () => {
         );
     }
 
-    const isCaptain = user?.id === team.capitan?.id;
+    const isCaptain = user?.id === team.creadorId;
     const isMember = team.miembros?.some(m => m.id === user?.id);
-    const codigoEquipo = team.codigoEquipo || 'No disponible';
+    const codigoEquipo = team.codigoEquipo || team.codigoInvitacion || 'No disponible';
 
     return (
         <Container className="team-detail-container">
@@ -225,62 +245,52 @@ const TeamDetail = () => {
                 </div>
 
                 <div className="team-detail-bottom">
-                    <Row className="g-4">
-                        <Col md={6}>
-                            <div className="team-detail-section">
-                                <h5 className="team-detail-section-title">
-                                    <i className="fa-solid fa-crown me-2" style={{ color: '#ffb800' }}></i>
-                                    Capitán
-                                </h5>
-                                <div className="team-detail-member captain">
-                                    <div className="team-detail-member-avatar">
-                                        {team.capitan?.nombre?.charAt(0).toUpperCase() || '?'}
-                                    </div>
-                                    <div>
-                                        <div className="team-detail-member-name">{team.capitan?.nombre}</div>
-                                        <div className="team-detail-member-email">{team.capitan?.email}</div>
-                                    </div>
-                                </div>
-                            </div>
-                        </Col>
+                    <h5 className="team-detail-members-title">
+                        <i className="fa-solid fa-users me-2"></i>
+                        Miembros ({team.miembros?.length || 0})
+                    </h5>
 
-                        <Col md={6}>
-                            <div className="team-detail-section">
-                                <h5 className="team-detail-section-title">
-                                    <i className="fa-solid fa-users me-2"></i>
-                                    Miembros ({team.miembros?.length || 0})
-                                </h5>
-                                <div className="team-detail-members-list">
-                                    {team.miembros?.map((member) => (
-                                        <div key={member.id} className="team-detail-member">
-                                            <div className="team-detail-member-avatar">
-                                                {member.nombre?.charAt(0).toUpperCase() || '?'}
-                                            </div>
-                                            <div>
-                                                <div className="team-detail-member-name">{member.nombre}</div>
-                                                <div className="team-detail-member-email">{member.email}</div>
-                                            </div>
-                                            {member.id === team.capitan?.id && (
-                                                <Badge className="team-detail-captain-badge">Capitán</Badge>
+                    <div className="team-detail-members-list">
+                        {team.miembros?.map((member) => {
+                            const isCaptainMember = member.id === team.creadorId;
+                            return (
+                                <div 
+                                    key={member.id} 
+                                    className={`team-detail-member ${isCaptainMember ? 'captain' : ''}`}
+                                >
+                                    <ProfileAvatar
+                                        imageUrl={member.imagenPerfil}
+                                        name={member.nombre}
+                                        size={40}
+                                        className="team-detail-member-avatar"
+                                    />
+                                    <div className="team-detail-member-info">
+                                        <div className="team-detail-member-name">
+                                            {member.nombre}
+                                            {isCaptainMember && (
+                                                <Badge className="team-detail-captain-badge">
+                                                    <i className="fa-solid fa-crown me-1"></i> Capitán
+                                                </Badge>
                                             )}
                                         </div>
-                                    ))}
-                                    {(!team.miembros || team.miembros.length === 0) && (
-                                        <div className="team-detail-no-members">
-                                            No hay miembros en este equipo
-                                        </div>
-                                    )}
+                                        <div className="team-detail-member-email">{member.email}</div>
+                                    </div>
                                 </div>
+                            );
+                        })}
+                        {(!team.miembros || team.miembros.length === 0) && (
+                            <div className="team-detail-no-members">
+                                No hay miembros en este equipo
                             </div>
-                        </Col>
-                    </Row>
+                        )}
+                    </div>
 
                     <div className="team-detail-actions">
                         {isCaptain && (
                             <Button 
                                 variant="danger" 
                                 className="team-detail-delete-btn"
-                                onClick={handleDeleteTeam}
+                                onClick={() => setShowDeleteModal(true)}
                             >
                                 <i className="fa-regular fa-trash-can me-2"></i>
                                 Eliminar equipo
@@ -290,7 +300,7 @@ const TeamDetail = () => {
                             <Button 
                                 variant="outline-danger" 
                                 className="team-detail-leave-btn"
-                                onClick={handleLeaveTeam}
+                                onClick={() => setShowLeaveModal(true)}
                             >
                                 <i className="fa-regular fa-right-from-bracket me-2"></i>
                                 Abandonar equipo
@@ -299,6 +309,28 @@ const TeamDetail = () => {
                     </div>
                 </div>
             </div>
+
+            <ConfirmationModal
+                show={showDeleteModal}
+                onHide={() => !isSubmitting && setShowDeleteModal(false)}
+                onConfirm={handleConfirmDelete}
+                title="¿Eliminar equipo?"
+                description={`¿Estás seguro de que quieres eliminar el equipo "${team.nombreEquipo || team.nombre}"? Esta acción no se puede deshacer.`}
+                confirmText="Eliminar"
+                isSubmitting={isSubmitting}
+                variant="danger"
+            />
+
+            <ConfirmationModal
+                show={showLeaveModal}
+                onHide={() => !isSubmitting && setShowLeaveModal(false)}
+                onConfirm={handleConfirmLeave}
+                title="¿Abandonar equipo?"
+                description={`¿Estás seguro de que quieres abandonar el equipo "${team.nombreEquipo || team.nombre}"?`}
+                confirmText="Abandonar"
+                isSubmitting={isSubmitting}
+                variant="danger"
+            />
         </Container>
     );
 };

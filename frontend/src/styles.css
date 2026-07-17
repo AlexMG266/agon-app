@@ -1,10 +1,10 @@
+/* src/styles.css */
 :root {
   --apple-bg: #f5f5f7;
   --apple-element: #ffffff;
   --apple-text: #1d1d1f;
   --apple-text-secondary: #86868b;
   --apple-border: #d2d2d7;
-  /* Color principal cambiado a negro para eliminar el azul */
   --apple-accent: #000000;
   --apple-accent-hover: #333333;
   --apple-danger: #ff3b30;
@@ -32,6 +32,28 @@ h1, h2, h3, h4, h5, h6 {
   letter-spacing: -0.02em;
 }
 
+/* Profile Avatar */
+.profile-avatar-image {
+  border-radius: 50%;
+  object-fit: cover;
+  flex-shrink: 0;
+  border: 1px solid rgba(0, 0, 0, 0.06);
+}
+
+.profile-avatar-placeholder {
+  border-radius: 50%;
+  background: #1d1d1f;
+  color: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 600;
+  flex-shrink: 0;
+  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", sans-serif;
+  border: 1px solid rgba(0, 0, 0, 0.06);
+  text-transform: uppercase;
+}
+
 .card {
   border: 1px solid var(--apple-border);
   border-radius: var(--radius-lg);
@@ -45,7 +67,6 @@ h1, h2, h3, h4, h5, h6 {
   box-shadow: var(--shadow-md);
 }
 
-/* Botones corregidos a negro sólido */
 .btn-primary {
   background-color: var(--apple-accent) !important;
   border-color: var(--apple-accent) !important;
@@ -109,7 +130,6 @@ a:not([class]):hover {
     text-decoration: underline;
 }
 
-/* Animaciones y validaciones */ 
 .animate-page-entry {
     animation: pageFadeInUp 0.35s cubic-bezier(0.25, 1, 0.5, 1) forwards;
 }
