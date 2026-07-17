@@ -25,6 +25,7 @@ const TeamDetail = () => {
     const [error, setError] = useState(null);
     const [isEditing, setIsEditing] = useState(false);
     const [editName, setEditName] = useState('');
+    const [editDescripcion, setEditDescripcion] = useState('');
     const [backendErrors, setBackendErrors] = useState(null);
     const [success, setSuccess] = useState(false);
     const [copied, setCopied] = useState(false);
@@ -46,6 +47,7 @@ const TeamDetail = () => {
             if (response.ok && response.payload) {
                 setTeam(response.payload);
                 setEditName(response.payload.nombreEquipo || response.payload.nombre);
+                setEditDescripcion(response.payload.descripcion || '');
             } else {
                 setError(response.error || 'No se pudo cargar el equipo');
                 setTeam(null);
@@ -59,12 +61,15 @@ const TeamDetail = () => {
         }
     };
 
-    const handleUpdateName = async (e) => {
+    const handleUpdateTeam = async (e) => {
         e.preventDefault();
         if (!editName.trim()) return;
 
         try {
-            const response = await backend.teamService.updateTeam(id, { nombreEquipo: editName.trim() });
+            const response = await backend.teamService.updateTeam(id, { 
+                nombreEquipo: editName.trim(),
+                descripcion: editDescripcion.trim()
+            });
             if (response.ok && response.payload) {
                 setTeam(response.payload);
                 setSuccess(true);
@@ -169,10 +174,12 @@ const TeamDetail = () => {
             </div>
 
             <div className="team-detail-card">
+                {/* Sección 1: Nombre y Descripción */}
                 <div className="team-detail-top">
-                    <div className="team-detail-title-section">
-                        {isEditing ? (
-                            <Form onSubmit={handleUpdateName} className="team-detail-edit-form">
+                    {isEditing ? (
+                        <Form onSubmit={handleUpdateTeam} className="team-detail-edit-form">
+                            <Form.Group className="mb-3">
+                                <Form.Label className="fw-semibold small text-muted">Nombre del equipo</Form.Label>
                                 <Form.Control
                                     type="text"
                                     value={editName}
@@ -181,6 +188,19 @@ const TeamDetail = () => {
                                     autoFocus
                                     required
                                 />
+                            </Form.Group>
+                            <Form.Group className="mb-3">
+                                <Form.Label className="fw-semibold small text-muted">Descripción o lema</Form.Label>
+                                <Form.Control
+                                    as="textarea"
+                                    rows={2}
+                                    value={editDescripcion}
+                                    onChange={(e) => setEditDescripcion(e.target.value)}
+                                    className="team-detail-edit-input"
+                                    placeholder="Escribe el lema de tu equipo..."
+                                />
+                            </Form.Group>
+                            <div className="d-flex gap-2">
                                 <Button type="submit" className="team-detail-save-btn">
                                     Guardar
                                 </Button>
@@ -191,59 +211,66 @@ const TeamDetail = () => {
                                     onClick={() => {
                                         setIsEditing(false);
                                         setEditName(team.nombreEquipo || team.nombre);
+                                        setEditDescripcion(team.descripcion || '');
                                     }}
                                 >
                                     Cancelar
                                 </Button>
-                            </Form>
-                        ) : (
-                            <>
+                            </div>
+                        </Form>
+                    ) : (
+                        <Row className="align-items-start">
+                            <Col md={6}>
                                 <h1 className="team-detail-name">{team.nombreEquipo || team.nombre}</h1>
                                 {isCaptain && (
                                     <Button 
                                         variant="light" 
-                                        className="team-detail-edit-btn"
+                                        className="team-detail-edit-btn mt-2"
                                         onClick={() => setIsEditing(true)}
                                     >
-                                        <i className="fa-solid fa-pen me-1"></i> Editar
+                                        <i className="fa-solid fa-pen me-1"></i> Editar equipo
                                     </Button>
                                 )}
-                            </>
-                        )}
-                    </div>
-
-                    {success && (
-                        <div className="team-detail-success">
-                            Equipo actualizado correctamente
-                        </div>
+                            </Col>
+                            <Col md={6} className="mt-3 mt-md-0">
+                                <div className="team-detail-description">
+                                    {team.descripcion ? (
+                                        <p className="text-secondary mb-0">{team.descripcion}</p>
+                                    ) : (
+                                        <p className="text-muted fst-italic mb-0">Sin descripción</p>
+                                    )}
+                                </div>
+                            </Col>
+                        </Row>
                     )}
-                    <Errors errors={backendErrors} onClose={() => setBackendErrors(null)} />
-
-                    <div className="team-detail-code-section">
-                        <div className="team-detail-code-header">
-                            <span className="team-detail-code-label">Código de equipo</span>
-                            {copied && (
-                                <span className="team-detail-code-copied">
-                                    <i className="fa-regular fa-check-circle me-1"></i> ¡Copiado!
-                                </span>
-                            )}
-                        </div>
-                        <div className="team-detail-code-wrapper">
-                            <code className="team-detail-code">{codigoEquipo}</code>
-                            <Button 
-                                variant="light" 
-                                className="team-detail-copy-btn"
-                                onClick={handleCopyCode}
-                            >
-                                <i className="fa-regular fa-copy me-1"></i> Copiar
-                            </Button>
-                        </div>
-                        <p className="team-detail-code-help">
-                            Comparte este código con tu compañero para que se una al equipo
-                        </p>
-                    </div>
                 </div>
 
+                {/* Sección 2: Código de equipo */}
+                <div className="team-detail-code-section">
+                    <div className="team-detail-code-header">
+                        <span className="team-detail-code-label">Código de equipo</span>
+                        {copied && (
+                            <span className="team-detail-code-copied">
+                                <i className="fa-regular fa-check-circle me-1"></i> ¡Copiado!
+                            </span>
+                        )}
+                    </div>
+                    <div className="team-detail-code-wrapper">
+                        <code className="team-detail-code">{codigoEquipo}</code>
+                        <Button 
+                            variant="light" 
+                            className="team-detail-copy-btn"
+                            onClick={handleCopyCode}
+                        >
+                            <i className="fa-regular fa-copy me-1"></i> Copiar
+                        </Button>
+                    </div>
+                    <p className="team-detail-code-help">
+                        Comparte este código con tu compañero para que se una al equipo
+                    </p>
+                </div>
+
+                {/* Sección 3: Miembros */}
                 <div className="team-detail-bottom">
                     <h5 className="team-detail-members-title">
                         <i className="fa-solid fa-users me-2"></i>
