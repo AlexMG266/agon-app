@@ -197,4 +197,36 @@ public class EquipoController {
             @Parameter(hidden = true) @RequestAttribute Long userId) {
         return EquipoConversor.toEquipoDtos(equipoService.obtenerEquiposDeUsuario(userId));
     }
+
+    @GetMapping("/{id}")
+    @Operation(
+            summary = "Obtener detalles de un equipo",
+            description = "Recupera la información completa de un equipo específico, incluyendo sus miembros y solicitudes activas. Solo los miembros del equipo pueden acceder a esta información."
+    )
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "Detalles del equipo recuperados con éxito",
+                content = @Content(schema = @Schema(implementation = EquipoDto.class))),
+        @ApiResponse(responseCode = "401", description = "No autorizado",
+                content = @Content),
+        @ApiResponse(responseCode = "403", description = "El usuario no es miembro de este equipo",
+                content = @Content),
+        @ApiResponse(responseCode = "404", description = "Equipo no encontrado",
+                content = @Content)
+    })
+    public EquipoDto obtenerEquipo(
+        @Parameter(hidden = true) @RequestAttribute Long userId,
+        @Parameter(description = "ID del equipo", example = "1") @PathVariable Long id)
+        throws InstanceNotFoundException, PermissionException {
+    
+        Equipo equipo = equipoService.obtenerEquipo(id);
+    
+        boolean esMiembro = equipo.getMiembros().stream()
+            .anyMatch(u -> u.getId().equals(userId));
+    
+        if (!esMiembro) {
+            throw new PermissionException();
+        }
+    
+        return EquipoConversor.toEquipoDto(equipo);
+    }
 }
