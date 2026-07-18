@@ -421,6 +421,85 @@
     box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
 }
 
+/* Botones Aceptar/Rechazar para invitaciones */
+.detail-actions-buttons {
+    border-top: 1px solid #e5e5ea;
+    padding-top: 1.25rem;
+    margin-top: 1.25rem;
+    display: flex;
+    gap: 0.75rem;
+}
+
+.btn-action-accept {
+    background-color: #34c759 !important;
+    border-color: #34c759 !important;
+    border-radius: 50px !important;
+    padding: 0.5rem 1.5rem !important;
+    font-size: 0.85rem !important;
+    font-weight: 500 !important;
+    color: #ffffff !important;
+    transition: all 0.2s ease !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    flex: 1;
+}
+
+.btn-action-accept:hover:not(:disabled) {
+    background-color: #2db84e !important;
+    border-color: #2db84e !important;
+    transform: scale(1.02);
+    box-shadow: 0 4px 16px rgba(52, 199, 89, 0.25);
+}
+
+.btn-action-accept:disabled {
+    opacity: 0.6;
+}
+
+.btn-action-reject {
+    border-radius: 50px !important;
+    padding: 0.5rem 1.5rem !important;
+    font-size: 0.85rem !important;
+    font-weight: 500 !important;
+    transition: all 0.2s ease !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    flex: 1;
+}
+
+.btn-action-reject:hover:not(:disabled) {
+    background-color: #ff3b30 !important;
+    color: #ffffff !important;
+    transform: scale(1.02);
+    box-shadow: 0 4px 16px rgba(255, 59, 48, 0.2);
+}
+
+.btn-action-reject:disabled {
+    opacity: 0.6;
+}
+
+/* Feedback después de una acción */
+.detail-feedback {
+    border-radius: 8px;
+    padding: 0.6rem 0.85rem;
+    font-size: 0.8rem;
+    font-weight: 500;
+    margin-top: 1rem;
+    display: flex;
+    align-items: center;
+}
+
+.feedback-success {
+    background-color: #e8f8ee;
+    border: 1px solid #b7ebc6;
+    color: #1d6b36;
+}
+
+.feedback-error {
+    background-color: #fef0ef;
+    border: 1px solid #fbc4c0;
+    color: #c41e3a;
+}
+
 @media (max-width: 1024px) {
     .detail-content {
         padding: 1.5rem 2rem;

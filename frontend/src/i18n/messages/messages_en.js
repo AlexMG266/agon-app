@@ -42,6 +42,22 @@ export default {
     'project.users.Profile.buttons.removeImage': 'Remove Image',
     'project.users.Profile.fields.userNameDisabled': 'Username cannot be modified',
     'project.users.Profile.success.profileUpdated': 'Profile updated successfully',
-    'project.users.Profile.success.passwordChanged': 'Password changed successfully'
+    'project.users.Profile.success.passwordChanged': 'Password changed successfully',
+
+    'project.notifications.accept': 'Accept',
+    'project.notifications.reject': 'Reject',
+    'project.notifications.accepted': 'Request accepted successfully',
+    'project.notifications.rejected': 'Request rejected successfully',
+    'project.notifications.errorResponding': 'Could not respond to the request',
+
+    'project.teams.JoinTeam.title': 'Join a team',
+    'project.teams.JoinTeam.subtitle': 'Enter the 8-character code provided by the team captain',
+    'project.teams.JoinTeam.codePlaceholder': 'Team code (e.g. a7K9pX2L)',
+    'project.teams.JoinTeam.search': 'Search team',
+    'project.teams.JoinTeam.requestJoin': 'Request to join',
+    'project.teams.JoinTeam.requestSuccess': 'Request sent successfully. The team captain will review your request.',
+    'project.teams.JoinTeam.notFound': 'No active team was found with that code',
+    'project.teams.JoinTeam.alreadyMember': 'You are already a member of this team',
+    'project.teams.JoinTeam.teamFull': 'This team is already full'
 
 }

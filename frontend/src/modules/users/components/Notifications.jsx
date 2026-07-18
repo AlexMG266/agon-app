@@ -74,6 +74,8 @@ const Notifications = () => {
     const [loadingList, setLoadingList] = useState(true);
     const [loadingDetail, setLoadingDetail] = useState(false);
     const [markingAsRead, setMarkingAsRead] = useState(false);
+    const [respondiendoId, setRespondiendoId] = useState(null);
+    const [actionFeedback, setActionFeedback] = useState(null);
 
     useEffect(() => {
         const initNotifications = async () => {
@@ -97,6 +99,7 @@ const Notifications = () => {
 
     const handleSelectNotification = useCallback(async (id, notificationList = notifications) => {
         setLoadingDetail(true);
+        setActionFeedback(null);
         try {
             const response = await backend.notificationService.getNotification(id);
             if (response.ok && response.payload) {
@@ -126,10 +129,52 @@ const Notifications = () => {
         }
     }, [notifications]);
 
-    const handleAction = () => {
-        if (selectedNotification) {
-            console.log('Acción pendiente:', selectedNotification.tipo, selectedNotification.referenciaId);
+    const handleResponderSolicitud = async (solicitudId, aceptar) => {
+        setRespondiendoId(solicitudId);
+        setActionFeedback(null);
+        try {
+            const response = await backend.teamService.respondToRequest(solicitudId, aceptar);
+
+            if (response.ok) {
+                setActionFeedback({
+                    type: 'success',
+                    message: aceptar ? 'Solicitud aceptada correctamente' : 'Solicitud rechazada correctamente'
+                });
+
+                // Recargar notificaciones para reflejar el cambio
+                const notifResponse = await backend.notificationService.getNotifications();
+                if (notifResponse.ok) {
+                    setNotifications(notifResponse.payload);
+                    // Actualizar la notificación seleccionada si sigue visible
+                    const updatedNotif = notifResponse.payload.find(n => n.id === selectedNotification?.id);
+                    if (updatedNotif) {
+                        setSelectedNotification(updatedNotif);
+                    } else {
+                        setSelectedNotification(null);
+                    }
+                }
+            } else {
+                const errorMsg = response.payload?.message || response.payload?.error || 
+                    (aceptar ? 'No se pudo aceptar la solicitud' : 'No se pudo rechazar la solicitud');
+                setActionFeedback({
+                    type: 'error',
+                    message: errorMsg
+                });
+            }
+        } catch (error) {
+            console.error('Error respondiendo solicitud:', error);
+            setActionFeedback({
+                type: 'error',
+                message: 'Error de conexión al responder la solicitud'
+            });
+        } finally {
+            setRespondiendoId(null);
         }
+    };
+
+    const isTipoInvitacion = (tipo) => {
+        const typeUpper = tipo?.toUpperCase() || '';
+        return typeUpper.includes('INVITACION') || typeUpper.includes('INVITATION');
     };
 
     const filteredNotifications = useMemo(() => {
@@ -266,10 +311,53 @@ const Notifications = () => {
                             {selectedNotification.cuerpo}
                         </div>
 
-                        {selectedNotification.pendienteDeAccion && (
+                        {/* Feedback de la acción */}
+                        {actionFeedback && (
+                            <div className={`detail-feedback ${actionFeedback.type === 'success' ? 'feedback-success' : 'feedback-error'}`}>
+                                <i className={`fa-solid ${actionFeedback.type === 'success' ? 'fa-circle-check' : 'fa-circle-exclamation'} me-2`}></i>
+                                {actionFeedback.message}
+                            </div>
+                        )}
+
+                        {/* Botones de acción para invitaciones (PROPUESTA/PETICION) */}
+                        {selectedNotification.pendienteDeAccion && isTipoInvitacion(selectedNotification.tipo) && (
+                            <div className="detail-actions-buttons">
+                                <Button
+                                    onClick={() => handleResponderSolicitud(selectedNotification.referenciaId, true)}
+                                    className="btn-action-accept"
+                                    disabled={respondiendoId !== null}
+                                >
+                                    {respondiendoId === selectedNotification.referenciaId ? (
+                                        <Spinner as="span" animation="border" size="sm" role="status" />
+                                    ) : (
+                                        <>
+                                            <i className="fa-solid fa-check me-2"></i>
+                                            Aceptar
+                                        </>
+                                    )}
+                                </Button>
+                                <Button
+                                    onClick={() => handleResponderSolicitud(selectedNotification.referenciaId, false)}
+                                    variant="outline-danger"
+                                    className="btn-action-reject"
+                                    disabled={respondiendoId !== null}
+                                >
+                                    {respondiendoId === selectedNotification.referenciaId ? (
+                                        <Spinner as="span" animation="border" size="sm" role="status" />
+                                    ) : (
+                                        <>
+                                            <i className="fa-solid fa-xmark me-2"></i>
+                                            Rechazar
+                                        </>
+                                    )}
+                                </Button>
+                            </div>
+                        )}
+
+                        {/* Botón de acción genérico para otros tipos */}
+                        {selectedNotification.pendienteDeAccion && !isTipoInvitacion(selectedNotification.tipo) && (
                             <div className="detail-actions">
                                 <Button
-                                    onClick={handleAction}
                                     className="btn-action-primary"
                                 >
                                     <i className="fa-solid fa-arrow-right me-2"></i>
