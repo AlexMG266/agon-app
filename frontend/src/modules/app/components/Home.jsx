@@ -8,7 +8,7 @@ import Button from 'react-bootstrap/Button';
 import Badge from 'react-bootstrap/Badge';
 import Spinner from 'react-bootstrap/Spinner';
 import users from '../../users';
-import teams from '../../teams';
+import teams, { JoinTeam } from '../../teams';
 import ProfileAvatar from '../../common/components/ProfileAvatar';
 import Table from '../../common/components/Table';
 import './Home.css';
@@ -108,6 +108,9 @@ const Dashboard = () => {
                             <Link to="/teams/create" className="empty-state-action">Crear equipo →</Link>
                         </div>
                     )}
+
+                    <div className="join-team-divider"></div>
+                    <JoinTeam />
                 </div>
 
                 <div className="dashboard-section">

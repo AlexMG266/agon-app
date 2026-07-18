@@ -190,6 +190,18 @@
     opacity: 0.6;
 }
 
+.join-team-divider {
+    border-top: 1px solid #e5e5ea;
+    margin: 1rem -1.5rem 1rem;
+}
+
+@media (max-width: 768px) {
+    .join-team-divider {
+        margin-left: -1rem;
+        margin-right: -1rem;
+    }
+}
+
 .dashboard-footer {
     display: grid;
     grid-template-columns: 1fr 1fr;
