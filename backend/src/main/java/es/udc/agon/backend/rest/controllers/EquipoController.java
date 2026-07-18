@@ -226,4 +226,28 @@ public class EquipoController {
     
         return EquipoConversor.toEquipoDto(equipo);
     }
+
+    @GetMapping("/by-code/{codigo}")
+    @ResponseStatus(HttpStatus.OK)
+    @Operation(
+            summary = "Buscar equipo por codigo de invitacion",
+            description = "Devuelve información pública del equipo (nombre, descripción, miembros) dado su código único de 8 caracteres alfanuméricos."
+    )
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Equipo encontrado",
+                    content = @Content(schema = @Schema(implementation = EquipoDto.class))),
+            @ApiResponse(responseCode = "401", description = "No autorizado",
+                    content = @Content),
+            @ApiResponse(responseCode = "404", description = "No se encontró ningún equipo activo con ese código",
+                    content = @Content)
+    })
+    public EquipoDto buscarEquipoPorCodigo(
+            @Parameter(hidden = true) @RequestAttribute Long userId,
+            @Parameter(description = "Código único del equipo (8 caracteres alfanuméricos)", example = "a7K9pX2L")
+            @PathVariable String codigo)
+            throws InstanceNotFoundException {
+
+        Equipo equipo = equipoService.buscarEquipoPorCodigo(codigo);
+        return EquipoConversor.toEquipoDto(equipo);
+    }
 }

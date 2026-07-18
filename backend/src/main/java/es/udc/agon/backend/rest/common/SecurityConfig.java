@@ -34,6 +34,7 @@ public class SecurityConfig {
                 .addFilterBefore(new JwtFilter(jwtGenerator), UsernamePasswordAuthenticationFilter.class)
 
                 .authorizeHttpRequests((authorize) -> authorize
+                    .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
                     .requestMatchers(HttpMethod.POST, "/users/signup").permitAll()
                     .requestMatchers(HttpMethod.POST, "/users/login").permitAll()
                     .requestMatchers(HttpMethod.POST, "/users/loginFromServiceToken").permitAll()
@@ -50,9 +51,9 @@ public class SecurityConfig {
                     .requestMatchers(HttpMethod.POST, "/notifications/*").hasRole("USER")  
                     .requestMatchers(HttpMethod.PUT, "/notifications/*").hasRole("USER")  
 
-                    .requestMatchers(HttpMethod.POST, "/teams").hasRole("USER") 
-                    .requestMatchers(HttpMethod.GET, "/teams").hasRole("USER")  
-                    .requestMatchers(HttpMethod.GET, "/teams/*").hasRole("USER")  
+                    .requestMatchers(HttpMethod.POST, "/teams").hasRole("USER")
+                    .requestMatchers(HttpMethod.GET, "/teams").hasRole("USER")
+                    .requestMatchers(HttpMethod.GET, "/teams/**").hasRole("USER")
                     .requestMatchers(HttpMethod.PUT, "/teams/*").hasRole("USER")  
                     .requestMatchers(HttpMethod.DELETE, "/teams/*").hasRole("USER")  
                     .requestMatchers(HttpMethod.POST, "/teams/*/propuestas").hasRole("USER")  

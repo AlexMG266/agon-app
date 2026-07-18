@@ -212,4 +212,12 @@ public class EquipoServiceImpl implements EquipoService {
         return equipoDao.findById(equipoId)
                 .orElseThrow(() -> new InstanceNotFoundException("project.entities.equipo", equipoId));
     }
+
+    @Override
+    public Equipo buscarEquipoPorCodigo(String codigoEquipo) throws InstanceNotFoundException {
+        Equipo equipo = equipoDao.findByCodigoEquipo(codigoEquipo)
+                .orElseThrow(() -> new InstanceNotFoundException("project.entities.equipo", codigoEquipo));
+        validarEquipoActivo(equipo);
+        return equipo;
+    }
 }

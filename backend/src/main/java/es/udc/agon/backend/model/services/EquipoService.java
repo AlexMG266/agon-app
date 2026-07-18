@@ -93,4 +93,12 @@ public interface EquipoService {
      * @throws InstanceNotFoundException Si el equipo no existe.
      */
     Equipo obtenerEquipo(Long equipoId) throws InstanceNotFoundException;
+
+    /**
+     * Busca un equipo activo por su código único de invitación.
+     * * @param codigoEquipo Código alfanumérico de 8 caracteres del equipo.
+     * @return El equipo encontrado.
+     * @throws InstanceNotFoundException Si no existe un equipo activo con ese código.
+     */
+    Equipo buscarEquipoPorCodigo(String codigoEquipo) throws InstanceNotFoundException;
 }
