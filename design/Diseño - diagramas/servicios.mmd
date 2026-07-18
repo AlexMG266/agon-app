@@ -2,23 +2,35 @@ classDiagram
     direction TB
 
     %% --- Controladores (Capa REST - Endpoints) --- %%
-    class UsuarioController {
-        -IUsuarioService usuarioService
-        +registrar(UsuarioDto dto) ResponseEntity
-        +login(LoginDto dto) ResponseEntity
-        +consultarPerfil(Long id) ResponseEntity
-        +editarPerfil(Long id, UsuarioDto dto) ResponseEntity
-        +consultarNotificaciones(Long userId) ResponseEntity
-        +gestionarNotificacion(Long notifId, boolean aceptar) ResponseEntity
+    class UserController {
+        -UserService userService
+        -JwtGenerator jwtGenerator
+        +POST /signup(UsuarioDto dto) ResponseEntity
+        +POST /login(LoginParamsDto dto) AuthenticatedUserDto
+        +POST /loginFromServiceToken(Long userId) AuthenticatedUserDto
+        +PUT /{id}(Long userId, Long id, UserDto dto) UserDto
+        +POST /{id}/changePassword(Long userId, Long id, ChangePasswordParamsDto dto) void
     }
 
     class EquipoController {
-        -IEquipoService equipoService
-        +crearEquipo(Long capitanId, EquipoDto dto) ResponseEntity
-        +invitarMiembro(Long capitanId, Long equipoId, Long usuarioId) ResponseEntity
-        +responderInvitacion(Long invitacionId, boolean aceptar) ResponseEntity
-        +abandonarEquipo(Long userId, Long equipoId) ResponseEntity
-        +disolverEquipo(Long capitanId, Long equipoId) ResponseEntity
+        -EquipoService equipoService
+        +POST /teams(Long userId, CrearEquipoParamsDto params) EquipoDto
+        +POST /teams/{id}/propuestas(Long userId, Long id, Long jugadorId) SolicitudDto
+        +POST /teams/peticiones(Long userId, String codigoEquipo) SolicitudDto
+        +POST /teams/solicitudes/{solicitudId}/responder(Long userId, Long solicitudId, ResponderSolicitudParamsDto params) void
+        +POST /teams/{id}/leave(Long userId, Long id) void
+        +POST /teams/{id}/members/{memberId}/kick(Long userId, Long id, Long memberId) void
+        +DELETE /teams/{id}(Long userId, Long id) void
+        +GET /teams(Long userId) List~EquipoDto~
+        +GET /teams/{id}(Long userId, Long id) EquipoDto
+        +GET /teams/by-code/{codigo}(Long userId, String codigo) EquipoDto
+    }
+
+    class NotificationController {
+        -NotificationService notificationService
+        +GET /notifications(Long userId) List~NotificationDto~
+        +GET /notifications/{notificationId}(Long userId, Long notificationId) NotificationDto
+        +PUT /notifications/{notificationId}(Long userId, Long notificationId) NotificationDto
     }
 
     class TorneoController {
@@ -40,37 +52,80 @@ classDiagram
         +solicitarAplazamiento(Long capitanId, Long encuentroId, AplazamientoDto dto) ResponseEntity
     }
 
-    %% --- DTOs (Data Transfer Objects) con atributos completos --- %%
-    class UsuarioDto {
+    %% --- DTOs con atributos completos --- %%
+    class UserDto {
         <<DTO>>
         +Long id
+        +int elo
         +String nombre
         +String email
         +String imagenPerfil
-        +int elo
+        +String password
         +LocalDate fechaNacimiento
+        +boolean eloProvisional
     }
 
-    class LoginDto {
+    class LoginParamsDto {
         <<DTO>>
-        +String email
+        +String nombre
         +String password
     }
-    
-    class NotificacionDto {
+
+    class AuthenticatedUserDto {
+        <<DTO>>
+        +String serviceToken
+        +UserDto userDto
+    }
+
+    class ChangePasswordParamsDto {
+        <<DTO>>
+        +String oldPassword
+        +String newPassword
+    }
+
+    class NotificationDto {
         <<DTO>>
         +Long id
-        +String mensaje
-        +boolean leida
+        +String asunto
+        +String cuerpo
+        +boolean leido
         +boolean pendienteDeAccion
-        +TipoNotificacion tipo
+        +Long referenciaId
+        +String tipo
+        +Long fechaCreacion
     }
 
     class EquipoDto {
         <<DTO>>
         +Long id
         +String nombreEquipo
-        +EstadoEquipo estado
+        +String estado
+        +String descripcion
+        +Long creadorId
+        +String codigoEquipo
+        +List~UserDto~ miembros
+    }
+
+    class CrearEquipoParamsDto {
+        <<DTO>>
+        +String nombreEquipo
+        +String descripcion
+    }
+
+    class SolicitudDto {
+        <<DTO>>
+        +Long id
+        +Long candidatoId
+        +Long decisorId
+        +Long equipoId
+        +String estado
+        +String tipoSolicitud
+        +long fechaCreacion
+    }
+
+    class ResponderSolicitudParamsDto {
+        <<DTO>>
+        +boolean aceptar
     }
 
     class TorneoDto {
@@ -106,20 +161,28 @@ classDiagram
     }
 
     %% --- Dependencias Controladores -> Interfaces de Servicio --- %%
-    UsuarioController --> IUsuarioService : @Autowired
-    EquipoController --> IEquipoService : @Autowired
+    UserController --> UserService : @Autowired
+    EquipoController --> EquipoService : @Autowired
+    NotificationController --> NotificationService : @Autowired
     TorneoController --> ITorneoService : @Autowired
     EncuentroController --> IEncuentroService : @Autowired
 
     %% --- Dependencias Controladores -> DTOs --- %%
-    UsuarioController ..> UsuarioDto : usa
-    UsuarioController ..> LoginDto : usa
-    UsuarioController ..> NotificacionDto : devuelve
-    
-    EquipoController ..> EquipoDto : usa
-    
+    UserController ..> UserDto : usa
+    UserController ..> LoginParamsDto : usa
+    UserController ..> AuthenticatedUserDto : devuelve
+    UserController ..> ChangePasswordParamsDto : recibe
+    UserController ..> NotificationDto : (via NotificationService)
+
+    EquipoController ..> EquipoDto : usa/devuelve
+    EquipoController ..> CrearEquipoParamsDto : recibe
+    EquipoController ..> SolicitudDto : devuelve
+    EquipoController ..> ResponderSolicitudParamsDto : recibe
+
+    NotificationController ..> NotificationDto : usa/devuelve
+
     TorneoController ..> TorneoDto : usa
-    
+
     EncuentroController ..> EncuentroDto : devuelve
     EncuentroController ..> SetDto : recibe
-    EncuentroController ..> AplazamientoDto : recibe	
+    EncuentroController ..> AplazamientoDto : recibe

@@ -1,51 +1,66 @@
 classDiagram
     direction TB
-    
-    class EstadoInvitacion { <<enumeration>> PENDIENTE, ACEPTADO }
+
+    class EstadoSolicitud { <<enumeration>> PENDIENTE, ACEPTADO, RECHAZADO }
+    class TipoSolicitud { <<enumeration>> PROPUESTA, PETICION }
+    class TipoNotificacion { <<enumeration>> INVITACION, RECORDATORIO_PARTIDO, RESULTADO_PARTIDO, SOLICITUD_APLAZAMIENTO, SYSTEM }
+    class EstadoEquipo { <<enumeration>> ACTIVO, DISUELTO }
+
     class EstadoTorneo { <<enumeration>> RECLUTANDO, FASE_GRUPOS, PLAYOFF, FINALIZADO }
     class EstadoInscripcion { <<enumeration>> ACTIVA, CANCELADA }
     class TipoFase { <<enumeration>> LIGA_GRUPO, ELIMINATORIA }
     class EstadoJornada { <<enumeration>> ACTIVA, APLAZADA }
     class TipoJornada { <<enumeration>> LIGA_4_SETS, PLAYOFF_BEST_OF_5 }
     class EstadoEncuentro { <<enumeration>> PENDIENTE, JUGADO, APLAZADO, SOLICITADO_APLAZAMIENTO }
-    class EstadoSolicitud { <<enumeration>> PENDIENTE, ACEPTADO, RECHAZADO }
-	class TipoNotificacion { <<enumeration>> INVITACION, RECORDATORIO_PARTIDO, SOLICITUD_APLAZAMIENTO }
-	class EstadoEquipo { <<enumeration>> ACTIVO, DISUELTO }
 
+    %% --- Entidades implementadas --- %%
     class Usuario {
         -Long id
-		-int elo
+        -int elo
         -String nombre
         -String email
         -String imagenPerfil
-		-String password
-		-LocalDate fechaNacimiento
+        -String password
+        -LocalDate fechaNacimiento
+        -boolean eloProvisional
+        -String role
     }
-	class Notificacion {
+    class Notificacion {
         -Long id
-        -String mensaje
-        -boolean leida
+        -User usuario
+        -String asunto
+        -String cuerpo
+        -boolean leido
         -boolean pendienteDeAccion
         -Long referenciaId
         -TipoNotificacion tipo
-        +marcarComoLeida() void
-        +ejecutarAccion(boolean aceptada) void
+        -LocalDateTime fechaCreacion
+        +setLeido(boolean) void
     }
     class Equipo {
         -Long id
         -String nombreEquipo
-		-EstadoEquipo estado
+        -EstadoEquipo estado
+        -String descripcion
+        -User creador
+        -String codigoEquipo
+        -Set~User~ miembros
+        +addMiembro(User) void
+        +removeMiembro(User) void
     }
-	class Invitacion {
-		-Long id
-        -Usuario usuarioDestino
-        -Usuario usuarioRemitente
+    class Solicitud {
+        -Long id
+        -User candidato
+        -User decisor
         -Equipo equipo
-        -EstadoInvitacion estado
-        -LocalDateTime fechaEnvio
+        -EstadoSolicitud estado
+        -TipoSolicitud tipoSolicitud
+        -LocalDateTime fechaCreacion
         +aceptar() void
         +rechazar() void
-	}
+    }
+
+    %% --- Entidades no implementadas  --- %%
     class Torneo {
         -Long id
         -String nombre
@@ -73,17 +88,17 @@ classDiagram
         -Long id
         -int numeroJornada
         -TipoFase tipoFase
-		-TipoJornada formatoJornada
+        -TipoJornada formatoJornada
         -EstadoJornada estado
-		-LocalDate fechaInicio
-		-LocalDate fechaFin
+        -LocalDate fechaInicio
+        -LocalDate fechaFin
     }
     class Encuentro {
         -Long id
-		-Equipo local 
-		-Equipo visitante
+        -Equipo local
+        -Equipo visitante
         -EstadoEncuentro estadoEncuentro
-		-LocalDateTime fechaRealizacion
+        -LocalDateTime fechaRealizacion
         +registrarResultado(List~Set~ sets) void
         +getGanador() Equipo
         +getPuntosLocal() int
@@ -103,43 +118,45 @@ classDiagram
         +cancelarSolicitud() void
     }
 
+    %% --- RELACIONES IMPLEMENTADAS --- %%
     Usuario "1" --> "N" Equipo : "es creador de"
-    Usuario "1" --> "N" Torneo : "organiza"
-	Usuario "1" --> "N" Invitacion : "envía (remitente)"
-    Usuario "1" --> "N" Invitacion : "recibe (destino)"
     Usuario "1" --> "N" Notificacion : "recibe"
-	
+    Usuario "1" --> "N" Solicitud : "candidato (envía)"
+    Usuario "1" --> "N" Solicitud : "decisor (decide)"
+
+    Equipo "1" --> "1" User : "creador"
+    Equipo "N" --> "N" User : "miembros"
+    Equipo "1" --> "N" Solicitud : "recibe solicitudes"
+
+    %% --- RELACIONES CON ENUMERADOS IMPLEMENTADAS --- %%
+    Notificacion ..> TipoNotificacion : "tipo"
+    Equipo ..> EstadoEquipo : "estado"
+    Solicitud ..> EstadoSolicitud : "estado"
+    Solicitud ..> TipoSolicitud : "tipoSolicitud"
+
+    %% --- RELACIONES NO IMPLEMENTADAS  --- %%
+    Usuario "1" --> "N" Torneo : "organiza"
+
     Torneo "1" *-- "N" Grupo : "posee"
     Torneo "1" *-- "N" Jornada : "planifica"
     Torneo "1" --> "N" Inscripcion : "gestiona"
-    
-	Equipo "1" --> "1..2" Usuario : miembros
-	Equipo "1" --> "1" Usuario : "creador"
-	Equipo "1" --> "N" Inscripcion : "pertenece a"
-    
-	Grupo "1" --> "N" Inscripcion : "clasifica"
-    
-	Jornada "1" *-- "N" Encuentro : "contiene"
-    
-	Encuentro "1" *-- "N" Set : "tiene"
+
+    Equipo "1" --> "N" Inscripcion : "pertenece a"
+
+    Grupo "1" --> "N" Inscripcion : "clasifica"
+
+    Jornada "1" *-- "N" Encuentro : "contiene"
+
+    Encuentro "1" *-- "N" Set : "tiene"
     Encuentro "1" --> "N" SolicitudAplazamiento : "recibe"
-	Encuentro "1" --> "1" Equipo : "local"
-	Encuentro "1" --> "1" Equipo : "visitante"
-	
+    Encuentro "1" --> "1" Equipo : "local"
+    Encuentro "1" --> "1" Equipo : "visitante"
 
-    %% --- RELACIONES CON ENUMERADOS  --- %%
-
-	Notificacion ..> TipoNotificacion : "tipo"
-    
-	Torneo ..> EstadoTorneo : "estado"
-        
-	Inscripcion ..> EstadoInscripcion : "estadoInscripcion"
-    
-	Jornada ..> TipoFase : "tipoFase"
-	Jornada ..> TipoJornada : "formatoJornada"
+    %% --- RELACIONES CON ENUMERADOS NO IMPLEMENTADAS --- %%
+    Torneo ..> EstadoTorneo : "estado"
+    Inscripcion ..> EstadoInscripcion : "estadoInscripcion"
+    Jornada ..> TipoFase : "tipoFase"
+    Jornada ..> TipoJornada : "formatoJornada"
     Jornada ..> EstadoJornada : "estado"
-    
-	Encuentro ..> EstadoEncuentro : "estadoEncuentro"
-    
-	SolicitudAplazamiento ..> EstadoSolicitud : "estado"
-
+    Encuentro ..> EstadoEncuentro : "estadoEncuentro"
+    SolicitudAplazamiento ..> EstadoSolicitud : "estado"

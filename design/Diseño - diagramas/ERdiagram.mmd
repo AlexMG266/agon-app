@@ -1,64 +1,80 @@
 erDiagram
     USUARIO ||--o{ EQUIPO : "crea"
-    USUARIO ||--o{ TORNEO : "organiza"
     USUARIO ||--o{ NOTIFICACION : "recibe"
-    USUARIO ||--o{ INVITACION : "remitente"
-    USUARIO ||--o{ INVITACION : "destino"
-    
-    EQUIPO ||--o{ INVITACION : "recibe"
+    USUARIO ||--o{ SOLICITUD : "candidato"
+    USUARIO ||--o{ SOLICITUD : "decisor"
+    USUARIO ||--o{ TORNEO : "organiza"
+
+    EQUIPO ||--|| USUARIO : "creador"
+    EQUIPO ||--o{ EQUIPO_MIEMBROS : "tiene"
+    EQUIPO_MIEMBROS ||--|| USUARIO : "miembro"
+    EQUIPO ||--o{ SOLICITUD : "recibe"
     EQUIPO ||--o{ INSCRIPCION : "participa"
     EQUIPO ||--o{ ENCUENTRO : "local"
     EQUIPO ||--o{ ENCUENTRO : "visitante"
-    
+
     TORNEO ||--o{ GRUPO : "posee"
     TORNEO ||--o{ JORNADA : "planifica"
     TORNEO ||--o{ INSCRIPCION : "gestiona"
-    
+
     GRUPO ||--o{ INSCRIPCION : "agrupa"
-    
+
     JORNADA ||--o{ ENCUENTRO : "contiene"
-    
+
     ENCUENTRO ||--o{ SET : "tiene"
     ENCUENTRO ||--o{ SOLICITUD_APLAZAMIENTO : "gestiona"
-    
+
     USUARIO {
-        int id PK
-        string nombre
-        string email
-		string imagenPerfil
-        string password
+        bigint id PK
         int elo
+        string nombre UK
+        string email
+        text imagenPerfil
+        string password
         date fechaNacimiento
+        boolean eloProvisional
+        string role
     }
 
     NOTIFICACION {
-        int id PK
-        int idUsuario FK
-        string mensaje
-        boolean leida
+        bigint id PK
+        bigint usuarioId FK
+        string asunto
+        string cuerpo
+        boolean leido
         boolean pendienteDeAccion
-        int referenciaId
+        bigint referenciaId
         string tipo
+        timestamp fechaCreacion
     }
 
-    INVITACION {
-        int id PK
-        int idUsuarioRemitente FK
-        int idUsuarioDestino FK
-        int idEquipo FK
+    SOLICITUD {
+        bigint id PK
+        bigint candidato_id FK
+        bigint decisor_id FK
+        bigint equipo_id FK
         string estado
+        string tipo_solicitud
+        timestamp fecha_creacion
     }
 
     EQUIPO {
-        int id PK
-        int idCreador FK
-        string nombreEquipo
+        bigint id PK
+        string nombreEquipo UK
+        string descripcion
         string estado
+        bigint creador_id FK
+        string codigo_equipo UK
+    }
+
+    EQUIPO_MIEMBROS {
+        bigint equipo_id PK, FK
+        bigint usuario_id PK, FK
     }
 
     TORNEO {
-        int id PK
-        int idOrganizador FK
+        bigint id PK
+        bigint idOrganizador FK
         string nombre
         int numGrupos
         int equiposPorGrupo
@@ -67,17 +83,17 @@ erDiagram
     }
 
     GRUPO {
-        int id PK
-        int idTorneo FK
+        bigint id PK
+        bigint idTorneo FK
         string nombreGrupo
     }
 
     INSCRIPCION {
-        int id PK
-        int idTorneo FK
-        int idEquipo FK
-        int idGrupo FK
-		int partidosJugados
+        bigint id PK
+        bigint idTorneo FK
+        bigint idEquipo FK
+        bigint idGrupo FK
+        int partidosJugados
         string estadoInscripcion
         int puntosLiga
         int setsGanados
@@ -85,37 +101,37 @@ erDiagram
     }
 
     JORNADA {
-        int id PK
-        int idTorneo FK
+        bigint id PK
+        bigint idTorneo FK
         int numeroJornada
         string tipoFase
         string formatoJornada
         string estado
-		date fechaInicio
-		date fechaFin
+        date fechaInicio
+        date fechaFin
     }
 
     ENCUENTRO {
-        int id PK
-        int idJornada FK
-        int idEquipoLocal FK
-        int idEquipoVisitante FK
+        bigint id PK
+        bigint idJornada FK
+        bigint idEquipoLocal FK
+        bigint idEquipoVisitante FK
         string estadoEncuentro
         datetime fechaRealizacion
     }
 
     SET {
-        int id PK
-        int idEncuentro FK
+        bigint id PK
+        bigint idEncuentro FK
         int numeroSet
         int golesLocal
         int golesVisitante
     }
 
     SOLICITUD_APLAZAMIENTO {
-        int id PK
-        int idEncuentro FK
-        int idEquipoSolicitante FK
+        bigint id PK
+        bigint idEncuentro FK
+        bigint idEquipoSolicitante FK
         datetime fechaSolicitada
         string estado
     }
