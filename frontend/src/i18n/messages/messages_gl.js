@@ -192,7 +192,7 @@ export default {
     'project.teams.Detail.codeCopied': 'Copiado!',
     'project.teams.Detail.copy': 'Copiar',
     'project.teams.Detail.codeHelp': 'Comparte este código co teu compañeiro para que se una ao equipo',
-    'project.teams.Detail.membersTitle': 'Membros ({count})',
+    'project.teams.Detail.membersTitle': 'Membros',
     'project.teams.Detail.captain': 'Capitán',
     'project.teams.Detail.noMembers': 'Non hai membros neste equipo',
     'project.teams.Detail.deleteTeam': 'Eliminar equipo',

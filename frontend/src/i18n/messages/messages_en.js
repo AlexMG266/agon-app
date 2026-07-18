@@ -192,7 +192,7 @@ export default {
     'project.teams.Detail.codeCopied': 'Copied!',
     'project.teams.Detail.copy': 'Copy',
     'project.teams.Detail.codeHelp': 'Share this code with your partner so they can join the team',
-    'project.teams.Detail.membersTitle': 'Members ({count})',
+    'project.teams.Detail.membersTitle': 'Members',
     'project.teams.Detail.captain': 'Captain',
     'project.teams.Detail.noMembers': 'No members in this team',
     'project.teams.Detail.deleteTeam': 'Delete team',
