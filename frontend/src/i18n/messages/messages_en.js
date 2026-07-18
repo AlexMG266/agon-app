@@ -5,6 +5,8 @@ export default {
     'project.app.Header.logout': 'Logout',
     'project.app.Header.account': 'Account',
     'project.app.Header.competition': 'Competition',
+    'project.app.Header.newNotification': 'New notification',
+    'project.app.Header.viewNotifications': 'View notifications',
     'project.app.Header.history': 'My History & ELO',
     'project.app.Home.welcome': 'Welcome to Agón!',
 

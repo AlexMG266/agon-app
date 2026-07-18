@@ -1,7 +1,7 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { useSelector } from 'react-redux';
 import { Link, useLocation } from 'react-router';
-import { FormattedMessage } from 'react-intl';
+import { FormattedMessage, useIntl } from 'react-intl';
 import Navbar from 'react-bootstrap/Navbar';
 import Nav from 'react-bootstrap/Nav';
 import NavDropdown from 'react-bootstrap/NavDropdown';
@@ -13,9 +13,44 @@ import { NOTIFICATIONS_UPDATED_EVENT } from '../../../backend/notificationServic
 import './Header.css';
 
 const Header = () => {
+    const intl = useIntl();
     const user = useSelector(users.selectors.getUser);
     const location = useLocation();
     const [unreadCount, setUnreadCount] = useState(0);
+    const prevUnreadRef = useRef(0);
+    const [popupData, setPopupData] = useState(null);
+    const popupRef = useRef(null);
+    const iconRef = useRef(null);
+    const hideTimerRef = useRef(null);
+
+    const clearPopup = useCallback(() => {
+        setPopupData(null);
+    }, []);
+
+    // Click outside to close popup
+    useEffect(() => {
+        if (!popupData) return;
+        const handleClickOutside = (e) => {
+            if (
+                popupRef.current && !popupRef.current.contains(e.target) &&
+                iconRef.current && !iconRef.current.contains(e.target)
+            ) {
+                clearPopup();
+            }
+        };
+        document.addEventListener('mousedown', handleClickOutside);
+        return () => document.removeEventListener('mousedown', handleClickOutside);
+    }, [popupData, clearPopup]);
+
+    // Auto-hide popup after 5 seconds
+    useEffect(() => {
+        if (!popupData) return;
+        if (hideTimerRef.current) clearTimeout(hideTimerRef.current);
+        hideTimerRef.current = setTimeout(clearPopup, 5000);
+        return () => {
+            if (hideTimerRef.current) clearTimeout(hideTimerRef.current);
+        };
+    }, [popupData, clearPopup]);
 
     const fetchUnreadCount = useCallback(() => {
         if (!user) {
@@ -26,10 +61,27 @@ const Header = () => {
         backend.notificationService.getNotifications().then(response => {
             if (response.ok && response.payload) {
                 const unread = response.payload.filter(n => !n.leido).length;
+                const prev = prevUnreadRef.current;
+                prevUnreadRef.current = unread;
+
+                if (unread > prev) {
+                    // Find the most recent unread notification for the popup preview
+                    const latestUnread = response.payload
+                        .filter(n => !n.leido)
+                        .sort((a, b) => new Date(b.fechaCreacion) - new Date(a.fechaCreacion))[0];
+                    setPopupData({
+                        key: Date.now(),
+                        subject: latestUnread?.asunto || intl.formatMessage({
+                            id: 'project.app.Header.newNotification',
+                            defaultMessage: 'Tienes una nueva notificación'
+                        }),
+                        body: latestUnread?.cuerpo || ''
+                    });
+                }
                 setUnreadCount(unread);
             }
         }).catch(() => { });
-    }, [user]);
+    }, [user, intl]);
 
     useEffect(() => {
         fetchUnreadCount();
@@ -42,6 +94,11 @@ const Header = () => {
             return user.imagenPerfil;
         }
         return null;
+    };
+
+    const truncate = (text, max = 60) => {
+        if (!text || text.length <= max) return text;
+        return text.substring(0, max) + '...';
     };
 
     return (
@@ -60,12 +117,37 @@ const Header = () => {
                 <div className="d-flex align-items-center gap-1">
                     {user ? (
                         <>
-                            <Nav.Link as={Link} to="/users/notifications" className="navbar-icon-btn position-relative d-flex align-items-center justify-content-center">
-                                <i className="fa-solid fa-inbox fs-5" style={{ color: '#1d1d1f' }}></i>
-                                {unreadCount > 0 && (
-                                    <span className="navbar-badge" title="Notificaciones pendientes"></span>
+                            <div className="position-relative" ref={iconRef}>
+                                <Nav.Link as={Link} to="/users/notifications" className="navbar-icon-btn position-relative d-flex align-items-center justify-content-center">
+                                    <i className={`fa-solid fa-inbox fs-5 ${popupData ? 'inbox-bounce' : ''}`} style={{ color: '#1d1d1f' }}></i>
+                                    {unreadCount > 0 && (
+                                        <span className="navbar-badge" title="Notificaciones pendientes"></span>
+                                    )}
+                                </Nav.Link>
+
+                                {/* Popup anclado al icono de notificaciones */}
+                                {popupData && (
+                                    <div className="notification-popup" ref={popupRef}>
+                                        <div className="notification-popup-arrow"></div>
+                                        <div className="notification-popup-body">
+                                            <div className="notification-popup-header">
+                                                <i className="fa-solid fa-bell" style={{ color: '#ff9500' }}></i>
+                                                <span className="notification-popup-title">
+                                                    <FormattedMessage id="project.app.Header.newNotification" defaultMessage="Nueva notificación" />
+                                                </span>
+                                            </div>
+                                            <div className="notification-popup-subject">{truncate(popupData.subject, 50)}</div>
+                                            {popupData.body && (
+                                                <div className="notification-popup-preview">{truncate(popupData.body, 80)}</div>
+                                            )}
+                                            <Link to="/users/notifications" className="notification-popup-link" onClick={clearPopup}>
+                                                <FormattedMessage id="project.app.Header.viewNotifications" defaultMessage="Ver notificaciones" />
+                                                <i className="fa-solid fa-arrow-right ms-1"></i>
+                                            </Link>
+                                        </div>
+                                    </div>
                                 )}
-                            </Nav.Link>
+                            </div>
 
                             <NavDropdown
                                 title={
