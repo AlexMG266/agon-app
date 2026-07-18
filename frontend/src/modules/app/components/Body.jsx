@@ -4,7 +4,7 @@ import { Route, Routes, NavLink, useLocation } from 'react-router';
 import AppGlobalComponents from './AppGlobalComponents';
 import Home from './Home';
 import { Login, SignUp, Profile, Logout, Notifications } from '../../users';
-import { CreateTeam, TeamDetail } from '../../teams';
+import { CreateTeam, TeamDetail, JoinTeam } from '../../teams';
 import ForbiddenPage from '../../common/components/ForbiddenPage';
 import NotFoundPage from '../../common/components/NotFoundPage';
 import users from '../../users';
@@ -63,6 +63,7 @@ const Body = () => {
                     {loggedIn && <Route path="/users/logout" element={<Logout />} />}
                     {loggedIn && <Route path="/teams/create" element={<CreateTeam />} />}
                     {loggedIn && <Route path="/teams/view/:id" element={<TeamDetail />} />}
+                    {loggedIn && <Route path="/teams/join" element={<JoinTeam />} />}
                     <Route path="/forbidden" element={<ForbiddenPage />} />
                     <Route path="*" element={<NotFoundPage />} />
                     {!loggedIn && <Route path="/users/login" element={<Login />} />}

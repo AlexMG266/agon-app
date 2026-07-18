@@ -16,6 +16,11 @@ export const getTeam = async (id) => {
     return await appFetch('GET', `/teams/${id}`);
 };
 
+// GET /teams/by-code/{codigo}: busca un equipo por su código de invitación (previsualización).
+export const getTeamByCode = async (codigoEquipo) => {
+    return await appFetch('GET', `/teams/by-code/${codigoEquipo}`);
+};
+
 // PUT /teams/{id}: actualiza un equipo.
 export const updateTeam = async (id, data) => {
     return await appFetch('PUT', `/teams/${id}`, data);
@@ -60,6 +65,7 @@ export default {
     createTeam,
     getMyTeams,
     getTeam,
+    getTeamByCode,
     updateTeam,
     deleteTeam,
     requestJoinWithCode,
