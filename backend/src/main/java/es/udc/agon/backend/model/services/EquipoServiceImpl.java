@@ -229,6 +229,8 @@ public class EquipoServiceImpl implements EquipoService {
                 .orElseThrow(() -> new InstanceNotFoundException("project.entities.equipo", equipoId));
         User miembro = userDao.findById(miembroId)
                 .orElseThrow(() -> new InstanceNotFoundException("project.entities.user", miembroId));
+        User captain = userDao.findById(captainId)
+                .orElseThrow(() -> new InstanceNotFoundException("project.entities.user", captainId));
 
         validarEquipoActivo(equipo);
 
@@ -246,5 +248,11 @@ public class EquipoServiceImpl implements EquipoService {
 
         equipo.removeMiembro(miembro);
         equipoDao.save(equipo);
+
+        String asunto = "Has sido expulsado del equipo " + equipo.getNombreEquipo();
+        String cuerpo = "El capitán " + captain.getNombre() + " te ha expulsado del equipo " + equipo.getNombreEquipo() + ".";
+        Notification notificacion = new Notification(
+                miembro, asunto, cuerpo, Notification.TipoNotificacion.SYSTEM);
+        notificationDao.save(notificacion);
     }
 }
