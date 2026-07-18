@@ -96,7 +96,7 @@ const Header = () => {
                                 id="user-dropdown"
                             >
                                 <div className="px-3 pt-2 pb-1 text-muted small fw-bold" style={{ fontSize: '0.7rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
-                                    Cuenta
+                                    <FormattedMessage id="project.app.Header.account" defaultMessage="Cuenta" />
                                 </div>
                                 <NavDropdown.Item as={Link} to="/users/profile" className="py-2">
                                     <i className="fa-solid fa-user-gear me-2 text-secondary" style={{ width: '18px', textAlign: 'center' }}></i> 
@@ -106,11 +106,11 @@ const Header = () => {
                                 <NavDropdown.Divider className="my-1" />
 
                                 <div className="px-3 pt-2 pb-1 text-muted small fw-bold" style={{ fontSize: '0.7rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
-                                    Competición
+                                    <FormattedMessage id="project.app.Header.competition" defaultMessage="Competición" />
                                 </div>
                                 <NavDropdown.Item as={Link} to="/users/stats" className="py-2">
-                                    <i className="fa-solid fa-chart-line me-2 text-secondary" style={{ width: '18px', textAlign: 'center' }}></i> 
-                                    Mi Historial y ELO
+                                    <i className="fa-solid fa-chart-line me-2 text-secondary" style={{ width: '18px', textAlign: 'center' }}></i>
+                                    <FormattedMessage id="project.app.Header.history" defaultMessage="Mi Historial y ELO" />
                                 </NavDropdown.Item>
 
                                 <NavDropdown.Divider className="my-1" />

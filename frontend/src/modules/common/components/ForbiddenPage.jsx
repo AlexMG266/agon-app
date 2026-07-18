@@ -1,4 +1,5 @@
 import { Link } from 'react-router';
+import { FormattedMessage } from 'react-intl';
 import Container from 'react-bootstrap/Container';
 import Button from 'react-bootstrap/Button';
 
@@ -10,17 +11,17 @@ const ForbiddenPage = () => {
                     <i className="fa-regular fa-circle-exclamation"></i>
                 </div>
                 <h2 className="fw-bold text-dark mb-1" style={{ fontSize: '1.25rem', letterSpacing: '-0.01em' }}>
-                    Acceso denegado
+                    <FormattedMessage id="project.common.ForbiddenPage.title" defaultMessage="Acceso denegado" />
                 </h2>
                 <p className="text-secondary mb-2" style={{ fontSize: '0.85rem', lineHeight: '1.5' }}>
-                    No tienes permisos para acceder a esta página.
+                    <FormattedMessage id="project.common.ForbiddenPage.description" defaultMessage="No tienes permisos para acceder a esta página." />
                 </p>
                 <p className="text-secondary" style={{ fontSize: '0.8rem', lineHeight: '1.5' }}>
-                    Puede que necesites iniciar sesión con una cuenta con permisos suficientes.
+                    <FormattedMessage id="project.common.ForbiddenPage.help" defaultMessage="Puede que necesites iniciar sesión con una cuenta con permisos suficientes." />
                 </p>
                 <Button as={Link} to="/" variant="dark" className="rounded-pill px-3 py-1 mt-2" style={{ fontSize: '0.85rem', fontWeight: '500' }}>
                     <i className="fa-solid fa-arrow-left me-2"></i>
-                    Volver al inicio
+                    <FormattedMessage id="project.common.ForbiddenPage.backToHome" defaultMessage="Volver al inicio" />
                 </Button>
             </div>
         </Container>

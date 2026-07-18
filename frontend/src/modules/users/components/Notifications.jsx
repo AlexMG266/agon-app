@@ -1,37 +1,21 @@
 // src/modules/users/components/Notifications.jsx
 import { useState, useEffect, useCallback, useMemo } from 'react';
+import { FormattedMessage, useIntl } from 'react-intl';
 import Spinner from 'react-bootstrap/Spinner';
 import Button from 'react-bootstrap/Button';
 import backend from '../../../backend';
 import './Notifications.css';
 
-const getTipoLabel = (tipo) => {
-    const typeUpper = tipo?.toUpperCase() || '';
-    if (typeUpper.includes('SISTEMA') || typeUpper.includes('SYSTEM')) return 'Sistema';
-    if (typeUpper.includes('INVITACION') || typeUpper.includes('INVITATION') || typeUpper.includes('TEAM')) return 'Invitación';
-    if (typeUpper.includes('PARTIDO') || typeUpper.includes('MATCH')) return 'Partido';
-    if (typeUpper.includes('TORNEO') || typeUpper.includes('TOURNAMENT')) return 'Torneo';
-    return 'Notificación';
-};
-
-const getActionLabel = (tipo) => {
-    const typeUpper = tipo?.toUpperCase() || '';
-    if (typeUpper.includes('INVITACION')) return 'Responder invitación';
-    if (typeUpper.includes('PARTIDO')) return 'Ver partido';
-    if (typeUpper.includes('TORNEO')) return 'Ver torneo';
-    return 'Ver detalles';
-};
-
 const formatTimestamp = (date) => {
     if (!date) return '';
     const d = new Date(date);
-    return d.toLocaleDateString('es-ES', { 
-        day: '2-digit', 
-        month: '2-digit', 
-        year: 'numeric' 
-    }) + ' ' + d.toLocaleTimeString('es-ES', { 
-        hour: '2-digit', 
-        minute: '2-digit' 
+    return d.toLocaleDateString('es-ES', {
+        day: '2-digit',
+        month: '2-digit',
+        year: 'numeric'
+    }) + ' ' + d.toLocaleTimeString('es-ES', {
+        hour: '2-digit',
+        minute: '2-digit'
     });
 };
 
@@ -58,16 +42,8 @@ const getNotificationIcon = (tipo) => {
     return <i className="fa-solid fa-bell" style={{ color: '#8e8e93' }}></i>;
 };
 
-const getFilterLabel = (filter) => {
-    const labels = {
-        ALL: 'Todas',
-        UNREAD: 'No leídas',
-        READ: 'Leídas'
-    };
-    return labels[filter] || filter;
-};
-
 const Notifications = () => {
+    const intl = useIntl();
     const [notifications, setNotifications] = useState([]);
     const [filter, setFilter] = useState('ALL');
     const [selectedNotification, setSelectedNotification] = useState(null);
@@ -97,7 +73,7 @@ const Notifications = () => {
         initNotifications();
     }, []);
 
-    const handleSelectNotification = useCallback(async (id, notificationList = notifications) => {
+    const handleSelectNotification = useCallback(async (id) => {
         setLoadingDetail(true);
         setActionFeedback(null);
         try {
@@ -138,7 +114,9 @@ const Notifications = () => {
             if (response.ok) {
                 setActionFeedback({
                     type: 'success',
-                    message: aceptar ? 'Solicitud aceptada correctamente' : 'Solicitud rechazada correctamente'
+                    message: aceptar
+                        ? intl.formatMessage({ id: 'project.notifications.feedback.accepted', defaultMessage: 'Solicitud aceptada correctamente' })
+                        : intl.formatMessage({ id: 'project.notifications.feedback.rejected', defaultMessage: 'Solicitud rechazada correctamente' })
                 });
 
                 // Recargar notificaciones para reflejar el cambio
@@ -154,8 +132,10 @@ const Notifications = () => {
                     }
                 }
             } else {
-                const errorMsg = response.payload?.message || response.payload?.error || 
-                    (aceptar ? 'No se pudo aceptar la solicitud' : 'No se pudo rechazar la solicitud');
+                const errorMsg = response.payload?.message || response.payload?.error ||
+                    (aceptar
+                        ? intl.formatMessage({ id: 'project.notifications.feedback.acceptError', defaultMessage: 'No se pudo aceptar la solicitud' })
+                        : intl.formatMessage({ id: 'project.notifications.feedback.rejectError', defaultMessage: 'No se pudo rechazar la solicitud' }));
                 setActionFeedback({
                     type: 'error',
                     message: errorMsg
@@ -165,7 +145,7 @@ const Notifications = () => {
             console.error('Error respondiendo solicitud:', error);
             setActionFeedback({
                 type: 'error',
-                message: 'Error de conexión al responder la solicitud'
+                message: intl.formatMessage({ id: 'project.notifications.feedback.connectionError', defaultMessage: 'Error de conexión al responder la solicitud' })
             });
         } finally {
             setRespondiendoId(null);
@@ -175,6 +155,32 @@ const Notifications = () => {
     const isTipoInvitacion = (tipo) => {
         const typeUpper = tipo?.toUpperCase() || '';
         return typeUpper.includes('INVITACION') || typeUpper.includes('INVITATION');
+    };
+
+    const getTipoLabel = (tipo) => {
+        const typeUpper = tipo?.toUpperCase() || '';
+        if (typeUpper.includes('SISTEMA') || typeUpper.includes('SYSTEM')) return intl.formatMessage({ id: 'project.notifications.types.system', defaultMessage: 'Sistema' });
+        if (typeUpper.includes('INVITACION') || typeUpper.includes('INVITATION') || typeUpper.includes('TEAM')) return intl.formatMessage({ id: 'project.notifications.types.invitation', defaultMessage: 'Invitación' });
+        if (typeUpper.includes('PARTIDO') || typeUpper.includes('MATCH')) return intl.formatMessage({ id: 'project.notifications.types.match', defaultMessage: 'Partido' });
+        if (typeUpper.includes('TORNEO') || typeUpper.includes('TOURNAMENT')) return intl.formatMessage({ id: 'project.notifications.types.tournament', defaultMessage: 'Torneo' });
+        return intl.formatMessage({ id: 'project.notifications.types.generic', defaultMessage: 'Notificación' });
+    };
+
+    const getActionLabel = (tipo) => {
+        const typeUpper = tipo?.toUpperCase() || '';
+        if (typeUpper.includes('INVITACION')) return intl.formatMessage({ id: 'project.notifications.actions.respondInvitation', defaultMessage: 'Responder invitación' });
+        if (typeUpper.includes('PARTIDO')) return intl.formatMessage({ id: 'project.notifications.actions.viewMatch', defaultMessage: 'Ver partido' });
+        if (typeUpper.includes('TORNEO')) return intl.formatMessage({ id: 'project.notifications.actions.viewTournament', defaultMessage: 'Ver torneo' });
+        return intl.formatMessage({ id: 'project.notifications.actions.viewDetails', defaultMessage: 'Ver detalles' });
+    };
+
+    const getFilterLabel = (filter) => {
+        const labels = {
+            ALL: intl.formatMessage({ id: 'project.notifications.filter.all', defaultMessage: 'Todas' }),
+            UNREAD: intl.formatMessage({ id: 'project.notifications.filter.unread', defaultMessage: 'No leídas' }),
+            READ: intl.formatMessage({ id: 'project.notifications.filter.read', defaultMessage: 'Leídas' })
+        };
+        return labels[filter] || filter;
     };
 
     const filteredNotifications = useMemo(() => {
@@ -196,7 +202,7 @@ const Notifications = () => {
             <div className="notifications-loading-container">
                 <div className="text-center text-muted">
                     <Spinner animation="border" variant="secondary" className="mb-3" style={{ width: '2rem', height: '2rem' }} />
-                    <p className="small m-0">Cargando notificaciones…</p>
+                    <p className="small m-0"><FormattedMessage id="project.notifications.loading" defaultMessage="Cargando notificaciones…" /></p>
                 </div>
             </div>
         );
@@ -207,7 +213,7 @@ const Notifications = () => {
             <div className="notifications-master-panel">
                 <header className="master-header">
                     <div className="master-header-top">
-                        <h2 className="master-title">Notificaciones</h2>
+                        <h2 className="master-title"><FormattedMessage id="project.notifications.listTitle" defaultMessage="Notificaciones" /></h2>
                         {counts.unread > 0 && (
                             <span className="unread-count-badge">{counts.unread}</span>
                         )}
@@ -233,11 +239,15 @@ const Notifications = () => {
                     {filteredNotifications.length === 0 ? (
                         <div className="empty-state-master">
                             <i className="fa-regular fa-bell-slash mb-3"></i>
-                            <p className="m-0">No hay notificaciones</p>
+                            <p className="m-0"><FormattedMessage id="project.notifications.empty.noNotifications" defaultMessage="No hay notificaciones" /></p>
                             <small className="text-muted">
-                                {filter === 'ALL' ? 'Todavía no has recibido ninguna notificación' :
-                                 filter === 'UNREAD' ? 'Todas tus notificaciones están leídas' :
-                                 'No tienes notificaciones leídas'}
+                                {filter === 'ALL' ? (
+                                    <FormattedMessage id="project.notifications.empty.all" defaultMessage="Todavía no has recibido ninguna notificación" />
+                                ) : filter === 'UNREAD' ? (
+                                    <FormattedMessage id="project.notifications.empty.unread" defaultMessage="Todas tus notificaciones están leídas" />
+                                ) : (
+                                    <FormattedMessage id="project.notifications.empty.read" defaultMessage="No tienes notificaciones leídas" />
+                                )}
                             </small>
                         </div>
                     ) : (
@@ -281,7 +291,11 @@ const Notifications = () => {
                     <div className="detail-loading">
                         <Spinner animation="border" variant="secondary" size="sm" className="mb-2" />
                         <p className="small text-muted m-0">
-                            {markingAsRead ? 'Marcando como leída...' : 'Cargando contenido...'}
+                            {markingAsRead ? (
+                                <FormattedMessage id="project.notifications.detail.markingAsRead" defaultMessage="Marcando como leída..." />
+                            ) : (
+                                <FormattedMessage id="project.notifications.detail.loading" defaultMessage="Cargando contenido..." />
+                            )}
                         </p>
                     </div>
                 ) : selectedNotification ? (
@@ -301,7 +315,7 @@ const Notifications = () => {
                                 </div>
                             </div>
                             {!selectedNotification.leido && (
-                                <span className="detail-unread-badge">Nueva</span>
+                                <span className="detail-unread-badge"><FormattedMessage id="project.notifications.detail.new" defaultMessage="Nueva" /></span>
                             )}
                         </div>
 
@@ -332,7 +346,7 @@ const Notifications = () => {
                                     ) : (
                                         <>
                                             <i className="fa-solid fa-check me-2"></i>
-                                            Aceptar
+                                            <FormattedMessage id="project.notifications.detail.accept" defaultMessage="Aceptar" />
                                         </>
                                     )}
                                 </Button>
@@ -347,7 +361,7 @@ const Notifications = () => {
                                     ) : (
                                         <>
                                             <i className="fa-solid fa-xmark me-2"></i>
-                                            Rechazar
+                                            <FormattedMessage id="project.notifications.detail.reject" defaultMessage="Rechazar" />
                                         </>
                                     )}
                                 </Button>
@@ -369,8 +383,8 @@ const Notifications = () => {
                 ) : (
                     <div className="detail-empty">
                         <i className="fa-regular fa-envelope-open mb-3"></i>
-                        <p className="m-0">Selecciona una notificación</p>
-                        <small className="text-muted">para leer su contenido</small>
+                        <p className="m-0"><FormattedMessage id="project.notifications.empty.select" defaultMessage="Selecciona una notificación" /></p>
+                        <small className="text-muted"><FormattedMessage id="project.notifications.empty.selectHelp" defaultMessage="para leer su contenido" /></small>
                     </div>
                 )}
             </div>

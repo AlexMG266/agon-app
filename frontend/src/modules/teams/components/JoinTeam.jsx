@@ -1,5 +1,6 @@
 import { useState, useRef } from 'react';
 import { useSelector } from 'react-redux';
+import { FormattedMessage, useIntl } from 'react-intl';
 import Button from 'react-bootstrap/Button';
 import Form from 'react-bootstrap/Form';
 import Spinner from 'react-bootstrap/Spinner';
@@ -23,6 +24,7 @@ const ESTADOS = {
 };
 
 const JoinTeam = () => {
+    const intl = useIntl();
     const user = useSelector(state => state.users?.user);
     const formRef = useRef(null);
 
@@ -68,14 +70,14 @@ const JoinTeam = () => {
             } else {
                 setEstado(ESTADOS.NOT_FOUND);
                 if (response.status === 404) {
-                    setBackendErrors('No se encontró ningún equipo activo con ese código');
+                    setBackendErrors(intl.formatMessage({ id: 'project.teams.JoinTeam.notFoundError', defaultMessage: 'No se encontró ningún equipo activo con ese código' }));
                 } else {
-                    setBackendErrors(response.error || 'Error al buscar el equipo');
+                    setBackendErrors(response.error || intl.formatMessage({ id: 'project.teams.JoinTeam.error.search', defaultMessage: 'Error al buscar el equipo' }));
                 }
             }
         } catch (error) {
             setEstado(ESTADOS.NOT_FOUND);
-            setBackendErrors(error.message || 'Error de conexión al buscar el equipo');
+            setBackendErrors(error.message || intl.formatMessage({ id: 'project.teams.JoinTeam.error.connection', defaultMessage: 'Error de conexión al buscar el equipo' }));
         }
     };
 
@@ -90,11 +92,11 @@ const JoinTeam = () => {
                 setEstado(ESTADOS.REQUEST_SUCCESS);
             } else {
                 setEstado(ESTADOS.REQUEST_ERROR);
-                setBackendErrors(response.payload?.message || response.payload?.error || 'No se pudo enviar la solicitud');
+                setBackendErrors(response.payload?.message || response.payload?.error || intl.formatMessage({ id: 'project.teams.JoinTeam.error.request', defaultMessage: 'No se pudo enviar la solicitud' }));
             }
         } catch (error) {
             setEstado(ESTADOS.REQUEST_ERROR);
-            setBackendErrors(error.message || 'Error de conexión al enviar la solicitud');
+            setBackendErrors(error.message || intl.formatMessage({ id: 'project.teams.JoinTeam.error.connectionRequest', defaultMessage: 'Error de conexión al enviar la solicitud' }));
         }
     };
 
@@ -113,7 +115,7 @@ const JoinTeam = () => {
             <div className="join-team-header">
                 <h5 className="join-team-title">
                     <i className="fa-solid fa-right-to-bracket me-2"></i>
-                    Unirse a un equipo
+                    <FormattedMessage id="project.teams.JoinTeam.title" defaultMessage="Unirse a un equipo" />
                 </h5>
             </div>
 
@@ -123,23 +125,23 @@ const JoinTeam = () => {
                         <i className="fa-regular fa-circle-check"></i>
                     </div>
                     <p className="join-team-success-text">
-                        ¡Solicitud enviada con éxito!
+                        <FormattedMessage id="project.teams.JoinTeam.success.title" defaultMessage="¡Solicitud enviada con éxito!" />
                     </p>
                     <p className="join-team-success-desc">
-                        El capitán del equipo revisará tu petición y recibirás una notificación cuando sea respondida.
+                        <FormattedMessage id="project.teams.JoinTeam.success.description" defaultMessage="El capitán del equipo revisará tu petición y recibirás una notificación cuando sea respondida." />
                     </p>
                     <Button
                         variant="dark"
                         className="join-team-reset-btn rounded-pill px-4"
                         onClick={handleReset}
                     >
-                        Enviar otra solicitud
+                        <FormattedMessage id="project.teams.JoinTeam.sendAnother" defaultMessage="Enviar otra solicitud" />
                     </Button>
                 </div>
             ) : (
                 <>
                     <p className="join-team-subtitle">
-                        Introduce el código de 8 caracteres que te ha proporcionado el capitán del equipo
+                        <FormattedMessage id="project.teams.JoinTeam.subtitle" defaultMessage="Introduce el código de 8 caracteres que te ha proporcionado el capitán del equipo" />
                     </p>
 
                     <Errors errors={backendErrors} onClose={() => setBackendErrors(null)} />
@@ -156,7 +158,7 @@ const JoinTeam = () => {
                                 type="text"
                                 value={codigo}
                                 onChange={(e) => setCodigo(e.target.value)}
-                                placeholder="Código del equipo (ej. a7K9pX2L)"
+                                placeholder={intl.formatMessage({ id: 'project.teams.JoinTeam.placeholder', defaultMessage: 'Código del equipo (ej. a7K9pX2L)' })}
                                 maxLength={8}
                                 className="join-team-input"
                                 disabled={estado === ESTADOS.LOADING || estado === ESTADOS.REQUESTING}
@@ -174,12 +176,12 @@ const JoinTeam = () => {
                                 {estado === ESTADOS.LOADING ? (
                                     <>
                                         <Spinner as="span" animation="border" size="sm" role="status" className="me-1" />
-                                        Buscando...
+                                        <FormattedMessage id="project.teams.JoinTeam.searching" defaultMessage="Buscando..." />
                                     </>
                                 ) : (
                                     <>
                                         <i className="fa-solid fa-search me-1"></i>
-                                        Buscar
+                                        <FormattedMessage id="project.teams.JoinTeam.search" defaultMessage="Buscar" />
                                     </>
                                 )}
                             </Button>
@@ -199,7 +201,7 @@ const JoinTeam = () => {
                                     <div className="join-team-result-meta">
                                         <Badge className="join-team-badge">
                                             <i className="fa-solid fa-users me-1"></i>
-                                            {teamFound.miembros?.length || 0}/2 miembros
+                                            <FormattedMessage id="project.teams.JoinTeam.members" defaultMessage="{count}/2 miembros" values={{ count: teamFound.miembros?.length || 0 }} />
                                         </Badge>
                                     </div>
                                 </div>
@@ -212,7 +214,9 @@ const JoinTeam = () => {
                             )}
 
                             <div className="join-team-result-members">
-                                <div className="join-team-members-title">Miembros del equipo:</div>
+                                <div className="join-team-members-title">
+                                    <FormattedMessage id="project.teams.JoinTeam.membersLabel" defaultMessage="Miembros del equipo:" />
+                                </div>
                                 <div className="join-team-members-list">
                                     {teamFound.miembros?.map((member) => {
                                         const esCapitan = member.id === teamFound.creadorId;
@@ -229,7 +233,8 @@ const JoinTeam = () => {
                                                         {member.nombre}
                                                         {esCapitan && (
                                                             <Badge className="join-team-captain-badge ms-2">
-                                                                <i className="fa-solid fa-crown me-1"></i>Capitán
+                                                                <i className="fa-solid fa-crown me-1"></i>
+                                                                <FormattedMessage id="project.teams.JoinTeam.captain" defaultMessage="Capitán" />
                                                             </Badge>
                                                         )}
                                                     </span>
@@ -243,14 +248,14 @@ const JoinTeam = () => {
                             {estado === ESTADOS.ALREADY_MEMBER && (
                                 <div className="join-team-alert alert alert-info">
                                     <i className="fa-solid fa-circle-info me-2"></i>
-                                    Ya formas parte de este equipo
+                                    <FormattedMessage id="project.teams.JoinTeam.alreadyMember" defaultMessage="Ya formas parte de este equipo" />
                                 </div>
                             )}
 
                             {estado === ESTADOS.TEAM_FULL && (
                                 <div className="join-team-alert alert alert-warning">
                                     <i className="fa-solid fa-circle-exclamation me-2"></i>
-                                    Este equipo ya está completo (máximo 2 miembros)
+                                    <FormattedMessage id="project.teams.JoinTeam.teamFull" defaultMessage="Este equipo ya está completo (máximo 2 miembros)" />
                                 </div>
                             )}
 
@@ -259,7 +264,7 @@ const JoinTeam = () => {
                                     {isCaptain ? (
                                         <div className="join-team-alert alert alert-info">
                                             <i className="fa-solid fa-crown me-2"></i>
-                                            Eres el capitán de este equipo
+                                            <FormattedMessage id="project.teams.JoinTeam.youAreCaptain" defaultMessage="Eres el capitán de este equipo" />
                                         </div>
                                     ) : (
                                         <Button
@@ -270,12 +275,12 @@ const JoinTeam = () => {
                                             {estado === ESTADOS.REQUESTING ? (
                                                 <>
                                                     <Spinner as="span" animation="border" size="sm" role="status" className="me-2" />
-                                                    Enviando solicitud...
+                                                    <FormattedMessage id="project.teams.JoinTeam.requesting" defaultMessage="Enviando solicitud..." />
                                                 </>
                                             ) : (
                                                 <>
                                                     <i className="fa-solid fa-paper-plane me-2"></i>
-                                                    Solicitar unirse
+                                                    <FormattedMessage id="project.teams.JoinTeam.requestJoin" defaultMessage="Solicitar unirse" />
                                                 </>
                                             )}
                                         </Button>
@@ -290,7 +295,7 @@ const JoinTeam = () => {
                                         onClick={handleRequestJoin}
                                     >
                                         <i className="fa-solid fa-rotate me-2"></i>
-                                        Reintentar
+                                        <FormattedMessage id="project.teams.JoinTeam.retry" defaultMessage="Reintentar" />
                                     </Button>
                                 </div>
                             )}
@@ -300,8 +305,8 @@ const JoinTeam = () => {
                     {estado === ESTADOS.NOT_FOUND && !teamFound && (
                         <div className="join-team-not-found">
                             <i className="fa-regular fa-circle-xmark mb-2"></i>
-                            <p className="m-0">No se encontró ningún equipo con ese código</p>
-                            <p className="small text-muted mt-1">Verifica que el código sea correcto e inténtalo de nuevo</p>
+                            <p className="m-0"><FormattedMessage id="project.teams.JoinTeam.notFound" defaultMessage="No se encontró ningún equipo con ese código" /></p>
+                            <p className="small text-muted mt-1"><FormattedMessage id="project.teams.JoinTeam.notFoundHelp" defaultMessage="Verifica que el código sea correcto e inténtalo de nuevo" /></p>
                         </div>
                     )}
                 </>

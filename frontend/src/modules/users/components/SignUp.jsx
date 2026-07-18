@@ -1,6 +1,6 @@
 import { useState, useRef } from 'react';
 import { useDispatch } from 'react-redux';
-import { FormattedMessage } from 'react-intl';
+import { FormattedMessage, useIntl } from 'react-intl';
 import { useNavigate, Link } from 'react-router';
 import Button from "react-bootstrap/Button";
 import Form from "react-bootstrap/Form";
@@ -17,6 +17,7 @@ import backend from '../../../backend';
 const SignUp = () => {
     const dispatch = useDispatch();
     const navigate = useNavigate();
+    const intl = useIntl();
     const [nombre, setNombre] = useState('');
     const [password, setPassword] = useState('');
     const [confirmPassword, setConfirmPassword] = useState('');
@@ -60,8 +61,8 @@ const SignUp = () => {
                     setBackendErrors(response.payload);
                     setIsSubmitting(false);
                 }
-            } catch (error) {
-                setBackendErrors({ globalError: "Error de conexión con el servidor" });
+            } catch {
+                setBackendErrors({ globalError: intl.formatMessage({ id: 'project.users.SignUp.error.connection', defaultMessage: 'Error de conexión con el servidor' }) });
                 setIsSubmitting(false);
             }
         } else {
@@ -85,22 +86,22 @@ const SignUp = () => {
     };
 
     const getNombreErrorMessage = () => {
-        if (!nombre) return "El nombre es obligatorio.";
-        if (nombre.length < 3) return "El nombre debe tener al menos 3 caracteres.";
-        if (nombre.length > 15) return "El nombre no puede superar los 15 caracteres.";
-        if (/^\d/.test(nombre)) return "El nombre no puede empezar con un número.";
-        if (/^\d+$/.test(nombre)) return "El nombre no puede estar compuesto solo por números.";
-        return "Formato de nombre inválido.";
+        if (!nombre) return intl.formatMessage({ id: 'project.users.SignUp.error.nombre.required', defaultMessage: 'El nombre es obligatorio.' });
+        if (nombre.length < 3) return intl.formatMessage({ id: 'project.users.SignUp.error.nombre.minLength', defaultMessage: 'El nombre debe tener al menos 3 caracteres.' });
+        if (nombre.length > 15) return intl.formatMessage({ id: 'project.users.SignUp.error.nombre.maxLength', defaultMessage: 'El nombre no puede superar los 15 caracteres.' });
+        if (/^\d/.test(nombre)) return intl.formatMessage({ id: 'project.users.SignUp.error.nombre.startsWithNumber', defaultMessage: 'El nombre no puede empezar con un número.' });
+        if (/^\d+$/.test(nombre)) return intl.formatMessage({ id: 'project.users.SignUp.error.nombre.onlyNumbers', defaultMessage: 'El nombre no puede estar compuesto solo por números.' });
+        return intl.formatMessage({ id: 'project.users.SignUp.error.nombre.invalid', defaultMessage: 'Formato de nombre inválido.' });
     };
 
     const getPasswordErrorMessage = () => {
-        if (!password) return "La contraseña es obligatoria.";
-        if (password.length < 8) return "Debe tener al menos 8 caracteres.";
-        if (!/[A-Z]/.test(password)) return "Debe incluir al menos una mayúscula.";
-        if (!/[a-z]/.test(password)) return "Debe incluir al menos una minúscula.";
-        if (!/\d/.test(password)) return "Debe incluir al menos un número.";
-        if (!/[@$!%*?&._\-\#\+\=\[\]\{\}\(\)\^\~\/]/.test(password)) return "Debe incluir al menos un símbolo (ej. @, $, !, %).";
-        return "Formato de contraseña inválido.";
+        if (!password) return intl.formatMessage({ id: 'project.users.SignUp.error.password.required', defaultMessage: 'La contraseña es obligatoria.' });
+        if (password.length < 8) return intl.formatMessage({ id: 'project.users.SignUp.error.password.minLength', defaultMessage: 'Debe tener al menos 8 caracteres.' });
+        if (!/[A-Z]/.test(password)) return intl.formatMessage({ id: 'project.users.SignUp.error.password.uppercase', defaultMessage: 'Debe incluir al menos una mayúscula.' });
+        if (!/[a-z]/.test(password)) return intl.formatMessage({ id: 'project.users.SignUp.error.password.lowercase', defaultMessage: 'Debe incluir al menos una minúscula.' });
+        if (!/\d/.test(password)) return intl.formatMessage({ id: 'project.users.SignUp.error.password.number', defaultMessage: 'Debe incluir al menos un número.' });
+        if (!/[@$!%*?&._\-+={\[\]}()^~\/]/.test(password)) return intl.formatMessage({ id: 'project.users.SignUp.error.password.symbol', defaultMessage: 'Debe incluir al menos un símbolo (ej. @, $, !, %).' });
+        return intl.formatMessage({ id: 'project.users.SignUp.error.password.invalid', defaultMessage: 'Formato de contraseña inválido.' });
     };
 
     return (
@@ -122,10 +123,10 @@ const SignUp = () => {
                     <div className="w-100 my-auto mx-auto d-flex flex-column align-items-center justify-content-center px-4" style={{ maxWidth: '540px' }}>
                         <div className="w-100 text-start">
                             <h1 className="fw-bold text-dark mb-4" style={{ fontSize: '2.5rem', letterSpacing: '-0.04em', lineHeight: '1.15', fontWeight: '700' }}>
-                                Organiza, inscríbete<br />y domina la mesa.
+                                <FormattedMessage id="project.users.Login.hero.title" defaultMessage="Organiza, inscríbete{br}y domina la mesa." values={{ br: <br /> }} />
                             </h1>
                             <p className="text-secondary mb-4" style={{ fontSize: '0.92rem', lineHeight: '1.5', color: '#86868b' }}>
-                                La plataforma definitiva para la gestión de tus partidas de futbolín. Toma el control de la competición con herramientas diseñadas para llevar tu comunidad al siguiente nivel.
+                                <FormattedMessage id="project.users.Login.hero.description" defaultMessage="La plataforma definitiva para la gestión de tus partidas de futbolín. Toma el control de la competición con herramientas diseñadas para llevar tu comunidad al siguiente nivel." />
                             </p>
                         </div>
 
@@ -135,8 +136,8 @@ const SignUp = () => {
                                     <div className="bg-dark text-white rounded-3 d-flex align-items-center justify-content-center mb-2" style={{ width: '36px', height: '36px' }}>
                                         <i className="fa-solid fa-trophy" style={{ fontSize: '0.9rem' }}></i>
                                     </div>
-                                    <div className="text-dark small fw-bold mb-1">Gestión de Torneos</div>
-                                    <div className="text-muted" style={{ fontSize: '0.75rem', lineHeight: '1.3' }}>Crea formatos competitivos a tu medida fácilmente.</div>
+                                    <div className="text-dark small fw-bold mb-1"><FormattedMessage id="project.users.Login.hero.feature1.title" defaultMessage="Gestión de Torneos" /></div>
+                                    <div className="text-muted" style={{ fontSize: '0.75rem', lineHeight: '1.3' }}><FormattedMessage id="project.users.Login.hero.feature1.desc" defaultMessage="Crea formatos competitivos a tu medida fácilmente." /></div>
                                 </div>
                             </Col>
                             <Col sm={6}>
@@ -144,8 +145,8 @@ const SignUp = () => {
                                     <div className="bg-dark text-white rounded-3 d-flex align-items-center justify-content-center mb-2" style={{ width: '36px', height: '36px' }}>
                                         <i className="fa-solid fa-file-signature" style={{ fontSize: '0.9rem' }}></i>
                                     </div>
-                                    <div className="text-dark small fw-bold mb-1">Inscripción Inmediata</div>
-                                    <div className="text-muted" style={{ fontSize: '0.75rem', lineHeight: '1.3' }}>Explora las mesas activas y asegura tu plaza con un clic.</div>
+                                    <div className="text-dark small fw-bold mb-1"><FormattedMessage id="project.users.Login.hero.feature2.title" defaultMessage="Inscripción Inmediata" /></div>
+                                    <div className="text-muted" style={{ fontSize: '0.75rem', lineHeight: '1.3' }}><FormattedMessage id="project.users.Login.hero.feature2.desc" defaultMessage="Explora las mesas activas y asegura tu plaza con un clic." /></div>
                                 </div>
                             </Col>
                             <Col sm={6}>
@@ -153,8 +154,8 @@ const SignUp = () => {
                                     <div className="bg-dark text-white rounded-3 d-flex align-items-center justify-content-center mb-2" style={{ width: '36px', height: '36px' }}>
                                         <i className="fa-solid fa-chart-simple" style={{ fontSize: '0.9rem' }}></i>
                                     </div>
-                                    <div className="text-dark small fw-bold mb-1">Sistema ELO Nativo</div>
-                                    <div className="text-muted" style={{ fontSize: '0.75rem', lineHeight: '1.3' }}>Cálculo preciso de tu nivel tras cada enfrentamiento.</div>
+                                    <div className="text-dark small fw-bold mb-1"><FormattedMessage id="project.users.Login.hero.feature3.title" defaultMessage="Sistema ELO Nativo" /></div>
+                                    <div className="text-muted" style={{ fontSize: '0.75rem', lineHeight: '1.3' }}><FormattedMessage id="project.users.Login.hero.feature3.desc" defaultMessage="Cálculo preciso de tu nivel tras cada enfrentamiento." /></div>
                                 </div>
                             </Col>
                             <Col sm={6}>
@@ -162,15 +163,15 @@ const SignUp = () => {
                                     <div className="bg-dark text-white rounded-3 d-flex align-items-center justify-content-center mb-2" style={{ width: '36px', height: '36px' }}>
                                         <i className="fa-solid fa-users" style={{ fontSize: '0.9rem' }}></i>
                                     </div>
-                                    <div className="text-dark small fw-bold mb-1">Perfil de Jugador</div>
-                                    <div className="text-muted" style={{ fontSize: '0.75rem', lineHeight: '1.3' }}>Historial centralizado con todas tus estadísticas.</div>
+                                    <div className="text-dark small fw-bold mb-1"><FormattedMessage id="project.users.Login.hero.feature4.title" defaultMessage="Perfil de Jugador" /></div>
+                                    <div className="text-muted" style={{ fontSize: '0.75rem', lineHeight: '1.3' }}><FormattedMessage id="project.users.Login.hero.feature4.desc" defaultMessage="Historial centralizado con todas tus estadísticas." /></div>
                                 </div>
                             </Col>
                         </Row>
                     </div>
 
                     <div className="text-muted small w-100 text-start" style={{ fontSize: '0.75rem' }}>
-                        © {new Date().getFullYear()} Agón Arena.
+                        <FormattedMessage id="project.users.Login.footer" defaultMessage="© {year} Agón Arena." values={{ year: new Date().getFullYear() }} />
                     </div>
                 </Col>
 
@@ -183,7 +184,7 @@ const SignUp = () => {
                                 <FormattedMessage id="project.users.SignUp.title" defaultMessage="Crea una cuenta" />
                             </h2>
                             <p className="text-secondary mb-0" style={{ fontSize: '0.85rem', color: '#86868b' }}>
-                                Completa el formulario para registrarte en Agón.
+                                <FormattedMessage id="project.users.SignUp.subtitle" defaultMessage="Completa el formulario para registrarte en Agón." />
                             </p>
                         </div>
 
@@ -227,7 +228,7 @@ const SignUp = () => {
                                     pattern="^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$"
                                 />
                                 <Form.Control.Feedback type="invalid" className="small mt-1 text-danger" style={{ fontSize: '0.75rem' }}>
-                                    {!email ? "El correo electrónico es obligatorio." : "Introduce una dirección de correo válida (ejemplo@dominio.com)."}
+                                    {!email ? intl.formatMessage({ id: 'project.users.SignUp.error.email.required', defaultMessage: 'El correo electrónico es obligatorio.' }) : intl.formatMessage({ id: 'project.users.SignUp.error.email.invalid', defaultMessage: 'Introduce una dirección de correo válida (ejemplo@dominio.com).' })}
                                 </Form.Control.Feedback>
                             </FloatingLabel>
 
@@ -244,7 +245,7 @@ const SignUp = () => {
                                     max={today}
                                 />
                                 <Form.Control.Feedback type="invalid" className="small mt-1 text-danger" style={{ fontSize: '0.75rem' }}>
-                                    {!fechaNacimiento ? "La fecha de nacimiento es obligatoria." : "La fecha de nacimiento no puede ser una fecha futura."}
+                                    {!fechaNacimiento ? intl.formatMessage({ id: 'project.users.SignUp.error.fechaNacimiento.required', defaultMessage: 'La fecha de nacimiento es obligatoria.' }) : intl.formatMessage({ id: 'project.users.SignUp.error.fechaNacimiento.future', defaultMessage: 'La fecha de nacimiento no puede ser una fecha futura.' })}
                                 </Form.Control.Feedback>
                             </FloatingLabel>
 
@@ -304,7 +305,7 @@ const SignUp = () => {
                         </Form>
 
                         <p className="mt-4 small text-secondary text-center" style={{ fontSize: '0.82rem', color: '#86868b' }}>
-                            ¿Ya tienes una cuenta?{' '}
+                            <FormattedMessage id="project.users.SignUp.hasAccount" defaultMessage="¿Ya tienes una cuenta?" />{' '}
                             <Link to="/users/login" className="text-decoration-none fw-semibold ms-1" style={{ color: '#0066cc' }}>
                                 <FormattedMessage id="project.users.Login.title" defaultMessage="Identifícate" />
                             </Link>

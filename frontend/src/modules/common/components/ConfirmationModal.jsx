@@ -1,3 +1,4 @@
+import { FormattedMessage } from 'react-intl';
 import Modal from 'react-bootstrap/Modal';
 import Button from 'react-bootstrap/Button';
 import Spinner from 'react-bootstrap/Spinner';
@@ -43,7 +44,7 @@ const ConfirmationModal = ({
                         disabled={isSubmitting}
                         style={{ fontSize: '0.88rem', border: '1px solid #d2d2d7' }}
                     >
-                        Cancelar
+                        <FormattedMessage id="project.common.ConfirmationModal.cancel" defaultMessage="Cancelar" />
                     </Button>
                     <Button
                         variant={isDanger ? 'danger' : 'primary'}
@@ -59,7 +60,7 @@ const ConfirmationModal = ({
                         {isSubmitting ? (
                             <>
                                 <Spinner as="span" animation="border" size="sm" role="status" aria-hidden="true" className="me-2" />
-                                Procesando...
+                                <FormattedMessage id="project.common.ConfirmationModal.processing" defaultMessage="Procesando..." />
                             </>
                         ) : (
                             confirmText

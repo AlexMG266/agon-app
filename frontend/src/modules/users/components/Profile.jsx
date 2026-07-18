@@ -150,27 +150,27 @@ const Profile = () => {
                             <div className="profile-stat-item">
                                 <span className="profile-stat-icon">🎯</span>
                                 <div>
-                                    <div className="profile-stat-label">ELO Actual</div>
+                                    <div className="profile-stat-label"><FormattedMessage id="project.users.Profile.elo" defaultMessage="ELO Actual" /></div>
                                     <div className="profile-stat-value">{user.elo || 800}</div>
                                     {user.eloProvisional && (
-                                        <div className="profile-stat-sub">Provisional</div>
+                                        <div className="profile-stat-sub"><FormattedMessage id="project.users.Profile.provisional" defaultMessage="Provisional" /></div>
                                     )}
                                 </div>
                             </div>
                             <div className="profile-stat-item">
                                 <span className="profile-stat-icon">👥</span>
                                 <div>
-                                    <div className="profile-stat-label">Equipos</div>
+                                    <div className="profile-stat-label"><FormattedMessage id="project.users.Profile.teams" defaultMessage="Equipos" /></div>
                                     <div className="profile-stat-value">{user.equipos?.length || 0}</div>
-                                    <div className="profile-stat-sub">Activos</div>
+                                    <div className="profile-stat-sub"><FormattedMessage id="project.users.Profile.active" defaultMessage="Activos" /></div>
                                 </div>
                             </div>
                             <div className="profile-stat-item">
                                 <span className="profile-stat-icon">🏆</span>
                                 <div>
-                                    <div className="profile-stat-label">Victorias</div>
+                                    <div className="profile-stat-label"><FormattedMessage id="project.users.Profile.wins" defaultMessage="Victorias" /></div>
                                     <div className="profile-stat-value">{user.victorias || 0}</div>
-                                    <div className="profile-stat-sub">Esta temporada</div>
+                                    <div className="profile-stat-sub"><FormattedMessage id="project.users.Profile.season" defaultMessage="Esta temporada" /></div>
                                 </div>
                             </div>
                         </div>
@@ -221,7 +221,7 @@ const Profile = () => {
                                                     className="form-control-apple-file"
                                                 />
                                                 <Button variant="light" className="profile-upload-btn">
-                                                    <i className="fa-solid fa-cloud-arrow-up me-2 text-secondary"></i>Subir foto
+                                                    <i className="fa-solid fa-cloud-arrow-up me-2 text-secondary"></i><FormattedMessage id="project.users.Profile.uploadPhoto" defaultMessage="Subir foto" />
                                                 </Button>
                                             </div>
                                             {profileImage && (

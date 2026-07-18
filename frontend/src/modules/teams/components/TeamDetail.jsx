@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { Link, useParams, useNavigate } from 'react-router';
+import { FormattedMessage, useIntl } from 'react-intl';
 import Container from 'react-bootstrap/Container';
 import Row from 'react-bootstrap/Row';
 import Col from 'react-bootstrap/Col';
@@ -19,6 +20,7 @@ const TeamDetail = () => {
     const { id } = useParams();
     const navigate = useNavigate();
     const dispatch = useDispatch();
+    const intl = useIntl();
     const user = useSelector(state => state.users?.user);
     const [team, setTeam] = useState(null);
     const [loading, setLoading] = useState(true);
@@ -141,7 +143,9 @@ const TeamDetail = () => {
         return (
             <div className="team-detail-loading">
                 <Spinner animation="border" variant="secondary" size="sm" className="mb-2" />
-                <p className="small text-muted m-0">Cargando equipo...</p>
+                <p className="small text-muted m-0">
+                    <FormattedMessage id="project.teams.Detail.loading" defaultMessage="Cargando equipo..." />
+                </p>
             </div>
         );
     }
@@ -150,11 +154,13 @@ const TeamDetail = () => {
         return (
             <div className="team-detail-not-found">
                 <i className="fa-regular fa-circle-xmark mb-3"></i>
-                <p className="m-0">No se pudo cargar el equipo</p>
-                <p className="small text-muted mt-2">{error || 'El equipo no existe o no tienes permisos'}</p>
+                <p className="m-0">
+                    <FormattedMessage id="project.teams.Detail.notFound" defaultMessage="No se pudo cargar el equipo" />
+                </p>
+                <p className="small text-muted mt-2">{error || <FormattedMessage id="project.teams.Detail.error.noPermissions" defaultMessage="El equipo no existe o no tienes permisos" />}</p>
                 <Link to="/" className="mt-3 text-decoration-none">
                     <Button variant="dark" className="rounded-pill px-4">
-                        Volver al dashboard
+                        <FormattedMessage id="project.teams.Detail.backToDashboard" defaultMessage="Volver al dashboard" />
                     </Button>
                 </Link>
             </div>
@@ -163,13 +169,13 @@ const TeamDetail = () => {
 
     const isCaptain = user?.id === team.creadorId;
     const isMember = team.miembros?.some(m => m.id === user?.id);
-    const codigoEquipo = team.codigoEquipo || team.codigoInvitacion || 'No disponible';
+    const codigoEquipo = team.codigoEquipo || team.codigoInvitacion || <FormattedMessage id="project.teams.Detail.codeNotAvailable" defaultMessage="No disponible" />;
 
     return (
         <Container className="team-detail-container">
             <div className="team-detail-header">
                 <Link to="/" className="team-detail-back">
-                    <i className="fa-solid fa-arrow-left me-2"></i> Volver
+                    <i className="fa-solid fa-arrow-left me-2"></i> <FormattedMessage id="project.teams.Detail.back" defaultMessage="Volver" />
                 </Link>
             </div>
 
@@ -179,7 +185,9 @@ const TeamDetail = () => {
                     {isEditing ? (
                         <Form onSubmit={handleUpdateTeam} className="team-detail-edit-form">
                             <Form.Group className="mb-3">
-                                <Form.Label className="fw-semibold small text-muted">Nombre del equipo</Form.Label>
+                                <Form.Label className="fw-semibold small text-muted">
+                                    <FormattedMessage id="project.teams.Detail.editForm.nameLabel" defaultMessage="Nombre del equipo" />
+                                </Form.Label>
                                 <Form.Control
                                     type="text"
                                     value={editName}
@@ -190,19 +198,21 @@ const TeamDetail = () => {
                                 />
                             </Form.Group>
                             <Form.Group className="mb-3">
-                                <Form.Label className="fw-semibold small text-muted">Descripción o lema</Form.Label>
+                                <Form.Label className="fw-semibold small text-muted">
+                                    <FormattedMessage id="project.teams.Detail.editForm.descriptionLabel" defaultMessage="Descripción o lema" />
+                                </Form.Label>
                                 <Form.Control
                                     as="textarea"
                                     rows={2}
                                     value={editDescripcion}
                                     onChange={(e) => setEditDescripcion(e.target.value)}
                                     className="team-detail-edit-input"
-                                    placeholder="Escribe el lema de tu equipo..."
+                                    placeholder={intl.formatMessage({ id: 'project.teams.Detail.editForm.descriptionPlaceholder', defaultMessage: 'Escribe el lema de tu equipo...' })}
                                 />
                             </Form.Group>
                             <div className="d-flex gap-2">
                                 <Button type="submit" className="team-detail-save-btn">
-                                    Guardar
+                                    <FormattedMessage id="project.teams.Detail.editForm.save" defaultMessage="Guardar" />
                                 </Button>
                                 <Button 
                                     type="button" 
@@ -214,7 +224,7 @@ const TeamDetail = () => {
                                         setEditDescripcion(team.descripcion || '');
                                     }}
                                 >
-                                    Cancelar
+                                    <FormattedMessage id="project.teams.Detail.editForm.cancel" defaultMessage="Cancelar" />
                                 </Button>
                             </div>
                         </Form>
@@ -228,7 +238,7 @@ const TeamDetail = () => {
                                         className="team-detail-edit-btn mt-2"
                                         onClick={() => setIsEditing(true)}
                                     >
-                                        <i className="fa-solid fa-pen me-1"></i> Editar equipo
+                                        <i className="fa-solid fa-pen me-1"></i> <FormattedMessage id="project.teams.Detail.editTeam" defaultMessage="Editar equipo" />
                                     </Button>
                                 )}
                             </Col>
@@ -237,7 +247,9 @@ const TeamDetail = () => {
                                     {team.descripcion ? (
                                         <p className="text-secondary mb-0">{team.descripcion}</p>
                                     ) : (
-                                        <p className="text-muted fst-italic mb-0">Sin descripción</p>
+                                        <p className="text-muted fst-italic mb-0">
+                                            <FormattedMessage id="project.teams.Detail.noDescription" defaultMessage="Sin descripción" />
+                                        </p>
                                     )}
                                 </div>
                             </Col>
@@ -248,10 +260,12 @@ const TeamDetail = () => {
                 {/* Sección 2: Código de equipo */}
                 <div className="team-detail-code-section">
                     <div className="team-detail-code-header">
-                        <span className="team-detail-code-label">Código de equipo</span>
+                        <span className="team-detail-code-label">
+                            <FormattedMessage id="project.teams.Detail.codeLabel" defaultMessage="Código de equipo" />
+                        </span>
                         {copied && (
                             <span className="team-detail-code-copied">
-                                <i className="fa-regular fa-check-circle me-1"></i> ¡Copiado!
+                                <i className="fa-regular fa-check-circle me-1"></i> <FormattedMessage id="project.teams.Detail.codeCopied" defaultMessage="¡Copiado!" />
                             </span>
                         )}
                     </div>
@@ -262,11 +276,11 @@ const TeamDetail = () => {
                             className="team-detail-copy-btn"
                             onClick={handleCopyCode}
                         >
-                            <i className="fa-regular fa-copy me-1"></i> Copiar
+                            <i className="fa-regular fa-copy me-1"></i> <FormattedMessage id="project.teams.Detail.copy" defaultMessage="Copiar" />
                         </Button>
                     </div>
                     <p className="team-detail-code-help">
-                        Comparte este código con tu compañero para que se una al equipo
+                        <FormattedMessage id="project.teams.Detail.codeHelp" defaultMessage="Comparte este código con tu compañero para que se una al equipo" />
                     </p>
                 </div>
 
@@ -274,7 +288,7 @@ const TeamDetail = () => {
                 <div className="team-detail-bottom">
                     <h5 className="team-detail-members-title">
                         <i className="fa-solid fa-users me-2"></i>
-                        Miembros ({team.miembros?.length || 0})
+                        <FormattedMessage id="project.teams.Detail.membersTitle" defaultMessage="Miembros ({count})" values={{ count: team.miembros?.length || 0 }} />
                     </h5>
 
                     <div className="team-detail-members-list">
@@ -296,7 +310,7 @@ const TeamDetail = () => {
                                             {member.nombre}
                                             {isCaptainMember && (
                                                 <Badge className="team-detail-captain-badge">
-                                                    <i className="fa-solid fa-crown me-1"></i> Capitán
+                                                    <i className="fa-solid fa-crown me-1"></i> <FormattedMessage id="project.teams.Detail.captain" defaultMessage="Capitán" />
                                                 </Badge>
                                             )}
                                         </div>
@@ -307,7 +321,7 @@ const TeamDetail = () => {
                         })}
                         {(!team.miembros || team.miembros.length === 0) && (
                             <div className="team-detail-no-members">
-                                No hay miembros en este equipo
+                                <FormattedMessage id="project.teams.Detail.noMembers" defaultMessage="No hay miembros en este equipo" />
                             </div>
                         )}
                     </div>
@@ -320,7 +334,7 @@ const TeamDetail = () => {
                                 onClick={() => setShowDeleteModal(true)}
                             >
                                 <i className="fa-regular fa-trash-can me-2"></i>
-                                Eliminar equipo
+                                <FormattedMessage id="project.teams.Detail.deleteTeam" defaultMessage="Eliminar equipo" />
                             </Button>
                         )}
                         {!isCaptain && isMember && (
@@ -330,7 +344,7 @@ const TeamDetail = () => {
                                 onClick={() => setShowLeaveModal(true)}
                             >
                                 <i className="fa-regular fa-right-from-bracket me-2"></i>
-                                Abandonar equipo
+                                <FormattedMessage id="project.teams.Detail.leaveTeam" defaultMessage="Abandonar equipo" />
                             </Button>
                         )}
                     </div>
@@ -341,9 +355,15 @@ const TeamDetail = () => {
                 show={showDeleteModal}
                 onHide={() => !isSubmitting && setShowDeleteModal(false)}
                 onConfirm={handleConfirmDelete}
-                title="¿Eliminar equipo?"
-                description={`¿Estás seguro de que quieres eliminar el equipo "${team.nombreEquipo || team.nombre}"? Esta acción no se puede deshacer.`}
-                confirmText="Eliminar"
+                title={<FormattedMessage id="project.teams.Detail.deleteModal.title" defaultMessage="¿Eliminar equipo?" />}
+                description={
+                    <FormattedMessage
+                        id="project.teams.Detail.deleteModal.description"
+                        defaultMessage={'¿Estás seguro de que quieres eliminar el equipo "{teamName}"? Esta acción no se puede deshacer.'}
+                        values={{ teamName: team.nombreEquipo || team.nombre }}
+                    />
+                }
+                confirmText={<FormattedMessage id="project.teams.Detail.deleteConfirm" defaultMessage="Eliminar" />}
                 isSubmitting={isSubmitting}
                 variant="danger"
             />
@@ -352,9 +372,15 @@ const TeamDetail = () => {
                 show={showLeaveModal}
                 onHide={() => !isSubmitting && setShowLeaveModal(false)}
                 onConfirm={handleConfirmLeave}
-                title="¿Abandonar equipo?"
-                description={`¿Estás seguro de que quieres abandonar el equipo "${team.nombreEquipo || team.nombre}"?`}
-                confirmText="Abandonar"
+                title={<FormattedMessage id="project.teams.Detail.leaveModal.title" defaultMessage="¿Abandonar equipo?" />}
+                description={
+                    <FormattedMessage
+                        id="project.teams.Detail.leaveModal.description"
+                        defaultMessage={'¿Estás seguro de que quieres abandonar el equipo "{teamName}"?'}
+                        values={{ teamName: team.nombreEquipo || team.nombre }}
+                    />
+                }
+                confirmText={<FormattedMessage id="project.teams.Detail.leaveConfirm" defaultMessage="Abandonar" />}
                 isSubmitting={isSubmitting}
                 variant="danger"
             />

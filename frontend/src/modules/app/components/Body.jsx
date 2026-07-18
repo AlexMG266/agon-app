@@ -1,6 +1,7 @@
 // src/modules/app/components/Body.jsx
 import { useSelector } from 'react-redux';
 import { Route, Routes, NavLink, useLocation } from 'react-router';
+import { FormattedMessage } from 'react-intl';
 import AppGlobalComponents from './AppGlobalComponents';
 import Home from './Home';
 import { Login, SignUp, Profile, Logout, Notifications } from '../../users';
@@ -23,30 +24,30 @@ const Body = () => {
             {loggedIn && (
                 <aside className="app-sidebar">
                     <div className="sidebar-group">
-                        <span className="sidebar-title">Competición</span>
+                        <span className="sidebar-title"><FormattedMessage id="project.app.sidebar.competition" defaultMessage="Competición" /></span>
                         <NavLink to="/" className={({ isActive }) => `sidebar-link ${isActive ? 'active' : ''}`} end>
                             <i className="fa-solid fa-chart-simple"></i>
-                            <span>Panel Principal</span>
+                            <span><FormattedMessage id="project.app.sidebar.dashboard" defaultMessage="Panel Principal" /></span>
                         </NavLink>
                     </div>
 
                     <div className="sidebar-group">
-                        <span className="sidebar-title">Centro de Alertas</span>
+                        <span className="sidebar-title"><FormattedMessage id="project.app.sidebar.alertCenter" defaultMessage="Centro de Alertas" /></span>
                         <NavLink to="/users/notifications" className={({ isActive }) => `sidebar-link ${isActive ? 'active' : ''}`}>
                             <i className="fa-solid fa-bell"></i>
-                            <span>Notificaciones</span>
+                            <span><FormattedMessage id="project.app.sidebar.notifications" defaultMessage="Notificaciones" /></span>
                         </NavLink>
                     </div>
 
                     <div className="sidebar-group mt-auto">
-                        <span className="sidebar-title">Cuenta</span>
+                        <span className="sidebar-title"><FormattedMessage id="project.app.sidebar.account" defaultMessage="Cuenta" /></span>
                         <NavLink to="/users/profile" className={({ isActive }) => `sidebar-link ${isActive ? 'active' : ''}`}>
                             <i className="fa-solid fa-user-gear"></i>
-                            <span>Ajustes de Perfil</span>
+                            <span><FormattedMessage id="project.app.sidebar.profileSettings" defaultMessage="Ajustes de Perfil" /></span>
                         </NavLink>
                         <NavLink to="/users/logout" className="sidebar-link text-danger-hover">
                             <i className="fa-solid fa-arrow-right-from-bracket"></i>
-                            <span>Cerrar Sesión</span>
+                            <span><FormattedMessage id="project.app.sidebar.logout" defaultMessage="Cerrar Sesión" /></span>
                         </NavLink>
                     </div>
                 </aside>

@@ -1,6 +1,7 @@
 import { useEffect } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { Link } from 'react-router';
+import { FormattedMessage } from 'react-intl';
 import Container from 'react-bootstrap/Container';
 import Row from 'react-bootstrap/Row';
 import Col from 'react-bootstrap/Col';
@@ -22,19 +23,17 @@ const LandingPage = () => {
                         Agón
                     </h1>
                     <p className="h4 text-secondary mb-4" style={{ fontWeight: '400', letterSpacing: '-0.01em' }}>
-                        La plataforma para organizar y competir en torneos de futbolín
+                        <FormattedMessage id="project.app.Home.landingHero.title" defaultMessage="La plataforma para organizar y competir en torneos de futbolín" />
                     </p>
                     <p className="text-muted mb-5" style={{ fontSize: '1.05rem', lineHeight: '1.6' }}>
-                        Crea competiciones fácilmente o únete con tu pareja de juego. 
-                        Registra resultados al instante, sigue el calendario en tiempo real 
-                        y mide tu nivel con el sistema de puntuación ELO.
+                        <FormattedMessage id="project.app.Home.landingHero.description" defaultMessage="Crea competiciones fácilmente o únete con tu pareja de juego. Registra resultados al instante, sigue el calendario en tiempo real y mide tu nivel con el sistema de puntuación ELO." />
                     </p>
                     <div className="d-flex gap-3">
                         <Button as={Link} to="/users/login" variant="dark" size="lg" className="rounded-pill px-4">
-                            Iniciar Sesión
+                            <FormattedMessage id="project.app.Home.landingHero.login" defaultMessage="Iniciar Sesión" />
                         </Button>
                         <Button as={Link} to="/users/signup" variant="outline-dark" size="lg" className="rounded-pill px-4">
-                            Registrarse
+                            <FormattedMessage id="project.app.Home.landingHero.signup" defaultMessage="Registrarse" />
                         </Button>
                     </div>
                 </Col>
@@ -64,12 +63,16 @@ const Dashboard = () => {
         <div className="home-dashboard">
             <div className="dashboard-header">
                 <div>
-                    <h1 className="dashboard-greeting">Hola, {user?.nombre || 'test'}</h1>
-                    <p className="dashboard-subtitle">Bienvenido a tu panel de control</p>
+                    <h1 className="dashboard-greeting">
+                        <FormattedMessage id="project.app.Home.dashboard.greeting" defaultMessage="Hola, {name}" values={{ name: user?.nombre || 'test' }} />
+                    </h1>
+                    <p className="dashboard-subtitle">
+                        <FormattedMessage id="project.app.Home.dashboard.subtitle" defaultMessage="Bienvenido a tu panel de control" />
+                    </p>
                 </div>
                 <div className="dashboard-actions">
                     <Button as={Link} to="/tournaments" variant="outline-dark" size="sm" className="rounded-pill">
-                        Explorar Torneos
+                        <FormattedMessage id="project.app.Home.dashboard.exploreTournaments" defaultMessage="Explorar Torneos" />
                     </Button>
                 </div>
             </div>
@@ -77,8 +80,10 @@ const Dashboard = () => {
             <div className="dashboard-grid">
                 <div className="dashboard-section">
                     <div className="section-header">
-                        <h5>Mis Equipos</h5>
-                        <Link to="/teams/create" className="section-action">+ Crear equipo</Link>
+                        <h5><FormattedMessage id="project.app.Home.dashboard.myTeams" defaultMessage="Mis Equipos" /></h5>
+                        <Link to="/teams/create" className="section-action">
+                            <FormattedMessage id="project.app.Home.dashboard.createTeam" defaultMessage="+ Crear equipo" />
+                        </Link>
                     </div>
 
                     {isLoading ? (
@@ -92,20 +97,32 @@ const Dashboard = () => {
                                     <div>
                                         <div className="list-item-title">{team.nombreEquipo || team.nombre}</div>
                                         <div className="list-item-meta">
-                                            <span>{team.miembros?.length || 0} miembros</span>
-                                            <Badge className="list-item-badge">Activo</Badge>
+                                            <span>
+                                                <FormattedMessage id="project.app.Home.dashboard.members" defaultMessage="{count} miembros" values={{ count: team.miembros?.length || 0 }} />
+                                            </span>
+                                            <Badge className="list-item-badge">
+                                                <FormattedMessage id="project.app.Home.dashboard.active" defaultMessage="Activo" />
+                                            </Badge>
                                         </div>
                                     </div>
-                                    <Link to={`/teams/view/${team.id}`} className="list-item-link">Ver →</Link>
+                                    <Link to={`/teams/view/${team.id}`} className="list-item-link">
+                                        <FormattedMessage id="project.app.Home.dashboard.view" defaultMessage="Ver →" />
+                                    </Link>
                                 </div>
                             ))}
                         </div>
                     ) : (
                         <div className="empty-state">
                             <div className="empty-state-icon">📋</div>
-                            <div className="empty-state-text">Aún no tienes equipos</div>
-                            <div className="empty-state-help">Crea tu primer equipo para empezar a competir</div>
-                            <Link to="/teams/create" className="empty-state-action">Crear equipo →</Link>
+                            <div className="empty-state-text">
+                                <FormattedMessage id="project.app.Home.dashboard.noTeams" defaultMessage="Aún no tienes equipos" />
+                            </div>
+                            <div className="empty-state-help">
+                                <FormattedMessage id="project.app.Home.dashboard.noTeamsHelp" defaultMessage="Crea tu primer equipo para empezar a competir" />
+                            </div>
+                            <Link to="/teams/create" className="empty-state-action">
+                                <FormattedMessage id="project.app.Home.dashboard.createTeamAction" defaultMessage="Crear equipo →" />
+                            </Link>
                         </div>
                     )}
 
@@ -115,15 +132,23 @@ const Dashboard = () => {
 
                 <div className="dashboard-section">
                     <div className="section-header">
-                        <h5>Mis Torneos</h5>
-                        <Link to="/tournaments/create" className="section-action">+ Crear torneo</Link>
+                        <h5><FormattedMessage id="project.app.Home.dashboard.myTournaments" defaultMessage="Mis Torneos" /></h5>
+                        <Link to="/tournaments/create" className="section-action">
+                            <FormattedMessage id="project.app.Home.dashboard.createTournament" defaultMessage="+ Crear torneo" />
+                        </Link>
                     </div>
 
                     <div className="empty-state">
                         <div className="empty-state-icon">🏆</div>
-                        <div className="empty-state-text">Sin torneos activos</div>
-                        <div className="empty-state-help">Únete a un torneo o crea uno nuevo</div>
-                        <Link to="/tournaments" className="empty-state-action">Explorar torneos →</Link>
+                        <div className="empty-state-text">
+                            <FormattedMessage id="project.app.Home.dashboard.noTournaments" defaultMessage="Sin torneos activos" />
+                        </div>
+                        <div className="empty-state-help">
+                            <FormattedMessage id="project.app.Home.dashboard.noTournamentsHelp" defaultMessage="Únete a un torneo o crea uno nuevo" />
+                        </div>
+                        <Link to="/tournaments" className="empty-state-action">
+                            <FormattedMessage id="project.app.Home.dashboard.exploreTournamentsAction" defaultMessage="Explorar torneos →" />
+                        </Link>
                     </div>
                 </div>
             </div>
@@ -140,19 +165,27 @@ const Dashboard = () => {
                             <div className="profile-name">{user?.nombre || 'test'}</div>
                             <div className="profile-email">{user?.email || 'test@domain.com'}</div>
                         </div>
-                        <Link to="/users/profile" className="profile-link">Ver perfil →</Link>
+                        <Link to="/users/profile" className="profile-link">
+                            <FormattedMessage id="project.app.Home.dashboard.viewProfile" defaultMessage="Ver perfil →" />
+                        </Link>
                     </div>
                 </div>
 
                 <div className="footer-card">
                     <div className="matches-summary">
                         <div className="matches-header">
-                            <span className="matches-title">Próximos Encuentros</span>
+                            <span className="matches-title">
+                                <FormattedMessage id="project.app.Home.dashboard.upcomingMatches" defaultMessage="Próximos Encuentros" />
+                            </span>
                             <Badge className="matches-badge">0</Badge>
                         </div>
                         <div className="matches-empty">
-                            <div className="matches-empty-text">Sin partidos programados</div>
-                            <div className="matches-empty-help">Los encuentros aparecerán aquí cuando tengas competiciones activas</div>
+                            <div className="matches-empty-text">
+                                <FormattedMessage id="project.app.Home.dashboard.noMatches" defaultMessage="Sin partidos programados" />
+                            </div>
+                            <div className="matches-empty-help">
+                                <FormattedMessage id="project.app.Home.dashboard.noMatchesHelp" defaultMessage="Los encuentros aparecerán aquí cuando tengas competiciones activas" />
+                            </div>
                         </div>
                     </div>
                 </div>

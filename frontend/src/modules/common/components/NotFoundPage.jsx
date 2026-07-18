@@ -1,5 +1,6 @@
 // src/modules/common/components/NotFoundPage.jsx
 import { Link } from 'react-router';
+import { FormattedMessage } from 'react-intl';
 import Container from 'react-bootstrap/Container';
 import Button from 'react-bootstrap/Button';
 
@@ -11,17 +12,17 @@ const NotFoundPage = () => {
                     <i className="fa-regular fa-compass"></i>
                 </div>
                 <h2 className="fw-bold text-dark mb-2" style={{ fontSize: '1.25rem', letterSpacing: '-0.01em' }}>
-                    Página no encontrada
+                    <FormattedMessage id="project.common.NotFoundPage.title" defaultMessage="Página no encontrada" />
                 </h2>
                 <p className="text-secondary mb-1" style={{ fontSize: '0.85rem' }}>
-                    La página que estás buscando no existe o ha sido movida.
+                    <FormattedMessage id="project.common.NotFoundPage.description" defaultMessage="La página que estás buscando no existe o ha sido movida." />
                 </p>
                 <p className="text-secondary mb-4" style={{ fontSize: '0.8rem' }}>
-                    Comprueba la dirección o vuelve al inicio.
+                    <FormattedMessage id="project.common.NotFoundPage.help" defaultMessage="Comprueba la dirección o vuelve al inicio." />
                 </p>
                 <Button as={Link} to="/" variant="dark" className="rounded-pill px-4 py-2" style={{ fontSize: '0.85rem', fontWeight: '500' }}>
                     <i className="fa-solid fa-arrow-left me-2"></i>
-                    Volver al inicio
+                    <FormattedMessage id="project.common.NotFoundPage.backToHome" defaultMessage="Volver al inicio" />
                 </Button>
             </div>
         </Container>

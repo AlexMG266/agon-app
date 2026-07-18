@@ -70,13 +70,13 @@ const CreateTeam = () => {
                                 className="badge rounded-pill bg-light text-dark border px-3 py-1 mb-3 fw-semibold text-uppercase"
                                 style={{ letterSpacing: '0.05em', fontSize: '0.7rem' }}
                             >
-                                Creación de equipo
+                                <FormattedMessage id="project.teams.CreateTeam.badge" defaultMessage="Creación de equipo" />
                             </span>
                             <h2 className="display-6 font-weight-bold text-dark mb-3" style={{ fontWeight: '700', letterSpacing: '-0.03em' }}>
-                                Tu equipo en Agón
+                                <FormattedMessage id="project.teams.CreateTeam.sideTitle" defaultMessage="Tu equipo en Agón" />
                             </h2>
                             <p className="text-secondary mb-4" style={{ lineHeight: '1.6', fontSize: '0.95rem' }}>
-                                Para empezar a competir necesitas consolidar tu pareja de juego. Este proceso consta de tres pasos sencillos:
+                                <FormattedMessage id="project.teams.CreateTeam.sideDescription" defaultMessage="Para empezar a competir necesitas consolidar tu pareja de juego. Este proceso consta de tres pasos sencillos:" />
                             </p>
 
                             <div className="d-flex flex-column gap-3">
@@ -85,8 +85,8 @@ const CreateTeam = () => {
                                         1
                                     </div>
                                     <div>
-                                        <h6 className="mb-1 fw-bold text-dark" style={{ fontSize: '0.9rem' }}>Elige la identidad</h6>
-                                        <p className="small text-muted mb-0">Define el nombre y el lema que os representará en los torneos.</p>
+                                        <h6 className="mb-1 fw-bold text-dark" style={{ fontSize: '0.9rem' }}><FormattedMessage id="project.teams.CreateTeam.step1.title" defaultMessage="Elige la identidad" /></h6>
+                                        <p className="small text-muted mb-0"><FormattedMessage id="project.teams.CreateTeam.step1.desc" defaultMessage="Define el nombre y el lema que os representará en los torneos." /></p>
                                     </div>
                                 </div>
 
@@ -95,8 +95,8 @@ const CreateTeam = () => {
                                         2
                                     </div>
                                     <div>
-                                        <h6 className="mb-1 fw-bold text-dark" style={{ fontSize: '0.9rem' }}>Obtén tu código</h6>
-                                        <p className="small text-muted mb-0">Al crear el equipo, el sistema generará un código único de invitación para tu equipo.</p>
+                                        <h6 className="mb-1 fw-bold text-dark" style={{ fontSize: '0.9rem' }}><FormattedMessage id="project.teams.CreateTeam.step2.title" defaultMessage="Obtén tu código" /></h6>
+                                        <p className="small text-muted mb-0"><FormattedMessage id="project.teams.CreateTeam.step2.desc" defaultMessage="Al crear el equipo, el sistema generará un código único de invitación para tu equipo." /></p>
                                     </div>
                                 </div>
 
@@ -105,8 +105,8 @@ const CreateTeam = () => {
                                         3
                                     </div>
                                     <div>
-                                        <h6 className="mb-1 fw-bold text-dark" style={{ fontSize: '0.9rem' }}>Suma a tu compañero</h6>
-                                        <p className="small text-muted mb-0">Comparte el código con tu pareja para completar el equipo.</p>
+                                        <h6 className="mb-1 fw-bold text-dark" style={{ fontSize: '0.9rem' }}><FormattedMessage id="project.teams.CreateTeam.step3.title" defaultMessage="Suma a tu compañero" /></h6>
+                                        <p className="small text-muted mb-0"><FormattedMessage id="project.teams.CreateTeam.step3.desc" defaultMessage="Comparte el código con tu pareja para completar el equipo." /></p>
                                     </div>
                                 </div>
                             </div>
@@ -204,7 +204,7 @@ const CreateTeam = () => {
                                                         role="status"
                                                         aria-hidden="true"
                                                     />
-                                                    <span>Guardando...</span>
+                                                    <span><FormattedMessage id="project.teams.CreateTeam.saving" defaultMessage="Guardando..." /></span>
                                                 </>
                                             ) : (
                                                 <FormattedMessage id="project.teams.buttons.create" defaultMessage="Crear equipo" />
