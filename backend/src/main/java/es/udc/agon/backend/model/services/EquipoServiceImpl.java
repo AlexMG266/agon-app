@@ -187,6 +187,15 @@ public class EquipoServiceImpl implements EquipoService {
         }
 
         equipo.removeMiembro(usuario);
+        equipoDao.save(equipo);
+
+        // Notificar al creador que un miembro ha abandonado
+        User creador = equipo.getCreador();
+        String asunto = "Un miembro ha abandonado " + equipo.getNombreEquipo();
+        String cuerpo = usuario.getNombre() + " ha abandonado el equipo " + equipo.getNombreEquipo() + ".";
+        Notification notificacion = new Notification(
+                creador, asunto, cuerpo, Notification.TipoNotificacion.SYSTEM);
+        notificationDao.save(notificacion);
     }
 
     @Override
