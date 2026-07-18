@@ -220,4 +220,31 @@ public class EquipoServiceImpl implements EquipoService {
         validarEquipoActivo(equipo);
         return equipo;
     }
+
+    @Override
+    public void expulsarMiembro(Long captainId, Long equipoId, Long miembroId)
+            throws InstanceNotFoundException, PermissionException, IllegalArgumentException {
+
+        Equipo equipo = equipoDao.findById(equipoId)
+                .orElseThrow(() -> new InstanceNotFoundException("project.entities.equipo", equipoId));
+        User miembro = userDao.findById(miembroId)
+                .orElseThrow(() -> new InstanceNotFoundException("project.entities.user", miembroId));
+
+        validarEquipoActivo(equipo);
+
+        if (!equipo.getCreador().getId().equals(captainId)) {
+            throw new PermissionException();
+        }
+
+        if (equipo.getCreador().getId().equals(miembroId)) {
+            throw new IllegalArgumentException("El capitán no puede expulsarse a sí mismo. Use eliminar equipo en su lugar.");
+        }
+
+        if (!equipo.getMiembros().contains(miembro)) {
+            throw new IllegalArgumentException("El usuario no es miembro del equipo");
+        }
+
+        equipo.removeMiembro(miembro);
+        equipoDao.save(equipo);
+    }
 }

@@ -160,6 +160,31 @@ public class EquipoController {
         equipoService.abandonarEquipo(userId, id);
     }
 
+    @PostMapping("/{id}/members/{memberId}/kick")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    @Operation(
+            summary = "Expulsar a un miembro del equipo",
+            description = "Permite al capitán expulsar a un miembro del equipo. El capitán no puede expulsarse a sí mismo."
+    )
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "204", description = "Miembro expulsado con éxito"),
+            @ApiResponse(responseCode = "400", description = "Lógica de negocio inválida (ej. expulsar al capitán, el usuario no es miembro)",
+                    content = @Content),
+            @ApiResponse(responseCode = "401", description = "No autorizado",
+                    content = @Content),
+            @ApiResponse(responseCode = "403", description = "No tienes permisos para expulsar miembros",
+                    content = @Content),
+            @ApiResponse(responseCode = "404", description = "Equipo o miembro no encontrado",
+                    content = @Content)
+    })
+    public void expulsarMiembro(
+            @Parameter(hidden = true) @RequestAttribute Long userId,
+            @Parameter(description = "ID del equipo", example = "1") @PathVariable Long id,
+            @Parameter(description = "ID del miembro a expulsar", example = "2") @PathVariable Long memberId)
+            throws InstanceNotFoundException, PermissionException, IllegalArgumentException {
+        equipoService.expulsarMiembro(userId, id, memberId);
+    }
+
     @DeleteMapping("/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     @Operation(

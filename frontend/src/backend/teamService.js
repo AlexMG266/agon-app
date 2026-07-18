@@ -1,4 +1,3 @@
-// src/backend/teamService.js
 import { appFetch } from './appFetch';
 
 // POST /teams: crea un nuevo equipo.
@@ -51,14 +50,9 @@ export const respondToRequest = async (solicitudId, aceptar) => {
     return await appFetch('POST', `/teams/solicitudes/${solicitudId}/responder`, { aceptar });
 };
 
-// POST /teams/{id}/remove-member: eliminar miembro del equipo
-export const removeMember = async (teamId, memberId) => {
-    return await appFetch('POST', `/teams/${teamId}/remove-member?userId=${memberId}`, null);
-};
-
-// GET /teams/{id}/requests: obtener solicitudes pendientes
-export const getPendingRequests = async (teamId) => {
-    return await appFetch('GET', `/teams/${teamId}/requests`);
+// POST /teams/{id}/members/{memberId}/kick: expulsar a un miembro del equipo (solo capitán).
+export const kickMember = async (teamId, memberId) => {
+    return await appFetch('POST', `/teams/${teamId}/members/${memberId}/kick`, null);
 };
 
 export default {
@@ -72,6 +66,5 @@ export default {
     leaveTeam,
     dissolveTeam,
     respondToRequest,
-    removeMember,
-    getPendingRequests
+    kickMember
 };

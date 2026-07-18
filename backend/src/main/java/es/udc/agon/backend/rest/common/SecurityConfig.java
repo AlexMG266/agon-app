@@ -1,4 +1,3 @@
-// src/main/java/es/udc/agon/backend/rest/common/SecurityConfig.java
 package es.udc.agon.backend.rest.common;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -59,8 +58,9 @@ public class SecurityConfig {
                     .requestMatchers(HttpMethod.POST, "/teams/*/propuestas").hasRole("USER")  
                     .requestMatchers(HttpMethod.POST, "/teams/peticiones").hasRole("USER")  
                     .requestMatchers(HttpMethod.POST, "/teams/solicitudes/*/responder").hasRole("USER") 
-                    .requestMatchers(HttpMethod.POST, "/teams/*/leave").hasRole("USER")  
-                    .requestMatchers(HttpMethod.POST, "/teams/*/disband").hasRole("USER")  
+                    .requestMatchers(HttpMethod.POST, "/teams/*/leave").hasRole("USER")
+                    .requestMatchers(HttpMethod.POST, "/teams/*/disband").hasRole("USER")
+                    .requestMatchers(HttpMethod.POST, "/teams/*/members/*/kick").hasRole("USER")
 
                     .anyRequest().denyAll()
                 );

@@ -201,6 +201,10 @@ export default {
     'project.teams.Detail.leaveModal.title': '¿Abandonar equipo?',
     'project.teams.Detail.leaveModal.description': '¿Estás seguro de que quieres abandonar el equipo "{teamName}"?',
     'project.teams.Detail.leaveConfirm': 'Abandonar',
+    'project.teams.Detail.kickMember': 'Expulsar',
+    'project.teams.Detail.kickModal.title': '¿Expulsar miembro?',
+    'project.teams.Detail.kickModal.description': '¿Estás seguro de que quieres expulsar a "{memberName}" del equipo? Esta acción no se puede deshacer.',
+    'project.teams.Detail.kickConfirm': 'Expulsar',
 
     'project.teams.JoinTeam.title': 'Unirse a un equipo',
     'project.teams.JoinTeam.subtitle': 'Introduce el código de 8 caracteres que te ha proporcionado el capitán del equipo',

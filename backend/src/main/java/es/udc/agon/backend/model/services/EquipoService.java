@@ -101,4 +101,16 @@ public interface EquipoService {
      * @throws InstanceNotFoundException Si no existe un equipo activo con ese código.
      */
     Equipo buscarEquipoPorCodigo(String codigoEquipo) throws InstanceNotFoundException;
+
+    /**
+     * El capitán expulsa a un miembro del equipo.
+     * * @param captainId Id del capitán (creador del equipo).
+     * @param equipoId Id del equipo.
+     * @param miembroId Id del miembro a expulsar.
+     * @throws InstanceNotFoundException Si el equipo, el capitán o el miembro no existen.
+     * @throws PermissionException Si el captainId no es el creador del equipo.
+     * @throws IllegalArgumentException Si el miembro no pertenece al equipo o se intenta expulsar al capitán.
+     */
+    void expulsarMiembro(Long captainId, Long equipoId, Long miembroId)
+            throws InstanceNotFoundException, PermissionException, IllegalArgumentException;
 }

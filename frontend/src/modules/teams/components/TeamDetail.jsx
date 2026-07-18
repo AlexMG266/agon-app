@@ -33,6 +33,8 @@ const TeamDetail = () => {
     const [copied, setCopied] = useState(false);
     const [showDeleteModal, setShowDeleteModal] = useState(false);
     const [showLeaveModal, setShowLeaveModal] = useState(false);
+    const [showKickModal, setShowKickModal] = useState(false);
+    const [memberToKick, setMemberToKick] = useState(null);
     const [isSubmitting, setIsSubmitting] = useState(false);
 
     useEffect(() => {
@@ -135,6 +137,31 @@ const TeamDetail = () => {
         } catch (error) {
             console.error('Error abandonando equipo:', error);
             setShowLeaveModal(false);
+            setIsSubmitting(false);
+        }
+    };
+
+    const handleConfirmKick = async () => {
+        if (!memberToKick) return;
+        setIsSubmitting(true);
+        try {
+            const response = await backend.teamService.kickMember(id, memberToKick.id);
+            if (response.ok) {
+                // Recargar el equipo para reflejar la expulsión
+                await loadTeam();
+                setShowKickModal(false);
+                setMemberToKick(null);
+                setIsSubmitting(false);
+            } else {
+                setShowKickModal(false);
+                setMemberToKick(null);
+                setIsSubmitting(false);
+                setBackendErrors(response.payload);
+            }
+        } catch (error) {
+            console.error('Error expulsando miembro:', error);
+            setShowKickModal(false);
+            setMemberToKick(null);
             setIsSubmitting(false);
         }
     };
@@ -295,8 +322,8 @@ const TeamDetail = () => {
                         {team.miembros?.map((member) => {
                             const isCaptainMember = member.id === team.creadorId;
                             return (
-                                <div 
-                                    key={member.id} 
+                                <div
+                                    key={member.id}
                                     className={`team-detail-member ${isCaptainMember ? 'captain' : ''}`}
                                 >
                                     <ProfileAvatar
@@ -316,6 +343,20 @@ const TeamDetail = () => {
                                         </div>
                                         <div className="team-detail-member-email">{member.email}</div>
                                     </div>
+                                    {isCaptain && !isCaptainMember && (
+                                        <Button
+                                            variant="outline-danger"
+                                            size="sm"
+                                            className="team-detail-kick-btn"
+                                            onClick={() => {
+                                                setMemberToKick(member);
+                                                setShowKickModal(true);
+                                            }}
+                                        >
+                                            <i className="fa-solid fa-user-minus me-1"></i>
+                                            <FormattedMessage id="project.teams.Detail.kickMember" defaultMessage="Expulsar" />
+                                        </Button>
+                                    )}
                                 </div>
                             );
                         })}
@@ -381,6 +422,23 @@ const TeamDetail = () => {
                     />
                 }
                 confirmText={<FormattedMessage id="project.teams.Detail.leaveConfirm" defaultMessage="Abandonar" />}
+                isSubmitting={isSubmitting}
+                variant="danger"
+            />
+
+            <ConfirmationModal
+                show={showKickModal}
+                onHide={() => !isSubmitting && setShowKickModal(false)}
+                onConfirm={handleConfirmKick}
+                title={<FormattedMessage id="project.teams.Detail.kickModal.title" defaultMessage="¿Expulsar miembro?" />}
+                description={
+                    <FormattedMessage
+                        id="project.teams.Detail.kickModal.description"
+                        defaultMessage={'¿Estás seguro de que quieres expulsar a "{memberName}" del equipo? Esta acción no se puede deshacer.'}
+                        values={{ memberName: memberToKick?.nombre || '' }}
+                    />
+                }
+                confirmText={<FormattedMessage id="project.teams.Detail.kickConfirm" defaultMessage="Expulsar" />}
                 isSubmitting={isSubmitting}
                 variant="danger"
             />
