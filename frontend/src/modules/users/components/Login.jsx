@@ -1,7 +1,7 @@
 import { useState, useRef } from 'react';
 import { useDispatch } from 'react-redux';
 import { Link } from 'react-router';
-import { FormattedMessage } from 'react-intl';
+import { FormattedMessage, useIntl } from 'react-intl';
 import { useNavigate } from 'react-router';
 import Button from 'react-bootstrap/Button';
 import Form from 'react-bootstrap/Form';
@@ -18,6 +18,7 @@ import backend from '../../../backend';
 const Login = () => {
     const dispatch = useDispatch();
     const navigate = useNavigate();
+    const intl = useIntl();
     const [userName, setUserName] = useState('');
     const [password, setPassword] = useState('');
     const [formValidated, setFormValidated] = useState(false);
@@ -48,8 +49,8 @@ const Login = () => {
                     setBackendErrors(response.payload);
                     setIsSubmitting(false);
                 }
-            } catch (error) {
-                setBackendErrors({ globalError: "Error de conexión con el servidor" });
+            } catch {
+                setBackendErrors({ globalError: intl.formatMessage({ id: 'project.users.Login.error.connection', defaultMessage: 'Error de conexión con el servidor' }) });
                 setIsSubmitting(false);
             }
         } else {
@@ -77,10 +78,10 @@ const Login = () => {
                     <div className="w-100 my-auto mx-auto d-flex flex-column align-items-center justify-content-center px-4" style={{ maxWidth: '540px' }}>
                         <div className="w-100 text-start">
                             <h1 className="fw-bold text-dark mb-4" style={{ fontSize: '2.5rem', letterSpacing: '-0.04em', lineHeight: '1.15', fontWeight: '700' }}>
-                                Organiza, inscríbete<br />y domina la mesa.
+                                <FormattedMessage id="project.users.Login.hero.title" defaultMessage="Organiza, inscríbete{br}y domina la mesa." values={{ br: <br /> }} />
                             </h1>
                             <p className="text-secondary mb-4" style={{ fontSize: '0.92rem', lineHeight: '1.5', color: '#86868b' }}>
-                                La plataforma definitiva para la gestión de tus partidas de futbolín. Toma el control de la competición con herramientas diseñadas para llevar tu comunidad al siguiente nivel.
+                                <FormattedMessage id="project.users.Login.hero.description" defaultMessage="La plataforma definitiva para la gestión de tus partidas de futbolín. Toma el control de la competición con herramientas diseñadas para llevar tu comunidad al siguiente nivel." />
                             </p>
                         </div>
 
@@ -90,8 +91,8 @@ const Login = () => {
                                     <div className="bg-dark text-white rounded-3 d-flex align-items-center justify-content-center mb-2" style={{ width: '36px', height: '36px' }}>
                                         <i className="fa-solid fa-trophy" style={{ fontSize: '0.9rem' }}></i>
                                     </div>
-                                    <div className="text-dark small fw-bold mb-1">Gestión de Torneos</div>
-                                    <div className="text-muted" style={{ fontSize: '0.75rem', lineHeight: '1.3' }}>Crea formatos competitivos a tu medida fácilmente.</div>
+                                    <div className="text-dark small fw-bold mb-1"><FormattedMessage id="project.users.Login.hero.feature1.title" defaultMessage="Gestión de Torneos" /></div>
+                                    <div className="text-muted" style={{ fontSize: '0.75rem', lineHeight: '1.3' }}><FormattedMessage id="project.users.Login.hero.feature1.desc" defaultMessage="Crea formatos competitivos a tu medida fácilmente." /></div>
                                 </div>
                             </Col>
                             <Col sm={6}>
@@ -99,8 +100,8 @@ const Login = () => {
                                     <div className="bg-dark text-white rounded-3 d-flex align-items-center justify-content-center mb-2" style={{ width: '36px', height: '36px' }}>
                                         <i className="fa-solid fa-file-signature" style={{ fontSize: '0.9rem' }}></i>
                                     </div>
-                                    <div className="text-dark small fw-bold mb-1">Inscripción Inmediata</div>
-                                    <div className="text-muted" style={{ fontSize: '0.75rem', lineHeight: '1.3' }}>Explora las mesas activas y asegura tu plaza con un clic.</div>
+                                    <div className="text-dark small fw-bold mb-1"><FormattedMessage id="project.users.Login.hero.feature2.title" defaultMessage="Inscripción Inmediata" /></div>
+                                    <div className="text-muted" style={{ fontSize: '0.75rem', lineHeight: '1.3' }}><FormattedMessage id="project.users.Login.hero.feature2.desc" defaultMessage="Explora las mesas activas y asegura tu plaza con un clic." /></div>
                                 </div>
                             </Col>
                             <Col sm={6}>
@@ -108,8 +109,8 @@ const Login = () => {
                                     <div className="bg-dark text-white rounded-3 d-flex align-items-center justify-content-center mb-2" style={{ width: '36px', height: '36px' }}>
                                         <i className="fa-solid fa-chart-simple" style={{ fontSize: '0.9rem' }}></i>
                                     </div>
-                                    <div className="text-dark small fw-bold mb-1">Sistema ELO Nativo</div>
-                                    <div className="text-muted" style={{ fontSize: '0.75rem', lineHeight: '1.3' }}>Cálculo preciso de tu nivel tras cada enfrentamiento.</div>
+                                    <div className="text-dark small fw-bold mb-1"><FormattedMessage id="project.users.Login.hero.feature3.title" defaultMessage="Sistema ELO Nativo" /></div>
+                                    <div className="text-muted" style={{ fontSize: '0.75rem', lineHeight: '1.3' }}><FormattedMessage id="project.users.Login.hero.feature3.desc" defaultMessage="Cálculo preciso de tu nivel tras cada enfrentamiento." /></div>
                                 </div>
                             </Col>
                             <Col sm={6}>
@@ -117,15 +118,15 @@ const Login = () => {
                                     <div className="bg-dark text-white rounded-3 d-flex align-items-center justify-content-center mb-2" style={{ width: '36px', height: '36px' }}>
                                         <i className="fa-solid fa-users" style={{ fontSize: '0.9rem' }}></i>
                                     </div>
-                                    <div className="text-dark small fw-bold mb-1">Perfil de Jugador</div>
-                                    <div className="text-muted" style={{ fontSize: '0.75rem', lineHeight: '1.3' }}>Historial centralizado con todas tus estadísticas.</div>
+                                    <div className="text-dark small fw-bold mb-1"><FormattedMessage id="project.users.Login.hero.feature4.title" defaultMessage="Perfil de Jugador" /></div>
+                                    <div className="text-muted" style={{ fontSize: '0.75rem', lineHeight: '1.3' }}><FormattedMessage id="project.users.Login.hero.feature4.desc" defaultMessage="Historial centralizado con todas tus estadísticas." /></div>
                                 </div>
                             </Col>
                         </Row>
                     </div>
 
                     <div className="text-muted small w-100 text-start" style={{ fontSize: '0.75rem' }}>
-                        © {new Date().getFullYear()} Agón Arena.
+                        <FormattedMessage id="project.users.Login.footer" defaultMessage="© {year} Agón Arena." values={{ year: new Date().getFullYear() }} />
                     </div>
                 </Col>
 
@@ -138,7 +139,7 @@ const Login = () => {
                                 <FormattedMessage id="project.users.Login.title" defaultMessage="Autenticarse" />
                             </h2>
                             <p className="text-secondary mb-0" style={{ fontSize: '0.85rem', color: '#86868b' }}>
-                                Introduce tus datos de acceso para continuar.
+                                <FormattedMessage id="project.users.Login.subtitle" defaultMessage="Introduce tus datos de acceso para continuar." />
                             </p>
                         </div>
 
@@ -211,7 +212,7 @@ const Login = () => {
                         </Form>
 
                         <p className="mt-4 small text-secondary text-center" style={{ fontSize: '0.82rem', color: '#86868b' }}>
-                            ¿Eres nuevo en la plataforma?{' '}
+                            <FormattedMessage id="project.users.Login.newUser" defaultMessage="¿Eres nuevo en la plataforma?" />{' '}
                             <Link to="/users/signup" className="text-decoration-none fw-semibold ms-1" style={{ color: '#0066cc' }}>
                                 <FormattedMessage id="project.users.SignUp.title" defaultMessage="Registrarse" />
                             </Link>

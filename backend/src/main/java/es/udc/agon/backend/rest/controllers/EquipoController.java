@@ -55,7 +55,7 @@ public class EquipoController {
             @Parameter(hidden = true) @RequestAttribute Long userId,
             @Validated @RequestBody CrearEquipoParamsDto params)
             throws InstanceNotFoundException {
-        Equipo equipo = equipoService.crearEquipo(userId, params.getNombreEquipo());
+        Equipo equipo = equipoService.crearEquipo(userId, params.getNombreEquipo(), params.getDescripcion());
         return EquipoConversor.toEquipoDto(equipo);
     }
 
@@ -160,26 +160,48 @@ public class EquipoController {
         equipoService.abandonarEquipo(userId, id);
     }
 
-    @PostMapping("/{id}/disband")
+    @PostMapping("/{id}/members/{memberId}/kick")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     @Operation(
-            summary = "Disolver el equipo",
-            description = "Disuelve de forma permanente un equipo. Solo el creador tiene autorización para ejecutar esta acción."
+            summary = "Expulsar a un miembro del equipo",
+            description = "Permite al capitán expulsar a un miembro del equipo. El capitán no puede expulsarse a sí mismo."
     )
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "204", description = "Equipo disuelto con éxito"),
+            @ApiResponse(responseCode = "204", description = "Miembro expulsado con éxito"),
+            @ApiResponse(responseCode = "400", description = "Lógica de negocio inválida (ej. expulsar al capitán, el usuario no es miembro)",
+                    content = @Content),
             @ApiResponse(responseCode = "401", description = "No autorizado",
                     content = @Content),
-            @ApiResponse(responseCode = "403", description = "No tienes permisos de creador para disolver este equipo",
+            @ApiResponse(responseCode = "403", description = "No tienes permisos para expulsar miembros",
                     content = @Content),
-            @ApiResponse(responseCode = "404", description = "Equipo no encontrado",
+            @ApiResponse(responseCode = "404", description = "Equipo o miembro no encontrado",
                     content = @Content)
     })
-    public void disolverEquipo(
+    public void expulsarMiembro(
             @Parameter(hidden = true) @RequestAttribute Long userId,
-            @Parameter(description = "ID del equipo a disolver", example = "1") @PathVariable Long id)
+            @Parameter(description = "ID del equipo", example = "1") @PathVariable Long id,
+            @Parameter(description = "ID del miembro a expulsar", example = "2") @PathVariable Long memberId)
+            throws InstanceNotFoundException, PermissionException, IllegalArgumentException {
+        equipoService.expulsarMiembro(userId, id, memberId);
+    }
+
+    @DeleteMapping("/{id}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    @Operation(
+            summary = "Eliminar un equipo",
+            description = "Elimina físicamente un equipo del sistema. Solo el creador tiene autorización."
+    )
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "204", description = "Equipo eliminado con éxito"),
+            @ApiResponse(responseCode = "401", description = "No autorizado"),
+            @ApiResponse(responseCode = "403", description = "No tienes permisos para eliminar este equipo"),
+            @ApiResponse(responseCode = "404", description = "Equipo no encontrado")
+    })
+    public void eliminarEquipo(
+            @Parameter(hidden = true) @RequestAttribute Long userId,
+            @Parameter(description = "ID del equipo a eliminar", example = "1") @PathVariable Long id)
             throws InstanceNotFoundException, PermissionException {
-        equipoService.disolverEquipo(userId, id);
+        equipoService.eliminarEquipo(userId, id);
     }
 
     @GetMapping
@@ -196,5 +218,61 @@ public class EquipoController {
     public List<EquipoDto> obtenerEquipos(
             @Parameter(hidden = true) @RequestAttribute Long userId) {
         return EquipoConversor.toEquipoDtos(equipoService.obtenerEquiposDeUsuario(userId));
+    }
+
+    @GetMapping("/{id}")
+    @Operation(
+            summary = "Obtener detalles de un equipo",
+            description = "Recupera la información completa de un equipo específico, incluyendo sus miembros y solicitudes activas. Solo los miembros del equipo pueden acceder a esta información."
+    )
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "Detalles del equipo recuperados con éxito",
+                content = @Content(schema = @Schema(implementation = EquipoDto.class))),
+        @ApiResponse(responseCode = "401", description = "No autorizado",
+                content = @Content),
+        @ApiResponse(responseCode = "403", description = "El usuario no es miembro de este equipo",
+                content = @Content),
+        @ApiResponse(responseCode = "404", description = "Equipo no encontrado",
+                content = @Content)
+    })
+    public EquipoDto obtenerEquipo(
+        @Parameter(hidden = true) @RequestAttribute Long userId,
+        @Parameter(description = "ID del equipo", example = "1") @PathVariable Long id)
+        throws InstanceNotFoundException, PermissionException {
+    
+        Equipo equipo = equipoService.obtenerEquipo(id);
+    
+        boolean esMiembro = equipo.getMiembros().stream()
+            .anyMatch(u -> u.getId().equals(userId));
+    
+        if (!esMiembro) {
+            throw new PermissionException();
+        }
+    
+        return EquipoConversor.toEquipoDto(equipo);
+    }
+
+    @GetMapping("/by-code/{codigo}")
+    @ResponseStatus(HttpStatus.OK)
+    @Operation(
+            summary = "Buscar equipo por codigo de invitacion",
+            description = "Devuelve información pública del equipo (nombre, descripción, miembros) dado su código único de 8 caracteres alfanuméricos."
+    )
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Equipo encontrado",
+                    content = @Content(schema = @Schema(implementation = EquipoDto.class))),
+            @ApiResponse(responseCode = "401", description = "No autorizado",
+                    content = @Content),
+            @ApiResponse(responseCode = "404", description = "No se encontró ningún equipo activo con ese código",
+                    content = @Content)
+    })
+    public EquipoDto buscarEquipoPorCodigo(
+            @Parameter(hidden = true) @RequestAttribute Long userId,
+            @Parameter(description = "Código único del equipo (8 caracteres alfanuméricos)", example = "a7K9pX2L")
+            @PathVariable String codigo)
+            throws InstanceNotFoundException {
+
+        Equipo equipo = equipoService.buscarEquipoPorCodigo(codigo);
+        return EquipoConversor.toEquipoDto(equipo);
     }
 }

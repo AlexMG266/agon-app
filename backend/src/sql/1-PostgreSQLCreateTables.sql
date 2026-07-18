@@ -13,6 +13,7 @@ CREATE TABLE "User" (
     password VARCHAR(60) NOT NULL,
     fechaNacimiento DATE NOT NULL,
     eloProvisional BOOLEAN NOT NULL DEFAULT TRUE,
+    role VARCHAR(20) NOT NULL DEFAULT 'USER',  
     CONSTRAINT UserPK PRIMARY KEY (id),
     CONSTRAINT UserNombreUniqueKey UNIQUE (nombre)
 );
@@ -38,9 +39,10 @@ CREATE INDEX NotificationIndexByUsuarioId ON Notification (usuarioId);
 CREATE TABLE Equipo (
     id BIGSERIAL NOT NULL,
     nombreEquipo VARCHAR(60) NOT NULL,
+    descripcion VARCHAR(500) NOT NULL,
     estado VARCHAR(20) NOT NULL,
     creador_id BIGINT NOT NULL,
-    codigo_invitacion VARCHAR(8) NOT NULL,
+    codigo_equipo VARCHAR(8) NOT NULL,
     CONSTRAINT EquipoPK PRIMARY KEY (id),
     CONSTRAINT EquipoNombreUniqueKey UNIQUE (nombreEquipo),
     CONSTRAINT EquipoCreadorIdFK FOREIGN KEY (creador_id) REFERENCES "User"(id) ON DELETE CASCADE

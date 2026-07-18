@@ -1,6 +1,10 @@
-import {useSelector, useDispatch} from 'react-redux';
+import { useEffect } from 'react';
+import { useSelector, useDispatch } from 'react-redux';
+import { useNavigate } from 'react-router';
+import backend from '../../../backend';
+import users from '../../users';
 
-import {ErrorDialog} from '../../common';
+import { ErrorDialog } from '../../common';
 import * as actions from '../actions';
 import * as selectors from '../selectors';
 
@@ -14,12 +18,31 @@ const ConnectedErrorDialog = () => {
 
 };
 
-const AppGlobalComponents = () => (
+const AppGlobalComponents = () => {
+    const navigate = useNavigate();
+    const dispatch = useDispatch();
 
-    <div>
-        <ConnectedErrorDialog/>
-    </div>
+    useEffect(() => {
+        backend.setForbiddenCallback(() => {
+            navigate('/forbidden');
+        });
 
-);
+        backend.init(() => {
+            console.error('Error de red');
+        });
+
+        backend.setReauthenticationCallback(() => {
+            dispatch(users.actions.logout());
+            navigate('/users/login');
+        });
+
+    }, [navigate, dispatch]);
+
+    return (
+        <div>
+            <ConnectedErrorDialog />
+        </div>
+    );
+};
 
 export default AppGlobalComponents;

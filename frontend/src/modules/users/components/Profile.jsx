@@ -1,3 +1,4 @@
+// src/modules/users/components/Profile.jsx
 import { useState } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { FormattedMessage } from 'react-intl';
@@ -8,6 +9,7 @@ import Col from 'react-bootstrap/Col';
 import Container from 'react-bootstrap/Container';
 
 import { Errors } from '../../common';
+import ProfileAvatar from '../../common/components/ProfileAvatar';
 import * as actions from '../actions';
 import * as selectors from '../selectors';
 import backend from '../../../backend';
@@ -18,7 +20,6 @@ const Profile = () => {
     const user = useSelector(selectors.getUser);
     const dispatch = useDispatch();
 
-    // Profile info state
     const [profileImage, setProfileImage] = useState(user.imagenPerfil || '');
     const [email, setEmail] = useState(user.email || '');
     const [fechaNacimiento, setFechaNacimiento] = useState(user.fechaNacimiento || '');
@@ -26,7 +27,6 @@ const Profile = () => {
     const [profileBackendErrors, setProfileBackendErrors] = useState(null);
     const [profileSuccess, setProfileSuccess] = useState(false);
 
-    // Password change state
     const [oldPassword, setOldPassword] = useState('');
     const [newPassword, setNewPassword] = useState('');
     const [confirmNewPassword, setConfirmNewPassword] = useState('');
@@ -132,44 +132,49 @@ const Profile = () => {
     return (
         <div className="profile-container">
             <Container className="mt-4 py-2" style={{ maxWidth: '1000px' }}>
-                <Row className="g-5">
-                    {/* Panel Izquierdo */}
+                <Row className="g-4">
                     <Col lg={4} className="text-center d-flex flex-column align-items-center">
                         <div className="profile-image-container">
-                            {getProfileImageUrl() ? (
-                                <img
-                                    src={getProfileImageUrl()}
-                                    alt="Profile"
-                                    className="profile-image"
-                                />
-                            ) : (
-                                <div className="profile-image-placeholder">
-                                    <i className="fa-solid fa-user"></i>
-                                </div>
-                            )}
+                            <ProfileAvatar
+                                imageUrl={getProfileImageUrl()}
+                                name={user.nombre}
+                                size={120}
+                            />
                         </div>
                         <h2 className="profile-display-name mt-3">{user.nombre}</h2>
-                        <p className="text-muted small mb-4">{user.email}</p>
-                        
-                        {user.elo !== undefined && (
-                            <div className="profile-elo-card border rounded-4 bg-white p-3 shadow-sm text-center w-100">
-                                <span className="text-muted small fw-bold text-uppercase" style={{ letterSpacing: '0.05em', fontSize: '0.75rem' }}>
-                                    Mi Puntuación ELO
-                                </span>
-                                <h3 className="m-0 mt-1 fw-bold text-dark" style={{ fontSize: '1.8rem', letterSpacing: '-0.02em' }}>
-                                    {user.elo}
-                                </h3>
-                                {user.eloProvisional && (
-                                    <span className="badge rounded-pill bg-light text-secondary border mt-2 px-2 py-1" style={{ fontSize: '0.7rem' }}>
-                                        Provisional
-                                    </span>
-                                )}
-                            </div>
-                        )}
+                        <p className="profile-email-text">{user.email}</p>
                     </Col>
 
-                    {/* Panel Derecho Sin Card Envolvente */}
                     <Col lg={8}>
+                        <div className="profile-stats-row">
+                            <div className="profile-stat-item">
+                                <span className="profile-stat-icon">🎯</span>
+                                <div>
+                                    <div className="profile-stat-label"><FormattedMessage id="project.users.Profile.elo" defaultMessage="ELO Actual" /></div>
+                                    <div className="profile-stat-value">{user.elo || 800}</div>
+                                    {user.eloProvisional && (
+                                        <div className="profile-stat-sub"><FormattedMessage id="project.users.Profile.provisional" defaultMessage="Provisional" /></div>
+                                    )}
+                                </div>
+                            </div>
+                            <div className="profile-stat-item">
+                                <span className="profile-stat-icon">👥</span>
+                                <div>
+                                    <div className="profile-stat-label"><FormattedMessage id="project.users.Profile.teams" defaultMessage="Equipos" /></div>
+                                    <div className="profile-stat-value">{user.equipos?.length || 0}</div>
+                                    <div className="profile-stat-sub"><FormattedMessage id="project.users.Profile.active" defaultMessage="Activos" /></div>
+                                </div>
+                            </div>
+                            <div className="profile-stat-item">
+                                <span className="profile-stat-icon">🏆</span>
+                                <div>
+                                    <div className="profile-stat-label"><FormattedMessage id="project.users.Profile.wins" defaultMessage="Victorias" /></div>
+                                    <div className="profile-stat-value">{user.victorias || 0}</div>
+                                    <div className="profile-stat-sub"><FormattedMessage id="project.users.Profile.season" defaultMessage="Esta temporada" /></div>
+                                </div>
+                            </div>
+                        </div>
+
                         <div className="segmented-control p-1 mb-4 rounded-3 d-flex">
                             <button
                                 className={`segmented-btn flex-grow-1 border-0 py-2 rounded-3 text-center transition-all ${activeTab === 'profile' ? 'active shadow-sm fw-medium text-dark' : 'text-secondary'}`}
@@ -189,25 +194,25 @@ const Profile = () => {
 
                         {activeTab === 'profile' && (
                             <div className="profile-form-wrapper">
-                                <h3 className="pb-3 font-weight-bold text-dark border-bottom mb-4" style={{ fontSize: '1.2rem', letterSpacing: '-0.01em' }}>
+                                <h3 className="profile-form-title">
                                     <FormattedMessage id="project.users.UpdateProfile.title" />
                                 </h3>
                                 
                                 {profileSuccess && (
-                                    <div className="alert alert-success border-0 rounded-3 shadow-sm py-2 px-3 small d-flex justify-content-between align-items-center mb-4" role="alert" style={{ backgroundColor: '#e2f6ea', color: '#146c3e' }}>
+                                    <div className="profile-success-alert">
                                         <span><FormattedMessage id="project.users.Profile.success.profileUpdated" /></span>
-                                        <button type="button" className="btn-close shadow-none small" onClick={() => setProfileSuccess(false)} style={{ fontSize: '0.75rem' }}></button>
+                                        <button type="button" className="btn-close shadow-none small" onClick={() => setProfileSuccess(false)}></button>
                                     </div>
                                 )}
                                 <Errors errors={profileBackendErrors} onClose={() => setProfileBackendErrors(null)} />
 
                                 <Form ref={node => profileForm = node} noValidate validated={profileFormValidated} onSubmit={e => handleProfileSubmit(e)}>
 
-                                    <Form.Group as={Row} className="mb-3 align-items-center" controlId="profileImage">
-                                        <Form.Label column md={4} className="text-secondary small fw-medium">
+                                    <Form.Group as={Row} className="profile-form-group" controlId="profileImage">
+                                        <Form.Label column md={4} className="profile-form-label">
                                             <FormattedMessage id="project.users.Profile.fields.profileImage" />
                                         </Form.Label>
-                                        <Col md={8} className="d-flex align-items-center gap-3">
+                                        <Col md={8} className="d-flex align-items-center gap-3 flex-wrap">
                                             <div className="position-relative">
                                                 <Form.Control
                                                     type="file"
@@ -215,20 +220,20 @@ const Profile = () => {
                                                     onChange={handleProfileImageChange}
                                                     className="form-control-apple-file"
                                                 />
-                                                <Button variant="light" className="btn-sm rounded-pill border px-3 text-dark bg-white" style={{ fontSize: '0.85rem' }}>
-                                                    <i className="fa-solid fa-cloud-arrow-up me-2 text-secondary"></i>Subir foto
+                                                <Button variant="light" className="profile-upload-btn">
+                                                    <i className="fa-solid fa-cloud-arrow-up me-2 text-secondary"></i><FormattedMessage id="project.users.Profile.uploadPhoto" defaultMessage="Subir foto" />
                                                 </Button>
                                             </div>
                                             {profileImage && (
-                                                <Button variant="link" className="text-danger text-decoration-none small p-0 ms-2" onClick={handleRemoveProfileImage} style={{ fontSize: '0.85rem' }}>
+                                                <Button variant="link" className="profile-remove-btn" onClick={handleRemoveProfileImage}>
                                                     <FormattedMessage id="project.users.Profile.buttons.removeImage" />
                                                 </Button>
                                             )}
                                         </Col>
                                     </Form.Group>
 
-                                    <Form.Group as={Row} className="mb-3" controlId="email">
-                                        <Form.Label column md={4} className="text-secondary small fw-medium pt-2">
+                                    <Form.Group as={Row} className="profile-form-group" controlId="email">
+                                        <Form.Label column md={4} className="profile-form-label pt-2">
                                             <FormattedMessage id="project.global.fields.email" />
                                         </Form.Label>
                                         <Col md={8}>
@@ -239,8 +244,8 @@ const Profile = () => {
                                         </Col>
                                     </Form.Group>
 
-                                    <Form.Group as={Row} className="mb-3" controlId="fechaNacimiento">
-                                        <Form.Label column md={4} className="text-secondary small fw-medium pt-2">
+                                    <Form.Group as={Row} className="profile-form-group" controlId="fechaNacimiento">
+                                        <Form.Label column md={4} className="profile-form-label pt-2">
                                             <FormattedMessage id="project.global.fields.fechaNacimiento" defaultMessage="Fecha de Nacimiento" />
                                         </Form.Label>
                                         <Col md={8}>
@@ -251,13 +256,13 @@ const Profile = () => {
                                         </Col>
                                     </Form.Group>
 
-                                    <Form.Group as={Row} className="mb-4" controlId="userName">
-                                        <Form.Label column md={4} className="text-secondary small fw-medium pt-2">
+                                    <Form.Group as={Row} className="profile-form-group" controlId="userName">
+                                        <Form.Label column md={4} className="profile-form-label pt-2">
                                             <FormattedMessage id="project.global.fields.userName" />
                                         </Form.Label>
                                         <Col md={8}>
                                             <Form.Control type="text" value={user.nombre} disabled className="form-control-apple bg-light opacity-75" />
-                                            <Form.Text className="text-muted mt-2 d-block" style={{ fontSize: '0.8rem', lineHeight: '1.4' }}>
+                                            <Form.Text className="profile-hint">
                                                 <i className="fa-solid fa-circle-info me-1 opacity-70"></i> <FormattedMessage id="project.users.Profile.fields.userNameDisabled" />
                                             </Form.Text>
                                         </Col>
@@ -265,9 +270,9 @@ const Profile = () => {
 
                                     <Form.Group as={Row}>
                                         <Col md={{ span: 8, offset: 4 }}>
-                                        <Button type="submit" className="btn-apple-dark rounded-pill px-4 py-2">
-                                            <FormattedMessage id="project.global.buttons.save" />
-                                        </Button>
+                                            <Button type="submit" className="profile-save-btn">
+                                                <FormattedMessage id="project.global.buttons.save" />
+                                            </Button>
                                         </Col>
                                     </Form.Group>
                                 </Form>
@@ -276,22 +281,22 @@ const Profile = () => {
 
                         {activeTab === 'password' && (
                             <div className="profile-form-wrapper">
-                                <h3 className="pb-3 font-weight-bold text-dark border-bottom mb-4" style={{ fontSize: '1.2rem', letterSpacing: '-0.01em' }}>
+                                <h3 className="profile-form-title">
                                     <FormattedMessage id="project.users.ChangePassword.title" />
                                 </h3>
                                 
                                 {passwordSuccess && (
-                                    <div className="alert alert-success border-0 rounded-3 shadow-sm py-2 px-3 small d-flex justify-content-between align-items-center mb-4" role="alert" style={{ backgroundColor: '#e2f6ea', color: '#146c3e' }}>
+                                    <div className="profile-success-alert">
                                         <span><FormattedMessage id="project.users.Profile.success.passwordChanged" /></span>
-                                        <button type="button" className="btn-close shadow-none small" onClick={() => setPasswordSuccess(false)} style={{ fontSize: '0.75rem' }}></button>
+                                        <button type="button" className="btn-close shadow-none small" onClick={() => setPasswordSuccess(false)}></button>
                                     </div>
                                 )}
                                 <Errors errors={passwordBackendErrors} onClose={() => setPasswordBackendErrors(null)} />
 
                                 <Form ref={node => passwordForm = node} noValidate validated={passwordFormValidated} onSubmit={e => handlePasswordSubmit(e)}>
 
-                                    <Form.Group as={Row} className="mb-3" controlId="oldPassword">
-                                        <Form.Label column md={4} className="text-secondary small fw-medium pt-2">
+                                    <Form.Group as={Row} className="profile-form-group" controlId="oldPassword">
+                                        <Form.Label column md={4} className="profile-form-label pt-2">
                                             <FormattedMessage id="project.users.ChangePassword.fields.oldPassword" />
                                         </Form.Label>
                                         <Col md={8}>
@@ -302,8 +307,8 @@ const Profile = () => {
                                         </Col>
                                     </Form.Group>
 
-                                    <Form.Group as={Row} className="mb-3" controlId="newPassword">
-                                        <Form.Label column md={4} className="text-secondary small fw-medium pt-2">
+                                    <Form.Group as={Row} className="profile-form-group" controlId="newPassword">
+                                        <Form.Label column md={4} className="profile-form-label pt-2">
                                             <FormattedMessage id="project.users.ChangePassword.fields.newPassword" />
                                         </Form.Label>
                                         <Col md={8}>
@@ -314,8 +319,8 @@ const Profile = () => {
                                         </Col>
                                     </Form.Group>
 
-                                    <Form.Group as={Row} className="mb-4" controlId="confirmNewPassword">
-                                        <Form.Label column md={4} className="text-secondary small fw-medium pt-2">
+                                    <Form.Group as={Row} className="profile-form-group" controlId="confirmNewPassword">
+                                        <Form.Label column md={4} className="profile-form-label pt-2">
                                             <FormattedMessage id="project.users.SignUp.fields.confirmPassword" />
                                         </Form.Label>
                                         <Col md={8}>
@@ -328,13 +333,13 @@ const Profile = () => {
                                         </Col>
                                     </Form.Group>
 
-                                        <Form.Group as={Row}>
-                                            <Col md={{ span: 8, offset: 4 }}>
-                                                <Button type="submit" className="btn-dark rounded-pill px-4 py-2" style={{ backgroundColor: '#000', border: 'none', fontSize: '0.9rem', fontWeight: '500' }}>
-                                                    <FormattedMessage id="project.global.buttons.save" />
-                                                </Button>
-                                            </Col>
-                                        </Form.Group>
+                                    <Form.Group as={Row}>
+                                        <Col md={{ span: 8, offset: 4 }}>
+                                            <Button type="submit" className="profile-save-btn">
+                                                <FormattedMessage id="project.global.buttons.save" />
+                                            </Button>
+                                        </Col>
+                                    </Form.Group>
                                 </Form>
                             </div>
                         )}

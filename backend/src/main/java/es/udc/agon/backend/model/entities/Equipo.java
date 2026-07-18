@@ -27,19 +27,21 @@ public class Equipo {
     private Long id;
     private String nombreEquipo;
     private EstadoEquipo estado;
+    private String descripcion;
     private User creador;
-    private String codigoInvitacion;
+    private String codigoEquipo;
     private Set<User> miembros = new HashSet<>();
 
     public Equipo() {
     }
 
-    public Equipo(String nombreEquipo, User creador) {
+    public Equipo(String nombreEquipo, String descripcion, User creador) {
         this.nombreEquipo = nombreEquipo;
         this.estado = EstadoEquipo.ACTIVO;
+        this.descripcion = descripcion;
         this.creador = creador;
         this.miembros.add(creador);
-        this.codigoInvitacion = generarCodigoAlfanumerico(8);
+        this.codigoEquipo = generarCodigoAlfanumerico(8);
     }
 
     private String generarCodigoAlfanumerico(int longitud) {
@@ -89,13 +91,13 @@ public class Equipo {
         this.creador = creador;
     }
 
-    @Column(name = "codigo_invitacion", nullable = false, unique = true, length = 8)
-    public String getCodigoInvitacion() {
-        return codigoInvitacion;
+    @Column(name = "codigo_equipo", nullable = false, unique = true, length = 8)
+    public String getCodigoEquipo() {
+        return codigoEquipo;
     }
 
-    public void setCodigoInvitacion(String codigoInvitacion) {
-        this.codigoInvitacion = codigoInvitacion;
+    public void setCodigoEquipo(String codigoEquipo) {
+        this.codigoEquipo = codigoEquipo;
     }
 
     @ManyToMany
@@ -118,5 +120,14 @@ public class Equipo {
 
     public void removeMiembro(User user) {
         this.miembros.remove(user);
+    }
+
+    @Column(name = "descripcion")
+    public String getDescripcion() {
+        return descripcion; 
+    }
+
+    public void setDescripcion(String descripcion) {
+        this.descripcion = descripcion;
     }
 }

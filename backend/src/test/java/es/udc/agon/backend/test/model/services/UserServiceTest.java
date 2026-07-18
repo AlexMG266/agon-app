@@ -22,142 +22,150 @@ import static org.junit.jupiter.api.Assertions.*;
 @Transactional
 public class UserServiceTest {
 
-	private final Long NON_EXISTENT_ID = Long.valueOf(-1);
+    private final Long NON_EXISTENT_ID = Long.valueOf(-1);
 
-	@Autowired
-	private UserService userService;
+    @Autowired
+    private UserService userService;
 
-	private User createUser(String nombre) {
-		return new User(1500, nombre, nombre + "@mail.com", "img.png", "password",
-				LocalDate.of(2000, 1, 1), true);
-	}
+    private User createUser(String nombre) {
+        return new User(1500, nombre, nombre + "@mail.com", "img.png", "password",
+                LocalDate.of(2000, 1, 1), true);
+    }
 
-	// CU01 caso exitoso
-	@Test
-	public void testSignUpAndLoginFromId() throws DuplicateInstanceException, InstanceNotFoundException {
+    // CU01 caso exitoso
+    @Test
+    public void testSignUpAndLoginFromId() throws DuplicateInstanceException, InstanceNotFoundException {
 
-		User user = createUser("user");
+        User user = createUser("user");
 
-		userService.signUp(user);
+        User registeredUser = userService.signUp(user);
 
-		User loggedInUser = userService.loginFromId(user.getId());
+        User loggedInUser = userService.loginFromId(registeredUser.getId());
 
-		assertEquals(user, loggedInUser);
-		assertEquals("user", user.getNombre());
+        assertEquals(registeredUser, loggedInUser);
+        assertEquals("user", registeredUser.getNombre());
 
-	}
+    }
 
-	// CU01 caso de fallo, probados todos los posibles fallos de validacion
-	@Test
-	public void testSignUpDuplicatedUserName() throws DuplicateInstanceException {
+    // CU01 caso de fallo, probados todos los posibles fallos de validacion
+    @Test
+    public void testSignUpDuplicatedUserName() throws DuplicateInstanceException {
 
-		User user = createUser("user");
+        User user = createUser("user");
 
-		userService.signUp(user);
-		assertThrows(DuplicateInstanceException.class, () -> userService.signUp(user));
-	}
+        userService.signUp(user);
+        assertThrows(DuplicateInstanceException.class, () -> userService.signUp(user));
+    }
 
-	// CU02 caso exitoso
-	@Test
-	public void testLogin() throws DuplicateInstanceException, IncorrectLoginException {
+    // CU02 caso exitoso
+    @Test
+    public void testLogin() throws DuplicateInstanceException, IncorrectLoginException {
 
-		User user = createUser("user");
-		String clearPassword = user.getPassword();
+        User user = createUser("user");
+        String clearPassword = user.getPassword();
 
-		userService.signUp(user);
+        User registeredUser = userService.signUp(user);
 
-		User loggedInUser = userService.login(user.getNombre(), clearPassword);
+        User loggedInUser = userService.login(registeredUser.getNombre(), clearPassword);
 
-		assertEquals(user, loggedInUser);
+        assertEquals(registeredUser, loggedInUser);
 
-	}
+    }
 
-	// CU02 caso de fallo, id no existe
-	@Test
-	public void testLoginFromNonExistentId() {
-		assertThrows(InstanceNotFoundException.class, () -> userService.loginFromId(NON_EXISTENT_ID));
-	}
+    // CU02 caso de fallo, id no existe
+    @Test
+    public void testLoginFromNonExistentId() {
+        assertThrows(InstanceNotFoundException.class, () -> userService.loginFromId(NON_EXISTENT_ID));
+    }
 
-	// CU02 caso de fallo, contraseña incorrecta
-	@Test
-	public void testLoginWithIncorrectPassword() throws DuplicateInstanceException {
+    // CU02 caso de fallo, contraseña incorrecta
+    @Test
+    public void testLoginWithIncorrectPassword() throws DuplicateInstanceException {
 
-		User user = createUser("user");
-		String clearPassword = user.getPassword();
+        User user = createUser("user");
+        String clearPassword = user.getPassword();
 
-		userService.signUp(user);
-		assertThrows(IncorrectLoginException.class, () -> userService.login(user.getNombre(), 'X' + clearPassword));
+        User registeredUser = userService.signUp(user);
+        assertThrows(IncorrectLoginException.class, () -> userService.login(registeredUser.getNombre(), 'X' + clearPassword));
 
-	}
+    }
 
-	// CU02 caso de fallo, nombre de usuario no existe
-	@Test
-	public void testLoginWithNonExistentUserName() {
-		assertThrows(IncorrectLoginException.class, () -> userService.login("X", "Y"));
-	}
+    // CU02 caso de fallo, nombre de usuario no existe
+    @Test
+    public void testLoginWithNonExistentUserName() {
+        assertThrows(IncorrectLoginException.class, () -> userService.login("X", "Y"));
+    }
 
-	// CU03 caso exitoso
-	@Test
-	public void testUpdateProfile() throws InstanceNotFoundException, DuplicateInstanceException {
+    // CU03 caso exitoso
+    @Test
+    public void testUpdateProfile() throws InstanceNotFoundException, DuplicateInstanceException {
 
-		User user = createUser("user");
+        User user = createUser("user");
 
-		userService.signUp(user);
+        User registeredUser = userService.signUp(user);
 
-		user.setNombre('X' + user.getNombre());
-		user.setEmail('X' + user.getEmail());
-		user.setImagenPerfil('X' + user.getImagenPerfil());
-		user.setFechaNacimiento(user.getFechaNacimiento().plusDays(1));
+        registeredUser.setNombre('X' + registeredUser.getNombre());
+        registeredUser.setEmail('X' + registeredUser.getEmail());
+        registeredUser.setImagenPerfil('X' + registeredUser.getImagenPerfil());
+        registeredUser.setFechaNacimiento(registeredUser.getFechaNacimiento().plusDays(1));
 
-		userService.updateProfile(user.getId(), user.getNombre(), user.getEmail(), user.getImagenPerfil(),
-				user.getFechaNacimiento());
+        userService.updateProfile(registeredUser.getId(), registeredUser.getNombre(), registeredUser.getEmail(),
+                registeredUser.getImagenPerfil(), registeredUser.getFechaNacimiento());
 
-		User updatedUser = userService.loginFromId(user.getId());
+        User updatedUser = userService.loginFromId(registeredUser.getId());
 
-		assertEquals(user, updatedUser);
+        assertEquals(registeredUser, updatedUser);
 
-	}
+    }
 
-	// CU03 caso de fallo, id no existe
-	@Test
-	public void testUpdateProfileWithNonExistentId() {
-		assertThrows(InstanceNotFoundException.class,
-				() -> userService.updateProfile(NON_EXISTENT_ID, "X", "X", "X", LocalDate.now()));
-	}
+    // CU03 caso de fallo, id no existe
+    @Test
+    public void testUpdateProfileWithNonExistentId() {
+        assertThrows(InstanceNotFoundException.class,
+                () -> userService.updateProfile(NON_EXISTENT_ID, "X", "X", "X", LocalDate.now()));
+    }
 
-	// CU04 caso exitoso
-	@Test
-	public void testChangePassword() throws DuplicateInstanceException, InstanceNotFoundException,
-			IncorrectPasswordException, IncorrectLoginException {
+    // CU04 caso exitoso
+    @Test
+    public void testChangePassword() throws DuplicateInstanceException, InstanceNotFoundException,
+            IncorrectPasswordException, IncorrectLoginException {
 
-		User user = createUser("user");
-		String oldPassword = user.getPassword();
-		String newPassword = 'X' + oldPassword;
+        User user = createUser("user");
+        String oldPassword = user.getPassword();
+        String newPassword = 'X' + oldPassword;
 
-		userService.signUp(user);
-		userService.changePassword(user.getId(), oldPassword, newPassword);
-		userService.login(user.getNombre(), newPassword);
+        User registeredUser = userService.signUp(user);
+        userService.changePassword(registeredUser.getId(), oldPassword, newPassword);
+        userService.login(registeredUser.getNombre(), newPassword);
 
-	}
+    }
 
-	// CU04 caso de fallo, id no existe
-	@Test
-	public void testChangePasswordWithNonExistentId() {
-		assertThrows(InstanceNotFoundException.class, () -> userService.changePassword(NON_EXISTENT_ID, "X", "Y"));
-	}
+    // CU04 caso de fallo, id no existe
+    @Test
+    public void testChangePasswordWithNonExistentId() {
+        assertThrows(InstanceNotFoundException.class, () -> userService.changePassword(NON_EXISTENT_ID, "X", "Y"));
+    }
 
-	// CU04 caso de fallo, contraseña incorrecta
-	@Test
-	public void testChangePasswordWithIncorrectPassword() throws DuplicateInstanceException {
+    // CU04 caso de fallo, contraseña incorrecta
+    @Test
+    public void testChangePasswordWithIncorrectPassword() throws DuplicateInstanceException {
 
-		User user = createUser("user");
-		String oldPassword = user.getPassword();
-		String newPassword = 'X' + oldPassword;
+        User user = createUser("user");
+        String oldPassword = user.getPassword();
+        String newPassword = 'X' + oldPassword;
 
-		userService.signUp(user);
-		assertThrows(IncorrectPasswordException.class,
-				() -> userService.changePassword(user.getId(), 'Y' + oldPassword, newPassword));
+        User registeredUser = userService.signUp(user);
+        assertThrows(IncorrectPasswordException.class,
+                () -> userService.changePassword(registeredUser.getId(), 'Y' + oldPassword, newPassword));
 
-	}
+    }
+
+    // Test para verificar que el rol se asigna correctamente al registrarse
+    @Test
+    public void testSignUpRole() throws DuplicateInstanceException {
+        User user = new User(1500, "testRole", "test@mail.com", null, "password", LocalDate.of(2000, 1, 1), true);
+        User registeredUser = userService.signUp(user);
+        assertEquals("USER", registeredUser.getRole());
+    }
 
 }

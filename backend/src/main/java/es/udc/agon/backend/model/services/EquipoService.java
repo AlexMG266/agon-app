@@ -14,9 +14,10 @@ public interface EquipoService {
      * * @param userId Id del creador.
      * @param nombreEquipo Nombre del equipo.
      * @return El equipo creado.
+     * @param descripcion Descripción del equipo.
      * @throws InstanceNotFoundException Si el usuario creador no existe.
      */
-    Equipo crearEquipo(Long userId, String nombreEquipo) throws InstanceNotFoundException;
+    Equipo crearEquipo(Long userId, String nombreEquipo, String descripcion) throws InstanceNotFoundException;
 
     /**
      * Flujo PROPUESTA: El creador de un equipo invita activamente a un jugador.
@@ -69,17 +70,17 @@ public interface EquipoService {
             throws InstanceNotFoundException, PermissionException, IllegalArgumentException;
 
     /**
-     * El creador disuelve por completo el equipo.
-     * * @param usuarioId Id del creador del equipo.
+     * El creador de un equipo elimina el equipo del sistema.
+     * * @param usuarioId Id del creador.
      * @param equipoId Id del equipo.
-     * @throws InstanceNotFoundException Si el equipo o creador no existen.
-     * @throws PermissionException Si el usuarioId no coincide con el creador del equipo.
+     * @throws InstanceNotFoundException Si el equipo o usuario no existen.
+     * @throws PermissionException Si el usuario no es el creador del equipo.
      */
-    void disolverEquipo(Long usuarioId, Long equipoId)
+    void eliminarEquipo(Long usuarioId, Long equipoId)
             throws InstanceNotFoundException, PermissionException;
 
     /**
-     * Obtiene todos los equipos de los que forma parte activa el usuario.
+     * Obtiene todos los equipos de los que forma parte activa el usuario
      * * @param usuarioId Id del usuario.
      * @return Lista de equipos asociados.
      */
@@ -92,4 +93,24 @@ public interface EquipoService {
      * @throws InstanceNotFoundException Si el equipo no existe.
      */
     Equipo obtenerEquipo(Long equipoId) throws InstanceNotFoundException;
+
+    /**
+     * Busca un equipo activo por su código único de invitación.
+     * * @param codigoEquipo Código alfanumérico de 8 caracteres del equipo.
+     * @return El equipo encontrado.
+     * @throws InstanceNotFoundException Si no existe un equipo activo con ese código.
+     */
+    Equipo buscarEquipoPorCodigo(String codigoEquipo) throws InstanceNotFoundException;
+
+    /**
+     * El capitán expulsa a un miembro del equipo.
+     * * @param captainId Id del capitán (creador del equipo).
+     * @param equipoId Id del equipo.
+     * @param miembroId Id del miembro a expulsar.
+     * @throws InstanceNotFoundException Si el equipo, el capitán o el miembro no existen.
+     * @throws PermissionException Si el captainId no es el creador del equipo.
+     * @throws IllegalArgumentException Si el miembro no pertenece al equipo o se intenta expulsar al capitán.
+     */
+    void expulsarMiembro(Long captainId, Long equipoId, Long miembroId)
+            throws InstanceNotFoundException, PermissionException, IllegalArgumentException;
 }

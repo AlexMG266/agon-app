@@ -1,0 +1,10 @@
+export const TEAMS_ERROR = 'project/teams/error';
+export const CREATE_TEAM_COMPLETED = 'project/teams/createTeamCompleted';
+export const GET_TEAM_COMPLETED = 'project/teams/getTeamCompleted';
+export const CLEAR_TEAM = 'project/teams/clearTeam';
+export const REMOVE_MEMBER_COMPLETED = 'project/teams/removeMemberCompleted';
+export const GET_PENDING_REQUESTS_COMPLETED = 'project/teams/getPendingRequestsCompleted';
+export const GET_MY_TEAMS_COMPLETED = 'project/teams/getMyTeamsCompleted';
+export const UPDATE_TEAM_SUCCESS = 'project/teams/updateTeamSuccess';
+export const DELETE_TEAM_SUCCESS = 'project/teams/deleteTeamSuccess';
+export const LEAVE_TEAM_SUCCESS = 'project/teams/leaveTeamSuccess';

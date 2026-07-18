@@ -33,11 +33,11 @@ public class EquipoServiceImpl implements EquipoService {
     }
 
     @Override
-    public Equipo crearEquipo(Long userId, String nombreEquipo) throws InstanceNotFoundException {
+    public Equipo crearEquipo(Long userId, String nombreEquipo, String descripcion) throws InstanceNotFoundException {
         User creador = userDao.findById(userId)
                 .orElseThrow(() -> new InstanceNotFoundException("project.entities.user", userId));
 
-        Equipo equipo = new Equipo(nombreEquipo, creador);
+        Equipo equipo = new Equipo(nombreEquipo, descripcion, creador);
         if (!equipo.getMiembros().contains(creador)) {
             equipo.addMiembro(creador);
         }
@@ -95,8 +95,7 @@ public class EquipoServiceImpl implements EquipoService {
         User jugador = userDao.findById(jugadorId)
                 .orElseThrow(() -> new InstanceNotFoundException("project.entities.user", jugadorId));
 
-        // buscamos el equipo usando el código alfanumérico unico
-        Equipo equipo = equipoDao.findByCodigoInvitacion(codigoEquipo)
+        Equipo equipo = equipoDao.findByCodigoEquipo(codigoEquipo)
                 .orElseThrow(() -> new InstanceNotFoundException("project.entities.equipo", codigoEquipo));
 
         validarEquipoActivo(equipo);
@@ -109,7 +108,6 @@ public class EquipoServiceImpl implements EquipoService {
             throw new IllegalArgumentException("Ya formas parte de este equipo");
         }
 
-        // usamos el ID recuperado del equipo para verificar si hay solicitudes pendientes
         Optional<Solicitud> pending = solicitudDao.findByCandidatoIdAndEquipoIdAndEstado(
                 jugadorId, equipo.getId(), EstadoSolicitud.PENDIENTE);
         if (pending.isPresent()) {
@@ -189,21 +187,28 @@ public class EquipoServiceImpl implements EquipoService {
         }
 
         equipo.removeMiembro(usuario);
+        equipoDao.save(equipo);
+
+        // Notificar al creador que un miembro ha abandonado
+        User creador = equipo.getCreador();
+        String asunto = "Un miembro ha abandonado " + equipo.getNombreEquipo();
+        String cuerpo = usuario.getNombre() + " ha abandonado el equipo " + equipo.getNombreEquipo() + ".";
+        Notification notificacion = new Notification(
+                creador, asunto, cuerpo, Notification.TipoNotificacion.SYSTEM);
+        notificationDao.save(notificacion);
     }
 
     @Override
-    public void disolverEquipo(Long usuarioId, Long equipoId)
+    public void eliminarEquipo(Long usuarioId, Long equipoId)
             throws InstanceNotFoundException, PermissionException {
         Equipo equipo = equipoDao.findById(equipoId)
                 .orElseThrow(() -> new InstanceNotFoundException("project.entities.equipo", equipoId));
-        User usuario = userDao.findById(usuarioId)
-                .orElseThrow(() -> new InstanceNotFoundException("project.entities.user", usuarioId));
 
-        if (!equipo.getCreador().equals(usuario)) {
+        if (!equipo.getCreador().getId().equals(usuarioId)) {
             throw new PermissionException();
         }
 
-        equipo.setEstado(EstadoEquipo.DISUELTO);
+        equipoDao.delete(equipo);
     }
 
     @Override
@@ -215,5 +220,48 @@ public class EquipoServiceImpl implements EquipoService {
     public Equipo obtenerEquipo(Long equipoId) throws InstanceNotFoundException {
         return equipoDao.findById(equipoId)
                 .orElseThrow(() -> new InstanceNotFoundException("project.entities.equipo", equipoId));
+    }
+
+    @Override
+    public Equipo buscarEquipoPorCodigo(String codigoEquipo) throws InstanceNotFoundException {
+        Equipo equipo = equipoDao.findByCodigoEquipo(codigoEquipo)
+                .orElseThrow(() -> new InstanceNotFoundException("project.entities.equipo", codigoEquipo));
+        validarEquipoActivo(equipo);
+        return equipo;
+    }
+
+    @Override
+    public void expulsarMiembro(Long captainId, Long equipoId, Long miembroId)
+            throws InstanceNotFoundException, PermissionException, IllegalArgumentException {
+
+        Equipo equipo = equipoDao.findById(equipoId)
+                .orElseThrow(() -> new InstanceNotFoundException("project.entities.equipo", equipoId));
+        User miembro = userDao.findById(miembroId)
+                .orElseThrow(() -> new InstanceNotFoundException("project.entities.user", miembroId));
+        User captain = userDao.findById(captainId)
+                .orElseThrow(() -> new InstanceNotFoundException("project.entities.user", captainId));
+
+        validarEquipoActivo(equipo);
+
+        if (!equipo.getCreador().getId().equals(captainId)) {
+            throw new PermissionException();
+        }
+
+        if (equipo.getCreador().getId().equals(miembroId)) {
+            throw new IllegalArgumentException("El capitán no puede expulsarse a sí mismo. Use eliminar equipo en su lugar.");
+        }
+
+        if (!equipo.getMiembros().contains(miembro)) {
+            throw new IllegalArgumentException("El usuario no es miembro del equipo");
+        }
+
+        equipo.removeMiembro(miembro);
+        equipoDao.save(equipo);
+
+        String asunto = "Has sido expulsado del equipo " + equipo.getNombreEquipo();
+        String cuerpo = "El capitán " + captain.getNombre() + " te ha expulsado del equipo " + equipo.getNombreEquipo() + ".";
+        Notification notificacion = new Notification(
+                miembro, asunto, cuerpo, Notification.TipoNotificacion.SYSTEM);
+        notificationDao.save(notificacion);
     }
 }
