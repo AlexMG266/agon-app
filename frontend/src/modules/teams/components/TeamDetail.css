@@ -231,6 +231,7 @@
     font-size: 0.88rem;
     color: #3a3a3c;
     line-height: 1.55;
+    white-space: pre-line;
 }
 
 .team-detail-no-description {
