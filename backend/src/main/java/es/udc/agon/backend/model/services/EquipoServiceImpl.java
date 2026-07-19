@@ -26,6 +26,9 @@ public class EquipoServiceImpl implements EquipoService {
     @Autowired
     private NotificationDao notificationDao;
 
+    @Autowired
+    private NotificationDispatcher notificationDispatcher;
+
     private void validarEquipoActivo(Equipo equipo) {
         if (equipo.getEstado() != EstadoEquipo.ACTIVO) {
             throw new IllegalArgumentException("Operación no permitida: El equipo no está activo (estado: " + equipo.getEstado() + ")");
@@ -81,9 +84,7 @@ public class EquipoServiceImpl implements EquipoService {
 
         String asunto = "Propuesta de unión al equipo " + equipo.getNombreEquipo();
         String cuerpo = "El creador " + creador.getNombre() + " te ha propuesto unirte a su equipo " + equipo.getNombreEquipo() + ".";
-        Notification notificacion = new Notification(
-                jugador, asunto, cuerpo, false, true, solicitud.getId(), Notification.TipoNotificacion.INVITACION);
-        notificationDao.save(notificacion);
+        notificationDispatcher.notificacionPendienteDeAccion(jugador, asunto, cuerpo, solicitud.getId());
 
         return solicitud;
     }
@@ -120,9 +121,7 @@ public class EquipoServiceImpl implements EquipoService {
 
         String asunto = "Petición de unión al equipo " + equipo.getNombreEquipo();
         String cuerpo = "El jugador " + jugador.getNombre() + " ha solicitado unirse a tu equipo con código " + codigoEquipo + ".";
-        Notification notificacion = new Notification(
-                creador, asunto, cuerpo, false, true, solicitud.getId(), Notification.TipoNotificacion.INVITACION);
-        notificationDao.save(notificacion);
+        notificationDispatcher.notificacionPendienteDeAccion(creador, asunto, cuerpo, solicitud.getId());
 
         return solicitud;
     }
@@ -170,7 +169,8 @@ public class EquipoServiceImpl implements EquipoService {
 
         // Notificar al otro implicado (candidato o capitán) del resultado de la solicitud
         User destinatario;
-        String resultado = aceptar ? "aceptada" : "rechazada";
+        String nombreEquipo = equipo.getNombreEquipo();
+        String decisorNombre = solicitud.getDecisor().getNombre();
 
         if (solicitud.getCandidato().getId().equals(usuarioId)) {
             // El que responde es el candidato (PROPUESTA) → notificar al capitán
@@ -180,12 +180,11 @@ public class EquipoServiceImpl implements EquipoService {
             destinatario = solicitud.getCandidato();
         }
 
-        String asunto = "Solicitud " + resultado + " para " + equipo.getNombreEquipo();
-        String cuerpo = "Tu solicitud de unión al equipo " + equipo.getNombreEquipo()
-                + " ha sido " + resultado + " por " + solicitud.getDecisor().getNombre() + ".";
-        Notification notificacionResultado = new Notification(
-                destinatario, asunto, cuerpo, Notification.TipoNotificacion.SYSTEM);
-        notificationDao.save(notificacionResultado);
+        if (aceptar) {
+            notificationDispatcher.solicitudAceptada(destinatario, nombreEquipo, decisorNombre);
+        } else {
+            notificationDispatcher.solicitudRechazada(destinatario, nombreEquipo, decisorNombre);
+        }
     }
 
     @Override
@@ -211,11 +210,7 @@ public class EquipoServiceImpl implements EquipoService {
 
         // Notificar al creador que un miembro ha abandonado
         User creador = equipo.getCreador();
-        String asunto = "Un miembro ha abandonado " + equipo.getNombreEquipo();
-        String cuerpo = usuario.getNombre() + " ha abandonado el equipo " + equipo.getNombreEquipo() + ".";
-        Notification notificacion = new Notification(
-                creador, asunto, cuerpo, Notification.TipoNotificacion.SYSTEM);
-        notificationDao.save(notificacion);
+        notificationDispatcher.miembroAbandono(creador, usuario.getNombre(), equipo.getNombreEquipo());
     }
 
     @Override
@@ -278,10 +273,6 @@ public class EquipoServiceImpl implements EquipoService {
         equipo.removeMiembro(miembro);
         equipoDao.save(equipo);
 
-        String asunto = "Has sido expulsado del equipo " + equipo.getNombreEquipo();
-        String cuerpo = "El capitán " + captain.getNombre() + " te ha expulsado del equipo " + equipo.getNombreEquipo() + ".";
-        Notification notificacion = new Notification(
-                miembro, asunto, cuerpo, Notification.TipoNotificacion.SYSTEM);
-        notificationDao.save(notificacion);
+        notificationDispatcher.miembroExpulsado(miembro, equipo.getNombreEquipo(), captain.getNombre());
     }
 }
