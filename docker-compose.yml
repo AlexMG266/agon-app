@@ -46,7 +46,7 @@ services:
       SPRING_DEVTOOLS_RESTART_POLL_INTERVAL: "2s"
       SPRING_DEVTOOLS_RESTART_QUIET_PERIOD: "1s"
       MAVEN_OPTS: "-Xmx512m -XX:MaxMetaspaceSize=256m"
-      JAVA_TOOL_OPTIONS: "-Xmx512m -XX:MaxMetaspaceSize=256m"
+      JAVA_TOOL_OPTIONS: "-Xmx512m -XX:MaxMetaspaceSize=256m -Duser.language=es -Duser.country=ES"
     volumes:
       - ./backend:/app
       - maven_cache:/root/.m2
