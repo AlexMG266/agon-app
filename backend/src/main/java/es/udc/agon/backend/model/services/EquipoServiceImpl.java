@@ -157,6 +157,7 @@ public class EquipoServiceImpl implements EquipoService {
             solicitud.rechazar();
         }
 
+        // Marcar como leída la notificación original que tenía el decisor
         Optional<Notification> notificationOpt = notificationDao.findByUsuarioIdAndReferenciaIdAndTipo(
                 usuarioId, solicitudId, Notification.TipoNotificacion.INVITACION);
 
@@ -166,6 +167,25 @@ public class EquipoServiceImpl implements EquipoService {
             notification.setPendienteDeAccion(false);
             notificationDao.save(notification);
         }
+
+        // Notificar al otro implicado (candidato o capitán) del resultado de la solicitud
+        User destinatario;
+        String resultado = aceptar ? "aceptada" : "rechazada";
+
+        if (solicitud.getCandidato().getId().equals(usuarioId)) {
+            // El que responde es el candidato (PROPUESTA) → notificar al capitán
+            destinatario = equipo.getCreador();
+        } else {
+            // El que responde es el capitán (PETICION) → notificar al candidato
+            destinatario = solicitud.getCandidato();
+        }
+
+        String asunto = "Solicitud " + resultado + " para " + equipo.getNombreEquipo();
+        String cuerpo = "Tu solicitud de unión al equipo " + equipo.getNombreEquipo()
+                + " ha sido " + resultado + " por " + solicitud.getDecisor().getNombre() + ".";
+        Notification notificacionResultado = new Notification(
+                destinatario, asunto, cuerpo, Notification.TipoNotificacion.SYSTEM);
+        notificationDao.save(notificacionResultado);
     }
 
     @Override
