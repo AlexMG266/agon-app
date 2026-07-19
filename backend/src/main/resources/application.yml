@@ -25,6 +25,9 @@ spring:
       ddl-auto: none
       naming:
         physical-strategy: org.hibernate.boot.model.naming.PhysicalNamingStrategyStandardImpl
+  messages:
+    basename: messages
+    fallback-to-system-locale: true
 
 springdoc:
   swagger-ui:
