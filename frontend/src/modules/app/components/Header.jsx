@@ -27,7 +27,6 @@ const Header = () => {
         setPopupData(null);
     }, []);
 
-    // Click outside to close popup
     useEffect(() => {
         if (!popupData) return;
         const handleClickOutside = (e) => {
@@ -86,7 +85,14 @@ const Header = () => {
     useEffect(() => {
         fetchUnreadCount();
         window.addEventListener(NOTIFICATIONS_UPDATED_EVENT, fetchUnreadCount);
-        return () => window.removeEventListener(NOTIFICATIONS_UPDATED_EVENT, fetchUnreadCount);
+
+        // Polling: comprobar cada 30 segundos si hay nuevas notificaciones
+        const intervalId = setInterval(fetchUnreadCount, 30000);
+
+        return () => {
+            window.removeEventListener(NOTIFICATIONS_UPDATED_EVENT, fetchUnreadCount);
+            clearInterval(intervalId);
+        };
     }, [fetchUnreadCount, location.pathname]);
 
     const getProfileImageUrl = () => {
