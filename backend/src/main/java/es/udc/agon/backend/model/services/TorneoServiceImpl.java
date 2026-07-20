@@ -9,6 +9,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.security.SecureRandom;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -60,7 +61,7 @@ public class TorneoServiceImpl implements ITorneoService {
         torneo.setEstado(EstadoTorneo.RECLUTANDO);
         Torneo savedTorneo = torneoDao.save(torneo);
 
-        // Crear los grupos del torneo
+        // crear los grupos del torneo
         List<Grupo> grupos = new ArrayList<>();
         for (int i = 1; i <= savedTorneo.getNumGrupos(); i++) {
             Grupo grupo = new Grupo(savedTorneo, "Grupo " + i);
@@ -83,7 +84,7 @@ public class TorneoServiceImpl implements ITorneoService {
             throw new IllegalArgumentException("El torneo no está en periodo de reclutamiento");
         }
 
-        // Buscar el equipo y verificar que el capitan es el creador
+        // buscar el equipo y verificar que el capitan es el creador
         Equipo equipo = equipoDao.findById(equipoId)
                 .orElseThrow(() -> new InstanceNotFoundException("project.entities.equipo", equipoId));
 
@@ -91,19 +92,19 @@ public class TorneoServiceImpl implements ITorneoService {
             throw new PermissionException();
         }
 
-        // Comprobar que la inscripcion no existe ya para este equipo y torneo
+        // comprobar que la inscripcion no existe ya para este equipo y torneo
         if (inscripcionDao.findByEquipoIdAndTorneoId(equipoId, torneoId).isPresent()) {
             throw new IllegalArgumentException("El equipo ya está inscrito en este torneo");
         }
 
-        // Contar las inscripciones actuales
+        // contar las inscripciones actuales
         List<Inscripcion> inscripcionesActuales = inscripcionDao.findByTorneoId(torneoId);
         int maxEquipos = torneo.getNumGrupos() * torneo.getEquiposPorGrupo();
         if (inscripcionesActuales.size() >= maxEquipos) {
             throw new IllegalArgumentException("El torneo ya ha alcanzado el número máximo de equipos");
         }
 
-        // Encontrar el grupo con plazas disponibles (asignacion round-robin)
+        // encontrar el grupo con plazas disponibles (asignacion round-robin)
         List<Grupo> grupos = grupoDao.findByTorneoId(torneoId);
         Grupo grupoAsignado = null;
         for (Grupo grupo : grupos) {
@@ -132,7 +133,7 @@ public class TorneoServiceImpl implements ITorneoService {
         }
 
         List<Inscripcion> inscripciones = inscripcionDao.findByTorneoId(torneoId);
-        int minEquipos = torneo.getNumGrupos() * 2; // Minimo 2 equipos por grupo
+        int minEquipos = torneo.getNumGrupos() * 2; // minimo 2 equipos por grupo
         if (inscripciones.size() < minEquipos) {
             throw new IllegalArgumentException("No hay suficientes equipos inscritos para cerrar las inscripciones");
         }
@@ -163,23 +164,26 @@ public class TorneoServiceImpl implements ITorneoService {
             List<Inscripcion> inscripciones = inscripcionDao.findByGrupoId(grupo.getId());
             int numEquipos = inscripciones.size();
 
-            // Algoritmo round-robin: cada equipo juega contra todos los demas una vez
+            // algoritmo round-robin: cada equipo juega contra todos los demas una vez
             for (int ronda = 0; ronda < numEquipos - 1; ronda++) {
                 Jornada jornada = new Jornada(torneo, numeroJornada, TipoFase.LIGA_GRUPO,
                         TipoJornada.LIGA_4_SETS, fechaInicio, fechaInicio.plusDays(6));
-                jornadaDao.save(jornada);
 
                 for (int i = 0; i < numEquipos / 2; i++) {
-                    int local = (ronda + i) % (numEquipos - 1);
-                    int visitante = (numEquipos - 1 - i + ronda) % (numEquipos - 1);
+                    int idxLocal = (ronda + i) % (numEquipos - 1);
+                    int idxVisitante = (numEquipos - 1 - i + ronda) % (numEquipos - 1);
                     if (i == 0) {
-                        visitante = numEquipos - 1;
+                        idxVisitante = numEquipos - 1;
                     }
 
-                    // El emparejamiento es un marcador de posicion; en produccion se asignarian equipos reales
-                    // Por ahora se crean encuentros sin equipos (deberían asignarse en el futuro)
+                    Equipo equipoLocal = inscripciones.get(idxLocal).getEquipo();
+                    Equipo equipoVisitante = inscripciones.get(idxVisitante).getEquipo();
+                    Encuentro encuentro = new Encuentro(jornada, equipoLocal, equipoVisitante,
+                            fechaInicio.atStartOfDay());
+                    jornada.getEncuentros().add(encuentro);
                 }
 
+                jornadaDao.save(jornada);
                 numeroJornada++;
                 fechaInicio = fechaInicio.plusWeeks(1);
             }
@@ -191,7 +195,7 @@ public class TorneoServiceImpl implements ITorneoService {
         Torneo torneo = torneoDao.findById(torneoId)
                 .orElseThrow(() -> new InstanceNotFoundException("project.entities.torneo", torneoId));
 
-        // Genera un código QR simulado de 16 caracteres
+        // genera un codigo qr simulado de 16 caracteres
         StringBuilder sb = new StringBuilder(16);
         for (int i = 0; i < 16; i++) {
             sb.append(QR_CHARS.charAt(RANDOM.nextInt(QR_CHARS.length())));

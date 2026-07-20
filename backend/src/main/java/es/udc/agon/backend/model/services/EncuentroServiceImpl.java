@@ -33,7 +33,7 @@ public class EncuentroServiceImpl implements IEncuentroService {
     @Override
     @Transactional(readOnly = true)
     public List<Encuentro> consultarEncuentrosPropios(Long userId) {
-        // Obtener todos los equipos del usuario
+        // obtener todos los equipos del usuario
         List<Equipo> equipos = equipoDao.findByMiembrosId(userId);
         List<Encuentro> encuentros = new ArrayList<>();
         for (Equipo equipo : equipos) {
@@ -57,7 +57,7 @@ public class EncuentroServiceImpl implements IEncuentroService {
             throw new IllegalArgumentException("Debe proporcionar al menos un set");
         }
 
-        // Validar que los sets tengan valores coherentes
+        // validar que los sets tengan valores coherentes
         for (SetEntity set : sets) {
             if (set.getGolesLocal() < 0 || set.getGolesVisitante() < 0) {
                 throw new IllegalArgumentException("Los goles no pueden ser negativos");
@@ -67,7 +67,7 @@ public class EncuentroServiceImpl implements IEncuentroService {
             }
         }
 
-        // Limpiar sets anteriores y asignar los nuevos
+        // limpiar sets anteriores y asignar los nuevos
         encuentro.getSets().clear();
         int numeroSet = 1;
         for (SetEntity set : sets) {
@@ -79,11 +79,11 @@ public class EncuentroServiceImpl implements IEncuentroService {
         encuentro.setEstadoEncuentro(EstadoEncuentro.JUGADO);
         encuentroDao.save(encuentro);
 
-        // Actualizar estadísticas de inscripciones
+        // actualizar estadisticas de inscripciones
         Equipo ganador = encuentro.getGanador();
         Equipo perdedor = ganador.equals(encuentro.getLocal()) ? encuentro.getVisitante() : encuentro.getLocal();
 
-        // Buscar la inscripción del torneo asociada a cada equipo
+        // buscar la inscripcion del torneo asociada a cada equipo
         Jornada jornada = encuentro.getJornada();
         if (jornada != null && jornada.getTorneo() != null) {
             Long torneoId = jornada.getTorneo().getId();
@@ -128,7 +128,7 @@ public class EncuentroServiceImpl implements IEncuentroService {
         Encuentro encuentro = encuentroDao.findById(encuentroId)
                 .orElseThrow(() -> new InstanceNotFoundException("project.entities.encuentro", encuentroId));
 
-        // Verificar que el capitán pertenece a uno de los equipos del encuentro
+        // verificar que el capitan pertenece a uno de los equipos del encuentro
         boolean esCapitanLocal = encuentro.getLocal().getCreador().getId().equals(capitanId);
         boolean esCapitanVisitante = encuentro.getVisitante().getCreador().getId().equals(capitanId);
 

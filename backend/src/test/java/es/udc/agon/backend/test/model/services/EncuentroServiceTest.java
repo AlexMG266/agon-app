@@ -80,8 +80,8 @@ public class EncuentroServiceTest {
     }
 
     /**
-     * Metodo auxiliar: crea un torneo con 1 grupo y 2 equipos, cierra inscripciones,
-     * y crea un Encuentro entre los dos equipos. Devuelve el Encuentro.
+     * metodo auxiliar: crea un torneo con 1 grupo y 2 equipos, cierra inscripciones,
+     * genera calendario y devuelve el encuentro generado entre los dos equipos.
      */
     private Encuentro setupEncuentro(User org, User cap1, User cap2)
             throws InstanceNotFoundException, PermissionException {
@@ -98,18 +98,15 @@ public class EncuentroServiceTest {
         torneoService.cerrarInscripciones(torneo.getId());
         torneoService.generarCalendario(torneo.getId());
 
-        // Obtener la primera jornada
+        // obtener la primera jornada y su encuentro generado
         List<Jornada> jornadas = jornadaDao.findByTorneoIdOrderByNumeroJornadaAsc(torneo.getId());
         Jornada jornada = jornadas.get(0);
 
-        // Crear encuentro manualmente porque generarCalendario solo crea jornadas
-        Encuentro encuentro = new Encuentro(jornada, equipo1, equipo2, LocalDateTime.now().plusDays(3));
-        encuentroDao.save(encuentro);
-
-        return encuentro;
+        return jornada.getEncuentros().get(0);
     }
 
-    // ---- Tests de consultarEncuentrosPropios ----
+
+    // tests de consultarEncuentrosPropios
 
     @Test
     public void testConsultarEncuentrosPropios() throws InstanceNotFoundException, PermissionException {
@@ -134,7 +131,8 @@ public class EncuentroServiceTest {
         assertTrue(encuentros.isEmpty());
     }
 
-    // ---- Tests de registrarResultado ----
+
+    // tests de registrarResultado
 
     @Test
     public void testRegistrarResultado() throws InstanceNotFoundException, PermissionException {
@@ -144,7 +142,7 @@ public class EncuentroServiceTest {
 
         Encuentro encuentro = setupEncuentro(org, cap1, cap2);
 
-        // Build sets: local wins 3-1
+        // local gana 3-1
         List<SetEntity> sets = new ArrayList<>();
         sets.add(new SetEntity(null, 1, 25, 20));
         sets.add(new SetEntity(null, 2, 25, 18));
@@ -157,7 +155,7 @@ public class EncuentroServiceTest {
         assertEquals(EstadoEncuentro.JUGADO, actualizado.getEstadoEncuentro());
         assertEquals(4, actualizado.getSets().size());
 
-        // Verificar ganador es el equipo local
+        // verificar ganador es el equipo local
         assertEquals(encuentro.getLocal().getId(), actualizado.getGanador().getId());
     }
 
@@ -169,7 +167,7 @@ public class EncuentroServiceTest {
 
         Encuentro encuentro = setupEncuentro(org, cap1, cap2);
 
-        // Visitante wins 1-3
+        // visitante gana 1-3
         List<SetEntity> sets = new ArrayList<>();
         sets.add(new SetEntity(null, 1, 20, 25));
         sets.add(new SetEntity(null, 2, 25, 22));
@@ -198,7 +196,7 @@ public class EncuentroServiceTest {
 
         encuentroService.registrarResultado(encuentro.getId(), sets);
 
-        // Intentar registrar de nuevo
+        // intentar registrar de nuevo
         assertThrows(IllegalArgumentException.class,
                 () -> encuentroService.registrarResultado(encuentro.getId(), sets));
     }
@@ -255,7 +253,7 @@ public class EncuentroServiceTest {
 
         Encuentro encuentro = setupEncuentro(org, cap1, cap2);
 
-        // Local gana 3-1
+        // local gana 3-1
         List<SetEntity> sets = new ArrayList<>();
         sets.add(new SetEntity(null, 1, 25, 20));
         sets.add(new SetEntity(null, 2, 25, 18));
@@ -290,7 +288,8 @@ public class EncuentroServiceTest {
                 () -> encuentroService.registrarResultado(999L, new ArrayList<>()));
     }
 
-    // ---- Tests de solicitarAplazamiento ----
+
+    // tests de solicitarAplazamiento
 
     @Test
     public void testSolicitarAplazamiento() throws InstanceNotFoundException, PermissionException {
@@ -303,11 +302,11 @@ public class EncuentroServiceTest {
 
         encuentroService.solicitarAplazamiento(cap1.getId(), encuentro.getId(), nuevaFecha, "Motivo de prueba");
 
-        // Verificar que el estado del encuentro cambio
+        // verificar que el estado del encuentro cambio
         Encuentro actualizado = encuentroDao.findById(encuentro.getId()).get();
         assertEquals(EstadoEncuentro.SOLICITADO_APLAZAMIENTO, actualizado.getEstadoEncuentro());
 
-        // Verificar que se creo la solicitud
+        // verificar que se creo la solicitud
         List<SolicitudAplazamiento> solicitudes = solicitudAplazamientoDao.findByEncuentroId(encuentro.getId());
         assertEquals(1, solicitudes.size());
         assertEquals(EstadoSolicitud.PENDIENTE, solicitudes.get(0).getEstado());
@@ -353,14 +352,14 @@ public class EncuentroServiceTest {
 
         Encuentro encuentro = setupEncuentro(org, cap1, cap2);
 
-        // Registrar resultado primero
+        // registrar resultado primero
         List<SetEntity> sets = new ArrayList<>();
         sets.add(new SetEntity(null, 1, 25, 20));
         sets.add(new SetEntity(null, 2, 25, 18));
         sets.add(new SetEntity(null, 3, 25, 20));
         encuentroService.registrarResultado(encuentro.getId(), sets);
 
-        // Ahora intentar aplazar
+        // ahora intentar aplazar
         assertThrows(IllegalArgumentException.class,
                 () -> encuentroService.solicitarAplazamiento(cap1.getId(), encuentro.getId(),
                         LocalDateTime.now().plusDays(5), "Ya jugado"));

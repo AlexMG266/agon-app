@@ -10,33 +10,33 @@ import java.util.List;
 public interface IEncuentroService {
 
     /**
-     * Consulta los encuentros en los que participa un equipo del usuario.
+     * consulta los encuentros en los que participa un equipo del usuario.
      *
-     * @param userId Id del usuario (capitan/miembro).
-     * @return Lista de encuentros donde participa algun equipo del usuario.
+     * @param userId id del usuario (capitan/miembro).
+     * @return lista de encuentros donde participa algun equipo del usuario.
      */
     List<Encuentro> consultarEncuentrosPropios(Long userId);
 
     /**
-     * Registra el resultado de un encuentro (lista de sets).
+     * registra el resultado de un encuentro (lista de sets).
      *
-     * @param encuentroId Id del encuentro.
+     * @param encuentroId  id del encuentro.
      * @param sets        Lista de sets con los resultados.
      * @throws InstanceNotFoundException Si el encuentro no existe.
-     * @throws IllegalArgumentException  Si el encuentro ya esta jugado o los datos de sets son invalidos.
+     * @throws IllegalArgumentException  si el encuentro ya esta jugado o los datos de sets son invalidos.
      */
     void registrarResultado(Long encuentroId, List<SetEntity> sets)
             throws InstanceNotFoundException, IllegalArgumentException;
 
     /**
-     * Solicita el aplazamiento de un encuentro.
+     * solicita el aplazamiento de un encuentro.
      *
-     * @param capitanId    Id del capitan que solicita el aplazamiento.
+     * @param capitanId    id del capitan que solicita el aplazamiento.
      * @param encuentroId  Id del encuentro.
      * @param fecha        Nueva fecha propuesta.
      * @param motivo       Motivo del aplazamiento.
-     * @throws InstanceNotFoundException Si el capitan, encuentro o equipo no existen.
-     * @throws PermissionException       Si el capitanId no es capitan de uno de los equipos participantes.
+     * @throws InstanceNotFoundException si el capitan, encuentro o equipo no existen.
+     * @throws PermissionException       si el capitanId no es capitan de uno de los equipos participantes.
      */
     void solicitarAplazamiento(Long capitanId, Long encuentroId, LocalDateTime fecha, String motivo)
             throws InstanceNotFoundException, PermissionException, IllegalArgumentException;

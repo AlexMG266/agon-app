@@ -72,7 +72,8 @@ public class TorneoServiceTest {
         return torneoService.crearTorneo(organizador.getId(), torneo);
     }
 
-    // ---- CU11: Buscar torneos ----
+
+    // cu11: buscar torneos
 
     @Test
     public void testBuscarTorneosSinFiltro() throws InstanceNotFoundException {
@@ -104,7 +105,8 @@ public class TorneoServiceTest {
         assertEquals(1, torneoService.buscarTorneos("VERANO").size());
     }
 
-    // ---- CU12: Consultar torneo ----
+
+    // cu12: consultar torneo
 
     @Test
     public void testConsultarTorneo() throws InstanceNotFoundException {
@@ -123,7 +125,8 @@ public class TorneoServiceTest {
                 () -> torneoService.consultarTorneo(999L));
     }
 
-    // ---- CU13: Crear torneo ----
+
+    // cu13: crear torneo
 
     @Test
     public void testCrearTorneo() throws InstanceNotFoundException {
@@ -139,7 +142,7 @@ public class TorneoServiceTest {
         assertEquals(4, creado.getEquiposPorGrupo());
         assertTrue(creado.isTienePlayoff());
 
-        // Verificar que se crearon los grupos via DAO
+        // verificar que se crearon los grupos via dao
         assertEquals(3, grupoDao.findByTorneoId(creado.getId()).size());
     }
 
@@ -150,7 +153,8 @@ public class TorneoServiceTest {
                 () -> torneoService.crearTorneo(999L, torneo));
     }
 
-    // ---- CU14: Inscribir equipo + CU15: Validar equipos (include) ----
+
+    // cu14: inscribir equipo + cu15: validar equipos (include)
 
     @Test
     public void testInscribirYValidarEquipo() throws InstanceNotFoundException, PermissionException {
@@ -191,12 +195,12 @@ public class TorneoServiceTest {
         User otroCap = createUser("otro_cap");
         Equipo equipo2 = equipoService.crearEquipo(otroCap.getId(), "EquipoC2", "Descripcion");
 
-        // Inscribir 2 equipos y cerrar
+        // inscribir 2 equipos y cerrar
         torneoService.inscribirYValidarEquipo(capitan.getId(), torneo.getId(), equipo1.getId());
         torneoService.inscribirYValidarEquipo(otroCap.getId(), torneo.getId(), equipo2.getId());
         torneoService.cerrarInscripciones(torneo.getId());
 
-        // Ahora intentar inscribir otro equipo
+        // ahora intentar inscribir otro equipo
         User cap3 = createUser("cap3");
         Equipo equipo3 = equipoService.crearEquipo(cap3.getId(), "EquipoC3", "Descripcion");
         assertThrows(IllegalArgumentException.class,
@@ -234,7 +238,8 @@ public class TorneoServiceTest {
                 () -> torneoService.inscribirYValidarEquipo(cap3.getId(), torneo.getId(), equipo3.getId()));
     }
 
-    // ---- CU16: Cerrar inscripciones ----
+
+    // cu16: cerrar inscripciones
 
     @Test
     public void testCerrarInscripciones() throws InstanceNotFoundException, PermissionException {
@@ -275,7 +280,8 @@ public class TorneoServiceTest {
                 () -> torneoService.cerrarInscripciones(torneo.getId()));
     }
 
-    // ---- CU17: Generar calendario ----
+
+    // cu17: generar calendario
 
     @Test
     public void testGenerarCalendario() throws InstanceNotFoundException, PermissionException {
@@ -293,7 +299,7 @@ public class TorneoServiceTest {
         torneoService.cerrarInscripciones(torneo.getId());
         torneoService.generarCalendario(torneo.getId());
 
-        // Verificar que se crearon las jornadas (1 grupo con 2 equipos = 1 jornada)
+        // verificar que se crearon las jornadas (1 grupo con 2 equipos = 1 jornada)
         java.util.List<Jornada> jornadas = jornadaDao.findByTorneoIdOrderByNumeroJornadaAsc(torneo.getId());
         assertEquals(1, jornadas.size());
         assertEquals(TipoFase.LIGA_GRUPO, jornadas.get(0).getTipoFase());
@@ -328,7 +334,8 @@ public class TorneoServiceTest {
                 () -> torneoService.generarCalendario(torneo.getId()));
     }
 
-    // ---- CU18: Generar código QR ----
+
+    // cu18: generar codigo qr
 
     @Test
     public void testGenerarCodigoQR() throws InstanceNotFoundException {
@@ -347,7 +354,8 @@ public class TorneoServiceTest {
                 () -> torneoService.generarCodigoQR(999L));
     }
 
-    // ---- CU19: Gestionar jornadas ----
+
+    // cu19: gestionar jornadas
 
     @Test
     public void testGestionarJornadas() throws InstanceNotFoundException, PermissionException {

@@ -9,75 +9,75 @@ import java.util.List;
 public interface ITorneoService {
 
     /**
-     * Busca torneos cuyo nombre contenga el filtro (busqueda por texto).
+     * busca torneos cuyo nombre contenga el filtro (busqueda por texto).
      */
     List<Torneo> buscarTorneos(String filtro);
 
     /**
-     * Obtiene los detalles completos de un torneo por su ID.
+     * obtiene los detalles completos de un torneo por su id.
      */
     Torneo consultarTorneo(Long torneoId) throws InstanceNotFoundException;
 
     /**
-     * Crea un nuevo torneo a partir de los datos proporcionados.
+     * crea un nuevo torneo a partir de los datos proporcionados.
      *
      * @param organizadorId Id del usuario organizador.
-     * @param torneo        Objeto Torneo con los datos basicos (nombre, numGrupos, equiposPorGrupo, tienePlayoff).
-     * @return El torneo creado.
-     * @throws InstanceNotFoundException Si el organizador no existe.
+     * @param torneo        torneo con los datos basicos (nombre, numGrupos, equiposPorGrupo, tienePlayoff).
+     * @return el torneo creado.
+     * @throws InstanceNotFoundException si el organizador no existe.
      */
     Torneo crearTorneo(Long organizadorId, Torneo torneo) throws InstanceNotFoundException;
 
     /**
-     * Inscribe un equipo en el torneo y lo valida si cumple las condiciones.
-     * El capitan del equipo realiza la inscripcion.
+     * inscribe un equipo en el torneo y lo valida si cumple las condiciones.
+     * el capitan del equipo realiza la inscripcion.
      *
-     * @param capitanId Id del capitan que inscribe al equipo.
-     * @param torneoId  Id del torneo.
-     * @param equipoId  Id del equipo a inscribir.
-     * @throws InstanceNotFoundException Si el capitan, torneo o equipo no existen.
-     * @throws PermissionException       Si el capitanId no es el creador del equipo.
-     * @throws IllegalArgumentException  Si el equipo ya esta inscrito o el torneo no esta en estado RECLUTANDO.
+     * @param capitanId id del capitan que inscribe al equipo.
+     * @param torneoId  id del torneo.
+     * @param equipoId  id del equipo a inscribir.
+     * @throws InstanceNotFoundException si el capitan, torneo o equipo no existen.
+     * @throws PermissionException       si el capitanId no es el creador del equipo.
+     * @throws IllegalArgumentException  si el equipo ya esta inscrito o el torneo no esta en estado reclutando.
      */
     Inscripcion inscribirYValidarEquipo(Long capitanId, Long torneoId, Long equipoId)
             throws InstanceNotFoundException, PermissionException, IllegalArgumentException;
 
     /**
-     * Cierra las inscripciones del torneo, cambiando su estado de RECLUTANDO a FASE_GRUPOS.
+     * cierra las inscripciones del torneo, cambiando su estado de reclutando a fase_grupos.
      *
      * @param torneoId Id del torneo.
      * @throws InstanceNotFoundException Si el torneo no existe.
-     * @throws IllegalArgumentException  Si el torneo no esta en estado RECLUTANDO o no tiene suficientes equipos.
+     * @throws IllegalArgumentException  si el torneo no esta en estado reclutando o no tiene suficientes equipos.
      */
     void cerrarInscripciones(Long torneoId) throws InstanceNotFoundException, IllegalArgumentException;
 
     /**
-     * Genera el calendario de jornadas para el torneo (solo fase de grupos).
+     * genera el calendario de jornadas para el torneo (solo fase de grupos).
      *
      * @param torneoId Id del torneo.
      * @throws InstanceNotFoundException Si el torneo no existe.
-     * @throws IllegalArgumentException  Si el torneo no esta en FASE_GRUPOS o ya tiene jornadas generadas.
+     * @throws IllegalArgumentException  si el torneo no esta en fase_grupos o ya tiene jornadas generadas.
      */
     void generarCalendario(Long torneoId) throws InstanceNotFoundException, IllegalArgumentException;
 
     /**
-     * Genera un codigo QR para el torneo (simulado como un string alfanumerico).
+     * genera un codigo qr para el torneo (simulado como un string alfanumerico).
      *
      * @param torneoId Id del torneo.
-     * @return String representando el codigo QR.
+     * @return string representando el codigo qr.
      * @throws InstanceNotFoundException Si el torneo no existe.
      */
     String generarCodigoQR(Long torneoId) throws InstanceNotFoundException;
 
     /**
-     * Gestiona el estado de una jornada (activarla o aplazarla).
+     * gestiona el estado de una jornada (activarla o aplazarla).
      *
      * @param torneoId            Id del torneo.
      * @param jornadaId           Id de la jornada.
      * @param nuevoEstado         Nuevo estado para la jornada.
      * @throws InstanceNotFoundException Si el torneo o la jornada no existen.
-     * @throws PermissionException       Si el usuario no es el organizador.
-     * @throws IllegalArgumentException  Si la jornada no pertenece al torneo.
+     * @throws PermissionException       si el usuario no es el organizador.
+     * @throws IllegalArgumentException  si la jornada no pertenece al torneo.
      */
     void gestionarJornadas(Long torneoId, Long jornadaId, EstadoJornada nuevoEstado)
             throws InstanceNotFoundException, PermissionException, IllegalArgumentException;
