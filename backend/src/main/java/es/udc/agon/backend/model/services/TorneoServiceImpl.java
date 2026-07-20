@@ -1,0 +1,220 @@
+package es.udc.agon.backend.model.services;
+
+import es.udc.agon.backend.model.entities.*;
+import es.udc.agon.backend.model.exceptions.InstanceNotFoundException;
+import es.udc.agon.backend.model.exceptions.PermissionException;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.security.SecureRandom;
+import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.List;
+
+@Service
+@Transactional
+public class TorneoServiceImpl implements ITorneoService {
+
+    private static final String QR_CHARS = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+    private static final SecureRandom RANDOM = new SecureRandom();
+
+    @Autowired
+    private TorneoDao torneoDao;
+
+    @Autowired
+    private InscripcionDao inscripcionDao;
+
+    @Autowired
+    private JornadaDao jornadaDao;
+
+    @Autowired
+    private GrupoDao grupoDao;
+
+    @Autowired
+    private EquipoDao equipoDao;
+
+    @Autowired
+    private PermissionChecker permissionChecker;
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<Torneo> buscarTorneos(String filtro) {
+        if (filtro == null || filtro.trim().isEmpty()) {
+            return (List<Torneo>) torneoDao.findAll();
+        }
+        return torneoDao.findByNombreContainingIgnoreCase(filtro.trim());
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public Torneo consultarTorneo(Long torneoId) throws InstanceNotFoundException {
+        return torneoDao.findById(torneoId)
+                .orElseThrow(() -> new InstanceNotFoundException("project.entities.torneo", torneoId));
+    }
+
+    @Override
+    public Torneo crearTorneo(Long organizadorId, Torneo torneo) throws InstanceNotFoundException {
+        User organizador = permissionChecker.checkUser(organizadorId);
+        torneo.setOrganizador(organizador);
+        torneo.setEstado(EstadoTorneo.RECLUTANDO);
+        Torneo savedTorneo = torneoDao.save(torneo);
+
+        // Crear los grupos del torneo
+        List<Grupo> grupos = new ArrayList<>();
+        for (int i = 1; i <= savedTorneo.getNumGrupos(); i++) {
+            Grupo grupo = new Grupo(savedTorneo, "Grupo " + i);
+            grupoDao.save(grupo);
+            grupos.add(grupo);
+        }
+        savedTorneo.setGrupos(grupos);
+
+        return torneoDao.save(savedTorneo);
+    }
+
+    @Override
+    public Inscripcion inscribirYValidarEquipo(Long capitanId, Long torneoId, Long equipoId)
+            throws InstanceNotFoundException, PermissionException, IllegalArgumentException {
+
+        Torneo torneo = torneoDao.findById(torneoId)
+                .orElseThrow(() -> new InstanceNotFoundException("project.entities.torneo", torneoId));
+
+        if (torneo.getEstado() != EstadoTorneo.RECLUTANDO) {
+            throw new IllegalArgumentException("El torneo no está en periodo de reclutamiento");
+        }
+
+        // Buscar el equipo y verificar que el capitan es el creador
+        Equipo equipo = equipoDao.findById(equipoId)
+                .orElseThrow(() -> new InstanceNotFoundException("project.entities.equipo", equipoId));
+
+        if (!equipo.getCreador().getId().equals(capitanId)) {
+            throw new PermissionException();
+        }
+
+        // Comprobar que la inscripcion no existe ya para este equipo y torneo
+        if (inscripcionDao.findByEquipoIdAndTorneoId(equipoId, torneoId).isPresent()) {
+            throw new IllegalArgumentException("El equipo ya está inscrito en este torneo");
+        }
+
+        // Contar las inscripciones actuales
+        List<Inscripcion> inscripcionesActuales = inscripcionDao.findByTorneoId(torneoId);
+        int maxEquipos = torneo.getNumGrupos() * torneo.getEquiposPorGrupo();
+        if (inscripcionesActuales.size() >= maxEquipos) {
+            throw new IllegalArgumentException("El torneo ya ha alcanzado el número máximo de equipos");
+        }
+
+        // Encontrar el grupo con plazas disponibles (asignacion round-robin)
+        List<Grupo> grupos = grupoDao.findByTorneoId(torneoId);
+        Grupo grupoAsignado = null;
+        for (Grupo grupo : grupos) {
+            long countInGrupo = inscripcionDao.findByGrupoId(grupo.getId()).size();
+            if (countInGrupo < torneo.getEquiposPorGrupo()) {
+                grupoAsignado = grupo;
+                break;
+            }
+        }
+
+        if (grupoAsignado == null) {
+            throw new IllegalArgumentException("No hay grupos disponibles para la inscripción");
+        }
+
+        Inscripcion inscripcion = new Inscripcion(torneo, equipo, grupoAsignado);
+        return inscripcionDao.save(inscripcion);
+    }
+
+    @Override
+    public void cerrarInscripciones(Long torneoId) throws InstanceNotFoundException, IllegalArgumentException {
+        Torneo torneo = torneoDao.findById(torneoId)
+                .orElseThrow(() -> new InstanceNotFoundException("project.entities.torneo", torneoId));
+
+        if (torneo.getEstado() != EstadoTorneo.RECLUTANDO) {
+            throw new IllegalArgumentException("El torneo no está en periodo de reclutamiento");
+        }
+
+        List<Inscripcion> inscripciones = inscripcionDao.findByTorneoId(torneoId);
+        int minEquipos = torneo.getNumGrupos() * 2; // Minimo 2 equipos por grupo
+        if (inscripciones.size() < minEquipos) {
+            throw new IllegalArgumentException("No hay suficientes equipos inscritos para cerrar las inscripciones");
+        }
+
+        torneo.setEstado(EstadoTorneo.FASE_GRUPOS);
+        torneoDao.save(torneo);
+    }
+
+    @Override
+    public void generarCalendario(Long torneoId) throws InstanceNotFoundException, IllegalArgumentException {
+        Torneo torneo = torneoDao.findById(torneoId)
+                .orElseThrow(() -> new InstanceNotFoundException("project.entities.torneo", torneoId));
+
+        if (torneo.getEstado() != EstadoTorneo.FASE_GRUPOS) {
+            throw new IllegalArgumentException("El torneo debe estar en fase de grupos para generar el calendario");
+        }
+
+        List<Jornada> jornadasExistentes = jornadaDao.findByTorneoIdOrderByNumeroJornadaAsc(torneoId);
+        if (!jornadasExistentes.isEmpty()) {
+            throw new IllegalArgumentException("El torneo ya tiene un calendario generado");
+        }
+
+        List<Grupo> grupos = grupoDao.findByTorneoId(torneoId);
+        LocalDate fechaInicio = LocalDate.now().plusDays(7);
+        int numeroJornada = 1;
+
+        for (Grupo grupo : grupos) {
+            List<Inscripcion> inscripciones = inscripcionDao.findByGrupoId(grupo.getId());
+            int numEquipos = inscripciones.size();
+
+            // Algoritmo round-robin: cada equipo juega contra todos los demas una vez
+            for (int ronda = 0; ronda < numEquipos - 1; ronda++) {
+                Jornada jornada = new Jornada(torneo, numeroJornada, TipoFase.LIGA_GRUPO,
+                        TipoJornada.LIGA_4_SETS, fechaInicio, fechaInicio.plusDays(6));
+                jornadaDao.save(jornada);
+
+                for (int i = 0; i < numEquipos / 2; i++) {
+                    int local = (ronda + i) % (numEquipos - 1);
+                    int visitante = (numEquipos - 1 - i + ronda) % (numEquipos - 1);
+                    if (i == 0) {
+                        visitante = numEquipos - 1;
+                    }
+
+                    // El emparejamiento es un marcador de posicion; en produccion se asignarian equipos reales
+                    // Por ahora se crean encuentros sin equipos (deberían asignarse en el futuro)
+                }
+
+                numeroJornada++;
+                fechaInicio = fechaInicio.plusWeeks(1);
+            }
+        }
+    }
+
+    @Override
+    public String generarCodigoQR(Long torneoId) throws InstanceNotFoundException {
+        Torneo torneo = torneoDao.findById(torneoId)
+                .orElseThrow(() -> new InstanceNotFoundException("project.entities.torneo", torneoId));
+
+        // Genera un código QR simulado de 16 caracteres
+        StringBuilder sb = new StringBuilder(16);
+        for (int i = 0; i < 16; i++) {
+            sb.append(QR_CHARS.charAt(RANDOM.nextInt(QR_CHARS.length())));
+        }
+        String qrCode = "TORNEO-" + sb;
+        return qrCode;
+    }
+
+    @Override
+    public void gestionarJornadas(Long torneoId, Long jornadaId, EstadoJornada nuevoEstado)
+            throws InstanceNotFoundException, PermissionException, IllegalArgumentException {
+
+        Torneo torneo = torneoDao.findById(torneoId)
+                .orElseThrow(() -> new InstanceNotFoundException("project.entities.torneo", torneoId));
+
+        Jornada jornada = jornadaDao.findById(jornadaId)
+                .orElseThrow(() -> new InstanceNotFoundException("project.entities.jornada", jornadaId));
+
+        if (!jornada.getTorneo().getId().equals(torneoId)) {
+            throw new IllegalArgumentException("La jornada no pertenece al torneo especificado");
+        }
+
+        jornada.setEstado(nuevoEstado);
+        jornadaDao.save(jornada);
+    }
+}
