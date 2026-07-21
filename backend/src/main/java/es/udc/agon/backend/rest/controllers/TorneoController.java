@@ -2,7 +2,8 @@ package es.udc.agon.backend.rest.controllers;
 
 import es.udc.agon.backend.model.entities.Torneo;
 import es.udc.agon.backend.model.exceptions.InstanceNotFoundException;
-import es.udc.agon.backend.model.services.ITorneoService;
+import es.udc.agon.backend.model.services.TorneoService;
+import es.udc.agon.backend.rest.dtos.ConfigurarEstructuraParamsDto;
 import es.udc.agon.backend.rest.dtos.CrearTorneoParamsDto;
 import es.udc.agon.backend.rest.dtos.TorneoConversor;
 import es.udc.agon.backend.rest.dtos.TorneoDto;
@@ -30,13 +31,13 @@ import java.util.List;
 public class TorneoController {
 
     @Autowired
-    private ITorneoService torneoService;
+    private TorneoService torneoService;
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
     @Operation(
             summary = "Crear un nuevo torneo",
-            description = "Registra un torneo en el sistema y asigna al usuario autenticado como su organizador."
+            description = "Registra un torneo en el sistema con los datos básicos (sin estructura de grupos)."
     )
     @ApiResponses(value = {
             @ApiResponse(responseCode = "201", description = "Torneo creado con éxito",
@@ -55,12 +56,42 @@ public class TorneoController {
 
         Torneo torneo = new Torneo();
         torneo.setNombre(params.getNombre());
-        torneo.setNumGrupos(params.getNumGrupos());
-        torneo.setEquiposPorGrupo(params.getEquiposPorGrupo());
-        torneo.setTienePlayoff(params.isTienePlayoff());
 
         Torneo savedTorneo = torneoService.crearTorneo(userId, torneo);
         return TorneoConversor.toTorneoDto(savedTorneo);
+    }
+
+    @PostMapping("/{id}/configure")
+    @ResponseStatus(HttpStatus.OK)
+    @Operation(
+            summary = "Configurar estructura del torneo y generar calendario",
+            description = "Tras cerrar inscripciones, configura el tipo de torneo, grupos, playoff y genera el calendario automáticamente."
+    )
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Estructura configurada y calendario generado",
+                    content = @Content(schema = @Schema(implementation = TorneoDto.class))),
+            @ApiResponse(responseCode = "400", description = "El torneo no está en estado INSCRIPCION_CERRADA o datos inválidos",
+                    content = @Content),
+            @ApiResponse(responseCode = "401", description = "No autorizado",
+                    content = @Content),
+            @ApiResponse(responseCode = "404", description = "Torneo no encontrado",
+                    content = @Content)
+    })
+    public TorneoDto configurarEstructura(
+            @Parameter(hidden = true) @RequestAttribute Long userId,
+            @Parameter(description = "ID del torneo", example = "1") @PathVariable Long id,
+            @RequestBody ConfigurarEstructuraParamsDto params)
+            throws InstanceNotFoundException {
+
+        Torneo torneo = torneoService.configurarEstructuraYGenerarCalendario(
+                id,
+                params.getTipoTorneo(),
+                params.getNumGrupos(),
+                params.getEquiposPorGrupo(),
+                params.isTienePlayoff(),
+                params.isIdaVueltaPlayoff()
+        );
+        return TorneoConversor.toTorneoDto(torneo);
     }
 
     @GetMapping

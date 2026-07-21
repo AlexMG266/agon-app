@@ -6,7 +6,7 @@ import es.udc.agon.backend.model.exceptions.PermissionException;
 
 import java.util.List;
 
-public interface ITorneoService {
+public interface TorneoService {
 
     /**
      * busca torneos cuyo nombre contenga el filtro (busqueda por texto).
@@ -19,11 +19,13 @@ public interface ITorneoService {
     Torneo consultarTorneo(Long torneoId) throws InstanceNotFoundException;
 
     /**
-     * crea un nuevo torneo a partir de los datos proporcionados.
+     * crea un nuevo torneo con los datos basicos (sin estructura de grupos).
+     * La estructura (numGrupos, equiposPorGrupo, tipoTorneo, etc.) se configurara
+     * tras cerrar las inscripciones mediante configurarEstructuraYGenerarCalendario().
      *
      * @param organizadorId Id del usuario organizador.
-     * @param torneo        torneo con los datos basicos (nombre, numGrupos, equiposPorGrupo, tienePlayoff).
-     * @return el torneo creado.
+     * @param torneo        torneo con los datos basicos (nombre).
+     * @return el torneo creado en estado RECLUTANDO.
      * @throws InstanceNotFoundException si el organizador no existe.
      */
     Torneo crearTorneo(Long organizadorId, Torneo torneo) throws InstanceNotFoundException;
@@ -43,13 +45,36 @@ public interface ITorneoService {
             throws InstanceNotFoundException, PermissionException, IllegalArgumentException;
 
     /**
-     * cierra las inscripciones del torneo, cambiando su estado de reclutando a fase_grupos.
+     * cierra las inscripciones del torneo, cambiando su estado de RECLUTANDO a INSCRIPCION_CERRADA.
+     * No genera calendario ni crea grupos — eso se hace en configurarEstructuraYGenerarCalendario().
      *
      * @param torneoId Id del torneo.
      * @throws InstanceNotFoundException Si el torneo no existe.
-     * @throws IllegalArgumentException  si el torneo no esta en estado reclutando o no tiene suficientes equipos.
+     * @throws IllegalArgumentException  si el torneo no esta en estado RECLUTANDO o no tiene suficientes equipos.
      */
     void cerrarInscripciones(Long torneoId) throws InstanceNotFoundException, IllegalArgumentException;
+
+    /**
+     * configura la estructura del torneo (tipo, grupos, playoff), crea los grupos,
+     * asigna los equipos inscritos a los grupos (round-robin), genera el calendario
+     * de la fase de grupos y cambia el estado a FASE_GRUPOS.
+     *
+     * @param torneoId        Id del torneo.
+     * @param tipoTorneo      Tipo de torneo (LIGA_UNICA, GRUPOS_PLAYOFF, ELIMINATORIAS).
+     * @param numGrupos       Número de grupos.
+     * @param equiposPorGrupo Capacidad maxima de equipos por grupo.
+     * @param tienePlayoff    Si el torneo tiene playoff tras la fase de grupos.
+     * @param idaVueltaPlayoff Si los playoffs son a ida y vuelta.
+     * @return el torneo actualizado en estado FASE_GRUPOS.
+     * @throws InstanceNotFoundException Si el torneo no existe.
+     * @throws IllegalArgumentException  si el torneo no esta en INSCRIPCION_CERRADA,
+     *                                   si no hay equipos inscritos,
+     *                                   si numGrupos*equiposPorGrupo es menor que los equipos inscritos.
+     */
+    Torneo configurarEstructuraYGenerarCalendario(Long torneoId, String tipoTorneo,
+                                                   int numGrupos, int equiposPorGrupo,
+                                                   boolean tienePlayoff, boolean idaVueltaPlayoff)
+            throws InstanceNotFoundException, IllegalArgumentException;
 
     /**
      * genera el calendario de jornadas para el torneo (solo fase de grupos).

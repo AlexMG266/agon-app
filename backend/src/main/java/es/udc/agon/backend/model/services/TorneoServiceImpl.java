@@ -15,7 +15,7 @@ import java.util.List;
 
 @Service
 @Transactional
-public class TorneoServiceImpl implements ITorneoService {
+public class TorneoServiceImpl implements TorneoService {
 
     private static final String QR_CHARS = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
     private static final SecureRandom RANDOM = new SecureRandom();
@@ -59,18 +59,8 @@ public class TorneoServiceImpl implements ITorneoService {
         User organizador = permissionChecker.checkUser(organizadorId);
         torneo.setOrganizador(organizador);
         torneo.setEstado(EstadoTorneo.RECLUTANDO);
-        Torneo savedTorneo = torneoDao.save(torneo);
-
-        // crear los grupos del torneo
-        List<Grupo> grupos = new ArrayList<>();
-        for (int i = 1; i <= savedTorneo.getNumGrupos(); i++) {
-            Grupo grupo = new Grupo(savedTorneo, "Grupo " + i);
-            grupoDao.save(grupo);
-            grupos.add(grupo);
-        }
-        savedTorneo.setGrupos(grupos);
-
-        return torneoDao.save(savedTorneo);
+        // los grupos se crean al configurar la estructura (tras cerrar inscripciones)
+        return torneoDao.save(torneo);
     }
 
     @Override
@@ -99,27 +89,17 @@ public class TorneoServiceImpl implements ITorneoService {
 
         // contar las inscripciones actuales
         List<Inscripcion> inscripcionesActuales = inscripcionDao.findByTorneoId(torneoId);
-        int maxEquipos = torneo.getNumGrupos() * torneo.getEquiposPorGrupo();
-        if (inscripcionesActuales.size() >= maxEquipos) {
-            throw new IllegalArgumentException("El torneo ya ha alcanzado el número máximo de equipos");
-        }
-
-        // encontrar el grupo con plazas disponibles (asignacion round-robin)
-        List<Grupo> grupos = grupoDao.findByTorneoId(torneoId);
-        Grupo grupoAsignado = null;
-        for (Grupo grupo : grupos) {
-            long countInGrupo = inscripcionDao.findByGrupoId(grupo.getId()).size();
-            if (countInGrupo < torneo.getEquiposPorGrupo()) {
-                grupoAsignado = grupo;
-                break;
+        if (torneo.getNumGrupos() != null && torneo.getEquiposPorGrupo() != null) {
+            // si ya se configuro la estructura, validar el maximo
+            int maxEquipos = torneo.getNumGrupos() * torneo.getEquiposPorGrupo();
+            if (inscripcionesActuales.size() >= maxEquipos) {
+                throw new IllegalArgumentException("El torneo ya ha alcanzado el número máximo de equipos");
             }
         }
+        // si aun no se configuro la estructura, no hay limite (aun no hay grupos)
 
-        if (grupoAsignado == null) {
-            throw new IllegalArgumentException("No hay grupos disponibles para la inscripción");
-        }
-
-        Inscripcion inscripcion = new Inscripcion(torneo, equipo, grupoAsignado);
+        // al inscribirse aun no hay grupos, se asigna null — se reasignaran al configurar
+        Inscripcion inscripcion = new Inscripcion(torneo, equipo);
         return inscripcionDao.save(inscripcion);
     }
 
@@ -133,13 +113,111 @@ public class TorneoServiceImpl implements ITorneoService {
         }
 
         List<Inscripcion> inscripciones = inscripcionDao.findByTorneoId(torneoId);
-        int minEquipos = torneo.getNumGrupos() * 2; // minimo 2 equipos por grupo
-        if (inscripciones.size() < minEquipos) {
-            throw new IllegalArgumentException("No hay suficientes equipos inscritos para cerrar las inscripciones");
+        if (inscripciones.size() < 2) {
+            throw new IllegalArgumentException("Debe haber al menos 2 equipos inscritos para cerrar las inscripciones");
         }
 
-        torneo.setEstado(EstadoTorneo.FASE_GRUPOS);
+        torneo.setEstado(EstadoTorneo.INSCRIPCION_CERRADA);
         torneoDao.save(torneo);
+    }
+
+    @Override
+    public Torneo configurarEstructuraYGenerarCalendario(Long torneoId, String tipoTorneo,
+                                                          int numGrupos, int equiposPorGrupo,
+                                                          boolean tienePlayoff, boolean idaVueltaPlayoff)
+            throws InstanceNotFoundException, IllegalArgumentException {
+
+        Torneo torneo = torneoDao.findById(torneoId)
+                .orElseThrow(() -> new InstanceNotFoundException("project.entities.torneo", torneoId));
+
+        if (torneo.getEstado() != EstadoTorneo.INSCRIPCION_CERRADA) {
+            throw new IllegalArgumentException("El torneo debe estar en estado INSCRIPCION_CERRADA");
+        }
+
+        List<Inscripcion> inscripciones = inscripcionDao.findByTorneoId(torneoId);
+        if (inscripciones.isEmpty()) {
+            throw new IllegalArgumentException("No hay equipos inscritos en el torneo");
+        }
+
+        int capacidadTotal = numGrupos * equiposPorGrupo;
+        if (capacidadTotal < inscripciones.size()) {
+            throw new IllegalArgumentException(
+                    "La capacidad total (" + capacidadTotal + ") es menor que el número de equipos inscritos ("
+                    + inscripciones.size() + "). Aumenta el número de grupos o equipos por grupo.");
+        }
+
+        // guardar la configuracion estructural en el torneo
+        torneo.setTipoTorneo(tipoTorneo);
+        torneo.setNumGrupos(numGrupos);
+        torneo.setEquiposPorGrupo(equiposPorGrupo);
+        torneo.setTienePlayoff(tienePlayoff);
+        torneo.setIdaVueltaPlayoff(idaVueltaPlayoff);
+
+        // crear los grupos
+        List<Grupo> grupos = new ArrayList<>();
+        for (int i = 1; i <= numGrupos; i++) {
+            Grupo grupo = new Grupo(torneo, "Grupo " + i);
+            grupoDao.save(grupo);
+            grupos.add(grupo);
+        }
+        torneo.setGrupos(grupos);
+
+        // asignar equipos a los grupos (round-robin)
+        int numEquipos = inscripciones.size();
+        for (int i = 0; i < numEquipos; i++) {
+            Grupo grupoAsignado = grupos.get(i % numGrupos);
+            inscripciones.get(i).setGrupo(grupoAsignado);
+            inscripcionDao.save(inscripciones.get(i));
+        }
+
+        // generar calendario de fase de grupos (round-robin dentro de cada grupo)
+        List<Jornada> jornadasExistentes = jornadaDao.findByTorneoIdOrderByNumeroJornadaAsc(torneoId);
+        if (!jornadasExistentes.isEmpty()) {
+            throw new IllegalArgumentException("El torneo ya tiene un calendario generado");
+        }
+
+        LocalDate fechaInicio = LocalDate.now().plusDays(7);
+        int numeroJornada = 1;
+
+        for (Grupo grupo : grupos) {
+            List<Inscripcion> inscripcionesGrupo = new ArrayList<>();
+            for (Inscripcion ins : inscripciones) {
+                if (ins.getGrupo() != null && ins.getGrupo().getId().equals(grupo.getId())) {
+                    inscripcionesGrupo.add(ins);
+                }
+            }
+            int numEquiposGrupo = inscripcionesGrupo.size();
+
+            if (numEquiposGrupo < 2) continue;
+
+            // algoritmo round-robin: cada equipo juega contra todos los demas una vez
+            for (int ronda = 0; ronda < numEquiposGrupo - 1; ronda++) {
+                Jornada jornada = new Jornada(torneo, numeroJornada, TipoFase.LIGA_GRUPO,
+                        TipoJornada.LIGA_4_SETS, fechaInicio, fechaInicio.plusDays(6));
+
+                for (int i = 0; i < numEquiposGrupo / 2; i++) {
+                    int idxLocal = (ronda + i) % (numEquiposGrupo - 1);
+                    int idxVisitante = (numEquiposGrupo - 1 - i + ronda) % (numEquiposGrupo - 1);
+                    if (i == 0) {
+                        idxVisitante = numEquiposGrupo - 1;
+                    }
+
+                    Equipo equipoLocal = inscripcionesGrupo.get(idxLocal).getEquipo();
+                    Equipo equipoVisitante = inscripcionesGrupo.get(idxVisitante).getEquipo();
+                    Encuentro encuentro = new Encuentro(jornada, equipoLocal, equipoVisitante,
+                            fechaInicio.atStartOfDay());
+                    jornada.getEncuentros().add(encuentro);
+                }
+
+                jornadaDao.save(jornada);
+                numeroJornada++;
+                fechaInicio = fechaInicio.plusWeeks(1);
+            }
+        }
+
+        // cambiar estado a FASE_GRUPOS
+        torneo.setEstado(EstadoTorneo.FASE_GRUPOS);
+        return torneoDao.save(torneo);
     }
 
     @Override
