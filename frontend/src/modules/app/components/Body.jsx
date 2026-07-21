@@ -6,6 +6,7 @@ import AppGlobalComponents from './AppGlobalComponents';
 import Home from './Home';
 import { Login, SignUp, Profile, Logout, Notifications } from '../../users';
 import { CreateTeam, TeamDetail, JoinTeam } from '../../teams';
+import { CreateTournament } from '../../tournaments';
 import ForbiddenPage from '../../common/components/ForbiddenPage';
 import NotFoundPage from '../../common/components/NotFoundPage';
 import users from '../../users';
@@ -65,6 +66,7 @@ const Body = () => {
                     {loggedIn && <Route path="/teams/create" element={<CreateTeam />} />}
                     {loggedIn && <Route path="/teams/view/:id" element={<TeamDetail />} />}
                     {loggedIn && <Route path="/teams/join" element={<JoinTeam />} />}
+                    {loggedIn && <Route path="/tournaments/create" element={<CreateTournament />} />}
                     <Route path="/forbidden" element={<ForbiddenPage />} />
                     <Route path="*" element={<NotFoundPage />} />
                     {!loggedIn && <Route path="/users/login" element={<Login />} />}
