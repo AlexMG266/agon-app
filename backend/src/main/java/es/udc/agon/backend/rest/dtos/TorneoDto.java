@@ -29,12 +29,22 @@ public class TorneoDto {
     @Schema(description = "Nombre del organizador", example = "admin")
     private String organizadorNombre;
 
+    @Schema(description = "Tipo de torneo: LIGA_UNICA, GRUPOS_PLAYOFF, ELIMINATORIAS", example = "GRUPOS_PLAYOFF")
+    private String tipoTorneo;
+
+    @Schema(description = "Partidos de ida y vuelta en playoffs", example = "false")
+    private boolean idaVueltaPlayoff;
+
+    @Schema(description = "Número de equipos inscritos en el torneo", example = "8")
+    private int numEquiposInscritos;
+
     public TorneoDto() {
     }
 
     public TorneoDto(Long id, String nombre, int numGrupos, int equiposPorGrupo,
                      boolean tienePlayoff, String estado, Long organizadorId,
-                     String organizadorNombre) {
+                     String organizadorNombre, String tipoTorneo, boolean idaVueltaPlayoff,
+                     int numEquiposInscritos) {
         this.id = id;
         this.nombre = nombre;
         this.numGrupos = numGrupos;
@@ -43,6 +53,9 @@ public class TorneoDto {
         this.estado = estado;
         this.organizadorId = organizadorId;
         this.organizadorNombre = organizadorNombre;
+        this.tipoTorneo = tipoTorneo;
+        this.idaVueltaPlayoff = idaVueltaPlayoff;
+        this.numEquiposInscritos = numEquiposInscritos;
     }
 
     public Long getId() {
@@ -107,5 +120,29 @@ public class TorneoDto {
 
     public void setOrganizadorNombre(String organizadorNombre) {
         this.organizadorNombre = organizadorNombre;
+    }
+
+    public String getTipoTorneo() {
+        return tipoTorneo;
+    }
+
+    public void setTipoTorneo(String tipoTorneo) {
+        this.tipoTorneo = tipoTorneo;
+    }
+
+    public boolean isIdaVueltaPlayoff() {
+        return idaVueltaPlayoff;
+    }
+
+    public void setIdaVueltaPlayoff(boolean idaVueltaPlayoff) {
+        this.idaVueltaPlayoff = idaVueltaPlayoff;
+    }
+
+    public int getNumEquiposInscritos() {
+        return numEquiposInscritos;
+    }
+
+    public void setNumEquiposInscritos(int numEquiposInscritos) {
+        this.numEquiposInscritos = numEquiposInscritos;
     }
 }

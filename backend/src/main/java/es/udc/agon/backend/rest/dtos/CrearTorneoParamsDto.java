@@ -19,21 +19,6 @@ public class CrearTorneoParamsDto {
     @Schema(description = "Fecha límite de inscripción (yyyy-MM-dd)", example = "2026-02-20")
     private String fechaLimiteInscripcion;
 
-    @Schema(description = "Tipo de torneo: LIGA_UNICA, GRUPOS_PLAYOFF, ELIMINATORIAS", example = "GRUPOS_PLAYOFF")
-    private String tipoTorneo;
-
-    @Schema(description = "Número de grupos", example = "4")
-    private int numGrupos;
-
-    @Schema(description = "Equipos por grupo", example = "4")
-    private int equiposPorGrupo;
-
-    @Schema(description = "Si tiene playoff después de fase de grupos", example = "true")
-    private boolean tienePlayoff;
-
-    @Schema(description = "Partidos de ida y vuelta en playoffs", example = "false")
-    private boolean idaVueltaPlayoff;
-
     @Schema(description = "Puntos por victoria", example = "3")
     private int puntosVictoria;
 
@@ -100,46 +85,6 @@ public class CrearTorneoParamsDto {
 
     public void setFechaLimiteInscripcion(String fechaLimiteInscripcion) {
         this.fechaLimiteInscripcion = fechaLimiteInscripcion;
-    }
-
-    public String getTipoTorneo() {
-        return tipoTorneo;
-    }
-
-    public void setTipoTorneo(String tipoTorneo) {
-        this.tipoTorneo = tipoTorneo;
-    }
-
-    public int getNumGrupos() {
-        return numGrupos;
-    }
-
-    public void setNumGrupos(int numGrupos) {
-        this.numGrupos = numGrupos;
-    }
-
-    public int getEquiposPorGrupo() {
-        return equiposPorGrupo;
-    }
-
-    public void setEquiposPorGrupo(int equiposPorGrupo) {
-        this.equiposPorGrupo = equiposPorGrupo;
-    }
-
-    public boolean isTienePlayoff() {
-        return tienePlayoff;
-    }
-
-    public void setTienePlayoff(boolean tienePlayoff) {
-        this.tienePlayoff = tienePlayoff;
-    }
-
-    public boolean isIdaVueltaPlayoff() {
-        return idaVueltaPlayoff;
-    }
-
-    public void setIdaVueltaPlayoff(boolean idaVueltaPlayoff) {
-        this.idaVueltaPlayoff = idaVueltaPlayoff;
     }
 
     public int getPuntosVictoria() {
