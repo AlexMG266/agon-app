@@ -5,9 +5,9 @@ export const createTournament = async (tournamentData) => {
     return await appFetch('POST', '/tournaments', tournamentData);
 };
 
-// GET /tournaments: obtiene la lista de torneos del usuario.
+// GET /tournaments/my: obtiene la lista de torneos del usuario autenticado.
 export const getMyTournaments = async () => {
-    return await appFetch('GET', '/tournaments');
+    return await appFetch('GET', '/tournaments/my');
 };
 
 // GET /tournaments/{id}: obtiene un torneo por su ID.

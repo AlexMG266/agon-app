@@ -10,6 +10,7 @@ import Badge from 'react-bootstrap/Badge';
 import Spinner from 'react-bootstrap/Spinner';
 import users from '../../users';
 import teams, { JoinTeam } from '../../teams';
+import tournaments from '../../tournaments';
 import ProfileAvatar from '../../common/components/ProfileAvatar';
 import Table from '../../common/components/Table';
 import './Home.css';
@@ -51,11 +52,13 @@ const Dashboard = () => {
     const user = useSelector(users.selectors.getUser);
     const loggedIn = useSelector(users.selectors.isLoggedIn);
     const userTeams = useSelector(state => state.teams?.userTeams || []);
-    const isLoading = useSelector(state => state.teams?.loading || false);
+    const teamsLoading = useSelector(state => state.teams?.loading || false);
+    const userTournaments = useSelector(state => state.tournaments?.userTournaments || []);
 
     useEffect(() => {
         if (loggedIn) {
             dispatch(teams.actions.getMyTeams());
+            dispatch(tournaments.actions.getMyTournaments());
         }
     }, [loggedIn, dispatch]);
 
@@ -71,7 +74,7 @@ const Dashboard = () => {
                     </p>
                 </div>
                 <div className="dashboard-actions">
-                    <Button as={Link} to="/tournaments" variant="outline-dark" size="sm" className="rounded-pill">
+                    <Button as={Link} to="/tournaments/my" variant="outline-dark" size="sm" className="rounded-pill">
                         <FormattedMessage id="project.app.Home.dashboard.exploreTournaments" defaultMessage="Explorar Torneos" />
                     </Button>
                 </div>
@@ -86,7 +89,7 @@ const Dashboard = () => {
                         </Link>
                     </div>
 
-                    {isLoading ? (
+                    {teamsLoading ? (
                         <div className="text-center py-4">
                             <Spinner animation="border" variant="secondary" size="sm" />
                         </div>
@@ -138,18 +141,43 @@ const Dashboard = () => {
                         </Link>
                     </div>
 
-                    <div className="empty-state">
-                        <div className="empty-state-icon">🏆</div>
-                        <div className="empty-state-text">
-                            <FormattedMessage id="project.app.Home.dashboard.noTournaments" defaultMessage="Sin torneos activos" />
+                    {userTournaments.length > 0 ? (
+                        <div className="section-list">
+                            {userTournaments.slice(0, 5).map(tournament => (
+                                <div key={tournament.id} className="list-item">
+                                    <div>
+                                        <div className="list-item-title">{tournament.nombre}</div>
+                                        <div className="list-item-meta">
+                                            <Badge className="list-item-badge">
+                                                {tournament.estado}
+                                            </Badge>
+                                        </div>
+                                    </div>
+                                    <Link to={`/tournaments/view/${tournament.id}`} className="list-item-link">
+                                        <FormattedMessage id="project.app.Home.dashboard.view" defaultMessage="Ver →" />
+                                    </Link>
+                                </div>
+                            ))}
+                            {userTournaments.length > 5 && (
+                                <Link to="/tournaments/my" className="section-action" style={{ padding: '0.75rem 1rem', display: 'block', textAlign: 'center', borderTop: '1px solid #f3f4f6' }}>
+                                    <FormattedMessage id="project.app.Home.dashboard.viewAll" defaultMessage="Ver todos ({count})" values={{ count: userTournaments.length }} />
+                                </Link>
+                            )}
                         </div>
-                        <div className="empty-state-help">
-                            <FormattedMessage id="project.app.Home.dashboard.noTournamentsHelp" defaultMessage="Únete a un torneo o crea uno nuevo" />
+                    ) : (
+                        <div className="empty-state">
+                            <div className="empty-state-icon">🏆</div>
+                            <div className="empty-state-text">
+                                <FormattedMessage id="project.app.Home.dashboard.noTournaments" defaultMessage="Sin torneos activos" />
+                            </div>
+                            <div className="empty-state-help">
+                                <FormattedMessage id="project.app.Home.dashboard.noTournamentsHelp" defaultMessage="Únete a un torneo o crea uno nuevo" />
+                            </div>
+                            <Link to="/tournaments/my" className="empty-state-action">
+                                <FormattedMessage id="project.app.Home.dashboard.exploreTournamentsAction" defaultMessage="Explorar torneos →" />
+                            </Link>
                         </div>
-                        <Link to="/tournaments" className="empty-state-action">
-                            <FormattedMessage id="project.app.Home.dashboard.exploreTournamentsAction" defaultMessage="Explorar torneos →" />
-                        </Link>
-                    </div>
+                    )}
                 </div>
             </div>
 

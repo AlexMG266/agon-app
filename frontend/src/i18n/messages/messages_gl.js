@@ -38,6 +38,10 @@ export default {
 
     'project.app.sidebar.competition': 'Competición',
     'project.app.sidebar.dashboard': 'Panel Principal',
+    'project.app.sidebar.myTeams': 'Equipos',
+    'project.app.sidebar.createTeam': 'Crear equipo',
+    'project.app.sidebar.myTournaments': 'Torneos',
+    'project.app.sidebar.createTournament': 'Crear torneo',
     'project.app.sidebar.alertCenter': 'Centro de Alertas',
     'project.app.sidebar.notifications': 'Notificacións',
     'project.app.sidebar.account': 'Conta',
@@ -390,6 +394,26 @@ export default {
     'project.tournaments.Detail.config.error.equiposPorGrupoMin': 'Debe haber polo menos 2 equipos por grupo',
     'project.tournaments.Detail.config.error.equiposPorGrupoMax': 'Máximo 32 equipos por grupo',
     'project.tournaments.Detail.config.error.capacidadInsuficiente': 'Capacidade insuficiente: {capacidad} prazas para {inscritos} equipos inscritos',
-    'project.tournaments.Detail.config.error.generic': 'Erro ao configurar o torneo'
+    'project.tournaments.Detail.config.error.generic': 'Erro ao configurar o torneo',
+
+    'project.app.Home.dashboard.viewAll': 'Ver todos ({count})',
+
+    'project.teams.MyTeams.title': 'Os Meus Equipos',
+    'project.teams.MyTeams.subtitle': 'Equipos que creaches',
+    'project.teams.MyTeams.create': '+ Crear equipo',
+    'project.teams.MyTeams.members': '{count} membros',
+    'project.teams.MyTeams.view': 'Ver →',
+    'project.teams.MyTeams.noTeams': 'Aínda non tes equipos',
+    'project.teams.MyTeams.noTeamsHelp': 'Crea o teu primeiro equipo para comezar a competir',
+    'project.teams.MyTeams.createAction': 'Crear equipo →',
+
+    'project.tournaments.MyTournaments.title': 'Os Meus Torneos',
+    'project.tournaments.MyTournaments.subtitle': 'Torneos que creaches',
+    'project.tournaments.MyTournaments.create': '+ Crear torneo',
+    'project.tournaments.MyTournaments.estado': 'Estado: {estado}',
+    'project.tournaments.MyTournaments.view': 'Ver →',
+    'project.tournaments.MyTournaments.noTournaments': 'Aínda non creaches ningún torneo',
+    'project.tournaments.MyTournaments.noTournamentsHelp': 'Crea o teu primeiro torneo para comezar a competir',
+    'project.tournaments.MyTournaments.createAction': 'Crear torneo →'
 
 }
