@@ -94,10 +94,27 @@ public class TorneoController {
         return TorneoConversor.toTorneoDto(torneo);
     }
 
+    @GetMapping("/my")
+    @Operation(
+            summary = "Listar torneos del usuario autenticado",
+            description = "Recupera los torneos creados por el usuario autenticado."
+    )
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Lista de torneos recuperada con éxito",
+                    content = @Content(array = @ArraySchema(schema = @Schema(implementation = TorneoDto.class)))),
+            @ApiResponse(responseCode = "401", description = "No autorizado",
+                    content = @Content)
+    })
+    public List<TorneoDto> obtenerMisTorneos(
+            @Parameter(hidden = true) @RequestAttribute Long userId) {
+        List<Torneo> torneos = torneoService.obtenerTorneosOrganizador(userId);
+        return TorneoConversor.toTorneoDtos(torneos);
+    }
+
     @GetMapping
     @Operation(
-            summary = "Listar torneos del usuario",
-            description = "Recupera los torneos creados por el usuario autenticado."
+            summary = "Listar todos los torneos",
+            description = "Recupera todos los torneos del sistema (opcionalmente filtrados por nombre)."
     )
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Lista de torneos recuperada con éxito",
@@ -107,7 +124,6 @@ public class TorneoController {
     })
     public List<TorneoDto> obtenerTorneos(
             @Parameter(hidden = true) @RequestAttribute Long userId) {
-        // todo: implementar filtros 
         List<Torneo> torneos = torneoService.buscarTorneos(null);
         return TorneoConversor.toTorneoDtos(torneos);
     }

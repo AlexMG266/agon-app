@@ -14,6 +14,11 @@ public interface TorneoService {
     List<Torneo> buscarTorneos(String filtro);
 
     /**
+     * obtiene los torneos creados por un organizador.
+     */
+    List<Torneo> obtenerTorneosOrganizador(Long organizadorId);
+
+    /**
      * obtiene los detalles completos de un torneo por su id.
      */
     Torneo consultarTorneo(Long torneoId) throws InstanceNotFoundException;
