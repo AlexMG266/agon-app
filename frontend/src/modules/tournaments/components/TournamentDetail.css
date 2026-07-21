@@ -1,0 +1,248 @@
+/* Tournament Detail Container */
+.tournament-detail-container {
+    max-width: 800px;
+    padding-top: 1.5rem;
+    padding-bottom: 2rem;
+}
+
+.tournament-detail-header {
+    margin-bottom: 1rem;
+}
+
+.tournament-detail-back {
+    text-decoration: none;
+    color: #6c757d;
+    font-size: 0.9rem;
+    padding: 0;
+}
+
+.tournament-detail-back:hover {
+    color: #212529;
+}
+
+/* Tournament Info Card */
+.tournament-detail-card {
+    background: #fff;
+    border-radius: 12px;
+    border: 1px solid #e9ecef;
+    padding: 1.5rem;
+    margin-bottom: 1.25rem;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+}
+
+.tournament-detail-title-section {
+    margin-bottom: 1.25rem;
+}
+
+.tournament-detail-title-row {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+    margin-bottom: 0.35rem;
+}
+
+.tournament-detail-name {
+    font-size: 1.5rem;
+    font-weight: 700;
+    margin: 0;
+    color: #212529;
+}
+
+.tournament-detail-badge {
+    font-size: 0.75rem;
+    font-weight: 600;
+    padding: 0.2rem 0.6rem;
+    border-radius: 999px;
+    text-transform: uppercase;
+    letter-spacing: 0.02em;
+}
+
+.tournament-detail-badge.badge-recruiting {
+    background: #d1e7ff;
+    color: #0d6efd;
+}
+
+.tournament-detail-badge.badge-closed {
+    background: #fff3cd;
+    color: #856404;
+}
+
+.tournament-detail-badge.badge-active {
+    background: #d1f5d3;
+    color: #0f7b1a;
+}
+
+.tournament-detail-badge.badge-playoff {
+    background: #e8d1f5;
+    color: #6f42c1;
+}
+
+.tournament-detail-badge.badge-finished {
+    background: #e9ecef;
+    color: #6c757d;
+}
+
+.tournament-detail-organizer {
+    color: #6c757d;
+    font-size: 0.85rem;
+    margin: 0;
+}
+
+/* Stats row */
+.tournament-detail-stats {
+    display: flex;
+    gap: 1rem;
+    flex-wrap: wrap;
+}
+
+.tournament-detail-stat {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    min-width: 80px;
+    padding: 0.75rem 1rem;
+    background: #f8f9fa;
+    border-radius: 10px;
+    gap: 0.15rem;
+}
+
+.tournament-detail-stat i {
+    font-size: 1.1rem;
+    color: #495057;
+    margin-bottom: 0.15rem;
+}
+
+.stat-value {
+    font-weight: 700;
+    font-size: 1.1rem;
+    color: #212529;
+}
+
+.stat-label {
+    font-size: 0.7rem;
+    color: #6c757d;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+}
+
+/* Inline Configurator Card */
+.tournament-configurator-card {
+    background: #fff;
+    border-radius: 12px;
+    border: 1px solid #e9ecef;
+    padding: 1.5rem;
+    margin-bottom: 1.25rem;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+}
+
+.configurator-header {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: #212529;
+    margin-bottom: 0.35rem;
+}
+
+.configurator-subtitle {
+    font-size: 0.85rem;
+    color: #6c757d;
+    margin-bottom: 1.25rem;
+}
+
+.configurator-error-banner {
+    background: #fff5f5;
+    border: 1px solid #ffcccc;
+    border-radius: 8px;
+    padding: 0.6rem 1rem;
+    margin-bottom: 1rem;
+    font-size: 0.85rem;
+    color: #cc0000;
+}
+
+.configurator-form {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.configurator-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+}
+
+@media (max-width: 576px) {
+    .configurator-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+.configurator-field {
+    margin-bottom: 0;
+}
+
+.configurator-field label {
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: #495057;
+    margin-bottom: 0.3rem;
+}
+
+.configurator-checkbox {
+    display: flex;
+    align-items: flex-end;
+    padding-bottom: 0.25rem;
+}
+
+.configurator-checkbox .form-check {
+    min-height: auto;
+}
+
+.configurator-checkbox .form-check-input {
+    cursor: pointer;
+}
+
+.configurator-capacity-info {
+    font-size: 0.8rem;
+    color: #6c757d;
+    padding: 0.5rem 0;
+}
+
+.configurator-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 0.75rem;
+    padding-top: 0.5rem;
+    border-top: 1px solid #f0f0f0;
+}
+
+/* Teams section */
+.tournament-detail-section {
+    background: #fff;
+    border-radius: 12px;
+    border: 1px solid #e9ecef;
+    padding: 1.5rem;
+    margin-bottom: 1.25rem;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+}
+
+.section-title {
+    font-size: 1rem;
+    font-weight: 600;
+    color: #212529;
+    margin-bottom: 1rem;
+}
+
+.empty-teams {
+    text-align: center;
+    padding: 1.5rem;
+    color: #6c757d;
+    font-size: 0.9rem;
+}
+
+/* Loading & Error states */
+.tournament-detail-loading,
+.tournament-detail-error {
+    max-width: 800px;
+    padding-top: 1.5rem;
+}

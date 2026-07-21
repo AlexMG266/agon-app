@@ -344,6 +344,52 @@ export default {
     'project.tournaments.CreateTournament.error.durationTooLong': 'La duración máxima es de 120 minutos',
     'project.tournaments.CreateTournament.error.numGroupsTooHigh': 'Máximo 32 grupos',
     'project.tournaments.CreateTournament.error.teamsPerGroupTooHigh': 'Máximo 32 equipos por grupo',
-    'project.tournaments.CreateTournament.error.atLeastOneDay': 'Selecciona al menos un día disponible'
+    'project.tournaments.CreateTournament.error.atLeastOneDay': 'Selecciona al menos un día disponible',
+
+    'project.tournaments.Detail.loading': 'Cargando torneo...',
+    'project.tournaments.Detail.loadError': 'No se pudo cargar el torneo',
+    'project.tournaments.Detail.connectionError': 'Error de conexión',
+    'project.tournaments.Detail.notFound': 'Torneo no encontrado',
+    'project.tournaments.Detail.backToDashboard': 'Volver al inicio',
+    'project.tournaments.Detail.back': 'Volver',
+    'project.tournaments.Detail.organizer': 'Organizado por {name}',
+    'project.tournaments.Detail.inscribedTeams': 'Inscritos',
+    'project.tournaments.Detail.groups': 'Grupos',
+    'project.tournaments.Detail.format': 'Formato',
+    'project.tournaments.Detail.registeredTeams': 'Equipos inscritos',
+    'project.tournaments.Detail.registeredTeamsCount': '{count} equipo(s) inscrito(s)',
+    'project.tournaments.Detail.noTeams': 'No hay equipos inscritos todavía',
+
+    'project.tournaments.Detail.estado.reclutando': 'Reclutando',
+    'project.tournaments.Detail.estado.inscripcionCerrada': 'Inscripción cerrada',
+    'project.tournaments.Detail.estado.faseGrupos': 'Fase de grupos',
+    'project.tournaments.Detail.estado.playoff': 'Playoff',
+    'project.tournaments.Detail.estado.finalizado': 'Finalizado',
+
+    'project.tournaments.Detail.tipo.ligaUnica': 'Liga única',
+    'project.tournaments.Detail.tipo.gruposPlayoff': 'Grupos + Playoff',
+    'project.tournaments.Detail.tipo.eliminatorias': 'Eliminatorias',
+
+    'project.tournaments.Detail.config.title': 'Configurar estructura del torneo',
+    'project.tournaments.Detail.config.subtitle': 'Hay {count} equipo(s) inscrito(s). Define el formato de competición.',
+    'project.tournaments.Detail.config.tipoTorneo': 'Tipo de torneo',
+    'project.tournaments.Detail.config.tipo.gruposPlayoff': 'Grupos + Playoff',
+    'project.tournaments.Detail.config.tipo.ligaUnica': 'Liga única',
+    'project.tournaments.Detail.config.tipo.eliminatorias': 'Eliminatorias',
+    'project.tournaments.Detail.config.numGrupos': 'Número de grupos',
+    'project.tournaments.Detail.config.equiposPorGrupo': 'Equipos por grupo',
+    'project.tournaments.Detail.config.tienePlayoff': 'Playoff',
+    'project.tournaments.Detail.config.idaVueltaPlayoff': 'Ida y vuelta en playoff',
+    'project.tournaments.Detail.config.capacityInfo': 'Capacidad: {capacidad} plazas ({inscritos} inscritos)',
+    'project.tournaments.Detail.config.cancel': 'Cancelar',
+    'project.tournaments.Detail.config.generate': 'Generar calendario',
+    'project.tournaments.Detail.config.generating': 'Generando...',
+
+    'project.tournaments.Detail.config.error.numGruposMin': 'Debe haber al menos 1 grupo',
+    'project.tournaments.Detail.config.error.numGruposMax': 'Máximo 32 grupos',
+    'project.tournaments.Detail.config.error.equiposPorGrupoMin': 'Debe haber al menos 2 equipos por grupo',
+    'project.tournaments.Detail.config.error.equiposPorGrupoMax': 'Máximo 32 equipos por grupo',
+    'project.tournaments.Detail.config.error.capacidadInsuficiente': 'Capacidad insuficiente: {capacidad} plazas para {inscritos} equipos inscritos',
+    'project.tournaments.Detail.config.error.generic': 'Error al configurar el torneo'
 
 }

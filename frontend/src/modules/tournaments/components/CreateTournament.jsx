@@ -12,20 +12,18 @@ import { Errors } from '../../common';
 import ConfirmationModal from '../../common/components/ConfirmationModal';
 import backend from '../../../backend';
 import Step1BasicInfo from './Step1BasicInfo';
-import Step2Format from './Step2Format';
-import Step3Rules from './Step3Rules';
-import Step4Calendar from './Step4Calendar';
-import Step5Summary from './Step5Summary';
+import Step2Rules from './Step3Rules';
+import Step3Calendar from './Step4Calendar';
+import Step4Summary from './Step5Summary';
 import './CreateTournament.css';
 
-const TOTAL_STEPS = 5;
+const TOTAL_STEPS = 4;
 
 const STEP_KEYS = [
     { key: 1, labelId: 'project.tournaments.CreateTournament.step1.short', label: 'Información Básica' },
-    { key: 2, labelId: 'project.tournaments.CreateTournament.step2.short', label: 'Formato' },
-    { key: 3, labelId: 'project.tournaments.CreateTournament.step3.short', label: 'Reglas' },
-    { key: 4, labelId: 'project.tournaments.CreateTournament.step4.short', label: 'Calendario' },
-    { key: 5, labelId: 'project.tournaments.CreateTournament.step5.short', label: 'Resumen' },
+    { key: 2, labelId: 'project.tournaments.CreateTournament.step3.short', label: 'Reglas' },
+    { key: 3, labelId: 'project.tournaments.CreateTournament.step4.short', label: 'Calendario' },
+    { key: 4, labelId: 'project.tournaments.CreateTournament.step5.short', label: 'Resumen' },
 ];
 
 const INITIAL_DATA = {
@@ -33,11 +31,6 @@ const INITIAL_DATA = {
     fechaInicio: '',
     fechaFin: '',
     fechaLimiteInscripcion: '',
-    tipoTorneo: 'LIGA_UNICA',
-    numGrupos: 1,
-    equiposPorGrupo: 4,
-    tienePlayoff: false,
-    idaVueltaPlayoff: false,
     puntosVictoria: 3,
     puntosEmpate: 1,
     puntosDerrota: 0,
@@ -92,16 +85,6 @@ const CreateTournament = () => {
                 break;
             }
             case 2: {
-                if (!data.tipoTorneo) newErrors.tipoTorneo = intl.formatMessage({ id: 'project.global.validator.required' });
-                if (data.tipoTorneo !== 'ELIMINATORIAS') {
-                    if (!data.numGrupos || data.numGrupos < 1) newErrors.numGrupos = intl.formatMessage({ id: 'project.global.validator.required' });
-                    else if (data.numGrupos > 32) newErrors.numGrupos = intl.formatMessage({ id: 'project.tournaments.CreateTournament.error.numGroupsTooHigh', defaultMessage: 'Máximo 32 grupos' });
-                    if (!data.equiposPorGrupo || data.equiposPorGrupo < 2) newErrors.equiposPorGrupo = intl.formatMessage({ id: 'project.global.validator.required' });
-                    else if (data.equiposPorGrupo > 32) newErrors.equiposPorGrupo = intl.formatMessage({ id: 'project.tournaments.CreateTournament.error.teamsPerGroupTooHigh', defaultMessage: 'Máximo 32 equipos por grupo' });
-                }
-                break;
-            }
-            case 3: {
                 if (data.puntosVictoria === undefined || data.puntosVictoria < 0) newErrors.puntosVictoria = intl.formatMessage({ id: 'project.global.validator.required' });
                 if (data.puntosEmpate === undefined || data.puntosEmpate < 0) newErrors.puntosEmpate = intl.formatMessage({ id: 'project.global.validator.required' });
                 if (data.puntosDerrota === undefined || data.puntosDerrota < 0) newErrors.puntosDerrota = intl.formatMessage({ id: 'project.global.validator.required' });
@@ -109,7 +92,7 @@ const CreateTournament = () => {
                 if (!data.criterioDesempate) newErrors.criterioDesempate = intl.formatMessage({ id: 'project.global.validator.required' });
                 break;
             }
-            case 4: {
+            case 3: {
                 if (!data.diasDisponibles || data.diasDisponibles.length === 0) {
                     newErrors.diasDisponibles = intl.formatMessage({ id: 'project.tournaments.CreateTournament.error.atLeastOneDay', defaultMessage: 'Selecciona al menos un día disponible' });
                 }
@@ -194,10 +177,9 @@ const CreateTournament = () => {
 
         switch (currentStep) {
             case 1: return <Step1BasicInfo {...stepProps} />;
-            case 2: return <Step2Format {...stepProps} />;
-            case 3: return <Step3Rules {...stepProps} />;
-            case 4: return <Step4Calendar {...stepProps} />;
-            case 5: return <Step5Summary data={formData} />;
+            case 2: return <Step2Rules {...stepProps} />;
+            case 3: return <Step3Calendar {...stepProps} />;
+            case 4: return <Step4Summary data={formData} />;
             default: return null;
         }
     };

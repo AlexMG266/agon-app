@@ -20,9 +20,15 @@ export const searchTournaments = async (filtro) => {
     return await appFetch('GET', `/tournaments/search?filtro=${encodeURIComponent(filtro)}`);
 };
 
+// POST /tournaments/{id}/configure: configura estructura del torneo (tipo, grupos, playoff) y genera calendario.
+export const configureTournament = async (id, configData) => {
+    return await appFetch('POST', `/tournaments/${id}/configure`, configData);
+};
+
 export default {
     createTournament,
     getMyTournaments,
     getTournament,
-    searchTournaments
+    searchTournaments,
+    configureTournament
 };
