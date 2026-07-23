@@ -17,6 +17,8 @@ public class Torneo {
     private Boolean tienePlayoff;
     private String tipoTorneo;
     private Boolean idaVueltaPlayoff;
+    private Boolean privado;
+    private String codigoTorneo;
     private EstadoTorneo estado;
     private List<Grupo> grupos = new ArrayList<>();
     private List<Jornada> jornadas = new ArrayList<>();
@@ -25,7 +27,7 @@ public class Torneo {
     public Torneo() {
     }
 
-    public Torneo(User organizador, String nombre) {
+    public Torneo(User organizador, String nombre, Boolean privado, String codigoTorneo) {
         this.organizador = organizador;
         this.nombre = nombre;
         this.numGrupos = null;
@@ -33,6 +35,8 @@ public class Torneo {
         this.tienePlayoff = null;
         this.tipoTorneo = null;
         this.idaVueltaPlayoff = null;
+        this.privado = privado != null ? privado : false;
+        this.codigoTorneo = codigoTorneo;
         this.estado = EstadoTorneo.RECLUTANDO;
     }
 
@@ -108,6 +112,24 @@ public class Torneo {
 
     public void setIdaVueltaPlayoff(Boolean idaVueltaPlayoff) {
         this.idaVueltaPlayoff = idaVueltaPlayoff;
+    }
+
+    @Column(name = "privado", nullable = false)
+    public Boolean getPrivado() {
+        return privado;
+    }
+
+    public void setPrivado(Boolean privado) {
+        this.privado = privado;
+    }
+
+    @Column(name = "codigoTorneo", length = 16, unique = true, nullable = false)
+    public String getCodigoTorneo() {
+        return codigoTorneo;
+    }
+
+    public void setCodigoTorneo(String codigoTorneo) {
+        this.codigoTorneo = codigoTorneo;
     }
 
     @Enumerated(EnumType.STRING)

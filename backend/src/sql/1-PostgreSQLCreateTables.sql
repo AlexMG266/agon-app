@@ -86,6 +86,8 @@ CREATE TABLE Torneo (
     id BIGSERIAL NOT NULL,
     idOrganizador BIGINT NOT NULL,
     nombre VARCHAR(100) NOT NULL,
+    privado BOOLEAN NOT NULL DEFAULT FALSE,
+    codigoTorneo VARCHAR(16) NOT NULL UNIQUE,
     numGrupos INTEGER,
     equiposPorGrupo INTEGER,
     tienePlayoff BOOLEAN,
