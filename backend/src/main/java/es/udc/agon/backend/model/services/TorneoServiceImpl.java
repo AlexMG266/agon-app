@@ -18,6 +18,7 @@ import java.util.List;
 public class TorneoServiceImpl implements TorneoService {
 
     private static final String QR_CHARS = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+    private static final String CODIGO_CHARS = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
     private static final SecureRandom RANDOM = new SecureRandom();
 
     @Autowired
@@ -61,16 +62,31 @@ public class TorneoServiceImpl implements TorneoService {
     }
 
     @Override
-    public Torneo crearTorneo(Long organizadorId, Torneo torneo) throws InstanceNotFoundException {
+    public Torneo crearTorneo(Long organizadorId, Torneo torneo, Boolean privado) throws InstanceNotFoundException {
         User organizador = permissionChecker.checkUser(organizadorId);
         torneo.setOrganizador(organizador);
         torneo.setEstado(EstadoTorneo.RECLUTANDO);
+        torneo.setPrivado(privado != null ? privado : false);
+        torneo.setCodigoTorneo(generarCodigoUnico());
         // los grupos se crean al configurar la estructura (tras cerrar inscripciones)
         return torneoDao.save(torneo);
     }
 
+    private String generarCodigoUnico() {
+        StringBuilder sb;
+        do {
+            sb = new StringBuilder("T");
+            sb.append(String.format("%02d", RANDOM.nextInt(100)));
+            sb.append("-");
+            for (int i = 0; i < 4; i++) {
+                sb.append(CODIGO_CHARS.charAt(RANDOM.nextInt(CODIGO_CHARS.length())));
+            }
+        } while (torneoDao.findByCodigoTorneo(sb.toString()).isPresent());
+        return sb.toString();
+    }
+
     @Override
-    public Inscripcion inscribirYValidarEquipo(Long capitanId, Long torneoId, Long equipoId)
+    public Inscripcion inscribirYValidarEquipo(Long capitanId, Long torneoId, Long equipoId, String codigoTorneo)
             throws InstanceNotFoundException, PermissionException, IllegalArgumentException {
 
         Torneo torneo = torneoDao.findById(torneoId)
@@ -78,6 +94,13 @@ public class TorneoServiceImpl implements TorneoService {
 
         if (torneo.getEstado() != EstadoTorneo.RECLUTANDO) {
             throw new IllegalArgumentException("El torneo no está en periodo de reclutamiento");
+        }
+
+        // validar codigo si el torneo es privado
+        if (torneo.getPrivado() != null && torneo.getPrivado()) {
+            if (codigoTorneo == null || codigoTorneo.isBlank() || !codigoTorneo.equals(torneo.getCodigoTorneo())) {
+                throw new IllegalArgumentException("Código de torneo incorrecto");
+            }
         }
 
         // buscar el equipo y verificar que el capitan es el creador
@@ -272,6 +295,13 @@ public class TorneoServiceImpl implements TorneoService {
                 fechaInicio = fechaInicio.plusWeeks(1);
             }
         }
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public Torneo buscarPorCodigo(String codigoTorneo) throws InstanceNotFoundException {
+        return torneoDao.findByCodigoTorneo(codigoTorneo)
+                .orElseThrow(() -> new InstanceNotFoundException("project.entities.torneo", codigoTorneo));
     }
 
     @Override

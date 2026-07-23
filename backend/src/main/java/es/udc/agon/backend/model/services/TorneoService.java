@@ -33,20 +33,33 @@ public interface TorneoService {
      * @return el torneo creado en estado RECLUTANDO.
      * @throws InstanceNotFoundException si el organizador no existe.
      */
-    Torneo crearTorneo(Long organizadorId, Torneo torneo) throws InstanceNotFoundException;
+    /**
+     * crea un nuevo torneo con los datos basicos (sin estructura de grupos).
+     * La estructura (numGrupos, equiposPorGrupo, tipoTorneo, etc.) se configurara
+     * tras cerrar las inscripciones mediante configurarEstructuraYGenerarCalendario().
+     *
+     * @param organizadorId Id del usuario organizador.
+     * @param torneo        torneo con los datos basicos (nombre).
+     * @param privado       indica si el torneo es privado (requiere codigo para inscribirse).
+     * @return el torneo creado en estado RECLUTANDO.
+     * @throws InstanceNotFoundException si el organizador no existe.
+     */
+    Torneo crearTorneo(Long organizadorId, Torneo torneo, Boolean privado) throws InstanceNotFoundException;
 
     /**
      * inscribe un equipo en el torneo y lo valida si cumple las condiciones.
      * el capitan del equipo realiza la inscripcion.
      *
-     * @param capitanId id del capitan que inscribe al equipo.
-     * @param torneoId  id del torneo.
-     * @param equipoId  id del equipo a inscribir.
+     * @param capitanId   id del capitan que inscribe al equipo.
+     * @param torneoId    id del torneo.
+     * @param equipoId    id del equipo a inscribir.
+     * @param codigoTorneo codigo del torneo (obligatorio si el torneo es privado).
      * @throws InstanceNotFoundException si el capitan, torneo o equipo no existen.
      * @throws PermissionException       si el capitanId no es el creador del equipo.
-     * @throws IllegalArgumentException  si el equipo ya esta inscrito o el torneo no esta en estado reclutando.
+     * @throws IllegalArgumentException  si el equipo ya esta inscrito, el torneo no esta en reclutando,
+     *                                   o el codigo es incorrecto para torneos privados.
      */
-    Inscripcion inscribirYValidarEquipo(Long capitanId, Long torneoId, Long equipoId)
+    Inscripcion inscribirYValidarEquipo(Long capitanId, Long torneoId, Long equipoId, String codigoTorneo)
             throws InstanceNotFoundException, PermissionException, IllegalArgumentException;
 
     /**
@@ -89,6 +102,15 @@ public interface TorneoService {
      * @throws IllegalArgumentException  si el torneo no esta en fase_grupos o ya tiene jornadas generadas.
      */
     void generarCalendario(Long torneoId) throws InstanceNotFoundException, IllegalArgumentException;
+
+    /**
+     * busca un torneo por su codigo unico.
+     *
+     * @param codigoTorneo codigo del torneo.
+     * @return el torneo encontrado.
+     * @throws InstanceNotFoundException si no existe torneo con ese codigo.
+     */
+    Torneo buscarPorCodigo(String codigoTorneo) throws InstanceNotFoundException;
 
     /**
      * genera un codigo qr para el torneo (simulado como un string alfanumerico).

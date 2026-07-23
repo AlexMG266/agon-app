@@ -2,9 +2,11 @@ package es.udc.agon.backend.rest.controllers;
 
 import es.udc.agon.backend.model.entities.Torneo;
 import es.udc.agon.backend.model.exceptions.InstanceNotFoundException;
+import es.udc.agon.backend.model.exceptions.PermissionException;
 import es.udc.agon.backend.model.services.TorneoService;
 import es.udc.agon.backend.rest.dtos.ConfigurarEstructuraParamsDto;
 import es.udc.agon.backend.rest.dtos.CrearTorneoParamsDto;
+import es.udc.agon.backend.rest.dtos.InscribirEquipoParamsDto;
 import es.udc.agon.backend.rest.dtos.TorneoConversor;
 import es.udc.agon.backend.rest.dtos.TorneoDto;
 
@@ -57,7 +59,7 @@ public class TorneoController {
         Torneo torneo = new Torneo();
         torneo.setNombre(params.getNombre());
 
-        Torneo savedTorneo = torneoService.crearTorneo(userId, torneo);
+        Torneo savedTorneo = torneoService.crearTorneo(userId, torneo, params.getPrivado());
         return TorneoConversor.toTorneoDto(savedTorneo);
     }
 
@@ -91,6 +93,36 @@ public class TorneoController {
                 params.isTienePlayoff(),
                 params.isIdaVueltaPlayoff()
         );
+        return TorneoConversor.toTorneoDto(torneo);
+    }
+
+    @PostMapping("/{id}/enroll")
+    @ResponseStatus(HttpStatus.OK)
+    @Operation(
+            summary = "Inscribir un equipo en el torneo",
+            description = "Inscribe un equipo en el torneo. Solo el capitán del equipo puede inscribirlo. " +
+                    "El torneo debe estar en estado RECLUTANDO."
+    )
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Equipo inscrito con éxito",
+                    content = @Content(schema = @Schema(implementation = TorneoDto.class))),
+            @ApiResponse(responseCode = "400", description = "El torneo no está en RECLUTANDO, el equipo ya está inscrito, o se ha alcanzado el límite",
+                    content = @Content),
+            @ApiResponse(responseCode = "401", description = "No autorizado",
+                    content = @Content),
+            @ApiResponse(responseCode = "403", description = "El usuario no es el capitán del equipo",
+                    content = @Content),
+            @ApiResponse(responseCode = "404", description = "Torneo o equipo no encontrado",
+                    content = @Content)
+    })
+    public TorneoDto inscribirEquipo(
+            @Parameter(hidden = true) @RequestAttribute Long userId,
+            @Parameter(description = "ID del torneo", example = "1") @PathVariable Long id,
+            @RequestBody InscribirEquipoParamsDto params)
+            throws InstanceNotFoundException, PermissionException {
+
+        torneoService.inscribirYValidarEquipo(userId, id, params.getEquipoId(), params.getCodigoTorneo());
+        Torneo torneo = torneoService.consultarTorneo(id);
         return TorneoConversor.toTorneoDto(torneo);
     }
 
@@ -174,6 +206,29 @@ public class TorneoController {
             throws InstanceNotFoundException {
 
         Torneo torneo = torneoService.consultarTorneo(id);
+        return TorneoConversor.toTorneoDto(torneo);
+    }
+
+    @GetMapping("/by-code/{codigo}")
+    @ResponseStatus(HttpStatus.OK)
+    @Operation(
+            summary = "Buscar torneo por código",
+            description = "Busca un torneo por su código único (ej: T22-K9M8)."
+    )
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Torneo encontrado",
+                    content = @Content(schema = @Schema(implementation = TorneoDto.class))),
+            @ApiResponse(responseCode = "401", description = "No autorizado",
+                    content = @Content),
+            @ApiResponse(responseCode = "404", description = "No existe torneo con ese código",
+                    content = @Content)
+    })
+    public TorneoDto buscarTorneoPorCodigo(
+            @Parameter(hidden = true) @RequestAttribute Long userId,
+            @Parameter(description = "Código del torneo", example = "T22-K9M8") @PathVariable String codigo)
+            throws InstanceNotFoundException {
+
+        Torneo torneo = torneoService.buscarPorCodigo(codigo);
         return TorneoConversor.toTorneoDto(torneo);
     }
 
