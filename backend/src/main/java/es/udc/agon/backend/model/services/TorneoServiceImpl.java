@@ -316,16 +316,16 @@ public class TorneoServiceImpl implements TorneoService {
         torneo.setTienePlayoff(tienePlayoff);
         torneo.setIdaVueltaPlayoff(idaVueltaPlayoff);
 
-        // crear los grupos
-        List<Grupo> grupos = new ArrayList<>();
+        // crear los grupos (modificar la colección in-place para preservar la referencia de Hibernate)
+        torneo.getGrupos().clear();
         for (int i = 1; i <= numGrupos; i++) {
             Grupo grupo = new Grupo(torneo, "Grupo " + i);
             grupoDao.save(grupo);
-            grupos.add(grupo);
+            torneo.getGrupos().add(grupo);
         }
-        torneo.setGrupos(grupos);
 
         // asignar equipos a los grupos (round-robin)
+        List<Grupo> grupos = torneo.getGrupos();
         int numEquipos = inscripciones.size();
         for (int i = 0; i < numEquipos; i++) {
             Grupo grupoAsignado = grupos.get(i % numGrupos);

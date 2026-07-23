@@ -221,6 +221,9 @@
                                     <include>
                                         src/sql/${dataSource.createTablesScript}
                                     </include>
+                                    <include>
+                                        src/sql/3-SeedData.sql
+                                    </include>
                                 </includes>
                             </fileset>
                         </configuration>

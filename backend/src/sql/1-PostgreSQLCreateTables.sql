@@ -91,7 +91,7 @@ CREATE TABLE Solicitud (
     equipo_id BIGINT NOT NULL,
     torneo_id BIGINT,
     estado VARCHAR(20) NOT NULL,
-    tipo_solicitud VARCHAR(20) NOT NULL,
+    tipo_solicitud VARCHAR(30) NOT NULL,
     fecha_creacion TIMESTAMP NOT NULL,
     CONSTRAINT SolicitudPK PRIMARY KEY (id),
     CONSTRAINT SolicitudCandidatoIdFK FOREIGN KEY (candidato_id) REFERENCES "User"(id) ON DELETE CASCADE,

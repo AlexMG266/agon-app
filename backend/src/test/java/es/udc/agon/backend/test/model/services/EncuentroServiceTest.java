@@ -21,6 +21,7 @@ import es.udc.agon.backend.model.entities.EncuentroDao;
 import es.udc.agon.backend.model.entities.Equipo;
 import es.udc.agon.backend.model.entities.EstadoEncuentro;
 import es.udc.agon.backend.model.entities.EstadoSolicitud;
+import es.udc.agon.backend.model.entities.Solicitud;
 import es.udc.agon.backend.model.entities.Inscripcion;
 import es.udc.agon.backend.model.entities.InscripcionDao;
 import es.udc.agon.backend.model.entities.Jornada;
@@ -80,6 +81,17 @@ public class EncuentroServiceTest {
     }
 
     /**
+     * metodo auxiliar: solicita inscripcion y la aprueba inmediatamente.
+     */
+    private Inscripcion inscribirEquipo(User capitan, Torneo torneo, Equipo equipo)
+            throws InstanceNotFoundException, PermissionException {
+        Solicitud solicitud = torneoService.solicitarInscripcion(
+                capitan.getId(), torneo.getId(), equipo.getId(), null);
+        return torneoService.aprobarInscripcion(
+                torneo.getOrganizador().getId(), solicitud.getId());
+    }
+
+    /**
      * metodo auxiliar: crea un torneo, inscribe 2 equipos, cierra inscripciones,
      * configura estructura (1 grupo, 2 equipos, sin playoff), genera calendario
      * y devuelve el encuentro generado entre los dos equipos.
@@ -93,8 +105,8 @@ public class EncuentroServiceTest {
         Equipo equipo1 = equipoService.crearEquipo(cap1.getId(), "EquipoLocal", "Equipo Local");
         Equipo equipo2 = equipoService.crearEquipo(cap2.getId(), "EquipoVisitante", "Equipo Visitante");
 
-        torneoService.inscribirYValidarEquipo(cap1.getId(), torneo.getId(), equipo1.getId(), null);
-        torneoService.inscribirYValidarEquipo(cap2.getId(), torneo.getId(), equipo2.getId(), null);
+        inscribirEquipo(cap1, torneo, equipo1);
+        inscribirEquipo(cap2, torneo, equipo2);
 
         torneoService.cerrarInscripciones(torneo.getId());
         torneoService.configurarEstructuraYGenerarCalendario(

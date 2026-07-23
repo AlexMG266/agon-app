@@ -17,12 +17,14 @@ import org.springframework.transaction.annotation.Transactional;
 import es.udc.agon.backend.model.entities.Equipo;
 import es.udc.agon.backend.model.entities.EstadoInscripcion;
 import es.udc.agon.backend.model.entities.EstadoJornada;
+import es.udc.agon.backend.model.entities.EstadoSolicitud;
 import es.udc.agon.backend.model.entities.EstadoTorneo;
 import es.udc.agon.backend.model.entities.GrupoDao;
 import es.udc.agon.backend.model.entities.Inscripcion;
 import es.udc.agon.backend.model.entities.InscripcionDao;
 import es.udc.agon.backend.model.entities.Jornada;
 import es.udc.agon.backend.model.entities.JornadaDao;
+import es.udc.agon.backend.model.entities.Solicitud;
 import es.udc.agon.backend.model.entities.TipoFase;
 import es.udc.agon.backend.model.entities.TipoJornada;
 import es.udc.agon.backend.model.entities.Torneo;
@@ -71,6 +73,14 @@ public class TorneoServiceTest {
             throws InstanceNotFoundException {
         Torneo torneo = new Torneo(organizador, nombre, false, "T99-XXXX");
         return torneoService.crearTorneo(organizador.getId(), torneo, false);
+    }
+
+    private Inscripcion inscribirEquipo(User capitan, Torneo torneo, Equipo equipo)
+            throws InstanceNotFoundException, PermissionException {
+        Solicitud solicitud = torneoService.solicitarInscripcion(
+                capitan.getId(), torneo.getId(), equipo.getId(), null);
+        return torneoService.aprobarInscripcion(
+                torneo.getOrganizador().getId(), solicitud.getId());
     }
 
 
@@ -155,42 +165,49 @@ public class TorneoServiceTest {
     }
 
 
-    // cu14: inscribir equipo + cu15: validar equipos (include)
-
-    // cu14: inscribir equipo + cu15: validar equipos (include)
+    // cu14: solicitar inscripcion + aprobar inscripcion
 
     @Test
-    public void testInscribirYValidarEquipo() throws InstanceNotFoundException, PermissionException {
+    public void testSolicitarYAprobarInscripcion() throws InstanceNotFoundException, PermissionException {
         User org = createUser("org_inscribir");
         User capitan = createUser("capitan_inscribir");
         Torneo torneo = createTorneo(org, "Torneo Inscripcion");
         Equipo equipo = equipoService.crearEquipo(capitan.getId(), "Equipo Inscrito", "Descripcion");
 
-        Inscripcion inscripcion = torneoService.inscribirYValidarEquipo(capitan.getId(), torneo.getId(), equipo.getId(), null);
+        Solicitud solicitud = torneoService.solicitarInscripcion(
+                capitan.getId(), torneo.getId(), equipo.getId(), null);
+
+        assertNotNull(solicitud.getId());
+        assertEquals(EstadoSolicitud.PENDIENTE, solicitud.getEstado());
+        assertEquals(torneo.getId(), solicitud.getTorneo().getId());
+        assertEquals(equipo.getId(), solicitud.getEquipo().getId());
+
+        // aprobar
+        Inscripcion inscripcion = torneoService.aprobarInscripcion(org.getId(), solicitud.getId());
 
         assertNotNull(inscripcion.getId());
         assertEquals(torneo.getId(), inscripcion.getTorneo().getId());
         assertEquals(equipo.getId(), inscripcion.getEquipo().getId());
-        assertNull(inscripcion.getGrupo()); // grupo es null hasta configurar estructura
-        assertEquals("ACTIVA", inscripcion.getEstadoInscripcion().name());
+        assertNull(inscripcion.getGrupo());
+        assertEquals(EstadoInscripcion.ACTIVA, inscripcion.getEstadoInscripcion());
         assertEquals(0, inscripcion.getPuntosLiga());
     }
 
     @Test
-    public void testInscribirYValidarEquipoYaInscrito() throws InstanceNotFoundException, PermissionException {
+    public void testSolicitarInscripcionDuplicada() throws InstanceNotFoundException, PermissionException {
         User org = createUser("org_inscribir2");
         User capitan = createUser("capitan_inscribir2");
         Torneo torneo = createTorneo(org, "Torneo Duplicado");
         Equipo equipo = equipoService.crearEquipo(capitan.getId(), "Equipo Duplicado", "Descripcion");
 
-        torneoService.inscribirYValidarEquipo(capitan.getId(), torneo.getId(), equipo.getId(), null);
+        torneoService.solicitarInscripcion(capitan.getId(), torneo.getId(), equipo.getId(), null);
 
         assertThrows(IllegalArgumentException.class,
-                () -> torneoService.inscribirYValidarEquipo(capitan.getId(), torneo.getId(), equipo.getId(), null));
+                () -> torneoService.solicitarInscripcion(capitan.getId(), torneo.getId(), equipo.getId(), null));
     }
 
     @Test
-    public void testInscribirYValidarEquipoTorneoNoReclutando() throws InstanceNotFoundException, PermissionException {
+    public void testSolicitarInscripcionTorneoNoReclutando() throws InstanceNotFoundException, PermissionException {
         User org = createUser("org_inscribir3");
         User capitan = createUser("capitan_inscribir3");
         Torneo torneo = createTorneo(org, "Torneo Cerrado");
@@ -199,19 +216,19 @@ public class TorneoServiceTest {
         Equipo equipo2 = equipoService.crearEquipo(otroCap.getId(), "EquipoC2", "Descripcion");
 
         // inscribir 2 equipos y cerrar
-        torneoService.inscribirYValidarEquipo(capitan.getId(), torneo.getId(), equipo1.getId(), null);
-        torneoService.inscribirYValidarEquipo(otroCap.getId(), torneo.getId(), equipo2.getId(), null);
+        inscribirEquipo(capitan, torneo, equipo1);
+        inscribirEquipo(otroCap, torneo, equipo2);
         torneoService.cerrarInscripciones(torneo.getId());
 
-        // ahora intentar inscribir otro equipo
+        // ahora intentar solicitar inscripcion de otro equipo
         User cap3 = createUser("cap3");
         Equipo equipo3 = equipoService.crearEquipo(cap3.getId(), "EquipoC3", "Descripcion");
         assertThrows(IllegalArgumentException.class,
-                () -> torneoService.inscribirYValidarEquipo(cap3.getId(), torneo.getId(), equipo3.getId(), null));
+                () -> torneoService.solicitarInscripcion(cap3.getId(), torneo.getId(), equipo3.getId(), null));
     }
 
     @Test
-    public void testInscribirYValidarEquipoPermissionException() throws InstanceNotFoundException {
+    public void testSolicitarInscripcionPermissionException() throws InstanceNotFoundException {
         User org = createUser("org_permiso");
         User capitan = createUser("capitan_permiso");
         User otroUser = createUser("otro_permiso");
@@ -219,30 +236,22 @@ public class TorneoServiceTest {
         Equipo equipo = equipoService.crearEquipo(capitan.getId(), "Equipo Permiso", "Descripcion");
 
         assertThrows(PermissionException.class,
-                () -> torneoService.inscribirYValidarEquipo(otroUser.getId(), torneo.getId(), equipo.getId(), null));
+                () -> torneoService.solicitarInscripcion(otroUser.getId(), torneo.getId(), equipo.getId(), null));
     }
 
     @Test
-    public void testInscribirYValidarEquipoMaxEquipos() throws InstanceNotFoundException, PermissionException {
-        User org = createUser("org_max");
-        Torneo torneo = createTorneo(org, "Torneo Max");
-        // establecer estructura manualmente para forzar limite
-        torneo.setNumGrupos(1);
-        torneo.setEquiposPorGrupo(2);
-        torneoDao.save(torneo);
+    public void testRechazarInscripcion() throws InstanceNotFoundException, PermissionException {
+        User org = createUser("org_rechazar");
+        User capitan = createUser("cap_rechazar");
+        Torneo torneo = createTorneo(org, "Torneo Rechazar");
+        Equipo equipo = equipoService.crearEquipo(capitan.getId(), "Equipo Rechazado", "Desc");
 
-        User cap1 = createUser("cap_max1");
-        Equipo equipo1 = equipoService.crearEquipo(cap1.getId(), "EquipoMax1", "Desc");
-        torneoService.inscribirYValidarEquipo(cap1.getId(), torneo.getId(), equipo1.getId(), null);
+        Solicitud solicitud = torneoService.solicitarInscripcion(
+                capitan.getId(), torneo.getId(), equipo.getId(), null);
+        torneoService.rechazarInscripcion(org.getId(), solicitud.getId());
 
-        User cap2 = createUser("cap_max2");
-        Equipo equipo2 = equipoService.crearEquipo(cap2.getId(), "EquipoMax2", "Desc");
-        torneoService.inscribirYValidarEquipo(cap2.getId(), torneo.getId(), equipo2.getId(), null);
-
-        User cap3 = createUser("cap_max3");
-        Equipo equipo3 = equipoService.crearEquipo(cap3.getId(), "EquipoMax3", "Desc");
-        assertThrows(IllegalArgumentException.class,
-                () -> torneoService.inscribirYValidarEquipo(cap3.getId(), torneo.getId(), equipo3.getId(), null));
+        // Verificar que no se creo una inscripcion
+        assertTrue(inscripcionDao.findByTorneoId(torneo.getId()).isEmpty());
     }
 
 
@@ -255,11 +264,11 @@ public class TorneoServiceTest {
 
         User cap1 = createUser("cap_cerrar1");
         Equipo equipo1 = equipoService.crearEquipo(cap1.getId(), "EquipoCerrar1", "Desc");
-        torneoService.inscribirYValidarEquipo(cap1.getId(), torneo.getId(), equipo1.getId(), null);
+        inscribirEquipo(cap1, torneo, equipo1);
 
         User cap2 = createUser("cap_cerrar2");
         Equipo equipo2 = equipoService.crearEquipo(cap2.getId(), "EquipoCerrar2", "Desc");
-        torneoService.inscribirYValidarEquipo(cap2.getId(), torneo.getId(), equipo2.getId(), null);
+        inscribirEquipo(cap2, torneo, equipo2);
 
         torneoService.cerrarInscripciones(torneo.getId());
 
@@ -297,11 +306,11 @@ public class TorneoServiceTest {
 
         User cap1 = createUser("cap_cal1");
         Equipo equipo1 = equipoService.crearEquipo(cap1.getId(), "EquipoCal1", "Desc");
-        torneoService.inscribirYValidarEquipo(cap1.getId(), torneo.getId(), equipo1.getId(), null);
+        inscribirEquipo(cap1, torneo, equipo1);
 
         User cap2 = createUser("cap_cal2");
         Equipo equipo2 = equipoService.crearEquipo(cap2.getId(), "EquipoCal2", "Desc");
-        torneoService.inscribirYValidarEquipo(cap2.getId(), torneo.getId(), equipo2.getId(), null);
+        inscribirEquipo(cap2, torneo, equipo2);
 
         torneoService.cerrarInscripciones(torneo.getId());
         Torneo configurado = torneoService.configurarEstructuraYGenerarCalendario(
@@ -337,11 +346,11 @@ public class TorneoServiceTest {
 
         User cap1 = createUser("cap_cal3_1");
         Equipo equipo1 = equipoService.crearEquipo(cap1.getId(), "EquipoCal3_1", "Desc");
-        torneoService.inscribirYValidarEquipo(cap1.getId(), torneo.getId(), equipo1.getId(), null);
+        inscribirEquipo(cap1, torneo, equipo1);
 
         User cap2 = createUser("cap_cal3_2");
         Equipo equipo2 = equipoService.crearEquipo(cap2.getId(), "EquipoCal3_2", "Desc");
-        torneoService.inscribirYValidarEquipo(cap2.getId(), torneo.getId(), equipo2.getId(), null);
+        inscribirEquipo(cap2, torneo, equipo2);
 
         torneoService.cerrarInscripciones(torneo.getId());
         torneoService.configurarEstructuraYGenerarCalendario(
@@ -383,11 +392,11 @@ public class TorneoServiceTest {
 
         User cap1 = createUser("cap_jorn1");
         Equipo equipo1 = equipoService.crearEquipo(cap1.getId(), "EquipoJorn1", "Desc");
-        torneoService.inscribirYValidarEquipo(cap1.getId(), torneo.getId(), equipo1.getId(), null);
+        inscribirEquipo(cap1, torneo, equipo1);
 
         User cap2 = createUser("cap_jorn2");
         Equipo equipo2 = equipoService.crearEquipo(cap2.getId(), "EquipoJorn2", "Desc");
-        torneoService.inscribirYValidarEquipo(cap2.getId(), torneo.getId(), equipo2.getId(), null);
+        inscribirEquipo(cap2, torneo, equipo2);
 
         torneoService.cerrarInscripciones(torneo.getId());
         torneoService.configurarEstructuraYGenerarCalendario(
