@@ -9,7 +9,7 @@ import java.util.List;
 public interface TorneoService {
 
     /**
-     * busca torneos cuyo nombre contenga el filtro (busqueda por texto).
+     * busca torneos publicos cuyo nombre contenga el filtro (busqueda por texto).
      */
     List<Torneo> buscarTorneos(String filtro);
 
@@ -17,6 +17,31 @@ public interface TorneoService {
      * obtiene los torneos creados por un organizador.
      */
     List<Torneo> obtenerTorneosOrganizador(Long organizadorId);
+
+    /**
+     * Obtiene los torneos seguidos por un usuario.
+     */
+    List<Torneo> obtenerTorneosSeguidos(Long usuarioId);
+
+    /**
+     * Obtiene los torneos en los que el usuario tiene alg�n equipo inscrito
+     * (como capitán o como miembro).
+     */
+    List<Torneo> obtenerTorneosInscritos(Long usuarioId);
+
+    /**
+     * Sigue (marca como favorito) un torneo.
+     *
+     * @throws InstanceNotFoundException si el usuario o torneo no existen.
+     * @throws IllegalArgumentException  si el usuario ya sigue el torneo.
+     */
+    void seguirTorneo(Long usuarioId, Long torneoId)
+            throws InstanceNotFoundException, IllegalArgumentException;
+
+    /**
+     * Deja de seguir un torneo.
+     */
+    void dejarDeSeguirTorneo(Long usuarioId, Long torneoId);
 
     /**
      * obtiene los detalles completos de un torneo por su id.
@@ -30,36 +55,52 @@ public interface TorneoService {
      *
      * @param organizadorId Id del usuario organizador.
      * @param torneo        torneo con los datos basicos (nombre).
-     * @return el torneo creado en estado RECLUTANDO.
-     * @throws InstanceNotFoundException si el organizador no existe.
-     */
-    /**
-     * crea un nuevo torneo con los datos basicos (sin estructura de grupos).
-     * La estructura (numGrupos, equiposPorGrupo, tipoTorneo, etc.) se configurara
-     * tras cerrar las inscripciones mediante configurarEstructuraYGenerarCalendario().
-     *
-     * @param organizadorId Id del usuario organizador.
-     * @param torneo        torneo con los datos basicos (nombre).
-     * @param privado       indica si el torneo es privado (requiere codigo para inscribirse).
+     * @param privado       indica si el torneo es privado (requiere codigo para encontrarlo).
      * @return el torneo creado en estado RECLUTANDO.
      * @throws InstanceNotFoundException si el organizador no existe.
      */
     Torneo crearTorneo(Long organizadorId, Torneo torneo, Boolean privado) throws InstanceNotFoundException;
 
     /**
-     * inscribe un equipo en el torneo y lo valida si cumple las condiciones.
-     * el capitan del equipo realiza la inscripcion.
+     * Solicita la inscripcion de un equipo en el torneo. Crea una solicitud PENDIENTE
+     * que el organizador debera aceptar o rechazar.
      *
-     * @param capitanId   id del capitan que inscribe al equipo.
+     * @param capitanId   id del capitan que solicita inscribir al equipo.
      * @param torneoId    id del torneo.
      * @param equipoId    id del equipo a inscribir.
      * @param codigoTorneo codigo del torneo (obligatorio si el torneo es privado).
+     * @return la Solicitud creada.
      * @throws InstanceNotFoundException si el capitan, torneo o equipo no existen.
      * @throws PermissionException       si el capitanId no es el creador del equipo.
      * @throws IllegalArgumentException  si el equipo ya esta inscrito, el torneo no esta en reclutando,
      *                                   o el codigo es incorrecto para torneos privados.
      */
-    Inscripcion inscribirYValidarEquipo(Long capitanId, Long torneoId, Long equipoId, String codigoTorneo)
+    Solicitud solicitarInscripcion(Long capitanId, Long torneoId, Long equipoId, String codigoTorneo)
+            throws InstanceNotFoundException, PermissionException, IllegalArgumentException;
+
+    /**
+     * Aprueba una solicitud de inscripcion y crea la inscripcion real.
+     *
+     * @param organizadorId id del organizador del torneo.
+     * @param solicitudId   id de la solicitud a aprobar.
+     * @return la Inscripcion creada.
+     * @throws InstanceNotFoundException si la solicitud no existe.
+     * @throws PermissionException       si el usuario no es el organizador del torneo.
+     * @throws IllegalArgumentException  si la solicitud no esta PENDIENTE.
+     */
+    Inscripcion aprobarInscripcion(Long organizadorId, Long solicitudId)
+            throws InstanceNotFoundException, PermissionException, IllegalArgumentException;
+
+    /**
+     * Rechaza una solicitud de inscripcion.
+     *
+     * @param organizadorId id del organizador del torneo.
+     * @param solicitudId   id de la solicitud a rechazar.
+     * @throws InstanceNotFoundException si la solicitud no existe.
+     * @throws PermissionException       si el usuario no es el organizador del torneo.
+     * @throws IllegalArgumentException  si la solicitud no esta PENDIENTE.
+     */
+    void rechazarInscripcion(Long organizadorId, Long solicitudId)
             throws InstanceNotFoundException, PermissionException, IllegalArgumentException;
 
     /**
@@ -133,4 +174,9 @@ public interface TorneoService {
      */
     void gestionarJornadas(Long torneoId, Long jornadaId, EstadoJornada nuevoEstado)
             throws InstanceNotFoundException, PermissionException, IllegalArgumentException;
+
+    /**
+     * Obtiene las solicitudes de inscripcion pendientes para un torneo.
+     */
+    List<Solicitud> obtenerSolicitudesPendientes(Long torneoId);
 }
