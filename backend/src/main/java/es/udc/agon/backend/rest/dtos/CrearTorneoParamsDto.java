@@ -52,6 +52,9 @@ public class CrearTorneoParamsDto {
     @Schema(description = "Estrategia de distribución: JORNADAS, UNIFORME, RAPIDO", example = "JORNADAS")
     private String estrategiaDistribucion;
 
+    @Schema(description = "Indica si el torneo es privado (requiere código para inscribirse)", example = "false")
+    private Boolean privado;
+
     public CrearTorneoParamsDto() {
     }
 
@@ -173,5 +176,13 @@ public class CrearTorneoParamsDto {
 
     public void setEstrategiaDistribucion(String estrategiaDistribucion) {
         this.estrategiaDistribucion = estrategiaDistribucion;
+    }
+
+    public Boolean getPrivado() {
+        return privado;
+    }
+
+    public void setPrivado(Boolean privado) {
+        this.privado = privado;
     }
 }

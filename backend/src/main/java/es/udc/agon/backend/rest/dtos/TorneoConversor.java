@@ -25,7 +25,9 @@ public class TorneoConversor {
                 torneo.getOrganizador().getNombre(),
                 torneo.getTipoTorneo(),
                 torneo.getIdaVueltaPlayoff() != null ? torneo.getIdaVueltaPlayoff() : false,
-                numInscritos
+                numInscritos,
+                torneo.getPrivado() != null ? torneo.getPrivado() : false,
+                torneo.getCodigoTorneo()
         );
     }
 

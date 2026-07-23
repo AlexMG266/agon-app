@@ -38,13 +38,19 @@ public class TorneoDto {
     @Schema(description = "Número de equipos inscritos en el torneo", example = "8")
     private int numEquiposInscritos;
 
+    @Schema(description = "Indica si el torneo es privado (requiere código para inscribirse)", example = "false")
+    private boolean privado;
+
+    @Schema(description = "Código único del torneo para compartir", example = "T22-K9M8")
+    private String codigoTorneo;
+
     public TorneoDto() {
     }
 
     public TorneoDto(Long id, String nombre, int numGrupos, int equiposPorGrupo,
                      boolean tienePlayoff, String estado, Long organizadorId,
                      String organizadorNombre, String tipoTorneo, boolean idaVueltaPlayoff,
-                     int numEquiposInscritos) {
+                     int numEquiposInscritos, boolean privado, String codigoTorneo) {
         this.id = id;
         this.nombre = nombre;
         this.numGrupos = numGrupos;
@@ -56,6 +62,8 @@ public class TorneoDto {
         this.tipoTorneo = tipoTorneo;
         this.idaVueltaPlayoff = idaVueltaPlayoff;
         this.numEquiposInscritos = numEquiposInscritos;
+        this.privado = privado;
+        this.codigoTorneo = codigoTorneo;
     }
 
     public Long getId() {
@@ -144,5 +152,21 @@ public class TorneoDto {
 
     public void setNumEquiposInscritos(int numEquiposInscritos) {
         this.numEquiposInscritos = numEquiposInscritos;
+    }
+
+    public boolean isPrivado() {
+        return privado;
+    }
+
+    public void setPrivado(boolean privado) {
+        this.privado = privado;
+    }
+
+    public String getCodigoTorneo() {
+        return codigoTorneo;
+    }
+
+    public void setCodigoTorneo(String codigoTorneo) {
+        this.codigoTorneo = codigoTorneo;
     }
 }
