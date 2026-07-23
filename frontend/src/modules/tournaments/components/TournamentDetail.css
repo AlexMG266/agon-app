@@ -216,6 +216,34 @@
     border-top: 1px solid #f0f0f0;
 }
 
+/* Close Inscriptions Card */
+.tournament-actions-card {
+    background: #fff;
+    border-radius: 12px;
+    border: 1px solid #e9ecef;
+    padding: 1rem 1.5rem;
+    margin-bottom: 1.25rem;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+}
+
+.tournament-actions-body {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    flex-wrap: wrap;
+}
+
+.tournament-actions-info {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: #6c757d;
+    font-size: 0.85rem;
+    flex: 1;
+    min-width: 200px;
+}
+
 /* Teams section */
 .tournament-detail-section {
     background: #fff;

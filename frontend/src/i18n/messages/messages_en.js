@@ -396,6 +396,11 @@ export default {
     'project.tournaments.Detail.config.error.capacidadInsuficiente': 'Insufficient capacity: {capacidad} slots for {inscritos} registered teams',
     'project.tournaments.Detail.config.error.generic': 'Error configuring tournament',
 
+    'project.tournaments.Detail.close.info': 'Registrations are open. Close them when you have enough teams to configure the tournament.',
+    'project.tournaments.Detail.close.button': 'Close registrations',
+    'project.tournaments.Detail.close.closing': 'Closing...',
+    'project.tournaments.Detail.close.error.generic': 'Error closing registrations',
+
     'project.app.Home.dashboard.viewAll': 'View all ({count})',
 
     'project.teams.MyTeams.title': 'My Teams',

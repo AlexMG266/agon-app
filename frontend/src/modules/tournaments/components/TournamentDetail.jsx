@@ -20,6 +20,7 @@ const TournamentDetail = () => {
     const [error, setError] = useState(null);
     const [backendErrors, setBackendErrors] = useState(null);
     const [configuring, setConfiguring] = useState(false);
+    const [closing, setClosing] = useState(false);
 
     // Configurator form state
     const [configData, setConfigData] = useState({
@@ -128,6 +129,27 @@ const TournamentDetail = () => {
         }
     };
 
+    const handleCloseInscripciones = async () => {
+        setClosing(true);
+        setBackendErrors(null);
+        try {
+            const response = await backend.tournamentService.closeTournament(id);
+            if (response.ok && response.payload) {
+                setTournament(response.payload);
+            } else {
+                setBackendErrors(response.payload || response.error);
+            }
+        } catch (err) {
+            console.error('Error closing inscriptions:', err);
+            setBackendErrors(err.message || intl.formatMessage({
+                id: 'project.tournaments.Detail.close.error.generic',
+                defaultMessage: 'Error al cerrar las inscripciones'
+            }));
+        } finally {
+            setClosing(false);
+        }
+    };
+
     const handleConfigure = async (e) => {
         e.preventDefault();
         if (!validateConfig()) return;
@@ -212,6 +234,7 @@ const TournamentDetail = () => {
 
     const isOrganizer = loggedUser?.id === tournament.organizadorId;
     const showConfigurator = tournament.estado === 'INSCRIPCION_CERRADA' && isOrganizer;
+    const showCloseButton = tournament.estado === 'RECLUTANDO' && isOrganizer;
 
     return (
         <Container className="tournament-detail-container">
@@ -275,6 +298,41 @@ const TournamentDetail = () => {
                     )}
                 </div>
             </div>
+
+            {/* Close Inscriptions — only when RECLUTANDO */}
+            {showCloseButton && (
+                <div className="tournament-actions-card">
+                    <div className="tournament-actions-body">
+                        <div className="tournament-actions-info">
+                            <i className="fa-regular fa-clock me-2" />
+                            <span>
+                                <FormattedMessage
+                                    id="project.tournaments.Detail.close.info"
+                                    defaultMessage="Las inscripciones están abiertas. Ciérralas cuando tengas suficientes equipos para configurar el torneo."
+                                />
+                            </span>
+                        </div>
+                        <Button
+                            variant="dark"
+                            className="rounded-pill px-4"
+                            onClick={handleCloseInscripciones}
+                            disabled={closing}
+                        >
+                            {closing ? (
+                                <>
+                                    <Spinner animation="border" size="sm" className="me-2" />
+                                    <FormattedMessage id="project.tournaments.Detail.close.closing" defaultMessage="Cerrando..." />
+                                </>
+                            ) : (
+                                <>
+                                    <i className="fa-regular fa-door-closed me-2" />
+                                    <FormattedMessage id="project.tournaments.Detail.close.button" defaultMessage="Cerrar inscripciones" />
+                                </>
+                            )}
+                        </Button>
+                    </div>
+                </div>
+            )}
 
             {/* Inline Configurator — only when INSCRIPCION_CERRADA */}
             {showConfigurator && (

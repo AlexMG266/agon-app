@@ -396,6 +396,11 @@ export default {
     'project.tournaments.Detail.config.error.capacidadInsuficiente': 'Capacidad insuficiente: {capacidad} plazas para {inscritos} equipos inscritos',
     'project.tournaments.Detail.config.error.generic': 'Error al configurar el torneo',
 
+    'project.tournaments.Detail.close.info': 'Las inscripciones están abiertas. Ciérralas cuando tengas suficientes equipos para configurar el torneo.',
+    'project.tournaments.Detail.close.button': 'Cerrar inscripciones',
+    'project.tournaments.Detail.close.closing': 'Cerrando...',
+    'project.tournaments.Detail.close.error.generic': 'Error al cerrar las inscripciones',
+
     'project.app.Home.dashboard.viewAll': 'Ver todos ({count})',
     'project.app.Home.dashboard.viewAllTeams': 'Ver todos ({count})',
 

@@ -94,6 +94,33 @@ public class TorneoController {
         return TorneoConversor.toTorneoDto(torneo);
     }
 
+    @PostMapping("/{id}/close")
+    @ResponseStatus(HttpStatus.OK)
+    @Operation(
+            summary = "Cerrar inscripciones del torneo",
+            description = "Cierra las inscripciones del torneo, cambiando su estado de RECLUTANDO a INSCRIPCION_CERRADA. " +
+                    "Requiere al menos 2 equipos inscritos."
+    )
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Inscripciones cerradas con éxito",
+                    content = @Content(schema = @Schema(implementation = TorneoDto.class))),
+            @ApiResponse(responseCode = "400", description = "El torneo no está en estado RECLUTANDO o no hay suficientes equipos",
+                    content = @Content),
+            @ApiResponse(responseCode = "401", description = "No autorizado",
+                    content = @Content),
+            @ApiResponse(responseCode = "404", description = "Torneo no encontrado",
+                    content = @Content)
+    })
+    public TorneoDto cerrarInscripciones(
+            @Parameter(hidden = true) @RequestAttribute Long userId,
+            @Parameter(description = "ID del torneo", example = "1") @PathVariable Long id)
+            throws InstanceNotFoundException {
+
+        torneoService.cerrarInscripciones(id);
+        Torneo torneo = torneoService.consultarTorneo(id);
+        return TorneoConversor.toTorneoDto(torneo);
+    }
+
     @GetMapping("/my")
     @Operation(
             summary = "Listar torneos del usuario autenticado",

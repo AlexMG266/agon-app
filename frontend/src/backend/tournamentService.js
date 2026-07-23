@@ -25,10 +25,16 @@ export const configureTournament = async (id, configData) => {
     return await appFetch('POST', `/tournaments/${id}/configure`, configData);
 };
 
+// POST /tournaments/{id}/close: cierra las inscripciones del torneo.
+export const closeTournament = async (id) => {
+    return await appFetch('POST', `/tournaments/${id}/close`);
+};
+
 export default {
     createTournament,
     getMyTournaments,
     getTournament,
     searchTournaments,
-    configureTournament
+    configureTournament,
+    closeTournament
 };
