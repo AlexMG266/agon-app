@@ -9,6 +9,10 @@ public interface TorneoDao extends CrudRepository<Torneo, Long> {
 
     List<Torneo> findByNombreContainingIgnoreCase(String filtro);
 
+    List<Torneo> findByNombreContainingIgnoreCaseAndPrivadoFalse(String filtro);
+
+    List<Torneo> findByPrivadoFalse();
+
     List<Torneo> findByOrganizadorId(Long organizadorId);
 
     Optional<Torneo> findByCodigoTorneo(String codigoTorneo);

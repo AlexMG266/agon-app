@@ -14,4 +14,6 @@ public interface InscripcionDao extends CrudRepository<Inscripcion, Long> {
     List<Inscripcion> findByGrupoId(Long grupoId);
 
     List<Inscripcion> findByEquipoId(Long equipoId);
+
+    List<Inscripcion> findByTorneoIdAndEquipo_Creador_Id(Long torneoId, Long userId);
 }
