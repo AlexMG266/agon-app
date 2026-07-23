@@ -38,7 +38,7 @@ import es.udc.agon.backend.model.exceptions.InstanceNotFoundException;
 import es.udc.agon.backend.model.exceptions.PermissionException;
 import es.udc.agon.backend.model.services.EquipoService;
 import es.udc.agon.backend.model.services.IEncuentroService;
-import es.udc.agon.backend.model.services.ITorneoService;
+import es.udc.agon.backend.model.services.TorneoService;
 
 @SpringBootTest
 @ActiveProfiles("test")
@@ -49,7 +49,7 @@ public class EncuentroServiceTest {
     private IEncuentroService encuentroService;
 
     @Autowired
-    private ITorneoService torneoService;
+    private TorneoService torneoService;
 
     @Autowired
     private EquipoService equipoService;
@@ -80,23 +80,25 @@ public class EncuentroServiceTest {
     }
 
     /**
-     * metodo auxiliar: crea un torneo con 1 grupo y 2 equipos, cierra inscripciones,
-     * genera calendario y devuelve el encuentro generado entre los dos equipos.
+     * metodo auxiliar: crea un torneo, inscribe 2 equipos, cierra inscripciones,
+     * configura estructura (1 grupo, 2 equipos, sin playoff), genera calendario
+     * y devuelve el encuentro generado entre los dos equipos.
      */
     private Encuentro setupEncuentro(User org, User cap1, User cap2)
             throws InstanceNotFoundException, PermissionException {
 
-        Torneo torneo = new Torneo(org, "Torneo Encuentro Test", 1, 2, false);
-        torneo = torneoService.crearTorneo(org.getId(), torneo);
+        Torneo torneo = new Torneo(org, "Torneo Encuentro Test", false, "T99-XXXX");
+        torneo = torneoService.crearTorneo(org.getId(), torneo, false);
 
         Equipo equipo1 = equipoService.crearEquipo(cap1.getId(), "EquipoLocal", "Equipo Local");
         Equipo equipo2 = equipoService.crearEquipo(cap2.getId(), "EquipoVisitante", "Equipo Visitante");
 
-        torneoService.inscribirYValidarEquipo(cap1.getId(), torneo.getId(), equipo1.getId());
-        torneoService.inscribirYValidarEquipo(cap2.getId(), torneo.getId(), equipo2.getId());
+        torneoService.inscribirYValidarEquipo(cap1.getId(), torneo.getId(), equipo1.getId(), null);
+        torneoService.inscribirYValidarEquipo(cap2.getId(), torneo.getId(), equipo2.getId(), null);
 
         torneoService.cerrarInscripciones(torneo.getId());
-        torneoService.generarCalendario(torneo.getId());
+        torneoService.configurarEstructuraYGenerarCalendario(
+                torneo.getId(), "LIGA_UNICA", 1, 2, false, false);
 
         // obtener la primera jornada y su encuentro generado
         List<Jornada> jornadas = jornadaDao.findByTorneoIdOrderByNumeroJornadaAsc(torneo.getId());

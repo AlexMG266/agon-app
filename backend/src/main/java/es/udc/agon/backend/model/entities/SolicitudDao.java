@@ -19,8 +19,23 @@ public interface SolicitudDao extends CrudRepository<Solicitud, Long> {
     List<Solicitud> findByEquipoId(Long equipoId);
 
     /**
+     * Recupera las solicitudes de inscripción para un torneo concreto.
+     */
+    List<Solicitud> findByTorneoId(Long torneoId);
+
+    /**
+     * Recupera las solicitudes de inscripción pendientes para los torneos de un organizador.
+     */
+    List<Solicitud> findByDecisorIdAndTipoSolicitudAndEstado(Long decisorId, TipoSolicitud tipoSolicitud, EstadoSolicitud estado);
+
+    /**
      * Utilizado para evitar duplicados. Comprueba si un candidato ya tiene
      * una solicitud activa (ej. PENDIENTE) para un equipo concreto.
      */
     Optional<Solicitud> findByCandidatoIdAndEquipoIdAndEstado(Long candidatoId, Long equipoId, EstadoSolicitud estado);
+
+    /**
+     * Utilizado para evitar duplicados en inscripciones a torneos.
+     */
+    Optional<Solicitud> findByCandidatoIdAndTorneoIdAndEstado(Long candidatoId, Long torneoId, EstadoSolicitud estado);
 }

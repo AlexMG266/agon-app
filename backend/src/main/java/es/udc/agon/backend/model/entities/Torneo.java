@@ -12,9 +12,13 @@ public class Torneo {
     private Long id;
     private User organizador;
     private String nombre;
-    private int numGrupos;
-    private int equiposPorGrupo;
-    private boolean tienePlayoff;
+    private Integer numGrupos;
+    private Integer equiposPorGrupo;
+    private Boolean tienePlayoff;
+    private String tipoTorneo;
+    private Boolean idaVueltaPlayoff;
+    private Boolean privado;
+    private String codigoTorneo;
     private EstadoTorneo estado;
     private List<Grupo> grupos = new ArrayList<>();
     private List<Jornada> jornadas = new ArrayList<>();
@@ -23,12 +27,16 @@ public class Torneo {
     public Torneo() {
     }
 
-    public Torneo(User organizador, String nombre, int numGrupos, int equiposPorGrupo, boolean tienePlayoff) {
+    public Torneo(User organizador, String nombre, Boolean privado, String codigoTorneo) {
         this.organizador = organizador;
         this.nombre = nombre;
-        this.numGrupos = numGrupos;
-        this.equiposPorGrupo = equiposPorGrupo;
-        this.tienePlayoff = tienePlayoff;
+        this.numGrupos = null;
+        this.equiposPorGrupo = null;
+        this.tienePlayoff = null;
+        this.tipoTorneo = null;
+        this.idaVueltaPlayoff = null;
+        this.privado = privado != null ? privado : false;
+        this.codigoTorneo = codigoTorneo;
         this.estado = EstadoTorneo.RECLUTANDO;
     }
 
@@ -61,31 +69,67 @@ public class Torneo {
         this.nombre = nombre;
     }
 
-    @Column(name = "numGrupos")
-    public int getNumGrupos() {
+    @Column(name = "numGrupos", nullable = true)
+    public Integer getNumGrupos() {
         return numGrupos;
     }
 
-    public void setNumGrupos(int numGrupos) {
+    public void setNumGrupos(Integer numGrupos) {
         this.numGrupos = numGrupos;
     }
 
-    @Column(name = "equiposPorGrupo")
-    public int getEquiposPorGrupo() {
+    @Column(name = "equiposPorGrupo", nullable = true)
+    public Integer getEquiposPorGrupo() {
         return equiposPorGrupo;
     }
 
-    public void setEquiposPorGrupo(int equiposPorGrupo) {
+    public void setEquiposPorGrupo(Integer equiposPorGrupo) {
         this.equiposPorGrupo = equiposPorGrupo;
     }
 
-    @Column(name = "tienePlayoff")
-    public boolean isTienePlayoff() {
+    @Column(name = "tipoTorneo", nullable = true)
+    public String getTipoTorneo() {
+        return tipoTorneo;
+    }
+
+    public void setTipoTorneo(String tipoTorneo) {
+        this.tipoTorneo = tipoTorneo;
+    }
+
+    @Column(name = "tienePlayoff", nullable = true)
+    public Boolean getTienePlayoff() {
         return tienePlayoff;
     }
 
-    public void setTienePlayoff(boolean tienePlayoff) {
+    public void setTienePlayoff(Boolean tienePlayoff) {
         this.tienePlayoff = tienePlayoff;
+    }
+
+    @Column(name = "idaVueltaPlayoff", nullable = true)
+    public Boolean getIdaVueltaPlayoff() {
+        return idaVueltaPlayoff;
+    }
+
+    public void setIdaVueltaPlayoff(Boolean idaVueltaPlayoff) {
+        this.idaVueltaPlayoff = idaVueltaPlayoff;
+    }
+
+    @Column(name = "privado", nullable = false)
+    public Boolean getPrivado() {
+        return privado;
+    }
+
+    public void setPrivado(Boolean privado) {
+        this.privado = privado;
+    }
+
+    @Column(name = "codigoTorneo", length = 16, unique = true, nullable = false)
+    public String getCodigoTorneo() {
+        return codigoTorneo;
+    }
+
+    public void setCodigoTorneo(String codigoTorneo) {
+        this.codigoTorneo = codigoTorneo;
     }
 
     @Enumerated(EnumType.STRING)

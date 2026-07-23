@@ -1,0 +1,95 @@
+/* CreateTournament Wizard Styles */
+
+.step-indicator-container {
+    display: flex;
+    justify-content: center;
+    gap: 0;
+    margin-bottom: 1rem;
+    padding: 0 1rem;
+}
+
+.step-indicator {
+    display: flex;
+    align-items: center;
+    flex: 1;
+    max-width: 180px;
+}
+
+.step-indicator__circle {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 0.85rem;
+    flex-shrink: 0;
+    transition: all 0.3s ease;
+    border: 2px solid #d2d2d7;
+    background: #fff;
+    color: #8e8e93;
+}
+
+.step-indicator__circle.active {
+    border-color: #1d1d1f;
+    background: #1d1d1f;
+    color: #fff;
+}
+
+.step-indicator__circle.completed {
+    border-color: #34c759;
+    background: #34c759;
+    color: #fff;
+}
+
+.step-indicator__label {
+    font-size: 0.75rem;
+    color: #8e8e93;
+    margin-left: 8px;
+    font-weight: 500;
+    white-space: nowrap;
+}
+
+.step-indicator__label.active {
+    color: #1d1d1f;
+    font-weight: 600;
+}
+
+.step-indicator__label.completed {
+    color: #34c759;
+}
+
+.step-indicator__connector {
+    flex: 1;
+    height: 2px;
+    background: #d2d2d7;
+    margin: 0 8px;
+    transition: background 0.3s ease;
+}
+
+.step-indicator__connector.completed {
+    background: #34c759;
+}
+
+.wizard-step-content {
+    min-height: 260px;
+    animation: fadeIn 0.3s ease-in-out;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(8px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+@media (max-width: 768px) {
+    .step-indicator__label {
+        display: none;
+    }
+    .step-indicator {
+        max-width: 60px;
+    }
+    .step-indicator__connector {
+        margin: 0 4px;
+    }
+}

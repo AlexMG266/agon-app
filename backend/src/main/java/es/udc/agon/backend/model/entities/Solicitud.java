@@ -21,6 +21,7 @@ public class Solicitud {
     private User candidato;
     private User decisor;
     private Equipo equipo;
+    private Torneo torneo; // optional: filled for enrollment requests
     private EstadoSolicitud estado;
     private TipoSolicitud tipoSolicitud;
     private LocalDateTime fechaCreacion;
@@ -32,6 +33,16 @@ public class Solicitud {
         this.candidato = candidato;
         this.decisor = decisor;
         this.equipo = equipo;
+        this.tipoSolicitud = tipoSolicitud;
+        this.estado = EstadoSolicitud.PENDIENTE;
+        this.fechaCreacion = LocalDateTime.now();
+    }
+
+    public Solicitud(User candidato, User decisor, Equipo equipo, Torneo torneo, TipoSolicitud tipoSolicitud) {
+        this.candidato = candidato;
+        this.decisor = decisor;
+        this.equipo = equipo;
+        this.torneo = torneo;
         this.tipoSolicitud = tipoSolicitud;
         this.estado = EstadoSolicitud.PENDIENTE;
         this.fechaCreacion = LocalDateTime.now();
@@ -75,6 +86,16 @@ public class Solicitud {
 
     public void setEquipo(Equipo equipo) {
         this.equipo = equipo;
+    }
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "torneo_id")
+    public Torneo getTorneo() {
+        return torneo;
+    }
+
+    public void setTorneo(Torneo torneo) {
+        this.torneo = torneo;
     }
 
     @Enumerated(EnumType.STRING)

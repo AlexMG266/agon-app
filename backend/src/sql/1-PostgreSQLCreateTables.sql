@@ -1,3 +1,4 @@
+DROP TABLE IF EXISTS SeguimientoTorneo CASCADE;
 DROP TABLE IF EXISTS Solicitud_Aplazamiento CASCADE;
 DROP TABLE IF EXISTS Set_Entity CASCADE;
 DROP TABLE IF EXISTS Encuentro CASCADE;
@@ -63,38 +64,44 @@ CREATE TABLE Equipo_Miembros (
     CONSTRAINT EquipoMiembrosUsuarioIdFK FOREIGN KEY (usuario_id) REFERENCES "User"(id) ON DELETE CASCADE
 );
 
-CREATE TABLE Solicitud (
-    id BIGSERIAL NOT NULL,
-    candidato_id BIGINT NOT NULL,
-    decisor_id BIGINT NOT NULL,
-    equipo_id BIGINT NOT NULL,
-    estado VARCHAR(20) NOT NULL,
-    tipo_solicitud VARCHAR(20) NOT NULL,
-    fecha_creacion TIMESTAMP NOT NULL,
-    CONSTRAINT SolicitudPK PRIMARY KEY (id),
-    CONSTRAINT SolicitudCandidatoIdFK FOREIGN KEY (candidato_id) REFERENCES "User"(id) ON DELETE CASCADE,
-    CONSTRAINT SolicitudDecisorIdFK FOREIGN KEY (decisor_id) REFERENCES "User"(id) ON DELETE CASCADE,
-    CONSTRAINT SolicitudEquipoIdFK FOREIGN KEY (equipo_id) REFERENCES Equipo(id) ON DELETE CASCADE
-);
-
-CREATE INDEX SolicitudIndexByCandidatoId ON Solicitud (candidato_id);
-CREATE INDEX SolicitudIndexByDecisorId ON Solicitud (decisor_id);
-
 -- Tablas para la Iteración 3: Gestión de Torneos
 
 CREATE TABLE Torneo (
     id BIGSERIAL NOT NULL,
     idOrganizador BIGINT NOT NULL,
     nombre VARCHAR(100) NOT NULL,
-    numGrupos INTEGER NOT NULL DEFAULT 1,
-    equiposPorGrupo INTEGER NOT NULL DEFAULT 4,
-    tienePlayoff BOOLEAN NOT NULL DEFAULT FALSE,
+    privado BOOLEAN NOT NULL DEFAULT FALSE,
+    codigoTorneo VARCHAR(16) NOT NULL UNIQUE,
+    numGrupos INTEGER,
+    equiposPorGrupo INTEGER,
+    tienePlayoff BOOLEAN,
+    tipoTorneo VARCHAR(20),
+    idaVueltaPlayoff BOOLEAN,
     estado VARCHAR(20) NOT NULL DEFAULT 'RECLUTANDO',
     CONSTRAINT TorneoPK PRIMARY KEY (id),
     CONSTRAINT TorneoOrganizadorIdFK FOREIGN KEY (idOrganizador) REFERENCES "User"(id) ON DELETE CASCADE
 );
 
 CREATE INDEX TorneoIndexByOrganizador ON Torneo (idOrganizador);
+
+CREATE TABLE Solicitud (
+    id BIGSERIAL NOT NULL,
+    candidato_id BIGINT NOT NULL,
+    decisor_id BIGINT NOT NULL,
+    equipo_id BIGINT NOT NULL,
+    torneo_id BIGINT,
+    estado VARCHAR(20) NOT NULL,
+    tipo_solicitud VARCHAR(20) NOT NULL,
+    fecha_creacion TIMESTAMP NOT NULL,
+    CONSTRAINT SolicitudPK PRIMARY KEY (id),
+    CONSTRAINT SolicitudCandidatoIdFK FOREIGN KEY (candidato_id) REFERENCES "User"(id) ON DELETE CASCADE,
+    CONSTRAINT SolicitudDecisorIdFK FOREIGN KEY (decisor_id) REFERENCES "User"(id) ON DELETE CASCADE,
+    CONSTRAINT SolicitudEquipoIdFK FOREIGN KEY (equipo_id) REFERENCES Equipo(id) ON DELETE CASCADE,
+    CONSTRAINT SolicitudTorneoIdFK FOREIGN KEY (torneo_id) REFERENCES Torneo(id) ON DELETE CASCADE
+);
+
+CREATE INDEX SolicitudIndexByCandidatoId ON Solicitud (candidato_id);
+CREATE INDEX SolicitudIndexByDecisorId ON Solicitud (decisor_id);
 
 CREATE TABLE Grupo (
     id BIGSERIAL NOT NULL,
@@ -180,3 +187,17 @@ CREATE TABLE Solicitud_Aplazamiento (
 );
 
 CREATE INDEX SolicitudAplazamientoIndexByEncuentro ON Solicitud_Aplazamiento (idEncuentro);
+
+CREATE TABLE SeguimientoTorneo (
+    id BIGSERIAL NOT NULL,
+    usuarioId BIGINT NOT NULL,
+    torneoId BIGINT NOT NULL,
+    fechaCreacion TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT SeguimientoTorneoPK PRIMARY KEY (id),
+    CONSTRAINT SeguimientoTorneoUsuarioIdFK FOREIGN KEY (usuarioId) REFERENCES "User"(id) ON DELETE CASCADE,
+    CONSTRAINT SeguimientoTorneoTorneoIdFK FOREIGN KEY (torneoId) REFERENCES Torneo(id) ON DELETE CASCADE,
+    CONSTRAINT SeguimientoTorneoUniqueConstraint UNIQUE (usuarioId, torneoId)
+);
+
+CREATE INDEX SeguimientoTorneoIndexByUsuarioId ON SeguimientoTorneo (usuarioId);
+CREATE INDEX SeguimientoTorneoIndexByTorneoId ON SeguimientoTorneo (torneoId);

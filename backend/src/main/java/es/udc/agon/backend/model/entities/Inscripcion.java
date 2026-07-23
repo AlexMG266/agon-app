@@ -30,6 +30,17 @@ public class Inscripcion {
         this.setsPerdidos = 0;
     }
 
+    public Inscripcion(Torneo torneo, Equipo equipo) {
+        this.torneo = torneo;
+        this.equipo = equipo;
+        this.grupo = null;
+        this.partidosJugados = 0;
+        this.estadoInscripcion = EstadoInscripcion.ACTIVA;
+        this.puntosLiga = 0;
+        this.setsGanados = 0;
+        this.setsPerdidos = 0;
+    }
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     public Long getId() {

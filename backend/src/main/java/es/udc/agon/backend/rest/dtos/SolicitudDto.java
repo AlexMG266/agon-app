@@ -2,7 +2,7 @@ package es.udc.agon.backend.rest.dtos;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 
-@Schema(description = "DTO que representa la información de una solicitud de unión (PROPUESTA del creador o PETICION del jugador)")
+@Schema(description = "DTO que representa la información de una solicitud (unión a equipo o inscripción en torneo)")
 public class SolicitudDto {
 
     @Schema(description = "ID único de la solicitud", example = "101", accessMode = Schema.AccessMode.READ_ONLY)
@@ -11,11 +11,20 @@ public class SolicitudDto {
     @Schema(description = "ID del usuario que entrará al equipo si se aprueba (el candidato)", example = "87")
     private Long candidatoId;
 
+    @Schema(description = "Nombre del candidato", example = "player1")
+    private String nombreCandidato;
+
     @Schema(description = "ID del usuario que debe decidir si acepta o rechaza (el decisor)", example = "42")
     private Long decisorId;
 
     @Schema(description = "ID del equipo asociado a la solicitud", example = "1")
     private Long equipoId;
+
+    @Schema(description = "Nombre del equipo", example = "Los Campeones")
+    private String nombreEquipo;
+
+    @Schema(description = "ID del torneo (si es una solicitud de inscripción)", example = "5")
+    private Long torneoId;
 
     @Schema(
             description = "Estado actual de la solicitud",
@@ -27,7 +36,7 @@ public class SolicitudDto {
     @Schema(
             description = "Tipo de flujo que originó la solicitud",
             example = "PROPUESTA",
-            allowableValues = {"PROPUESTA", "PETICION"}
+            allowableValues = {"PROPUESTA", "PETICION", "SOLICITUD_INSCRIPCION"}
     )
     private String tipoSolicitud;
 
@@ -43,6 +52,19 @@ public class SolicitudDto {
         this.candidatoId = candidatoId;
         this.decisorId = decisorId;
         this.equipoId = equipoId;
+        this.estado = estado;
+        this.tipoSolicitud = tipoSolicitud;
+        this.fechaCreacion = fechaCreacion;
+    }
+
+    public SolicitudDto(Long id, Long candidatoId, String nombreCandidato, Long decisorId, Long equipoId,
+                        String nombreEquipo, String estado, String tipoSolicitud, long fechaCreacion) {
+        this.id = id;
+        this.candidatoId = candidatoId;
+        this.nombreCandidato = nombreCandidato;
+        this.decisorId = decisorId;
+        this.equipoId = equipoId;
+        this.nombreEquipo = nombreEquipo;
         this.estado = estado;
         this.tipoSolicitud = tipoSolicitud;
         this.fechaCreacion = fechaCreacion;
@@ -94,6 +116,30 @@ public class SolicitudDto {
 
     public void setTipoSolicitud(String tipoSolicitud) {
         this.tipoSolicitud = tipoSolicitud;
+    }
+
+    public String getNombreCandidato() {
+        return nombreCandidato;
+    }
+
+    public void setNombreCandidato(String nombreCandidato) {
+        this.nombreCandidato = nombreCandidato;
+    }
+
+    public String getNombreEquipo() {
+        return nombreEquipo;
+    }
+
+    public void setNombreEquipo(String nombreEquipo) {
+        this.nombreEquipo = nombreEquipo;
+    }
+
+    public Long getTorneoId() {
+        return torneoId;
+    }
+
+    public void setTorneoId(Long torneoId) {
+        this.torneoId = torneoId;
     }
 
     public long getFechaCreacion() {

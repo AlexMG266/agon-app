@@ -13,7 +13,7 @@ const ConnectedErrorDialog = () => {
     const error = useSelector(selectors.getError);
     const dispatch = useDispatch();
 
-    return <ErrorDialog error={error} 
+    return <ErrorDialog error={error}
                 onClose={() => dispatch(actions.error(null))}/>
 
 };
@@ -23,10 +23,6 @@ const AppGlobalComponents = () => {
     const dispatch = useDispatch();
 
     useEffect(() => {
-        backend.setForbiddenCallback(() => {
-            navigate('/forbidden');
-        });
-
         backend.init(() => {
             console.error('Error de red');
         });

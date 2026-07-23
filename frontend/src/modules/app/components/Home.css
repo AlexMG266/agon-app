@@ -59,6 +59,16 @@
     border-radius: 12px;
     padding: 1.25rem 1.5rem 1.5rem;
     transition: border-color 0.2s ease;
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+}
+
+.dashboard-section-body {
+    flex: 1;
+    min-height: 0;
+    overflow-y: auto;
+    max-height: 320px;
 }
 
 .dashboard-section:hover {
@@ -193,6 +203,11 @@
 .join-team-divider {
     border-top: 1px solid #e5e5ea;
     margin: 1rem -1.5rem 1rem;
+    flex-shrink: 0;
+}
+
+.join-team {
+    flex-shrink: 0;
 }
 
 @media (max-width: 768px) {

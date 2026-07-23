@@ -16,7 +16,6 @@ services:
       - postgres_data:/var/lib/postgresql/data
       - ./backend/src/sql/1-PostgreSQLCreateTables.sql:/docker-entrypoint-initdb.d/1-PostgreSQLCreateTables.sql:ro
       - ./backend/src/sql/2-PostgreSQLCreateData-init.sql:/docker-entrypoint-initdb.d/2-PostgreSQLCreateData-init.sql:ro
-      - ./backend/src/sql/3-PostgreSQLAlterTables.sql:/docker-entrypoint-initdb.d/3-PostgreSQLAlterTables.sql:ro
     networks:
       - agon_network
     healthcheck:
