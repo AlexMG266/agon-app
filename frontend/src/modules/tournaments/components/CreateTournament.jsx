@@ -188,14 +188,14 @@ const CreateTournament = () => {
 
     return (
         <div className="profile-container">
-            <Container className="mt-5 py-2" style={{ maxWidth: '900px' }}>
+            <Container className="mt-0 py-0" style={{ maxWidth: '900px' }}>
                 <Row className="justify-content-center">
                     <Col xs={12}>
                         <Card className="border rounded-4 shadow-sm" style={{ borderColor: '#d2d2d7', backgroundColor: '#ffffff' }}>
-                            <Card.Body className="p-4 p-md-5">
-                                <div className="text-center mb-4">
+                            <Card.Body className="p-3 p-md-4">
+                                <div className="text-center mb-3">
                                     <span
-                                        className="badge rounded-pill bg-light text-dark border px-3 py-1 mb-3 fw-semibold text-uppercase"
+                                        className="badge rounded-pill bg-light text-dark border px-3 py-1 mb-2 fw-semibold text-uppercase"
                                         style={{ letterSpacing: '0.05em', fontSize: '0.7rem' }}
                                     >
                                         <FormattedMessage
@@ -251,7 +251,7 @@ const CreateTournament = () => {
                                     {renderStep()}
                                 </div>
 
-                                <div className="d-flex gap-3 justify-content-between pt-4 border-top mt-4">
+                                <div className="d-flex gap-3 justify-content-between pt-3 border-top mt-3">
                                     <Button
                                         variant="light"
                                         onClick={handlePrevious}

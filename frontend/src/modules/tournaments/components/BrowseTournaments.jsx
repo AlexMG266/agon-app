@@ -123,7 +123,7 @@ const BrowseTournaments = () => {
 
     return (
         <div className="home-dashboard" style={{ maxWidth: '1000px', margin: '0 auto', padding: '2rem 1.5rem' }}>
-            <div className="dashboard-header" style={{ marginBottom: '1.5rem' }}>
+            <div className="dashboard-header" style={{ marginBottom: '1rem' }}>
                 <div>
                     <h1 className="dashboard-greeting" style={{ fontSize: '1.8rem', fontWeight: '700' }}>
                         <FormattedMessage id="project.tournaments.Browse.title" defaultMessage="Explorar Torneos" />
@@ -134,88 +134,15 @@ const BrowseTournaments = () => {
                 </div>
             </div>
 
-            {/* Search by code */}
-            <div style={{
-                background: '#f9fafb',
-                borderRadius: '12px',
-                padding: '1rem 1.25rem',
-                marginBottom: '1.5rem',
-                border: '1px solid #e5e7eb'
-            }}>
-                <div style={{ fontSize: '0.85rem', fontWeight: '600', color: '#374151', marginBottom: '0.5rem' }}>
-                    <i className="fa-regular fa-qrcode me-1" />
-                    <FormattedMessage id="project.tournaments.Browse.codeSearchTitle" defaultMessage="Buscar por código de torneo" />
-                </div>
-                <Form onSubmit={handleCodeSearch} style={{ display: 'flex', gap: '0.5rem' }}>
-                    <Form.Control
-                        type="text"
-                        placeholder={intl.formatMessage({ id: 'project.tournaments.Browse.codePlaceholder', defaultMessage: 'Ej. T22-K9M8' })}
-                        value={codeSearchTerm}
-                        onChange={(e) => setCodeSearchTerm(e.target.value)}
-                        style={{ borderRadius: '999px', maxWidth: '300px' }}
-                    />
-                    <Button type="submit" variant="dark" className="rounded-pill px-3" disabled={codeSearching || !codeSearchTerm.trim()}>
-                        {codeSearching ? (
-                            <Spinner animation="border" size="sm" />
-                        ) : (
-                            <i className="fa-solid fa-search" />
-                        )}
-                    </Button>
-                    {codeSearchResult && (
-                        <Button variant="outline-secondary" className="rounded-pill" size="sm" onClick={() => { setCodeSearchResult(null); setCodeError(null); }}>
-                            <i className="fa-solid fa-xmark" />
-                        </Button>
-                    )}
-                </Form>
-
-                {/* Code search result */}
-                {codeError && (
-                    <div style={{ color: '#dc2626', fontSize: '0.85rem', marginTop: '0.5rem' }}>
-                        <i className="fa-regular fa-circle-exclamation me-1" />
-                        {codeError}
-                    </div>
-                )}
-                {codeSearchResult && (
-                    <div style={{ marginTop: '0.75rem' }}>
-                        <Link
-                            to={`/tournaments/view/${codeSearchResult.id}`}
-                            style={{ textDecoration: 'none' }}
-                        >
-                            <div style={{
-                                display: 'flex',
-                                justifyContent: 'space-between',
-                                alignItems: 'center',
-                                padding: '0.75rem 1rem',
-                                background: '#fff',
-                                borderRadius: '12px',
-                                border: '1px solid #2563eb40',
-                                transition: 'box-shadow 0.2s'
-                            }}>
-                                <div>
-                                    <div style={{ fontWeight: '600', color: '#1d1d1f' }}>
-                                        {codeSearchResult.privado && <span style={{ marginRight: '0.5rem' }}>🔒</span>}
-                                        {codeSearchResult.nombre}
-                                    </div>
-                                    <div style={{ fontSize: '0.85rem', color: '#6b7280' }}>
-                                        <FormattedMessage id="project.tournaments.Browse.codeFound" defaultMessage="Código: {code}" values={{ code: codeSearchResult.codigoTorneo }} />
-                                    </div>
-                                </div>
-                                <i className="fa-solid fa-arrow-right" style={{ color: '#2563eb' }} />
-                            </div>
-                        </Link>
-                    </div>
-                )}
-            </div>
-
-            {/* Search & Filters */}
+            {/* Search, Filters & Code Search */}
             <div style={{
                 display: 'flex',
-                gap: '0.75rem',
-                marginBottom: '1.5rem',
+                gap: '0.5rem',
+                marginBottom: '0.75rem',
                 flexWrap: 'wrap',
                 alignItems: 'center'
             }}>
-                <Form onSubmit={handleSearch} style={{ display: 'flex', gap: '0.5rem', flex: '1 1 300px' }}>
+                <Form onSubmit={handleSearch} style={{ display: 'flex', gap: '0.5rem', flex: '1 1 280px' }}>
                     <Form.Control
                         type="text"
                         placeholder={intl.formatMessage({ id: 'project.tournaments.Browse.searchPlaceholder', defaultMessage: 'Buscar por nombre...' })}
@@ -228,10 +155,33 @@ const BrowseTournaments = () => {
                     </Button>
                 </Form>
 
+                <Form onSubmit={handleCodeSearch} style={{ display: 'flex', gap: '0.5rem' }}>
+                    <Form.Control
+                        type="text"
+                        placeholder={intl.formatMessage({ id: 'project.tournaments.Browse.codePlaceholder', defaultMessage: 'Código torneo' })}
+                        value={codeSearchTerm}
+                        onChange={(e) => setCodeSearchTerm(e.target.value)}
+                        style={{ borderRadius: '999px', width: '160px' }}
+                        size="sm"
+                    />
+                    <Button type="submit" variant="outline-dark" className="rounded-pill px-3" size="sm" disabled={codeSearching || !codeSearchTerm.trim()}>
+                        {codeSearching ? (
+                            <Spinner animation="border" size="sm" />
+                        ) : (
+                            <i className="fa-solid fa-qrcode" />
+                        )}
+                    </Button>
+                    {codeSearchResult && (
+                        <Button variant="outline-secondary" className="rounded-pill" size="sm" onClick={() => { setCodeSearchResult(null); setCodeError(null); }}>
+                            <i className="fa-solid fa-xmark" />
+                        </Button>
+                    )}
+                </Form>
+
                 <Form.Select
                     value={statusFilter}
                     onChange={(e) => setStatusFilter(e.target.value)}
-                    style={{ width: 'auto', minWidth: '160px', borderRadius: '999px' }}
+                    style={{ width: 'auto', minWidth: '150px', borderRadius: '999px' }}
                 >
                     <option value="">
                         <FormattedMessage id="project.tournaments.Browse.filterAll" defaultMessage="Todos los estados" />
@@ -260,6 +210,43 @@ const BrowseTournaments = () => {
                     </Button>
                 )}
             </div>
+
+            {/* Code search result/error */}
+            {codeError && (
+                <div style={{ color: '#dc2626', fontSize: '0.85rem', marginBottom: '0.75rem', paddingLeft: '0.25rem' }}>
+                    <i className="fa-regular fa-circle-exclamation me-1" />
+                    {codeError}
+                </div>
+            )}
+            {codeSearchResult && (
+                <div style={{ marginBottom: '0.75rem' }}>
+                    <Link
+                        to={`/tournaments/view/${codeSearchResult.id}`}
+                        style={{ textDecoration: 'none' }}
+                    >
+                        <div style={{
+                            display: 'flex',
+                            justifyContent: 'space-between',
+                            alignItems: 'center',
+                            padding: '0.6rem 1rem',
+                            background: '#fff',
+                            borderRadius: '12px',
+                            border: '1px solid #2563eb40'
+                        }}>
+                            <div>
+                                <div style={{ fontWeight: '600', color: '#1d1d1f', fontSize: '0.95rem' }}>
+                                    {codeSearchResult.privado && <span style={{ marginRight: '0.5rem' }}>🔒</span>}
+                                    {codeSearchResult.nombre}
+                                </div>
+                                <div style={{ fontSize: '0.8rem', color: '#6b7280' }}>
+                                    <FormattedMessage id="project.tournaments.Browse.codeFound" defaultMessage="Código: {code}" values={{ code: codeSearchResult.codigoTorneo }} />
+                                </div>
+                            </div>
+                            <i className="fa-solid fa-arrow-right" style={{ color: '#2563eb' }} />
+                        </div>
+                    </Link>
+                </div>
+            )}
 
             {/* Error */}
             {error && (

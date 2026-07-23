@@ -4,7 +4,7 @@
     display: flex;
     justify-content: center;
     gap: 0;
-    margin-bottom: 2rem;
+    margin-bottom: 1rem;
     padding: 0 1rem;
 }
 
@@ -73,7 +73,7 @@
 }
 
 .wizard-step-content {
-    min-height: 320px;
+    min-height: 260px;
     animation: fadeIn 0.3s ease-in-out;
 }
 
