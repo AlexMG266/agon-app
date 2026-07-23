@@ -204,8 +204,8 @@ const Dashboard = () => {
                                     </div>
                                 ))}
                                 {userTournaments.length > 5 && (
-                                    <Link to="/tournaments/my" className="section-action" style={{ padding: '0.75rem 1rem', display: 'block', textAlign: 'center', borderTop: '1px solid #f3f4f6' }}>
-                                        <FormattedMessage id="project.app.Home.dashboard.viewAll" defaultMessage="Ver todos ({count})" values={{ count: userTournaments.length }} />
+                                        <Link to="/tournaments/my" className="section-action" style={{ padding: '0.75rem 1rem', display: 'block', textAlign: 'center', borderTop: '1px solid #f3f4f6' }}>
+                                            <FormattedMessage id="project.app.Home.dashboard.viewAll" defaultMessage="Ver todos ({count})" values={{ count: userTournaments.length }} />
                                     </Link>
                                 )}
                             </div>
