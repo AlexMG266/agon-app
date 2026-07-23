@@ -25,3 +25,27 @@ export const getMyTournaments = () => dispatch => {
 export const clearTournamentError = () => ({
     type: actionTypes.CLEAR_TOURNAMENT_ERROR
 });
+
+export const getFollowedTournaments = () => dispatch => {
+    backend.tournamentService.getFollowedTournaments()
+        .then(response => {
+            if (response.ok) {
+                dispatch({ type: actionTypes.GET_FOLLOWED_TOURNAMENTS_COMPLETED, followedTournaments: response.payload });
+            }
+        })
+        .catch(err => {
+            console.error("Error al obtener torneos seguidos", err);
+        });
+};
+
+export const getEnrolledTournaments = () => dispatch => {
+    backend.tournamentService.getEnrolledTournaments()
+        .then(response => {
+            if (response.ok) {
+                dispatch({ type: actionTypes.GET_ENROLLED_TOURNAMENTS_COMPLETED, enrolledTournaments: response.payload });
+            }
+        })
+        .catch(err => {
+            console.error("Error al obtener torneos inscritos", err);
+        });
+};

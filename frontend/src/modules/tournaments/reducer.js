@@ -3,7 +3,9 @@ import * as actionTypes from './actionTypes';
 
 const initialState = {
     error: null,
-    userTournaments: []
+    userTournaments: [],
+    followedTournaments: [],
+    enrolledTournaments: []
 };
 
 const error = (state = initialState.error, action) => {
@@ -26,9 +28,29 @@ const userTournaments = (state = initialState.userTournaments, action) => {
     }
 };
 
+const followedTournaments = (state = initialState.followedTournaments, action) => {
+    switch (action.type) {
+        case actionTypes.GET_FOLLOWED_TOURNAMENTS_COMPLETED:
+            return action.followedTournaments;
+        default:
+            return state;
+    }
+};
+
+const enrolledTournaments = (state = initialState.enrolledTournaments, action) => {
+    switch (action.type) {
+        case actionTypes.GET_ENROLLED_TOURNAMENTS_COMPLETED:
+            return action.enrolledTournaments;
+        default:
+            return state;
+    }
+};
+
 const reducer = combineReducers({
     error,
-    userTournaments
+    userTournaments,
+    followedTournaments,
+    enrolledTournaments
 });
 
 export default reducer;
