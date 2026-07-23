@@ -118,76 +118,6 @@ const Dashboard = () => {
                 </div>
             </div>
 
-            {/* Code search widget */}
-            <div className="dashboard-section" style={{ marginBottom: '1.5rem' }}>
-                <div style={{
-                    background: '#f9fafb',
-                    borderRadius: '12px',
-                    padding: '1rem 1.25rem',
-                    border: '1px solid #e5e7eb'
-                }}>
-                    <div style={{ fontSize: '0.85rem', fontWeight: '600', color: '#374151', marginBottom: '0.5rem' }}>
-                        <i className="fa-regular fa-qrcode me-1" />
-                        <FormattedMessage id="project.app.Home.dashboard.codeSearchTitle" defaultMessage="Buscar torneo por código" />
-                    </div>
-                    <Form onSubmit={handleCodeSearch} style={{ display: 'flex', gap: '0.5rem' }}>
-                        <Form.Control
-                            type="text"
-                            placeholder={intl.formatMessage({ id: 'project.app.Home.dashboard.codePlaceholder', defaultMessage: 'Ej. T22-K9M8' })}
-                            value={codeSearchTerm}
-                            onChange={(e) => setCodeSearchTerm(e.target.value)}
-                            style={{ borderRadius: '999px', maxWidth: '300px' }}
-                        />
-                        <Button type="submit" variant="dark" className="rounded-pill px-3" disabled={codeSearching || !codeSearchTerm.trim()}>
-                            {codeSearching ? (
-                                <Spinner animation="border" size="sm" />
-                            ) : (
-                                <i className="fa-solid fa-search" />
-                            )}
-                        </Button>
-                        {codeSearchResult && (
-                            <Button variant="outline-secondary" className="rounded-pill" size="sm" onClick={() => { setCodeSearchResult(null); setCodeError(null); setCodeSearchTerm(''); }}>
-                                <i className="fa-solid fa-xmark" />
-                            </Button>
-                        )}
-                    </Form>
-
-                    {codeError && (
-                        <div style={{ color: '#dc2626', fontSize: '0.85rem', marginTop: '0.5rem' }}>
-                            <i className="fa-regular fa-circle-exclamation me-1" />
-                            {codeError}
-                        </div>
-                    )}
-
-                    {codeSearchResult && (
-                        <div style={{ marginTop: '0.75rem' }}>
-                            <Link to={`/tournaments/view/${codeSearchResult.id}`} style={{ textDecoration: 'none' }}>
-                                <div style={{
-                                    display: 'flex',
-                                    justifyContent: 'space-between',
-                                    alignItems: 'center',
-                                    padding: '0.75rem 1rem',
-                                    background: '#fff',
-                                    borderRadius: '12px',
-                                    border: '1px solid #2563eb40'
-                                }}>
-                                    <div>
-                                        <div style={{ fontWeight: '600', color: '#1d1d1f' }}>
-                                            {codeSearchResult.privado && <span style={{ marginRight: '0.5rem' }}>🔒</span>}
-                                            {codeSearchResult.nombre}
-                                        </div>
-                                        <div style={{ fontSize: '0.85rem', color: '#6b7280' }}>
-                                            <FormattedMessage id="project.app.Home.dashboard.codeFound" defaultMessage="Código: {code}" values={{ code: codeSearchResult.codigoTorneo }} />
-                                        </div>
-                                    </div>
-                                    <i className="fa-solid fa-arrow-right" style={{ color: '#2563eb' }} />
-                                </div>
-                            </Link>
-                        </div>
-                    )}
-                </div>
-            </div>
-
             <div className="dashboard-grid">
                 <div className="dashboard-section">
                     <div className="section-header">
@@ -289,6 +219,78 @@ const Dashboard = () => {
                             </Link>
                         </div>
                     )}
+
+                    <div className="join-team-divider"></div>
+                    <div className="join-team">
+                        <div className="join-team-header">
+                            <h5 className="join-team-title">
+                                <i className="fa-solid fa-magnifying-glass me-2"></i>
+                                <FormattedMessage id="project.app.Home.dashboard.codeSearchTitle" defaultMessage="Buscar torneo por código" />
+                            </h5>
+                        </div>
+
+                        <p className="join-team-subtitle">
+                            <FormattedMessage id="project.app.Home.dashboard.codePlaceholder" defaultMessage="Introduce el código del torneo" />
+                        </p>
+
+                        <Form onSubmit={handleCodeSearch} className="join-team-form">
+                            <div className="join-team-input-group">
+                                <Form.Control
+                                    type="text"
+                                    value={codeSearchTerm}
+                                    onChange={(e) => setCodeSearchTerm(e.target.value)}
+                                    placeholder={intl.formatMessage({ id: 'project.app.Home.dashboard.codePlaceholder', defaultMessage: 'Ej. T22-K9M8' })}
+                                    className="join-team-input"
+                                    disabled={codeSearching}
+                                />
+                                <Button
+                                    type="submit"
+                                    className="join-team-search-btn"
+                                    disabled={codeSearching || !codeSearchTerm.trim()}
+                                >
+                                    {codeSearching ? (
+                                        <>
+                                            <Spinner as="span" animation="border" size="sm" role="status" className="me-1" />
+                                            <FormattedMessage id="project.teams.JoinTeam.searching" defaultMessage="Buscando..." />
+                                        </>
+                                    ) : (
+                                        <>
+                                            <i className="fa-solid fa-search me-1"></i>
+                                            <FormattedMessage id="project.teams.JoinTeam.search" defaultMessage="Buscar" />
+                                        </>
+                                    )}
+                                </Button>
+                            </div>
+                        </Form>
+
+                        {codeError && (
+                            <div style={{ color: '#dc2626', fontSize: '0.85rem', marginTop: '0.5rem', padding: '0 0.25rem' }}>
+                                <i className="fa-regular fa-circle-exclamation me-1"></i>
+                                {codeError}
+                            </div>
+                        )}
+
+                        {codeSearchResult && (
+                            <Link to={`/tournaments/view/${codeSearchResult.id}`} style={{ textDecoration: 'none' }} onClick={() => { setCodeSearchTerm(''); setCodeSearchResult(null); setCodeError(null); }}>
+                                <div className="join-team-result">
+                                    <div className="join-team-result-header">
+                                        <div className="join-team-result-icon">
+                                            <i className="fa-solid fa-trophy"></i>
+                                        </div>
+                                        <div className="join-team-result-info">
+                                            <div className="join-team-result-name">
+                                                {codeSearchResult.privado && <span style={{ marginRight: '0.5rem' }}>🔒</span>}
+                                                {codeSearchResult.nombre}
+                                            </div>
+                                            <div className="join-team-result-meta">
+                                                <FormattedMessage id="project.app.Home.dashboard.codeFound" defaultMessage="Código: {code}" values={{ code: codeSearchResult.codigoTorneo }} />
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </Link>
+                        )}
+                    </div>
                 </div>
             </div>
 

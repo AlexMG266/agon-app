@@ -460,6 +460,7 @@ export default {
 
     'project.app.Home.dashboard.codeSearchTitle': 'Buscar torneo por código',
     'project.app.Home.dashboard.codePlaceholder': 'Ex. T22-K9M8',
+    'project.app.Home.dashboard.codeFound': 'Código: {code}',
     'project.app.Home.dashboard.codeNotFound': 'Non se atopou ningún torneo con ese código',
     'project.app.Home.dashboard.codeError': 'Erro ao buscar o torneo'
 }
