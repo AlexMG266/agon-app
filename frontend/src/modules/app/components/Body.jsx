@@ -6,7 +6,7 @@ import AppGlobalComponents from './AppGlobalComponents';
 import Home from './Home';
 import { Login, SignUp, Profile, Logout, Notifications } from '../../users';
 import { CreateTeam, TeamDetail, JoinTeam } from '../../teams';
-import { CreateTournament, TournamentDetail } from '../../tournaments';
+import { CreateTournament, TournamentDetail, BrowseTournaments } from '../../tournaments';
 import MyTournaments from '../../tournaments/components/MyTournaments';
 import MyTeams from '../../teams/components/MyTeams';
 import ForbiddenPage from '../../common/components/ForbiddenPage';
@@ -48,9 +48,13 @@ const Body = () => {
 
                     <div className="sidebar-group">
                         <span className="sidebar-title"><FormattedMessage id="project.app.sidebar.myTournaments" defaultMessage="Torneos" /></span>
+                        <NavLink to="/tournaments/browse" className={({ isActive }) => `sidebar-link ${isActive ? 'active' : ''}`}>
+                            <i className="fa-solid fa-compass"></i>
+                            <span><FormattedMessage id="project.app.sidebar.browseTournaments" defaultMessage="Explorar" /></span>
+                        </NavLink>
                         <NavLink to="/tournaments/my" className={({ isActive }) => `sidebar-link ${isActive ? 'active' : ''}`}>
                             <i className="fa-solid fa-trophy"></i>
-                            <span><FormattedMessage id="project.app.sidebar.myTournaments" defaultMessage="Torneos" /></span>
+                            <span><FormattedMessage id="project.app.sidebar.myTournaments" defaultMessage="Mis Torneos" /></span>
                         </NavLink>
                         <NavLink to="/tournaments/create" className={({ isActive }) => `sidebar-link ${isActive ? 'active' : ''}`}>
                             <i className="fa-solid fa-plus"></i>
@@ -95,6 +99,7 @@ const Body = () => {
                     {loggedIn && <Route path="/teams/join" element={<JoinTeam />} />}
                     {loggedIn && <Route path="/tournaments/my" element={<MyTournaments />} />}
                     {loggedIn && <Route path="/tournaments/create" element={<CreateTournament />} />}
+                    {loggedIn && <Route path="/tournaments/browse" element={<BrowseTournaments />} />}
                     {loggedIn && <Route path="/tournaments/view/:id" element={<TournamentDetail />} />}
                     <Route path="/forbidden" element={<ForbiddenPage />} />
                     <Route path="*" element={<NotFoundPage />} />

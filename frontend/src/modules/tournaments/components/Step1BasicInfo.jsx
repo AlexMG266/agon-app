@@ -39,6 +39,33 @@ const Step1BasicInfo = ({ data, onChange, errors }) => {
                 </Form.Control.Feedback>
             </Form.Group>
 
+            {/* Privacy toggle */}
+            <Form.Group className="mb-4" controlId="tournamentPrivacy">
+                <Form.Label className="text-secondary small fw-medium mb-2">
+                    <FormattedMessage id="project.tournaments.CreateTournament.step1.privacy" defaultMessage="Privacidad del torneo" />
+                </Form.Label>
+                <div className="d-flex align-items-center gap-3">
+                    <Form.Check
+                        type="switch"
+                        id="privado-switch"
+                        label={
+                            data.privado
+                                ? intl.formatMessage({ id: 'project.tournaments.CreateTournament.step1.privado', defaultMessage: 'Privado' })
+                                : intl.formatMessage({ id: 'project.tournaments.CreateTournament.step1.publico', defaultMessage: 'Público' })
+                        }
+                        checked={data.privado || false}
+                        onChange={(e) => handleChange('privado', e.target.checked)}
+                    />
+                    <span className="text-muted small">
+                        {data.privado ? (
+                            <FormattedMessage id="project.tournaments.CreateTournament.step1.privadoHelp" defaultMessage="Solo equipos con el código pueden inscribirse" />
+                        ) : (
+                            <FormattedMessage id="project.tournaments.CreateTournament.step1.publicoHelp" defaultMessage="Cualquier equipo puede inscribirse libremente" />
+                        )}
+                    </span>
+                </div>
+            </Form.Group>
+
             <Row>
                 <Col md={4}>
                     <Form.Group className="mb-3" controlId="tournamentStartDate">

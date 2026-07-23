@@ -21,6 +21,10 @@ const TournamentDetail = () => {
     const [backendErrors, setBackendErrors] = useState(null);
     const [configuring, setConfiguring] = useState(false);
     const [closing, setClosing] = useState(false);
+    const [enrolling, setEnrolling] = useState(false);
+    const [myTeams, setMyTeams] = useState([]);
+    const [selectedTeamId, setSelectedTeamId] = useState('');
+    const [codigoTorneo, setCodigoTorneo] = useState('');
 
     // Configurator form state
     const [configData, setConfigData] = useState({
@@ -36,6 +40,13 @@ const TournamentDetail = () => {
     useEffect(() => {
         loadTournament();
     }, [id]);
+
+    // Load user's teams when tournament is in RECLUTANDO state
+    useEffect(() => {
+        if (tournament && tournament.estado === 'RECLUTANDO') {
+            loadMyTeams();
+        }
+    }, [tournament?.estado]);
 
     const loadTournament = async () => {
         setLoading(true);
@@ -60,6 +71,43 @@ const TournamentDetail = () => {
             setTournament(null);
         } finally {
             setLoading(false);
+        }
+    };
+
+    const loadMyTeams = async () => {
+        try {
+            const response = await backend.teamService.getMyTeams();
+            if (response.ok && Array.isArray(response.payload)) {
+                setMyTeams(response.payload);
+            }
+        } catch (err) {
+            console.error('Error loading teams:', err);
+        }
+    };
+
+    const handleEnrollTeam = async () => {
+        if (!selectedTeamId) return;
+
+        setEnrolling(true);
+        setBackendErrors(null);
+        try {
+            const code = tournament.privado ? codigoTorneo : undefined;
+            const response = await backend.tournamentService.enrollTeam(id, parseInt(selectedTeamId, 10), code);
+            if (response.ok && response.payload) {
+                setTournament(response.payload);
+                setSelectedTeamId('');
+                setCodigoTorneo('');
+            } else {
+                setBackendErrors(response.payload || response.error);
+            }
+        } catch (err) {
+            console.error('Error enrolling team:', err);
+            setBackendErrors(err.message || intl.formatMessage({
+                id: 'project.tournaments.Detail.enroll.error.generic',
+                defaultMessage: 'Error al inscribir el equipo'
+            }));
+        } finally {
+            setEnrolling(false);
         }
     };
 
@@ -235,6 +283,7 @@ const TournamentDetail = () => {
     const isOrganizer = loggedUser?.id === tournament.organizadorId;
     const showConfigurator = tournament.estado === 'INSCRIPCION_CERRADA' && isOrganizer;
     const showCloseButton = tournament.estado === 'RECLUTANDO' && isOrganizer;
+    const showEnrollSection = tournament.estado === 'RECLUTANDO' && !isOrganizer && loggedUser;
 
     return (
         <Container className="tournament-detail-container">
@@ -251,7 +300,14 @@ const TournamentDetail = () => {
             <div className="tournament-detail-card">
                 <div className="tournament-detail-title-section">
                     <div className="tournament-detail-title-row">
-                        <h2 className="tournament-detail-name">{tournament.nombre}</h2>
+                        <h2 className="tournament-detail-name">
+                            {tournament.nombre}
+                            {tournament.privado && (
+                                <span className="ms-2" style={{ fontSize: '1rem' }} title={intl.formatMessage({ id: 'project.tournaments.Detail.privado', defaultMessage: 'Torneo privado' })}>
+                                    🔒
+                                </span>
+                            )}
+                        </h2>
                         <span className={`tournament-detail-badge ${getEstadoBadgeClass(tournament.estado)}`}>
                             {formatEstado(tournament.estado)}
                         </span>
@@ -263,6 +319,20 @@ const TournamentDetail = () => {
                             defaultMessage="Organizado por {name}"
                             values={{ name: tournament.organizadorNombre }}
                         />
+                    </p>
+                    {/* Tournament code display */}
+                    <p className="tournament-detail-code" style={{ fontSize: '0.85rem', color: '#6b7280' }}>
+                        <i className="fa-regular fa-qrcode me-1" />
+                        <FormattedMessage
+                            id="project.tournaments.Detail.code"
+                            defaultMessage="Código: {code}"
+                            values={{ code: tournament.codigoTorneo }}
+                        />
+                        {tournament.privado && (
+                            <span className="ms-2" style={{ color: '#dc2626', fontWeight: '500' }}>
+                                <FormattedMessage id="project.tournaments.Detail.codeRequired" defaultMessage="(requerido para inscribirse)" />
+                            </span>
+                        )}
                     </p>
                 </div>
 
@@ -498,7 +568,72 @@ const TournamentDetail = () => {
                 </div>
             )}
 
-            {/* Teams list section placeholder */}
+            {/* Enroll Team — only when RECLUTANDO and not the organizer */}
+            {showEnrollSection && (
+                <div className="tournament-actions-card">
+                    <div className="tournament-actions-body">
+                        <div className="tournament-actions-info">
+                            <i className="fa-regular fa-hand-pointer me-2" />
+                            <span>
+                                <FormattedMessage
+                                    id="project.tournaments.Detail.enroll.info"
+                                    defaultMessage="Inscribe uno de tus equipos en este torneo."
+                                />
+                            </span>
+                        </div>
+                        <div className="d-flex gap-2 align-items-center flex-shrink-0" style={{ flexDirection: 'column', alignItems: 'stretch' }}>
+                            <Form.Select
+                                value={selectedTeamId}
+                                onChange={(e) => setSelectedTeamId(e.target.value)}
+                                style={{ minWidth: '220px' }}
+                                disabled={enrolling}
+                            >
+                                <option value="">
+                                    {intl.formatMessage({ id: 'project.tournaments.Detail.enroll.selectTeam', defaultMessage: 'Seleccionar equipo...' })}
+                                </option>
+                                {myTeams
+                                    .filter(team => team.estado === 'ACTIVO' && team.creadorId === loggedUser?.id)
+                                    .map(team => (
+                                        <option key={team.id} value={team.id}>
+                                            {team.nombreEquipo}
+                                        </option>
+                                    ))}
+                            </Form.Select>
+                            {/* Code input for private tournaments */}
+                            {tournament.privado && (
+                                <Form.Control
+                                    type="text"
+                                    placeholder={intl.formatMessage({ id: 'project.tournaments.Detail.enroll.codePlaceholder', defaultMessage: 'Código del torneo...' })}
+                                    value={codigoTorneo}
+                                    onChange={(e) => setCodigoTorneo(e.target.value)}
+                                    style={{ minWidth: '220px' }}
+                                    disabled={enrolling}
+                                />
+                            )}
+                            <Button
+                                variant="dark"
+                                className="rounded-pill px-4"
+                                onClick={handleEnrollTeam}
+                                disabled={enrolling || !selectedTeamId || (tournament.privado && !codigoTorneo)}
+                            >
+                                {enrolling ? (
+                                    <>
+                                        <Spinner animation="border" size="sm" className="me-2" />
+                                        <FormattedMessage id="project.tournaments.Detail.enroll.enrolling" defaultMessage="Inscribiendo..." />
+                                    </>
+                                ) : (
+                                    <>
+                                        <i className="fa-regular fa-paper-plane me-2" />
+                                        <FormattedMessage id="project.tournaments.Detail.enroll.button" defaultMessage="Inscribir" />
+                                    </>
+                                )}
+                            </Button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* Teams list section */}
             <div className="tournament-detail-section">
                 <h5 className="section-title">
                     <i className="fa-regular fa-users me-2" />
@@ -517,6 +652,16 @@ const TournamentDetail = () => {
                         <i className="fa-regular fa-users-slash mb-2" style={{ fontSize: '1.3rem', display: 'block' }} />
                         <FormattedMessage id="project.tournaments.Detail.noTeams" defaultMessage="No hay equipos inscritos todavía" />
                     </div>
+                )}
+                {tournament.inscripciones && tournament.inscripciones.length > 0 && (
+                    <ul className="list-unstyled mb-0">
+                        {tournament.inscripciones.map((insc, idx) => (
+                            <li key={idx} className="d-flex align-items-center gap-2 py-1">
+                                <i className="fa-regular fa-shield text-muted" style={{ width: '16px' }} />
+                                <span>{insc.nombreEquipo}</span>
+                            </li>
+                        ))}
+                    </ul>
                 )}
             </div>
         </Container>
