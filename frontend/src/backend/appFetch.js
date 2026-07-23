@@ -3,20 +3,17 @@ const SERVICE_TOKEN_NAME = 'serviceToken';
 
 let networkErrorCallback;
 let reauthenticationCallback;
-let forbiddenCallback;
 
 export const init = callback => networkErrorCallback = callback;
 
 export const setReauthenticationCallback = callback => reauthenticationCallback = callback;
 
-export const setForbiddenCallback = callback => forbiddenCallback = callback;
-
-export const setServiceToken = serviceToken => 
+export const setServiceToken = serviceToken =>
     localStorage.setItem(SERVICE_TOKEN_NAME, serviceToken);
 
 export const getServiceToken = () => localStorage.getItem(SERVICE_TOKEN_NAME);
 
-export const removeServiceToken = () => 
+export const removeServiceToken = () =>
     localStorage.removeItem(SERVICE_TOKEN_NAME);
 
 const isJson = response => {
@@ -68,9 +65,6 @@ export const appFetch = async (method, path, body) => {
         if (response.status === 403) {
             console.error('Error 403: No tienes permisos para acceder a este recurso');
             appFetchResponse.error = 'No tienes permisos para acceder a este recurso';
-            if (forbiddenCallback) {
-                forbiddenCallback();
-            }
             return appFetchResponse;
         }
 

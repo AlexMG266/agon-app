@@ -40,13 +40,48 @@ export const closeTournament = async (id) => {
     return await appFetch('POST', `/tournaments/${id}/close`);
 };
 
-// POST /tournaments/{id}/enroll: inscribe un equipo en el torneo (con código opcional si es privado).
-export const enrollTeam = async (tournamentId, equipoId, codigoTorneo) => {
+// POST /tournaments/{id}/enroll: solicita inscripción de un equipo en el torneo (con código opcional si es privado).
+export const requestEnroll = async (tournamentId, equipoId, codigoTorneo) => {
     const body = { equipoId };
     if (codigoTorneo) {
         body.codigoTorneo = codigoTorneo;
     }
     return await appFetch('POST', `/tournaments/${tournamentId}/enroll`, body);
+};
+
+// GET /tournaments/{id}/enrollment-requests: obtiene solicitudes de inscripción pendientes.
+export const getPendingRequests = async (tournamentId) => {
+    return await appFetch('GET', `/tournaments/${tournamentId}/enrollment-requests`);
+};
+
+// POST /tournaments/{id}/enrollment-requests/{solicitudId}/approve: aprueba una solicitud de inscripción.
+export const approveEnrollment = async (tournamentId, solicitudId) => {
+    return await appFetch('POST', `/tournaments/${tournamentId}/enrollment-requests/${solicitudId}/approve`);
+};
+
+// POST /tournaments/{id}/enrollment-requests/{solicitudId}/reject: rechaza una solicitud de inscripción.
+export const rejectEnrollment = async (tournamentId, solicitudId) => {
+    return await appFetch('POST', `/tournaments/${tournamentId}/enrollment-requests/${solicitudId}/reject`);
+};
+
+// GET /tournaments/followed: obtiene los torneos seguidos por el usuario autenticado.
+export const getFollowedTournaments = async () => {
+    return await appFetch('GET', '/tournaments/followed');
+};
+
+// GET /tournaments/enrolled: obtiene los torneos donde el usuario tiene equipos inscritos.
+export const getEnrolledTournaments = async () => {
+    return await appFetch('GET', '/tournaments/enrolled');
+};
+
+// POST /tournaments/{id}/follow: sigue un torneo.
+export const followTournament = async (id) => {
+    return await appFetch('POST', `/tournaments/${id}/follow`);
+};
+
+// DELETE /tournaments/{id}/follow: deja de seguir un torneo.
+export const unfollowTournament = async (id) => {
+    return await appFetch('DELETE', `/tournaments/${id}/follow`);
 };
 
 export default {
@@ -58,5 +93,12 @@ export default {
     getTournamentByCode,
     configureTournament,
     closeTournament,
-    enrollTeam
+    requestEnroll,
+    getPendingRequests,
+    approveEnrollment,
+    rejectEnrollment,
+    getFollowedTournaments,
+    getEnrolledTournaments,
+    followTournament,
+    unfollowTournament
 };
