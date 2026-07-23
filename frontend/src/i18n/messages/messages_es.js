@@ -40,7 +40,8 @@ export default {
     'project.app.sidebar.dashboard': 'Panel Principal',
     'project.app.sidebar.myTeams': 'Equipos',
     'project.app.sidebar.createTeam': 'Crear equipo',
-    'project.app.sidebar.myTournaments': 'Torneos',
+    'project.app.sidebar.myTournaments': 'Mis Torneos',
+    'project.app.sidebar.browseTournaments': 'Explorar',
     'project.app.sidebar.createTournament': 'Crear torneo',
     'project.app.sidebar.alertCenter': 'Centro de Alertas',
     'project.app.sidebar.notifications': 'Notificaciones',
@@ -401,6 +402,12 @@ export default {
     'project.tournaments.Detail.close.closing': 'Cerrando...',
     'project.tournaments.Detail.close.error.generic': 'Error al cerrar las inscripciones',
 
+    'project.tournaments.Detail.enroll.info': 'Inscribe uno de tus equipos en este torneo.',
+    'project.tournaments.Detail.enroll.selectTeam': 'Seleccionar equipo...',
+    'project.tournaments.Detail.enroll.button': 'Inscribir',
+    'project.tournaments.Detail.enroll.enrolling': 'Inscribiendo...',
+    'project.tournaments.Detail.enroll.error.generic': 'Error al inscribir el equipo',
+
     'project.app.Home.dashboard.viewAll': 'Ver todos ({count})',
     'project.app.Home.dashboard.viewAllTeams': 'Ver todos ({count})',
 
@@ -420,6 +427,40 @@ export default {
     'project.tournaments.MyTournaments.view': 'Ver →',
     'project.tournaments.MyTournaments.noTournaments': 'Aún no has creado ningún torneo',
     'project.tournaments.MyTournaments.noTournamentsHelp': 'Crea tu primer torneo para empezar a competir',
-    'project.tournaments.MyTournaments.createAction': 'Crear torneo →'
+    'project.tournaments.MyTournaments.createAction': 'Crear torneo →',
 
+    'project.tournaments.Browse.title': 'Explorar Torneos',
+    'project.tournaments.Browse.subtitle': 'Encuentra torneos disponibles para inscribirte',
+    'project.tournaments.Browse.loadError': 'Error al cargar torneos',
+    'project.tournaments.Browse.connectionError': 'Error de conexión',
+    'project.tournaments.Browse.searchPlaceholder': 'Buscar por nombre...',
+    'project.tournaments.Browse.filterAll': 'Todos los estados',
+    'project.tournaments.Browse.clearFilter': 'Limpiar filtros',
+    'project.tournaments.Browse.organizer': 'Organizador: {name}',
+    'project.tournaments.Browse.teamsCount': '{count} equipo(s)',
+    'project.tournaments.Browse.noResults': 'No se encontraron torneos con los filtros seleccionados',
+    'project.tournaments.Browse.noResultsHelp': 'Prueba con otros términos o limpia los filtros',
+    'project.tournaments.Browse.noTournaments': 'No hay torneos disponibles',
+    'project.tournaments.Browse.noTournamentsHelp': 'Cuando alguien cree un torneo, aparecerá aquí',
+
+    'project.tournaments.CreateTournament.step1.privacy': 'Privacidad del torneo',
+    'project.tournaments.CreateTournament.step1.publico': 'Público',
+    'project.tournaments.CreateTournament.step1.privado': 'Privado',
+    'project.tournaments.CreateTournament.step1.publicoHelp': 'Cualquier equipo puede inscribirse libremente',
+    'project.tournaments.CreateTournament.step1.privadoHelp': 'Solo equipos con el código pueden inscribirse',
+
+    'project.tournaments.Detail.privado': '🔒 Torneo privado',
+    'project.tournaments.Detail.code': 'Código: {code}',
+    'project.tournaments.Detail.codeRequired': '(requerido para inscribirse)',
+    'project.tournaments.Detail.enroll.codePlaceholder': 'Código del torneo...',
+
+    'project.tournaments.Browse.codeSearchTitle': 'Buscar por código de torneo',
+    'project.tournaments.Browse.codePlaceholder': 'Ej. T22-K9M8',
+    'project.tournaments.Browse.codeNotFound': 'No se encontró ningún torneo con ese código',
+    'project.tournaments.Browse.codeError': 'Error al buscar por código',
+
+    'project.app.Home.dashboard.codeSearchTitle': 'Buscar torneo por código',
+    'project.app.Home.dashboard.codePlaceholder': 'Ej. T22-K9M8',
+    'project.app.Home.dashboard.codeNotFound': 'No se encontró ningún torneo con ese código',
+    'project.app.Home.dashboard.codeError': 'Error al buscar el torneo'
 }

@@ -40,7 +40,8 @@ export default {
     'project.app.sidebar.dashboard': 'Panel Principal',
     'project.app.sidebar.myTeams': 'Equipos',
     'project.app.sidebar.createTeam': 'Crear equipo',
-    'project.app.sidebar.myTournaments': 'Torneos',
+    'project.app.sidebar.myTournaments': 'Os Meus Torneos',
+    'project.app.sidebar.browseTournaments': 'Explorar',
     'project.app.sidebar.createTournament': 'Crear torneo',
     'project.app.sidebar.alertCenter': 'Centro de Alertas',
     'project.app.sidebar.notifications': 'Notificacións',
@@ -401,6 +402,12 @@ export default {
     'project.tournaments.Detail.close.closing': 'Pechando...',
     'project.tournaments.Detail.close.error.generic': 'Erro ao pechar as inscricións',
 
+    'project.tournaments.Detail.enroll.info': 'Inscribe un dos teus equipos neste torneo.',
+    'project.tournaments.Detail.enroll.selectTeam': 'Seleccionar equipo...',
+    'project.tournaments.Detail.enroll.button': 'Inscribir',
+    'project.tournaments.Detail.enroll.enrolling': 'Inscribindo...',
+    'project.tournaments.Detail.enroll.error.generic': 'Erro ao inscribir o equipo',
+
     'project.app.Home.dashboard.viewAll': 'Ver todos ({count})',
 
     'project.teams.MyTeams.title': 'Os Meus Equipos',
@@ -419,6 +426,40 @@ export default {
     'project.tournaments.MyTournaments.view': 'Ver →',
     'project.tournaments.MyTournaments.noTournaments': 'Aínda non creaches ningún torneo',
     'project.tournaments.MyTournaments.noTournamentsHelp': 'Crea o teu primeiro torneo para comezar a competir',
-    'project.tournaments.MyTournaments.createAction': 'Crear torneo →'
+    'project.tournaments.MyTournaments.createAction': 'Crear torneo →',
 
+    'project.tournaments.Browse.title': 'Explorar Torneos',
+    'project.tournaments.Browse.subtitle': 'Atopa torneos dispoñibles para inscribirte',
+    'project.tournaments.Browse.loadError': 'Erro ao cargar torneos',
+    'project.tournaments.Browse.connectionError': 'Erro de conexión',
+    'project.tournaments.Browse.searchPlaceholder': 'Buscar por nome...',
+    'project.tournaments.Browse.filterAll': 'Todos os estados',
+    'project.tournaments.Browse.clearFilter': 'Limpar filtros',
+    'project.tournaments.Browse.organizer': 'Organizador: {name}',
+    'project.tournaments.Browse.teamsCount': '{count} equipo(s)',
+    'project.tournaments.Browse.noResults': 'Non se atoparon torneos cos filtros seleccionados',
+    'project.tournaments.Browse.noResultsHelp': 'Proba con outros termos ou limpa os filtros',
+    'project.tournaments.Browse.noTournaments': 'Non hai torneos dispoñibles',
+    'project.tournaments.Browse.noTournamentsHelp': 'Cando alguén cree un torneo, aparecerá aquí',
+
+    'project.tournaments.CreateTournament.step1.privacy': 'Privacidade do torneo',
+    'project.tournaments.CreateTournament.step1.publico': 'Público',
+    'project.tournaments.CreateTournament.step1.privado': 'Privado',
+    'project.tournaments.CreateTournament.step1.publicoHelp': 'Calquera equipo pode inscribirse libremente',
+    'project.tournaments.CreateTournament.step1.privadoHelp': 'Só equipos co código poden inscribirse',
+
+    'project.tournaments.Detail.privado': '🔒 Torneo privado',
+    'project.tournaments.Detail.code': 'Código: {code}',
+    'project.tournaments.Detail.codeRequired': '(requerido para inscribirse)',
+    'project.tournaments.Detail.enroll.codePlaceholder': 'Código do torneo...',
+
+    'project.tournaments.Browse.codeSearchTitle': 'Buscar por código de torneo',
+    'project.tournaments.Browse.codePlaceholder': 'Ex. T22-K9M8',
+    'project.tournaments.Browse.codeNotFound': 'Non se atopou ningún torneo con ese código',
+    'project.tournaments.Browse.codeError': 'Erro ao buscar por código',
+
+    'project.app.Home.dashboard.codeSearchTitle': 'Buscar torneo por código',
+    'project.app.Home.dashboard.codePlaceholder': 'Ex. T22-K9M8',
+    'project.app.Home.dashboard.codeNotFound': 'Non se atopou ningún torneo con ese código',
+    'project.app.Home.dashboard.codeError': 'Erro ao buscar o torneo'
 }

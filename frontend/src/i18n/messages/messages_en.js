@@ -40,7 +40,8 @@ export default {
     'project.app.sidebar.dashboard': 'Dashboard',
     'project.app.sidebar.myTeams': 'Teams',
     'project.app.sidebar.createTeam': 'Create team',
-    'project.app.sidebar.myTournaments': 'Tournaments',
+    'project.app.sidebar.myTournaments': 'My Tournaments',
+    'project.app.sidebar.browseTournaments': 'Explore',
     'project.app.sidebar.createTournament': 'Create tournament',
     'project.app.sidebar.alertCenter': 'Alert Center',
     'project.app.sidebar.notifications': 'Notifications',
@@ -401,6 +402,12 @@ export default {
     'project.tournaments.Detail.close.closing': 'Closing...',
     'project.tournaments.Detail.close.error.generic': 'Error closing registrations',
 
+    'project.tournaments.Detail.enroll.info': 'Enroll one of your teams in this tournament.',
+    'project.tournaments.Detail.enroll.selectTeam': 'Select team...',
+    'project.tournaments.Detail.enroll.button': 'Enroll',
+    'project.tournaments.Detail.enroll.enrolling': 'Enrolling...',
+    'project.tournaments.Detail.enroll.error.generic': 'Error enrolling team',
+
     'project.app.Home.dashboard.viewAll': 'View all ({count})',
 
     'project.teams.MyTeams.title': 'My Teams',
@@ -419,6 +426,40 @@ export default {
     'project.tournaments.MyTournaments.view': 'View →',
     'project.tournaments.MyTournaments.noTournaments': 'No tournaments yet',
     'project.tournaments.MyTournaments.noTournamentsHelp': 'Create your first tournament to start competing',
-    'project.tournaments.MyTournaments.createAction': 'Create tournament →'
+    'project.tournaments.MyTournaments.createAction': 'Create tournament →',
 
+    'project.tournaments.Browse.title': 'Explore Tournaments',
+    'project.tournaments.Browse.subtitle': 'Find tournaments available to join',
+    'project.tournaments.Browse.loadError': 'Error loading tournaments',
+    'project.tournaments.Browse.connectionError': 'Connection error',
+    'project.tournaments.Browse.searchPlaceholder': 'Search by name...',
+    'project.tournaments.Browse.filterAll': 'All statuses',
+    'project.tournaments.Browse.clearFilter': 'Clear filters',
+    'project.tournaments.Browse.organizer': 'Organizer: {name}',
+    'project.tournaments.Browse.teamsCount': '{count} team(s)',
+    'project.tournaments.Browse.noResults': 'No tournaments found with the selected filters',
+    'project.tournaments.Browse.noResultsHelp': 'Try different terms or clear the filters',
+    'project.tournaments.Browse.noTournaments': 'No tournaments available',
+    'project.tournaments.Browse.noTournamentsHelp': 'When someone creates a tournament, it will appear here',
+
+    'project.tournaments.CreateTournament.step1.privacy': 'Tournament privacy',
+    'project.tournaments.CreateTournament.step1.publico': 'Public',
+    'project.tournaments.CreateTournament.step1.privado': 'Private',
+    'project.tournaments.CreateTournament.step1.publicoHelp': 'Any team can enroll freely',
+    'project.tournaments.CreateTournament.step1.privadoHelp': 'Only teams with the code can enroll',
+
+    'project.tournaments.Detail.privado': '🔒 Private tournament',
+    'project.tournaments.Detail.code': 'Code: {code}',
+    'project.tournaments.Detail.codeRequired': '(required to enroll)',
+    'project.tournaments.Detail.enroll.codePlaceholder': 'Tournament code...',
+
+    'project.tournaments.Browse.codeSearchTitle': 'Search by tournament code',
+    'project.tournaments.Browse.codePlaceholder': 'E.g. T22-K9M8',
+    'project.tournaments.Browse.codeNotFound': 'No tournament found with that code',
+    'project.tournaments.Browse.codeError': 'Error searching by code',
+
+    'project.app.Home.dashboard.codeSearchTitle': 'Search tournament by code',
+    'project.app.Home.dashboard.codePlaceholder': 'E.g. T22-K9M8',
+    'project.app.Home.dashboard.codeNotFound': 'No tournament found with that code',
+    'project.app.Home.dashboard.codeError': 'Error searching for tournament'
 }
