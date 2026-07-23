@@ -69,8 +69,8 @@ public class TorneoServiceTest {
 
     private Torneo createTorneo(User organizador, String nombre)
             throws InstanceNotFoundException {
-        Torneo torneo = new Torneo(organizador, nombre);
-        return torneoService.crearTorneo(organizador.getId(), torneo);
+        Torneo torneo = new Torneo(organizador, nombre, false, "T99-XXXX");
+        return torneoService.crearTorneo(organizador.getId(), torneo, false);
     }
 
 
@@ -132,8 +132,8 @@ public class TorneoServiceTest {
     @Test
     public void testCrearTorneo() throws InstanceNotFoundException {
         User org = createUser("org_crear");
-        Torneo torneo = new Torneo(org, "Torneo Nuevo");
-        Torneo creado = torneoService.crearTorneo(org.getId(), torneo);
+        Torneo torneo = new Torneo(org, "Torneo Nuevo", false, "T99-XXXX");
+        Torneo creado = torneoService.crearTorneo(org.getId(), torneo, false);
 
         assertNotNull(creado.getId());
         assertEquals("Torneo Nuevo", creado.getNombre());
@@ -149,11 +149,13 @@ public class TorneoServiceTest {
 
     @Test
     public void testCrearTorneoOrganizadorNotFound() {
-        Torneo torneo = new Torneo(null, "Torneo Sin Org");
+        Torneo torneo = new Torneo(null, "Torneo Sin Org", false, "T99-XXXX");
         assertThrows(InstanceNotFoundException.class,
-                () -> torneoService.crearTorneo(999L, torneo));
+                () -> torneoService.crearTorneo(999L, torneo, false));
     }
 
+
+    // cu14: inscribir equipo + cu15: validar equipos (include)
 
     // cu14: inscribir equipo + cu15: validar equipos (include)
 
@@ -164,7 +166,7 @@ public class TorneoServiceTest {
         Torneo torneo = createTorneo(org, "Torneo Inscripcion");
         Equipo equipo = equipoService.crearEquipo(capitan.getId(), "Equipo Inscrito", "Descripcion");
 
-        Inscripcion inscripcion = torneoService.inscribirYValidarEquipo(capitan.getId(), torneo.getId(), equipo.getId());
+        Inscripcion inscripcion = torneoService.inscribirYValidarEquipo(capitan.getId(), torneo.getId(), equipo.getId(), null);
 
         assertNotNull(inscripcion.getId());
         assertEquals(torneo.getId(), inscripcion.getTorneo().getId());
@@ -181,10 +183,10 @@ public class TorneoServiceTest {
         Torneo torneo = createTorneo(org, "Torneo Duplicado");
         Equipo equipo = equipoService.crearEquipo(capitan.getId(), "Equipo Duplicado", "Descripcion");
 
-        torneoService.inscribirYValidarEquipo(capitan.getId(), torneo.getId(), equipo.getId());
+        torneoService.inscribirYValidarEquipo(capitan.getId(), torneo.getId(), equipo.getId(), null);
 
         assertThrows(IllegalArgumentException.class,
-                () -> torneoService.inscribirYValidarEquipo(capitan.getId(), torneo.getId(), equipo.getId()));
+                () -> torneoService.inscribirYValidarEquipo(capitan.getId(), torneo.getId(), equipo.getId(), null));
     }
 
     @Test
@@ -197,15 +199,15 @@ public class TorneoServiceTest {
         Equipo equipo2 = equipoService.crearEquipo(otroCap.getId(), "EquipoC2", "Descripcion");
 
         // inscribir 2 equipos y cerrar
-        torneoService.inscribirYValidarEquipo(capitan.getId(), torneo.getId(), equipo1.getId());
-        torneoService.inscribirYValidarEquipo(otroCap.getId(), torneo.getId(), equipo2.getId());
+        torneoService.inscribirYValidarEquipo(capitan.getId(), torneo.getId(), equipo1.getId(), null);
+        torneoService.inscribirYValidarEquipo(otroCap.getId(), torneo.getId(), equipo2.getId(), null);
         torneoService.cerrarInscripciones(torneo.getId());
 
         // ahora intentar inscribir otro equipo
         User cap3 = createUser("cap3");
         Equipo equipo3 = equipoService.crearEquipo(cap3.getId(), "EquipoC3", "Descripcion");
         assertThrows(IllegalArgumentException.class,
-                () -> torneoService.inscribirYValidarEquipo(cap3.getId(), torneo.getId(), equipo3.getId()));
+                () -> torneoService.inscribirYValidarEquipo(cap3.getId(), torneo.getId(), equipo3.getId(), null));
     }
 
     @Test
@@ -217,7 +219,7 @@ public class TorneoServiceTest {
         Equipo equipo = equipoService.crearEquipo(capitan.getId(), "Equipo Permiso", "Descripcion");
 
         assertThrows(PermissionException.class,
-                () -> torneoService.inscribirYValidarEquipo(otroUser.getId(), torneo.getId(), equipo.getId()));
+                () -> torneoService.inscribirYValidarEquipo(otroUser.getId(), torneo.getId(), equipo.getId(), null));
     }
 
     @Test
@@ -231,16 +233,16 @@ public class TorneoServiceTest {
 
         User cap1 = createUser("cap_max1");
         Equipo equipo1 = equipoService.crearEquipo(cap1.getId(), "EquipoMax1", "Desc");
-        torneoService.inscribirYValidarEquipo(cap1.getId(), torneo.getId(), equipo1.getId());
+        torneoService.inscribirYValidarEquipo(cap1.getId(), torneo.getId(), equipo1.getId(), null);
 
         User cap2 = createUser("cap_max2");
         Equipo equipo2 = equipoService.crearEquipo(cap2.getId(), "EquipoMax2", "Desc");
-        torneoService.inscribirYValidarEquipo(cap2.getId(), torneo.getId(), equipo2.getId());
+        torneoService.inscribirYValidarEquipo(cap2.getId(), torneo.getId(), equipo2.getId(), null);
 
         User cap3 = createUser("cap_max3");
         Equipo equipo3 = equipoService.crearEquipo(cap3.getId(), "EquipoMax3", "Desc");
         assertThrows(IllegalArgumentException.class,
-                () -> torneoService.inscribirYValidarEquipo(cap3.getId(), torneo.getId(), equipo3.getId()));
+                () -> torneoService.inscribirYValidarEquipo(cap3.getId(), torneo.getId(), equipo3.getId(), null));
     }
 
 
@@ -253,11 +255,11 @@ public class TorneoServiceTest {
 
         User cap1 = createUser("cap_cerrar1");
         Equipo equipo1 = equipoService.crearEquipo(cap1.getId(), "EquipoCerrar1", "Desc");
-        torneoService.inscribirYValidarEquipo(cap1.getId(), torneo.getId(), equipo1.getId());
+        torneoService.inscribirYValidarEquipo(cap1.getId(), torneo.getId(), equipo1.getId(), null);
 
         User cap2 = createUser("cap_cerrar2");
         Equipo equipo2 = equipoService.crearEquipo(cap2.getId(), "EquipoCerrar2", "Desc");
-        torneoService.inscribirYValidarEquipo(cap2.getId(), torneo.getId(), equipo2.getId());
+        torneoService.inscribirYValidarEquipo(cap2.getId(), torneo.getId(), equipo2.getId(), null);
 
         torneoService.cerrarInscripciones(torneo.getId());
 
@@ -295,11 +297,11 @@ public class TorneoServiceTest {
 
         User cap1 = createUser("cap_cal1");
         Equipo equipo1 = equipoService.crearEquipo(cap1.getId(), "EquipoCal1", "Desc");
-        torneoService.inscribirYValidarEquipo(cap1.getId(), torneo.getId(), equipo1.getId());
+        torneoService.inscribirYValidarEquipo(cap1.getId(), torneo.getId(), equipo1.getId(), null);
 
         User cap2 = createUser("cap_cal2");
         Equipo equipo2 = equipoService.crearEquipo(cap2.getId(), "EquipoCal2", "Desc");
-        torneoService.inscribirYValidarEquipo(cap2.getId(), torneo.getId(), equipo2.getId());
+        torneoService.inscribirYValidarEquipo(cap2.getId(), torneo.getId(), equipo2.getId(), null);
 
         torneoService.cerrarInscripciones(torneo.getId());
         Torneo configurado = torneoService.configurarEstructuraYGenerarCalendario(
@@ -335,11 +337,11 @@ public class TorneoServiceTest {
 
         User cap1 = createUser("cap_cal3_1");
         Equipo equipo1 = equipoService.crearEquipo(cap1.getId(), "EquipoCal3_1", "Desc");
-        torneoService.inscribirYValidarEquipo(cap1.getId(), torneo.getId(), equipo1.getId());
+        torneoService.inscribirYValidarEquipo(cap1.getId(), torneo.getId(), equipo1.getId(), null);
 
         User cap2 = createUser("cap_cal3_2");
         Equipo equipo2 = equipoService.crearEquipo(cap2.getId(), "EquipoCal3_2", "Desc");
-        torneoService.inscribirYValidarEquipo(cap2.getId(), torneo.getId(), equipo2.getId());
+        torneoService.inscribirYValidarEquipo(cap2.getId(), torneo.getId(), equipo2.getId(), null);
 
         torneoService.cerrarInscripciones(torneo.getId());
         torneoService.configurarEstructuraYGenerarCalendario(
@@ -381,11 +383,11 @@ public class TorneoServiceTest {
 
         User cap1 = createUser("cap_jorn1");
         Equipo equipo1 = equipoService.crearEquipo(cap1.getId(), "EquipoJorn1", "Desc");
-        torneoService.inscribirYValidarEquipo(cap1.getId(), torneo.getId(), equipo1.getId());
+        torneoService.inscribirYValidarEquipo(cap1.getId(), torneo.getId(), equipo1.getId(), null);
 
         User cap2 = createUser("cap_jorn2");
         Equipo equipo2 = equipoService.crearEquipo(cap2.getId(), "EquipoJorn2", "Desc");
-        torneoService.inscribirYValidarEquipo(cap2.getId(), torneo.getId(), equipo2.getId());
+        torneoService.inscribirYValidarEquipo(cap2.getId(), torneo.getId(), equipo2.getId(), null);
 
         torneoService.cerrarInscripciones(torneo.getId());
         torneoService.configurarEstructuraYGenerarCalendario(

@@ -87,14 +87,14 @@ public class EncuentroServiceTest {
     private Encuentro setupEncuentro(User org, User cap1, User cap2)
             throws InstanceNotFoundException, PermissionException {
 
-        Torneo torneo = new Torneo(org, "Torneo Encuentro Test");
-        torneo = torneoService.crearTorneo(org.getId(), torneo);
+        Torneo torneo = new Torneo(org, "Torneo Encuentro Test", false, "T99-XXXX");
+        torneo = torneoService.crearTorneo(org.getId(), torneo, false);
 
         Equipo equipo1 = equipoService.crearEquipo(cap1.getId(), "EquipoLocal", "Equipo Local");
         Equipo equipo2 = equipoService.crearEquipo(cap2.getId(), "EquipoVisitante", "Equipo Visitante");
 
-        torneoService.inscribirYValidarEquipo(cap1.getId(), torneo.getId(), equipo1.getId());
-        torneoService.inscribirYValidarEquipo(cap2.getId(), torneo.getId(), equipo2.getId());
+        torneoService.inscribirYValidarEquipo(cap1.getId(), torneo.getId(), equipo1.getId(), null);
+        torneoService.inscribirYValidarEquipo(cap2.getId(), torneo.getId(), equipo2.getId(), null);
 
         torneoService.cerrarInscripciones(torneo.getId());
         torneoService.configurarEstructuraYGenerarCalendario(

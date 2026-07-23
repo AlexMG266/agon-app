@@ -63,6 +63,7 @@ public class SecurityConfig {
                     .requestMatchers(HttpMethod.POST, "/teams/*/members/*/kick").hasRole("USER")
 
                     .requestMatchers(HttpMethod.POST, "/tournaments").hasRole("USER")
+                    .requestMatchers(HttpMethod.POST, "/tournaments/**").hasRole("USER")
                     .requestMatchers(HttpMethod.GET, "/tournaments").hasRole("USER")
                     .requestMatchers(HttpMethod.GET, "/tournaments/**").hasRole("USER")
 
