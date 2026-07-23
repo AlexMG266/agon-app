@@ -14,6 +14,18 @@ public class TorneoConversor {
     public static TorneoDto toTorneoDto(Torneo torneo) {
         List<Inscripcion> inscripciones = torneo.getInscripciones();
         int numInscritos = (inscripciones != null) ? inscripciones.size() : 0;
+
+        List<InscripcionDto> inscripcionDtos = null;
+        if (inscripciones != null) {
+            inscripcionDtos = inscripciones.stream()
+                    .map(ins -> new InscripcionDto(
+                            ins.getEquipo().getId(),
+                            ins.getEquipo().getNombreEquipo(),
+                            ins.getEquipo().getCreador().getId()
+                    ))
+                    .collect(Collectors.toList());
+        }
+
         return new TorneoDto(
                 torneo.getId(),
                 torneo.getNombre(),
@@ -27,7 +39,8 @@ public class TorneoConversor {
                 torneo.getIdaVueltaPlayoff() != null ? torneo.getIdaVueltaPlayoff() : false,
                 numInscritos,
                 torneo.getPrivado() != null ? torneo.getPrivado() : false,
-                torneo.getCodigoTorneo()
+                torneo.getCodigoTorneo(),
+                inscripcionDtos
         );
     }
 

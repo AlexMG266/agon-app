@@ -2,6 +2,8 @@ package es.udc.agon.backend.rest.dtos;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 
+import java.util.List;
+
 @Schema(description = "DTO que representa un torneo")
 public class TorneoDto {
 
@@ -44,13 +46,17 @@ public class TorneoDto {
     @Schema(description = "Código único del torneo para compartir", example = "T22-K9M8")
     private String codigoTorneo;
 
+    @Schema(description = "Lista de inscripciones del torneo")
+    private List<InscripcionDto> inscripciones;
+
     public TorneoDto() {
     }
 
     public TorneoDto(Long id, String nombre, int numGrupos, int equiposPorGrupo,
                      boolean tienePlayoff, String estado, Long organizadorId,
                      String organizadorNombre, String tipoTorneo, boolean idaVueltaPlayoff,
-                     int numEquiposInscritos, boolean privado, String codigoTorneo) {
+                     int numEquiposInscritos, boolean privado, String codigoTorneo,
+                     List<InscripcionDto> inscripciones) {
         this.id = id;
         this.nombre = nombre;
         this.numGrupos = numGrupos;
@@ -64,6 +70,7 @@ public class TorneoDto {
         this.numEquiposInscritos = numEquiposInscritos;
         this.privado = privado;
         this.codigoTorneo = codigoTorneo;
+        this.inscripciones = inscripciones;
     }
 
     public Long getId() {
@@ -168,5 +175,13 @@ public class TorneoDto {
 
     public void setCodigoTorneo(String codigoTorneo) {
         this.codigoTorneo = codigoTorneo;
+    }
+
+    public List<InscripcionDto> getInscripciones() {
+        return inscripciones;
+    }
+
+    public void setInscripciones(List<InscripcionDto> inscripciones) {
+        this.inscripciones = inscripciones;
     }
 }
