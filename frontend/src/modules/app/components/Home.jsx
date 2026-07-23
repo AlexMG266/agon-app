@@ -1,16 +1,18 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { Link } from 'react-router';
-import { FormattedMessage } from 'react-intl';
+import { FormattedMessage, useIntl } from 'react-intl';
 import Container from 'react-bootstrap/Container';
 import Row from 'react-bootstrap/Row';
 import Col from 'react-bootstrap/Col';
 import Button from 'react-bootstrap/Button';
 import Badge from 'react-bootstrap/Badge';
 import Spinner from 'react-bootstrap/Spinner';
+import Form from 'react-bootstrap/Form';
 import users from '../../users';
 import teams, { JoinTeam } from '../../teams';
 import tournaments from '../../tournaments';
+import backend from '../../../backend';
 import ProfileAvatar from '../../common/components/ProfileAvatar';
 import Table from '../../common/components/Table';
 import './Home.css';
@@ -49,11 +51,18 @@ const LandingPage = () => {
 
 const Dashboard = () => {
     const dispatch = useDispatch();
+    const intl = useIntl();
     const user = useSelector(users.selectors.getUser);
     const loggedIn = useSelector(users.selectors.isLoggedIn);
     const userTeams = useSelector(state => state.teams?.userTeams || []);
     const teamsLoading = useSelector(state => state.teams?.loading || false);
     const userTournaments = useSelector(state => state.tournaments?.userTournaments || []);
+
+    // Code search state
+    const [codeSearchTerm, setCodeSearchTerm] = useState('');
+    const [codeSearchResult, setCodeSearchResult] = useState(null);
+    const [codeSearching, setCodeSearching] = useState(false);
+    const [codeError, setCodeError] = useState(null);
 
     useEffect(() => {
         if (loggedIn) {
@@ -61,6 +70,35 @@ const Dashboard = () => {
             dispatch(tournaments.actions.getMyTournaments());
         }
     }, [loggedIn, dispatch]);
+
+    const handleCodeSearch = async (e) => {
+        e.preventDefault();
+        const code = codeSearchTerm.trim();
+        if (!code) return;
+
+        setCodeSearching(true);
+        setCodeError(null);
+        setCodeSearchResult(null);
+        try {
+            const response = await backend.tournamentService.getTournamentByCode(code);
+            if (response.ok && response.payload) {
+                setCodeSearchResult(response.payload);
+            } else {
+                setCodeError(intl.formatMessage({
+                    id: 'project.app.Home.dashboard.codeNotFound',
+                    defaultMessage: 'No se encontró ningún torneo con ese código'
+                }));
+            }
+        } catch (err) {
+            console.error('Error searching tournament by code:', err);
+            setCodeError(err.message || intl.formatMessage({
+                id: 'project.app.Home.dashboard.codeError',
+                defaultMessage: 'Error al buscar el torneo'
+            }));
+        } finally {
+            setCodeSearching(false);
+        }
+    };
 
     return (
         <div className="home-dashboard">
@@ -77,6 +115,76 @@ const Dashboard = () => {
                     <Button as={Link} to="/tournaments/my" variant="outline-dark" size="sm" className="rounded-pill">
                         <FormattedMessage id="project.app.Home.dashboard.exploreTournaments" defaultMessage="Explorar Torneos" />
                     </Button>
+                </div>
+            </div>
+
+            {/* Code search widget */}
+            <div className="dashboard-section" style={{ marginBottom: '1.5rem' }}>
+                <div style={{
+                    background: '#f9fafb',
+                    borderRadius: '12px',
+                    padding: '1rem 1.25rem',
+                    border: '1px solid #e5e7eb'
+                }}>
+                    <div style={{ fontSize: '0.85rem', fontWeight: '600', color: '#374151', marginBottom: '0.5rem' }}>
+                        <i className="fa-regular fa-qrcode me-1" />
+                        <FormattedMessage id="project.app.Home.dashboard.codeSearchTitle" defaultMessage="Buscar torneo por código" />
+                    </div>
+                    <Form onSubmit={handleCodeSearch} style={{ display: 'flex', gap: '0.5rem' }}>
+                        <Form.Control
+                            type="text"
+                            placeholder={intl.formatMessage({ id: 'project.app.Home.dashboard.codePlaceholder', defaultMessage: 'Ej. T22-K9M8' })}
+                            value={codeSearchTerm}
+                            onChange={(e) => setCodeSearchTerm(e.target.value)}
+                            style={{ borderRadius: '999px', maxWidth: '300px' }}
+                        />
+                        <Button type="submit" variant="dark" className="rounded-pill px-3" disabled={codeSearching || !codeSearchTerm.trim()}>
+                            {codeSearching ? (
+                                <Spinner animation="border" size="sm" />
+                            ) : (
+                                <i className="fa-solid fa-search" />
+                            )}
+                        </Button>
+                        {codeSearchResult && (
+                            <Button variant="outline-secondary" className="rounded-pill" size="sm" onClick={() => { setCodeSearchResult(null); setCodeError(null); setCodeSearchTerm(''); }}>
+                                <i className="fa-solid fa-xmark" />
+                            </Button>
+                        )}
+                    </Form>
+
+                    {codeError && (
+                        <div style={{ color: '#dc2626', fontSize: '0.85rem', marginTop: '0.5rem' }}>
+                            <i className="fa-regular fa-circle-exclamation me-1" />
+                            {codeError}
+                        </div>
+                    )}
+
+                    {codeSearchResult && (
+                        <div style={{ marginTop: '0.75rem' }}>
+                            <Link to={`/tournaments/view/${codeSearchResult.id}`} style={{ textDecoration: 'none' }}>
+                                <div style={{
+                                    display: 'flex',
+                                    justifyContent: 'space-between',
+                                    alignItems: 'center',
+                                    padding: '0.75rem 1rem',
+                                    background: '#fff',
+                                    borderRadius: '12px',
+                                    border: '1px solid #2563eb40'
+                                }}>
+                                    <div>
+                                        <div style={{ fontWeight: '600', color: '#1d1d1f' }}>
+                                            {codeSearchResult.privado && <span style={{ marginRight: '0.5rem' }}>🔒</span>}
+                                            {codeSearchResult.nombre}
+                                        </div>
+                                        <div style={{ fontSize: '0.85rem', color: '#6b7280' }}>
+                                            <FormattedMessage id="project.app.Home.dashboard.codeFound" defaultMessage="Código: {code}" values={{ code: codeSearchResult.codigoTorneo }} />
+                                        </div>
+                                    </div>
+                                    <i className="fa-solid fa-arrow-right" style={{ color: '#2563eb' }} />
+                                </div>
+                            </Link>
+                        </div>
+                    )}
                 </div>
             </div>
 
@@ -146,7 +254,10 @@ const Dashboard = () => {
                             {userTournaments.slice(0, 5).map(tournament => (
                                 <div key={tournament.id} className="list-item">
                                     <div>
-                                        <div className="list-item-title">{tournament.nombre}</div>
+                                        <div className="list-item-title">
+                                            {tournament.privado && <span style={{ marginRight: '0.25rem' }}>🔒</span>}
+                                            {tournament.nombre}
+                                        </div>
                                         <div className="list-item-meta">
                                             <Badge className="list-item-badge">
                                                 {tournament.estado}
