@@ -51,6 +51,7 @@ CREATE TABLE Equipo (
     estado VARCHAR(20) NOT NULL,
     creador_id BIGINT NOT NULL,
     codigo_equipo VARCHAR(8) NOT NULL,
+    fecha_creacion TIMESTAMP NOT NULL DEFAULT NOW(),
     CONSTRAINT EquipoPK PRIMARY KEY (id),
     CONSTRAINT EquipoNombreUniqueKey UNIQUE (nombreEquipo),
     CONSTRAINT EquipoCreadorIdFK FOREIGN KEY (creador_id) REFERENCES "User"(id) ON DELETE CASCADE
@@ -64,7 +65,6 @@ CREATE TABLE Equipo_Miembros (
     CONSTRAINT EquipoMiembrosUsuarioIdFK FOREIGN KEY (usuario_id) REFERENCES "User"(id) ON DELETE CASCADE
 );
 
--- Tablas para la Iteración 3: Gestión de Torneos
 
 CREATE TABLE Torneo (
     id BIGSERIAL NOT NULL,
@@ -78,6 +78,21 @@ CREATE TABLE Torneo (
     tipoTorneo VARCHAR(20),
     idaVueltaPlayoff BOOLEAN,
     estado VARCHAR(20) NOT NULL DEFAULT 'RECLUTANDO',
+    -- Campos de creación del torneo
+    fechaInicio DATE,
+    fechaFin DATE,
+    fechaLimiteInscripcion DATE,
+    puntosVictoria INTEGER,
+    puntosEmpate INTEGER,
+    puntosDerrota INTEGER,
+    formatoPartidos VARCHAR(20),
+    criterioDesempate VARCHAR(20),
+    diasDisponibles VARCHAR(50),
+    horaInicio VARCHAR(5),
+    horaFin VARCHAR(5),
+    duracionPartido INTEGER,
+    fechasExcluidas TEXT,
+    estrategiaDistribucion VARCHAR(20),
     CONSTRAINT TorneoPK PRIMARY KEY (id),
     CONSTRAINT TorneoOrganizadorIdFK FOREIGN KEY (idOrganizador) REFERENCES "User"(id) ON DELETE CASCADE
 );

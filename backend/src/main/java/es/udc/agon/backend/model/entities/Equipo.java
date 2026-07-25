@@ -1,6 +1,7 @@
 package es.udc.agon.backend.model.entities;
 
 import java.security.SecureRandom;
+import java.time.LocalDateTime;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -30,6 +31,7 @@ public class Equipo {
     private String descripcion;
     private User creador;
     private String codigoEquipo;
+    private LocalDateTime fechaCreacion;
     private Set<User> miembros = new HashSet<>();
 
     public Equipo() {
@@ -42,6 +44,7 @@ public class Equipo {
         this.creador = creador;
         this.miembros.add(creador);
         this.codigoEquipo = generarCodigoAlfanumerico(8);
+        this.fechaCreacion = LocalDateTime.now();
     }
 
     private String generarCodigoAlfanumerico(int longitud) {
@@ -124,10 +127,19 @@ public class Equipo {
 
     @Column(name = "descripcion")
     public String getDescripcion() {
-        return descripcion; 
+        return descripcion;
     }
 
     public void setDescripcion(String descripcion) {
         this.descripcion = descripcion;
+    }
+
+    @Column(name = "fecha_creacion", nullable = false)
+    public LocalDateTime getFechaCreacion() {
+        return fechaCreacion;
+    }
+
+    public void setFechaCreacion(LocalDateTime fechaCreacion) {
+        this.fechaCreacion = fechaCreacion;
     }
 }

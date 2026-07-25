@@ -22,8 +22,11 @@ public class EquipoConversor {
                 equipo.getCreador().getId(),
                 equipo.getCodigoEquipo(),
                 equipo.getMiembros().stream()
-                    .map(UserConversor::toUserDto) 
-                    .collect(Collectors.toList())
+                    .map(UserConversor::toUserDto)
+                    .collect(Collectors.toList()),
+                equipo.getFechaCreacion() != null
+                    ? equipo.getFechaCreacion().toInstant(ZoneOffset.UTC).toEpochMilli()
+                    : null
         );
     }
 

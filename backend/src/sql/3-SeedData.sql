@@ -114,8 +114,18 @@ VALUES
 -- ============================================================
 -- 4. TORNEO (1 torneo público en RECLUTANDO)
 -- ============================================================
-INSERT INTO Torneo (idOrganizador, nombre, privado, codigoTorneo, numGrupos, equiposPorGrupo, tienePlayoff, tipoTorneo, idaVueltaPlayoff, estado)
-VALUES (1, 'Torneo de Prueba 2026', FALSE, 'PRUEBA26', NULL, NULL, NULL, NULL, NULL, 'RECLUTANDO');
+INSERT INTO Torneo (idOrganizador, nombre, privado, codigoTorneo, numGrupos, equiposPorGrupo, tienePlayoff, tipoTorneo, idaVueltaPlayoff, estado,
+                    fechaInicio, fechaFin, fechaLimiteInscripcion,
+                    puntosVictoria, puntosEmpate, puntosDerrota,
+                    formatoPartidos, criterioDesempate,
+                    diasDisponibles, horaInicio, horaFin, duracionPartido,
+                    fechasExcluidas, estrategiaDistribucion)
+VALUES (1, 'Torneo de Prueba 2026', FALSE, 'PRUEBA26', NULL, NULL, NULL, NULL, NULL, 'RECLUTANDO',
+        '2026-03-01', '2026-04-30', '2026-02-20',
+        3, 1, 0,
+        '4_SETS', 'PUNTOS',
+        'L,M,X,J,V', '16:00', '22:00', 45,
+        '2026-04-01,2026-04-02', 'JORNADAS');
 
 -- ============================================================
 -- 5. SOLICITUDES DE INSCRIPCIÓN (20 solicitudes ACEPTADAS)
