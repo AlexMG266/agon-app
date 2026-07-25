@@ -16,13 +16,7 @@ const Step3Rules = ({ data, onChange, errors }) => {
     };
 
     return (
-        <div>
-            <h5 className="fw-bold mb-1">
-                <FormattedMessage id="project.tournaments.CreateTournament.step3.title" defaultMessage="Reglas y Puntuación" />
-            </h5>
-            <p className="text-muted small mb-4">
-                <FormattedMessage id="project.tournaments.CreateTournament.step3.subtitle" defaultMessage="Configura el sistema de puntuación y las reglas de los partidos." />
-            </p>
+        <div className="ct-step-fields">
 
             <Row>
                 <Col md={4}>

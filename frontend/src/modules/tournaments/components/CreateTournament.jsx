@@ -4,7 +4,6 @@ import { FormattedMessage, useIntl } from 'react-intl';
 import Container from 'react-bootstrap/Container';
 import Row from 'react-bootstrap/Row';
 import Col from 'react-bootstrap/Col';
-import Card from 'react-bootstrap/Card';
 import Button from 'react-bootstrap/Button';
 import Spinner from 'react-bootstrap/Spinner';
 
@@ -19,11 +18,11 @@ import './CreateTournament.css';
 
 const TOTAL_STEPS = 4;
 
-const STEP_KEYS = [
-    { key: 1, labelId: 'project.tournaments.CreateTournament.step1.short', label: 'Información Básica' },
-    { key: 2, labelId: 'project.tournaments.CreateTournament.step3.short', label: 'Reglas' },
-    { key: 3, labelId: 'project.tournaments.CreateTournament.step4.short', label: 'Calendario' },
-    { key: 4, labelId: 'project.tournaments.CreateTournament.step5.short', label: 'Resumen' },
+const STEPS = [
+    { key: 1, labelId: 'project.tournaments.CreateTournament.step1.short', label: 'Información Básica', icon: 'fa-solid fa-info-circle' },
+    { key: 2, labelId: 'project.tournaments.CreateTournament.step3.short', label: 'Reglas', icon: 'fa-solid fa-scale-balanced' },
+    { key: 3, labelId: 'project.tournaments.CreateTournament.step4.short', label: 'Calendario', icon: 'fa-regular fa-calendar' },
+    { key: 4, labelId: 'project.tournaments.CreateTournament.step5.short', label: 'Resumen', icon: 'fa-regular fa-rectangle-list' },
 ];
 
 const INITIAL_DATA = {
@@ -187,108 +186,122 @@ const CreateTournament = () => {
     const isLastStep = currentStep === TOTAL_STEPS;
 
     return (
-        <div className="profile-container">
-            <Container className="mt-0 py-0" style={{ maxWidth: '900px' }}>
-                <Row className="justify-content-center">
-                    <Col xs={12}>
-                        <Card className="border rounded-4 shadow-sm" style={{ borderColor: '#d2d2d7', backgroundColor: '#ffffff' }}>
-                            <Card.Body className="p-3 p-md-4">
-                                <div className="text-center mb-3">
-                                    <span
-                                        className="badge rounded-pill bg-light text-dark border px-3 py-1 mb-2 fw-semibold text-uppercase"
-                                        style={{ letterSpacing: '0.05em', fontSize: '0.7rem' }}
-                                    >
-                                        <FormattedMessage
-                                            id="project.tournaments.CreateTournament.badge"
-                                            defaultMessage="Creación de torneo"
-                                        />
-                                    </span>
-                                    <h3
-                                        className="font-weight-bold text-dark mb-1"
-                                        style={{ fontSize: '1.4rem', letterSpacing: '-0.02em', fontWeight: '700' }}
-                                    >
-                                        <FormattedMessage
-                                            id="project.tournaments.CreateTournament.title"
-                                            defaultMessage="Crear un nuevo torneo"
-                                        />
-                                    </h3>
-                                    <p className="text-muted small mb-0" style={{ lineHeight: '1.5' }}>
-                                        <FormattedMessage
-                                            id="project.tournaments.CreateTournament.subtitle"
-                                            defaultMessage="Configura todos los aspectos de tu competición en unos pocos pasos."
-                                        />
-                                    </p>
-                                </div>
-
-                                {/* Step Indicator */}
-                                <div className="step-indicator-container">
-                                    {STEP_KEYS.map((step, index) => (
-                                        <div key={step.key} className="step-indicator">
-                                            <div
-                                                className={`step-indicator__circle ${currentStep === step.key ? 'active' : ''} ${currentStep > step.key ? 'completed' : ''}`}
-                                            >
-                                                {currentStep > step.key ? (
-                                                    <i className="fa-solid fa-check" style={{ fontSize: '0.75rem' }}></i>
+        <div className="ct-container">
+            <Container style={{ maxWidth: '1000px' }}>
+                <Row className="g-5">
+                    {/* Left column: Vertical step indicator */}
+                    <Col md={4} className="ct-sidebar-col">
+                        <div className="ct-sidebar">
+                            <div className="ct-sidebar-header">
+                                <span className="ct-sidebar-badge">
+                                    <FormattedMessage id="project.tournaments.CreateTournament.badge" defaultMessage="Creación de torneo" />
+                                </span>
+                                <h3 className="ct-sidebar-title">
+                                    <FormattedMessage id="project.tournaments.CreateTournament.title" defaultMessage="Nuevo torneo" />
+                                </h3>
+                            </div>
+                            <div className="ct-steps">
+                                {STEPS.map((step, index) => {
+                                    const isActive = currentStep === step.key;
+                                    const isCompleted = currentStep > step.key;
+                                    return (
+                                        <div
+                                            key={step.key}
+                                            className={`ct-step ${isActive ? 'ct-step--active' : ''} ${isCompleted ? 'ct-step--completed' : ''}`}
+                                        >
+                                            <div className="ct-step-marker">
+                                                {isCompleted ? (
+                                                    <i className="fa-solid fa-check" />
                                                 ) : (
-                                                    step.key
+                                                    <i className={step.icon} />
                                                 )}
                                             </div>
-                                            <span
-                                                className={`step-indicator__label ${currentStep === step.key ? 'active' : ''} ${currentStep > step.key ? 'completed' : ''}`}
-                                            >
-                                                <FormattedMessage id={step.labelId} defaultMessage={step.label} />
-                                            </span>
-                                            {index < STEP_KEYS.length - 1 && (
-                                                <div className={`step-indicator__connector ${currentStep > step.key ? 'completed' : ''}`} />
+                                            <div className="ct-step-body">
+                                                <span className="ct-step-label">
+                                                    <FormattedMessage id={step.labelId} defaultMessage={step.label} />
+                                                </span>
+                                                <span className="ct-step-num">
+                                                    <FormattedMessage
+                                                        id="project.tournaments.CreateTournament.stepCount"
+                                                        defaultMessage="Paso {n} de {total}"
+                                                        values={{ n: step.key, total: TOTAL_STEPS }}
+                                                    />
+                                                </span>
+                                            </div>
+                                            {index < STEPS.length - 1 && (
+                                                <div className={`ct-step-line ${isCompleted ? 'ct-step-line--completed' : ''}`} />
                                             )}
                                         </div>
-                                    ))}
-                                </div>
+                                    );
+                                })}
+                            </div>
+                        </div>
+                    </Col>
 
-                                <Errors errors={backendErrors} onClose={() => setBackendErrors(null)} />
+                    {/* Right column: Content (card-free) */}
+                    <Col md={8}>
+                        <div className="ct-content">
+                            <div className="ct-content-header">
+                                <h2 className="ct-content-title">
+                                    {STEPS.find(s => s.key === currentStep)?.label}
+                                </h2>
+                                <p className="ct-content-desc">
+                                    {currentStep === 1 && (
+                                        <FormattedMessage id="project.tournaments.CreateTournament.step1.desc" defaultMessage="Define el nombre y las fechas clave del torneo" />
+                                    )}
+                                    {currentStep === 2 && (
+                                        <FormattedMessage id="project.tournaments.CreateTournament.step3.desc" defaultMessage="Configura el sistema de puntuación y formato de partidos" />
+                                    )}
+                                    {currentStep === 3 && (
+                                        <FormattedMessage id="project.tournaments.CreateTournament.step4.desc" defaultMessage="Establece los días, horarios y la duración de los partidos" />
+                                    )}
+                                    {currentStep === 4 && (
+                                        <FormattedMessage id="project.tournaments.CreateTournament.step5.desc" defaultMessage="Revisa todos los datos antes de crear el torneo" />
+                                    )}
+                                </p>
+                            </div>
 
-                                <div className="wizard-step-content">
-                                    {renderStep()}
-                                </div>
+                            <Errors errors={backendErrors} onClose={() => setBackendErrors(null)} />
 
-                                <div className="d-flex gap-3 justify-content-between pt-3 border-top mt-3">
-                                    <Button
-                                        variant="light"
-                                        onClick={handlePrevious}
-                                        className="rounded-pill border px-4 text-dark bg-white py-2"
-                                        style={{ fontSize: '0.9rem', fontWeight: '500' }}
-                                        disabled={isSubmitting}
-                                    >
-                                        <i className="fa-solid fa-chevron-left me-2" style={{ fontSize: '0.75rem' }}></i>
-                                        <FormattedMessage id="project.global.buttons.back" defaultMessage="Anterior" />
-                                    </Button>
+                            <div className="ct-step-content">
+                                {renderStep()}
+                            </div>
 
-                                    <Button
-                                        onClick={handleNext}
-                                        className={`rounded-pill px-4 py-2 d-flex align-items-center justify-content-center gap-2 ${isLastStep ? 'btn-success' : 'btn-apple-dark'}`}
-                                        style={{ minWidth: '140px', fontWeight: '500' }}
-                                        disabled={isSubmitting}
-                                    >
-                                        {isSubmitting ? (
-                                            <>
-                                                <Spinner as="span" animation="border" size="sm" role="status" aria-hidden="true" />
-                                                <span><FormattedMessage id="project.global.buttons.processing" defaultMessage="Procesando..." /></span>
-                                            </>
-                                        ) : isLastStep ? (
-                                            <>
-                                                <i className="fa-solid fa-check me-1"></i>
-                                                <FormattedMessage id="project.tournaments.CreateTournament.create" defaultMessage="Crear torneo" />
-                                            </>
-                                        ) : (
-                                            <>
-                                                <FormattedMessage id="project.global.buttons.next" defaultMessage="Siguiente" />
-                                                <i className="fa-solid fa-chevron-right" style={{ fontSize: '0.75rem' }}></i>
-                                            </>
-                                        )}
-                                    </Button>
-                                </div>
-                            </Card.Body>
-                        </Card>
+                            <div className="ct-actions">
+                                <Button
+                                    variant="light"
+                                    onClick={handlePrevious}
+                                    className="ct-btn ct-btn--back"
+                                    disabled={isSubmitting}
+                                >
+                                    <i className="fa-solid fa-chevron-left" />
+                                    <FormattedMessage id="project.global.buttons.back" defaultMessage="Anterior" />
+                                </Button>
+
+                                <Button
+                                    onClick={handleNext}
+                                    className={`ct-btn ${isLastStep ? 'ct-btn--submit' : 'ct-btn--next'}`}
+                                    disabled={isSubmitting}
+                                >
+                                    {isSubmitting ? (
+                                        <>
+                                            <Spinner as="span" animation="border" size="sm" role="status" aria-hidden="true" />
+                                            <FormattedMessage id="project.global.buttons.processing" defaultMessage="Procesando..." />
+                                        </>
+                                    ) : isLastStep ? (
+                                        <>
+                                            <i className="fa-solid fa-check" />
+                                            <FormattedMessage id="project.tournaments.CreateTournament.create" defaultMessage="Crear torneo" />
+                                        </>
+                                    ) : (
+                                        <>
+                                            <FormattedMessage id="project.global.buttons.next" defaultMessage="Siguiente" />
+                                            <i className="fa-solid fa-chevron-right" />
+                                        </>
+                                    )}
+                                </Button>
+                            </div>
+                        </div>
                     </Col>
                 </Row>
             </Container>

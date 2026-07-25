@@ -52,13 +52,7 @@ const Step4Calendar = ({ data, onChange, errors }) => {
     };
 
     return (
-        <div>
-            <h5 className="fw-bold mb-1">
-                <FormattedMessage id="project.tournaments.CreateTournament.step4.title" defaultMessage="Configuración de Calendario" />
-            </h5>
-            <p className="text-muted small mb-4">
-                <FormattedMessage id="project.tournaments.CreateTournament.step4.subtitle" defaultMessage="Define los días y horarios disponibles para los partidos." />
-            </p>
+        <div className="ct-step-fields">
 
             <Form.Group className="mb-4">
                 <Form.Label className="text-secondary small fw-medium mb-2">

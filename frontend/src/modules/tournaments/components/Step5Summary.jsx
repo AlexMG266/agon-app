@@ -3,13 +3,7 @@ import Table from 'react-bootstrap/Table';
 
 const Step5Summary = ({ data }) => {
     return (
-        <div>
-            <h5 className="fw-bold mb-1">
-                <FormattedMessage id="project.tournaments.CreateTournament.step5.title" defaultMessage="Resumen y Creación" />
-            </h5>
-            <p className="text-muted small mb-4">
-                <FormattedMessage id="project.tournaments.CreateTournament.step5.subtitle" defaultMessage="Revisa todos los datos antes de crear el torneo." />
-            </p>
+        <div className="ct-step-fields">
 
             <Table borderless className="mb-4" style={{ fontSize: '0.9rem' }}>
                 <tbody>

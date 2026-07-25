@@ -11,13 +11,7 @@ const Step1BasicInfo = ({ data, onChange, errors }) => {
     };
 
     return (
-        <div>
-            <h5 className="fw-bold mb-1">
-                <FormattedMessage id="project.tournaments.CreateTournament.step1.title" defaultMessage="Información Básica" />
-            </h5>
-            <p className="text-muted small mb-4">
-                <FormattedMessage id="project.tournaments.CreateTournament.step1.subtitle" defaultMessage="Define el nombre y las fechas clave del torneo." />
-            </p>
+        <div className="ct-step-fields">
 
             <Form.Group className="mb-4" controlId="tournamentName">
                 <Form.Label className="text-secondary small fw-medium mb-2">
