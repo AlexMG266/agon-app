@@ -2,11 +2,6 @@ import { useState, useEffect } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { Link, useParams, useNavigate } from 'react-router';
 import { FormattedMessage, useIntl } from 'react-intl';
-import Container from 'react-bootstrap/Container';
-import Row from 'react-bootstrap/Row';
-import Col from 'react-bootstrap/Col';
-import Button from 'react-bootstrap/Button';
-import Form from 'react-bootstrap/Form';
 import { Errors } from '../../common';
 import ConfirmationModal from '../../common/components/ConfirmationModal';
 import ProfileAvatar from '../../common/components/ProfileAvatar';
@@ -162,32 +157,30 @@ const TeamDetail = () => {
 
     if (loading) {
         return (
-            <Container className="team-detail-loading">
-                <div className="team-detail-skeleton">
-                    <div className="team-detail-skeleton-line" />
-                    <div className="team-detail-skeleton-line" />
-                    <div className="team-detail-skeleton-line" />
-                    <div className="team-detail-skeleton-line" />
-                    <div className="team-detail-skeleton-line" />
+            <div className="td-loading">
+                <div className="td-skeleton">
+                    <div className="td-skeleton-line" />
+                    <div className="td-skeleton-line" />
+                    <div className="td-skeleton-line" />
+                    <div className="td-skeleton-line" />
+                    <div className="td-skeleton-line" />
                 </div>
-            </Container>
+            </div>
         );
     }
 
     if (error || !team) {
         return (
-            <div className="team-detail-not-found">
-                <i className="fa-regular fa-circle-xmark team-detail-not-found-icon" />
-                <p className="team-detail-not-found-title">
+            <div className="td-not-found">
+                <i className="fa-regular fa-circle-xmark td-not-found-icon" />
+                <p className="td-not-found-title">
                     <FormattedMessage id="project.teams.Detail.notFound" defaultMessage="No se pudo cargar el equipo" />
                 </p>
-                <p className="team-detail-not-found-sub">
+                <p className="td-not-found-sub">
                     {error || <FormattedMessage id="project.teams.Detail.error.noPermissions" defaultMessage="El equipo no existe o no tienes permisos" />}
                 </p>
-                <Link to="/" className="text-decoration-none">
-                    <Button variant="dark" className="rounded-pill px-4">
-                        <FormattedMessage id="project.teams.Detail.backToDashboard" defaultMessage="Volver al dashboard" />
-                    </Button>
+                <Link to="/" className="td-back-link">
+                    <FormattedMessage id="project.teams.Detail.backToDashboard" defaultMessage="Volver al dashboard" />
                 </Link>
             </div>
         );
@@ -212,314 +205,277 @@ const TeamDetail = () => {
     };
 
     return (
-        <div className="td-team-container">
-            <Container style={{ maxWidth: '1000px' }}>
-                <div className="td-team-header">
-                    <Link to="/" className="td-team-back">
-                        <i className="fa-solid fa-arrow-left" />
-                        <FormattedMessage id="project.teams.Detail.back" defaultMessage="Volver" />
-                    </Link>
+        <div className="td-container">
+            <div className="td-header">
+                <Link to="/" className="td-back">
+                    <i className="fa-solid fa-arrow-left" />
+                    <FormattedMessage id="project.teams.Detail.back" defaultMessage="Volver" />
+                </Link>
+            </div>
+
+            {success && (
+                <div className="td-success-toast">
+                    <i className="fa-regular fa-circle-check" />
+                    <FormattedMessage id="project.teams.Detail.updateSuccess" defaultMessage="Equipo actualizado correctamente" />
                 </div>
+            )}
 
-                {success && (
-                    <div className="td-team-success-toast">
-                        <i className="fa-regular fa-circle-check" />
-                        <FormattedMessage id="project.teams.Detail.updateSuccess" defaultMessage="Equipo actualizado correctamente" />
+            <Errors errors={backendErrors} onClose={() => setBackendErrors(null)} />
+
+            <div className="td-hero">
+                <div className="td-hero-shield">
+                    <i className="fa-solid fa-shield-halved" />
+                </div>
+                <div className="td-hero-info">
+                    <h2 className="td-hero-name">
+                        {team.nombreEquipo || team.nombre}
+                        <span className={`td-hero-dot ${isActive ? 'active' : 'inactive'}`} />
+                    </h2>
+                    <p className="td-hero-meta">
+                        <FormattedMessage
+                            id="project.teams.Detail.memberCount"
+                            defaultMessage="{count} {count, plural, one {miembro} other {miembros}}"
+                            values={{ count: memberCount }}
+                        />
+                    </p>
+                    <div className="td-hero-meta-list">
+                        <span className="td-hero-meta-item">
+                            <i className="fa-regular fa-calendar" />
+                            {formatDate(team.fechaCreacion)}
+                        </span>
+                        <span className="td-hero-meta-sep">·</span>
+                        <span className="td-hero-meta-item">
+                            <i className="fa-regular fa-hashtag" />
+                            <FormattedMessage id="project.teams.Detail.teamId" defaultMessage="ID {id}" values={{ id: team.id }} />
+                        </span>
+                        <span className="td-hero-meta-sep">·</span>
+                        <span className="td-hero-meta-item">
+                            {isActive ? (
+                                <><i className="fa-solid fa-circle" style={{ color: '#34c759', fontSize: '0.5rem' }} /> Activo</>
+                            ) : (
+                                <><i className="fa-solid fa-circle" style={{ color: '#aeaeb2', fontSize: '0.5rem' }} /> Inactivo</>
+                            )}
+                        </span>
                     </div>
-                )}
+                </div>
+            </div>
 
-                <Errors errors={backendErrors} onClose={() => setBackendErrors(null)} />
+            <div className="td-stats">
+                <div className="td-stat">
+                    <span className="td-stat-icon"><i className="fa-solid fa-users" /></span>
+                    <div className="td-stat-body">
+                        <span className="td-stat-label"><FormattedMessage id="project.teams.Detail.members" defaultMessage="Miembros" /></span>
+                        <span className="td-stat-value">{memberCount}</span>
+                    </div>
+                </div>
+                <div className="td-stat">
+                    <span className="td-stat-icon"><i className="fa-solid fa-trophy" /></span>
+                    <div className="td-stat-body">
+                        <span className="td-stat-label"><FormattedMessage id="project.teams.Detail.partidas" defaultMessage="Partidas" /></span>
+                        <span className="td-stat-value">—</span>
+                    </div>
+                </div>
+                <div className="td-stat">
+                    <span className="td-stat-icon"><i className="fa-regular fa-calendar-check" /></span>
+                    <div className="td-stat-body">
+                        <span className="td-stat-label"><FormattedMessage id="project.teams.Detail.created" defaultMessage="Creado" /></span>
+                        <span className="td-stat-value">{formatDate(team.fechaCreacion)}</span>
+                    </div>
+                </div>
+            </div>
 
-                <Row className="g-4">
-                    {/*
-                     * ========================================
-                     * LEFT COLUMN — shield + name + meta
-                     * ========================================
-                     */}
-                    <Col lg={4} className="text-center d-flex flex-column align-items-center">
-                        <div className="td-team-image-container">
-                            <i className="fa-solid fa-shield-halved" />
-                        </div>
-                        <h2 className="td-team-display-name mt-3">
-                            {team.nombreEquipo || team.nombre}
-                            <span className={`td-team-status-dot ms-2 ${isActive ? 'active' : 'inactive'}`} />
-                        </h2>
-                        <p className="td-team-email-text">
-                            <FormattedMessage
-                                id="project.teams.Detail.memberCount"
-                                defaultMessage="{count} {count, plural, one {miembro} other {miembros}}"
-                                values={{ count: memberCount }}
-                            />
+            <div className="td-section">
+                <div className="td-section-header">
+                    <span className="td-section-title">
+                        <FormattedMessage id="project.teams.Detail.descriptionSection" defaultMessage="Descripción" />
+                    </span>
+                    {isCaptain && !isEditing && (
+                        <button
+                            type="button"
+                            className="td-edit-btn"
+                            onClick={() => setIsEditing(true)}
+                        >
+                            <i className="fa-solid fa-pen" />
+                        </button>
+                    )}
+                </div>
+                <div className="td-section-body">
+                    {isEditing ? (
+                        <form onSubmit={handleUpdateTeam} className="td-edit-form">
+                            <div className="td-edit-field">
+                                <label className="td-edit-label">
+                                    <FormattedMessage id="project.teams.Detail.editForm.nameLabel" defaultMessage="Nombre del equipo" />
+                                </label>
+                                <input
+                                    type="text"
+                                    value={editName}
+                                    onChange={(e) => setEditName(e.target.value)}
+                                    className="td-edit-input"
+                                    autoFocus
+                                    required
+                                />
+                            </div>
+                            <div className="td-edit-field">
+                                <label className="td-edit-label">
+                                    <FormattedMessage id="project.teams.Detail.editForm.descriptionLabel" defaultMessage="Descripción o lema" />
+                                </label>
+                                <textarea
+                                    rows={2}
+                                    value={editDescripcion}
+                                    onChange={(e) => setEditDescripcion(e.target.value)}
+                                    className="td-edit-input td-edit-textarea"
+                                    placeholder={intl.formatMessage({
+                                        id: 'project.teams.Detail.editForm.descriptionPlaceholder',
+                                        defaultMessage: 'Escribe el lema de tu equipo...'
+                                    })}
+                                />
+                            </div>
+                            <div className="td-edit-actions">
+                                <button type="submit" className="td-save-btn">
+                                    <i className="fa-regular fa-floppy-disk" />
+                                    <FormattedMessage id="project.teams.Detail.editForm.save" defaultMessage="Guardar" />
+                                </button>
+                                <button
+                                    type="button"
+                                    className="td-cancel-btn"
+                                    onClick={() => {
+                                        setIsEditing(false);
+                                        setEditName(team.nombreEquipo || team.nombre);
+                                        setEditDescripcion(team.descripcion || '');
+                                    }}
+                                >
+                                    <FormattedMessage id="project.teams.Detail.editForm.cancel" defaultMessage="Cancelar" />
+                                </button>
+                            </div>
+                        </form>
+                    ) : (
+                        <p className={`td-desc ${!team.descripcion ? 'td-desc--empty' : ''}`}>
+                            {team.descripcion || (
+                                <FormattedMessage id="project.teams.Detail.noDescription" defaultMessage="Sin descripción" />
+                            )}
                         </p>
-                        <div className="td-team-meta-list">
-                            <div className="td-team-meta-item">
-                                <i className="fa-regular fa-calendar" />
-                                <span>{formatDate(team.fechaCreacion)}</span>
-                            </div>
-                            <div className="td-team-meta-item">
-                                <i className="fa-regular fa-hashtag" />
-                                <FormattedMessage id="project.teams.Detail.teamId" defaultMessage="ID {id}" values={{ id: team.id }} />
-                            </div>
-                            <div className="td-team-meta-item">
-                                {isActive ? (
-                                    <><i className="fa-solid fa-circle" style={{ color: '#34c759', fontSize: '0.5rem' }} />
-                                        <FormattedMessage id="project.teams.Detail.active" defaultMessage="Activo" /></>
-                                ) : (
-                                    <><i className="fa-solid fa-circle" style={{ color: '#aeaeb2', fontSize: '0.5rem' }} />
-                                        <FormattedMessage id="project.teams.Detail.inactive" defaultMessage="Inactivo" /></>
-                                )}
-                            </div>
-                        </div>
-                    </Col>
+                    )}
+                </div>
+            </div>
 
-                    {/*
-                     * ========================================
-                     * RIGHT COLUMN — stats + sections
-                     * ========================================
-                     */}
-                    <Col lg={8}>
-                        {/*
-                         * STATS ROW
-                         */}
-                        <div className="td-team-stats-row">
-                            <div className="td-team-stat-item">
-                                <span className="td-team-stat-icon">
-                                    <i className="fa-solid fa-users" />
-                                </span>
-                                <div>
-                                    <div className="td-team-stat-label">
-                                        <FormattedMessage id="project.teams.Detail.members" defaultMessage="Miembros" />
-                                    </div>
-                                    <div className="td-team-stat-value">{memberCount}</div>
-                                </div>
-                            </div>
-                            <div className="td-team-stat-item">
-                                <span className="td-team-stat-icon">
-                                    <i className="fa-solid fa-trophy" />
-                                </span>
-                                <div>
-                                    <div className="td-team-stat-label">
-                                        <FormattedMessage id="project.teams.Detail.partidas" defaultMessage="Partidas" />
-                                    </div>
-                                    <div className="td-team-stat-value">—</div>
-                                </div>
-                            </div>
-                            <div className="td-team-stat-item">
-                                <span className="td-team-stat-icon">
-                                    <i className="fa-regular fa-calendar-check" />
-                                </span>
-                                <div>
-                                    <div className="td-team-stat-label">
-                                        <FormattedMessage id="project.teams.Detail.created" defaultMessage="Creado" />
-                                    </div>
-                                    <div className="td-team-stat-value">{formatDate(team.fechaCreacion)}</div>
-                                </div>
-                            </div>
-                        </div>
+            <div className="td-section">
+                <div className="td-section-header">
+                    <span className="td-section-title">
+                        <FormattedMessage id="project.teams.Detail.codeLabel" defaultMessage="Código de invitación" />
+                    </span>
+                </div>
+                <div className="td-section-body">
+                    <div className="td-code-area">
+                        <code className="td-code">{codigoEquipo}</code>
+                        <button
+                            type="button"
+                            className="td-copy-btn"
+                            onClick={handleCopyCode}
+                        >
+                            {copied ? (
+                                <><i className="fa-regular fa-check-circle" /> <FormattedMessage id="project.teams.Detail.codeCopied" defaultMessage="¡Copiado!" /></>
+                            ) : (
+                                <><i className="fa-regular fa-copy" /> <FormattedMessage id="project.teams.Detail.copy" defaultMessage="Copiar" /></>
+                            )}
+                        </button>
+                    </div>
+                    <p className="td-code-help">
+                        <i className="fa-regular fa-circle-info" />
+                        <FormattedMessage id="project.teams.Detail.codeHelp" defaultMessage="Comparte este código para que otros se unan al equipo" />
+                    </p>
+                </div>
+            </div>
 
-                        {/*
-                         * INFO ROW: Descripción / Editar equipo
-                         */}
-                        <div className="td-team-info-row">
-                            <div className="td-team-info-label">
-                                <FormattedMessage id="project.teams.Detail.descriptionSection" defaultMessage="Descripción" />
-                                {isCaptain && !isEditing && (
-                                    <Button
-                                        variant="light"
-                                        size="sm"
-                                        className="td-team-section-edit-btn"
-                                        onClick={() => setIsEditing(true)}
-                                    >
-                                        <i className="fa-solid fa-pen" />
-                                    </Button>
-                                )}
-                            </div>
-                            <div className="td-team-info-value">
-                                {isEditing ? (
-                                    <Form onSubmit={handleUpdateTeam} className="td-team-edit-form">
-                                        <Form.Group className="mb-3">
-                                            <Form.Label className="td-team-form-label">
-                                                <FormattedMessage id="project.teams.Detail.editForm.nameLabel" defaultMessage="Nombre del equipo" />
-                                            </Form.Label>
-                                            <Form.Control
-                                                type="text"
-                                                value={editName}
-                                                onChange={(e) => setEditName(e.target.value)}
-                                                className="td-team-form-control"
-                                                autoFocus
-                                                required
-                                            />
-                                        </Form.Group>
-                                        <Form.Group className="mb-3">
-                                            <Form.Label className="td-team-form-label">
-                                                <FormattedMessage id="project.teams.Detail.editForm.descriptionLabel" defaultMessage="Descripción o lema" />
-                                            </Form.Label>
-                                            <Form.Control
-                                                as="textarea"
-                                                rows={2}
-                                                value={editDescripcion}
-                                                onChange={(e) => setEditDescripcion(e.target.value)}
-                                                className="td-team-form-control"
-                                                placeholder={intl.formatMessage({
-                                                    id: 'project.teams.Detail.editForm.descriptionPlaceholder',
-                                                    defaultMessage: 'Escribe el lema de tu equipo...'
-                                                })}
-                                            />
-                                        </Form.Group>
-                                        <div className="td-team-edit-actions">
-                                            <Button type="submit" className="td-team-save-btn">
-                                                <i className="fa-regular fa-floppy-disk me-1" />
-                                                <FormattedMessage id="project.teams.Detail.editForm.save" defaultMessage="Guardar" />
-                                            </Button>
-                                            <Button
-                                                type="button"
-                                                variant="light"
-                                                className="td-team-cancel-btn"
-                                                onClick={() => {
-                                                    setIsEditing(false);
-                                                    setEditName(team.nombreEquipo || team.nombre);
-                                                    setEditDescripcion(team.descripcion || '');
-                                                }}
-                                            >
-                                                <FormattedMessage id="project.teams.Detail.editForm.cancel" defaultMessage="Cancelar" />
-                                            </Button>
-                                        </div>
-                                    </Form>
-                                ) : (
-                                    <p className={`td-team-section-text ${!team.descripcion ? 'td-team-section-text--empty' : ''}`}>
-                                        {team.descripcion || (
-                                            <FormattedMessage id="project.teams.Detail.noDescription" defaultMessage="Sin descripción" />
-                                        )}
-                                    </p>
-                                )}
-                            </div>
-                        </div>
-
-                        {/*
-                         * INFO ROW: Código de invitación
-                         */}
-                        <div className="td-team-info-row">
-                            <div className="td-team-info-label">
-                                <FormattedMessage id="project.teams.Detail.codeLabel" defaultMessage="Código de invitación" />
-                            </div>
-                            <div className="td-team-info-value">
-                                <div className="td-team-code-area">
-                                    <code className="td-team-code">{codigoEquipo}</code>
-                                    <Button
-                                        variant="light"
-                                        className="td-team-copy-btn"
-                                        onClick={handleCopyCode}
-                                    >
-                                        {copied ? (
-                                            <><i className="fa-regular fa-check-circle" /> <FormattedMessage id="project.teams.Detail.codeCopied" defaultMessage="¡Copiado!" /></>
-                                        ) : (
-                                            <><i className="fa-regular fa-copy" /> <FormattedMessage id="project.teams.Detail.copy" defaultMessage="Copiar" /></>
-                                        )}
-                                    </Button>
-                                </div>
-                                <p className="td-team-code-help">
-                                    <i className="fa-regular fa-circle-info" />
-                                    <FormattedMessage id="project.teams.Detail.codeHelp" defaultMessage="Comparte este código para que otros se unan al equipo" />
-                                </p>
-                            </div>
-                        </div>
-
-                        {/*
-                         * SECTION: Miembros
-                         */}
-                        <div className="td-team-section">
-                            <h3 className="td-team-section-title">
-                                <FormattedMessage id="project.teams.Detail.membersTitle" defaultMessage="Miembros" />
-                                <span className="td-team-section-badge">{memberCount}</span>
-                            </h3>
-                            <div className="td-team-members-list">
-                                {team.miembros?.map((member) => {
-                                    const isTeamCaptain = member.id === team.creadorId;
-                                    return (
-                                        <div
-                                            key={member.id}
-                                            className={`td-team-member ${isTeamCaptain ? 'captain' : ''}`}
-                                        >
-                                            <ProfileAvatar
-                                                imageUrl={member.imagenPerfil}
-                                                name={member.nombre}
-                                                size={40}
-                                                className="td-team-member-avatar"
-                                            />
-                                            <div className="td-team-member-info">
-                                                <div className="td-team-member-name-row">
-                                                    <span className="td-team-member-name">{member.nombre}</span>
-                                                    {member.elo != null && (
-                                                        <span className={`td-team-elo-badge ${member.elo >= 1500 ? 'high' : ''}`}>
-                                                            <i className="fa-solid fa-bolt" />
-                                                            {member.elo}{member.eloProvisional && <span style={{ fontSize: '0.5rem', opacity: 0.6 }}>*</span>}
-                                                        </span>
-                                                    )}
-                                                    {isTeamCaptain && (
-                                                        <span className="td-team-captain-badge">
-                                                            <i className="fa-solid fa-crown" />
-                                                            <FormattedMessage id="project.teams.Detail.captain" defaultMessage="Capitán" />
-                                                        </span>
-                                                    )}
-                                                </div>
-                                                <div className="td-team-member-email">{member.email}</div>
-                                            </div>
-                                            {isCaptain && !isTeamCaptain && (
-                                                <Button
-                                                    variant="outline-danger"
-                                                    size="sm"
-                                                    className="td-team-kick-btn"
-                                                    onClick={() => {
-                                                        setMemberToKick(member);
-                                                        setShowKickModal(true);
-                                                    }}
-                                                >
-                                                    <i className="fa-solid fa-user-minus" />
-                                                    <FormattedMessage id="project.teams.Detail.kickMember" defaultMessage="Expulsar" />
-                                                </Button>
+            <div className="td-section">
+                <div className="td-section-header">
+                    <span className="td-section-title">
+                        <FormattedMessage id="project.teams.Detail.membersTitle" defaultMessage="Miembros" />
+                    </span>
+                    <span className="td-section-badge">{memberCount}</span>
+                </div>
+                <div className="td-section-body">
+                    <div className="td-members">
+                        {team.miembros?.map((member) => {
+                            const isTeamCaptain = member.id === team.creadorId;
+                            return (
+                                <div
+                                    key={member.id}
+                                    className={`td-member ${isTeamCaptain ? 'captain' : ''}`}
+                                >
+                                    <ProfileAvatar
+                                        imageUrl={member.imagenPerfil}
+                                        name={member.nombre}
+                                        size={40}
+                                        className="td-member-avatar"
+                                    />
+                                    <div className="td-member-info">
+                                        <div className="td-member-name-row">
+                                            <span className="td-member-name">{member.nombre}</span>
+                                            {member.elo != null && (
+                                                <span className={`td-elo ${member.elo >= 1500 ? 'high' : ''}`}>
+                                                    <i className="fa-solid fa-bolt" />
+                                                    {member.elo}{member.eloProvisional && <span className="td-elo-provisional">*</span>}
+                                                </span>
+                                            )}
+                                            {isTeamCaptain && (
+                                                <span className="td-captain-badge">
+                                                    <i className="fa-solid fa-crown" />
+                                                    <FormattedMessage id="project.teams.Detail.captain" defaultMessage="Capitán" />
+                                                </span>
                                             )}
                                         </div>
-                                    );
-                                })}
-                                {memberCount === 0 && (
-                                    <div className="td-team-no-members">
-                                        <i className="fa-regular fa-user-slash" />
-                                        <FormattedMessage id="project.teams.Detail.noMembers" defaultMessage="No hay miembros en este equipo" />
+                                        <div className="td-member-email">{member.email}</div>
                                     </div>
-                                )}
-                            </div>
-                        </div>
-
-                        {/*
-                         * ACCIONES
-                         */}
-                        {(isCaptain || isMember) && (
-                            <div className="td-team-actions-row">
-                                {isCaptain && (
-                                    <Button
-                                        variant="danger"
-                                        className="td-team-delete-btn"
-                                        onClick={() => setShowDeleteModal(true)}
-                                    >
-                                        <i className="fa-regular fa-trash-can" />
-                                        <FormattedMessage id="project.teams.Detail.deleteTeam" defaultMessage="Eliminar equipo" />
-                                    </Button>
-                                )}
-                                {!isCaptain && isMember && (
-                                    <Button
-                                        variant="outline-danger"
-                                        className="td-team-leave-btn"
-                                        onClick={() => setShowLeaveModal(true)}
-                                    >
-                                        <i className="fa-regular fa-right-from-bracket" />
-                                        <FormattedMessage id="project.teams.Detail.leaveTeam" defaultMessage="Abandonar equipo" />
-                                    </Button>
-                                )}
+                                    {isCaptain && !isTeamCaptain && (
+                                        <button
+                                            type="button"
+                                            className="td-kick-btn"
+                                            onClick={() => {
+                                                setMemberToKick(member);
+                                                setShowKickModal(true);
+                                            }}
+                                        >
+                                            <i className="fa-solid fa-user-minus" />
+                                            <FormattedMessage id="project.teams.Detail.kickMember" defaultMessage="Expulsar" />
+                                        </button>
+                                    )}
+                                </div>
+                            );
+                        })}
+                        {memberCount === 0 && (
+                            <div className="td-no-members">
+                                <i className="fa-regular fa-user-slash" />
+                                <FormattedMessage id="project.teams.Detail.noMembers" defaultMessage="No hay miembros en este equipo" />
                             </div>
                         )}
-                    </Col>
-                </Row>
-            </Container>
+                    </div>
+                </div>
+            </div>
+
+            {(isCaptain || isMember) && (
+                <div className="td-actions">
+                    {isCaptain && (
+                        <button
+                            type="button"
+                            className="td-delete-btn"
+                            onClick={() => setShowDeleteModal(true)}
+                        >
+                            <i className="fa-regular fa-trash-can" />
+                            <FormattedMessage id="project.teams.Detail.deleteTeam" defaultMessage="Eliminar equipo" />
+                        </button>
+                    )}
+                    {!isCaptain && isMember && (
+                        <button
+                            type="button"
+                            className="td-leave-btn"
+                            onClick={() => setShowLeaveModal(true)}
+                        >
+                            <i className="fa-regular fa-right-from-bracket" />
+                            <FormattedMessage id="project.teams.Detail.leaveTeam" defaultMessage="Abandonar equipo" />
+                        </button>
+                    )}
+                </div>
+            )}
 
             <ConfirmationModal
                 show={showDeleteModal}

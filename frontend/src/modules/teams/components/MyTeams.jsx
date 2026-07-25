@@ -4,6 +4,12 @@ import { Link } from 'react-router';
 import { FormattedMessage } from 'react-intl';
 import Spinner from 'react-bootstrap/Spinner';
 import teams from '../../teams';
+import './MyTeams.css';
+
+const formatDate = (ts) => {
+    if (!ts) return '';
+    return new Date(ts).toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' });
+};
 
 const MyTeams = () => {
     const dispatch = useDispatch();
@@ -15,64 +21,63 @@ const MyTeams = () => {
     }, [dispatch]);
 
     return (
-        <div className="home-dashboard" style={{ maxWidth: '900px', margin: '0 auto', padding: '2rem 1.5rem' }}>
-            <div className="dashboard-header" style={{ marginBottom: '2rem' }}>
+        <div className="mt-container">
+            <div className="mt-header">
                 <div>
-                    <h1 className="dashboard-greeting" style={{ fontSize: '1.8rem', fontWeight: '700' }}>
+                    <h1 className="mt-title">
                         <FormattedMessage id="project.teams.MyTeams.title" defaultMessage="Mis Equipos" />
                     </h1>
-                    <p className="dashboard-subtitle" style={{ color: '#6b7280', marginTop: '0.25rem' }}>
+                    <p className="mt-subtitle">
                         <FormattedMessage id="project.teams.MyTeams.subtitle" defaultMessage="Equipos que has creado" />
                     </p>
                 </div>
-                <Link to="/teams/create" className="btn btn-dark rounded-pill px-4" style={{ fontSize: '0.9rem' }}>
+                <Link to="/teams/create" className="mt-create-btn">
                     <FormattedMessage id="project.teams.MyTeams.create" defaultMessage="+ Crear equipo" />
                 </Link>
             </div>
 
             {isLoading ? (
-                <div className="text-center py-5">
+                <div className="mt-loading">
                     <Spinner animation="border" variant="secondary" />
                 </div>
             ) : userTeams.length > 0 ? (
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+                <div className="mt-list">
                     {userTeams.map((team, index) => (
-                        <div key={team.id || index} className="list-item" style={{
-                            display: 'flex',
-                            justifyContent: 'space-between',
-                            alignItems: 'center',
-                            padding: '1rem 1.25rem',
-                            background: '#fff',
-                            borderRadius: '12px',
-                            border: '1px solid #e5e7eb',
-                            transition: 'box-shadow 0.2s'
-                        }}>
-                            <div>
-                                <div className="list-item-title" style={{ fontWeight: '600', fontSize: '1.05rem' }}>
-                                    {team.nombreEquipo || team.nombre}
+                        <Link key={team.id || index} to={`/teams/view/${team.id}`} className="mt-row">
+                            <div className="mt-row-left">
+                                <div className="mt-row-shield">
+                                    <i className="fa-solid fa-shield-halved" />
                                 </div>
-                                <div className="list-item-meta" style={{ fontSize: '0.85rem', color: '#6b7280', marginTop: '0.25rem' }}>
-                                    <span>
-                                        <FormattedMessage id="project.teams.MyTeams.members" defaultMessage="{count} miembros" values={{ count: team.miembros?.length || 0 }} />
-                                    </span>
+                                <div className="mt-row-info">
+                                    <div className="mt-row-name">
+                                        {team.nombreEquipo || team.nombre}
+                                    </div>
+                                    <div className="mt-row-meta">
+                                        <span className="mt-row-meta-item">
+                                            <i className="fa-regular fa-calendar" />
+                                            {formatDate(team.fechaCreacion)}
+                                        </span>
+                                        <span className="mt-row-meta-sep">·</span>
+                                        <span className="mt-row-meta-item">
+                                            <FormattedMessage id="project.teams.MyTeams.members" defaultMessage="{count} miembros" values={{ count: team.miembros?.length || 0 }} />
+                                        </span>
+                                    </div>
                                 </div>
                             </div>
-                            <Link to={`/teams/view/${team.id}`} className="list-item-link" style={{ fontWeight: '500', color: '#1d1d1f', textDecoration: 'none' }}>
-                                <FormattedMessage id="project.teams.MyTeams.view" defaultMessage="Ver →" />
-                            </Link>
-                        </div>
+                            <i className="fa-solid fa-chevron-right mt-chevron" />
+                        </Link>
                     ))}
                 </div>
             ) : (
-                <div className="empty-state" style={{ textAlign: 'center', padding: '4rem 2rem' }}>
-                    <div className="empty-state-icon" style={{ fontSize: '3rem', marginBottom: '1rem' }}>📋</div>
-                    <div className="empty-state-text" style={{ fontSize: '1.1rem', fontWeight: '600', color: '#374151' }}>
+                <div className="mt-empty">
+                    <span className="mt-empty-icon">📋</span>
+                    <h3 className="mt-empty-title">
                         <FormattedMessage id="project.teams.MyTeams.noTeams" defaultMessage="Aún no tienes equipos" />
-                    </div>
-                    <div className="empty-state-help" style={{ fontSize: '0.9rem', color: '#6b7280', marginTop: '0.5rem' }}>
+                    </h3>
+                    <p className="mt-empty-desc">
                         <FormattedMessage id="project.teams.MyTeams.noTeamsHelp" defaultMessage="Crea tu primer equipo para empezar a competir" />
-                    </div>
-                    <Link to="/teams/create" className="empty-state-action btn btn-outline-dark rounded-pill mt-3">
+                    </p>
+                    <Link to="/teams/create" className="mt-create-btn mt-create-btn--empty">
                         <FormattedMessage id="project.teams.MyTeams.createAction" defaultMessage="Crear equipo →" />
                     </Link>
                 </div>
