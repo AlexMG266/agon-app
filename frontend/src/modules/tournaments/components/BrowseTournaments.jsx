@@ -7,7 +7,7 @@ import Button from 'react-bootstrap/Button';
 import backend from '../../../backend';
 import './BrowseTournaments.css';
 
-const PAGE_SIZE = 6;
+const PAGE_SIZE = 5;
 
 const ESTADO_MAP = {
     'RECLUTANDO': { key: 'reclutando', color: '#2563eb', bg: '#eef4ff' },
