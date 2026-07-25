@@ -84,6 +84,11 @@ export const unfollowTournament = async (id) => {
     return await appFetch('DELETE', `/tournaments/${id}/follow`);
 };
 
+// PUT /tournaments/{id}: actualiza los datos editables de un torneo (solo organizador).
+export const updateTournament = async (id, data) => {
+    return await appFetch('PUT', `/tournaments/${id}`, data);
+};
+
 export default {
     createTournament,
     getMyTournaments,
@@ -100,5 +105,6 @@ export default {
     getFollowedTournaments,
     getEnrolledTournaments,
     followTournament,
-    unfollowTournament
+    unfollowTournament,
+    updateTournament
 };

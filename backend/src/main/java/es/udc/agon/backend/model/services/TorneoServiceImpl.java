@@ -504,6 +504,67 @@ public class TorneoServiceImpl implements TorneoService {
     }
 
     @Override
+    public Torneo actualizarTorneo(Long userId, Long torneoId, Torneo datos)
+            throws InstanceNotFoundException, PermissionException {
+
+        Torneo torneo = torneoDao.findById(torneoId)
+                .orElseThrow(() -> new InstanceNotFoundException("project.entities.torneo", torneoId));
+
+        if (!torneo.getOrganizador().getId().equals(userId)) {
+            throw new PermissionException();
+        }
+
+        // Solo actualizar campos no nulos en 'datos'
+        if (datos.getNombre() != null) {
+            torneo.setNombre(datos.getNombre());
+        }
+        if (datos.getFechaInicio() != null) {
+            torneo.setFechaInicio(datos.getFechaInicio());
+        }
+        if (datos.getFechaFin() != null) {
+            torneo.setFechaFin(datos.getFechaFin());
+        }
+        if (datos.getFechaLimiteInscripcion() != null) {
+            torneo.setFechaLimiteInscripcion(datos.getFechaLimiteInscripcion());
+        }
+        if (datos.getPuntosVictoria() != null) {
+            torneo.setPuntosVictoria(datos.getPuntosVictoria());
+        }
+        if (datos.getPuntosEmpate() != null) {
+            torneo.setPuntosEmpate(datos.getPuntosEmpate());
+        }
+        if (datos.getPuntosDerrota() != null) {
+            torneo.setPuntosDerrota(datos.getPuntosDerrota());
+        }
+        if (datos.getFormatoPartidos() != null) {
+            torneo.setFormatoPartidos(datos.getFormatoPartidos());
+        }
+        if (datos.getCriterioDesempate() != null) {
+            torneo.setCriterioDesempate(datos.getCriterioDesempate());
+        }
+        if (datos.getDiasDisponibles() != null) {
+            torneo.setDiasDisponibles(datos.getDiasDisponibles());
+        }
+        if (datos.getHoraInicio() != null) {
+            torneo.setHoraInicio(datos.getHoraInicio());
+        }
+        if (datos.getHoraFin() != null) {
+            torneo.setHoraFin(datos.getHoraFin());
+        }
+        if (datos.getDuracionPartido() != null) {
+            torneo.setDuracionPartido(datos.getDuracionPartido());
+        }
+        if (datos.getFechasExcluidas() != null) {
+            torneo.setFechasExcluidas(datos.getFechasExcluidas());
+        }
+        if (datos.getEstrategiaDistribucion() != null) {
+            torneo.setEstrategiaDistribucion(datos.getEstrategiaDistribucion());
+        }
+
+        return torneoDao.save(torneo);
+    }
+
+    @Override
     public void gestionarJornadas(Long torneoId, Long jornadaId, EstadoJornada nuevoEstado)
             throws InstanceNotFoundException, PermissionException, IllegalArgumentException {
 

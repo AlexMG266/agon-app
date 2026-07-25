@@ -3,6 +3,7 @@ package es.udc.agon.backend.rest.dtos;
 import es.udc.agon.backend.model.entities.Inscripcion;
 import es.udc.agon.backend.model.entities.Torneo;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -26,6 +27,16 @@ public class TorneoConversor {
                     .collect(Collectors.toList());
         }
 
+        // Convertir campos coma-separados a listas
+        List<String> diasList = null;
+        if (torneo.getDiasDisponibles() != null && !torneo.getDiasDisponibles().isEmpty()) {
+            diasList = List.of(torneo.getDiasDisponibles().split(","));
+        }
+        List<String> fechasExcluidasList = null;
+        if (torneo.getFechasExcluidas() != null && !torneo.getFechasExcluidas().isEmpty()) {
+            fechasExcluidasList = List.of(torneo.getFechasExcluidas().split(","));
+        }
+
         return new TorneoDto(
                 torneo.getId(),
                 torneo.getNombre(),
@@ -40,7 +51,21 @@ public class TorneoConversor {
                 numInscritos,
                 torneo.getPrivado() != null ? torneo.getPrivado() : false,
                 torneo.getCodigoTorneo(),
-                inscripcionDtos
+                inscripcionDtos,
+                torneo.getFechaInicio(),
+                torneo.getFechaFin(),
+                torneo.getFechaLimiteInscripcion(),
+                torneo.getPuntosVictoria(),
+                torneo.getPuntosEmpate(),
+                torneo.getPuntosDerrota(),
+                torneo.getFormatoPartidos(),
+                torneo.getCriterioDesempate(),
+                diasList,
+                torneo.getHoraInicio(),
+                torneo.getHoraFin(),
+                torneo.getDuracionPartido(),
+                fechasExcluidasList,
+                torneo.getEstrategiaDistribucion()
         );
     }
 

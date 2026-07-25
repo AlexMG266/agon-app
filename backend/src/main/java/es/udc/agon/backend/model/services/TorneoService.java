@@ -179,4 +179,18 @@ public interface TorneoService {
      * Obtiene las solicitudes de inscripcion pendientes para un torneo.
      */
     List<Solicitud> obtenerSolicitudesPendientes(Long torneoId);
+
+    /**
+     * Actualiza los datos editables de un torneo (nombre, fechas, reglas, calendario, etc.).
+     * Solo el organizador del torneo puede realizar esta accion.
+     *
+     * @param userId   Id del usuario que solicita la actualizacion (debe ser el organizador).
+     * @param torneoId Id del torneo a actualizar.
+     * @param datos     Torneo con los campos a actualizar (los valores no nulos se aplican).
+     * @return el torneo actualizado.
+     * @throws InstanceNotFoundException si el torneo no existe.
+     * @throws PermissionException       si el usuario no es el organizador del torneo.
+     */
+    Torneo actualizarTorneo(Long userId, Long torneoId, Torneo datos)
+            throws InstanceNotFoundException, PermissionException;
 }

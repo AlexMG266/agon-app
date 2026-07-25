@@ -5,6 +5,7 @@ import es.udc.agon.backend.model.entities.Torneo;
 import es.udc.agon.backend.model.exceptions.InstanceNotFoundException;
 import es.udc.agon.backend.model.exceptions.PermissionException;
 import es.udc.agon.backend.model.services.TorneoService;
+import es.udc.agon.backend.rest.dtos.ActualizarTorneoParamsDto;
 import es.udc.agon.backend.rest.dtos.ConfigurarEstructuraParamsDto;
 import es.udc.agon.backend.rest.dtos.CrearTorneoParamsDto;
 import es.udc.agon.backend.rest.dtos.InscribirEquipoParamsDto;
@@ -26,6 +27,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -61,9 +63,74 @@ public class TorneoController {
 
         Torneo torneo = new Torneo();
         torneo.setNombre(params.getNombre());
+        torneo.setFechaInicio(params.getFechaInicio() != null ? LocalDate.parse(params.getFechaInicio()) : null);
+        torneo.setFechaFin(params.getFechaFin() != null ? LocalDate.parse(params.getFechaFin()) : null);
+        torneo.setFechaLimiteInscripcion(params.getFechaLimiteInscripcion() != null ? LocalDate.parse(params.getFechaLimiteInscripcion()) : null);
+        torneo.setPuntosVictoria(params.getPuntosVictoria());
+        torneo.setPuntosEmpate(params.getPuntosEmpate());
+        torneo.setPuntosDerrota(params.getPuntosDerrota());
+        torneo.setFormatoPartidos(params.getFormatoPartidos());
+        torneo.setCriterioDesempate(params.getCriterioDesempate());
+        if (params.getDiasDisponibles() != null) {
+            torneo.setDiasDisponibles(String.join(",", params.getDiasDisponibles()));
+        }
+        torneo.setHoraInicio(params.getHoraInicio());
+        torneo.setHoraFin(params.getHoraFin());
+        torneo.setDuracionPartido(params.getDuracionPartido());
+        if (params.getFechasExcluidas() != null) {
+            torneo.setFechasExcluidas(String.join(",", params.getFechasExcluidas()));
+        }
+        torneo.setEstrategiaDistribucion(params.getEstrategiaDistribucion());
 
         Torneo savedTorneo = torneoService.crearTorneo(userId, torneo, params.getPrivado());
         return TorneoConversor.toTorneoDto(savedTorneo);
+    }
+
+    @PutMapping("/{id}")
+    @ResponseStatus(HttpStatus.OK)
+    @Operation(
+            summary = "Actualizar datos editables de un torneo",
+            description = "Permite al organizador modificar los datos básicos del torneo (nombre, fechas, reglas, calendario, etc.). Solo el organizador puede hacerlo."
+    )
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Torneo actualizado con éxito",
+                    content = @Content(schema = @Schema(implementation = TorneoDto.class))),
+            @ApiResponse(responseCode = "401", description = "No autorizado",
+                    content = @Content),
+            @ApiResponse(responseCode = "403", description = "El usuario no es el organizador del torneo",
+                    content = @Content),
+            @ApiResponse(responseCode = "404", description = "Torneo no encontrado",
+                    content = @Content)
+    })
+    public TorneoDto actualizarTorneo(
+            @Parameter(hidden = true) @RequestAttribute Long userId,
+            @Parameter(description = "ID del torneo", example = "1") @PathVariable Long id,
+            @RequestBody ActualizarTorneoParamsDto params)
+            throws InstanceNotFoundException, PermissionException {
+
+        Torneo datos = new Torneo();
+        datos.setNombre(params.getNombre());
+        datos.setFechaInicio(params.getFechaInicio() != null ? LocalDate.parse(params.getFechaInicio()) : null);
+        datos.setFechaFin(params.getFechaFin() != null ? LocalDate.parse(params.getFechaFin()) : null);
+        datos.setFechaLimiteInscripcion(params.getFechaLimiteInscripcion() != null ? LocalDate.parse(params.getFechaLimiteInscripcion()) : null);
+        datos.setPuntosVictoria(params.getPuntosVictoria());
+        datos.setPuntosEmpate(params.getPuntosEmpate());
+        datos.setPuntosDerrota(params.getPuntosDerrota());
+        datos.setFormatoPartidos(params.getFormatoPartidos());
+        datos.setCriterioDesempate(params.getCriterioDesempate());
+        if (params.getDiasDisponibles() != null) {
+            datos.setDiasDisponibles(String.join(",", params.getDiasDisponibles()));
+        }
+        datos.setHoraInicio(params.getHoraInicio());
+        datos.setHoraFin(params.getHoraFin());
+        datos.setDuracionPartido(params.getDuracionPartido());
+        if (params.getFechasExcluidas() != null) {
+            datos.setFechasExcluidas(String.join(",", params.getFechasExcluidas()));
+        }
+        datos.setEstrategiaDistribucion(params.getEstrategiaDistribucion());
+
+        Torneo torneo = torneoService.actualizarTorneo(userId, id, datos);
+        return TorneoConversor.toTorneoDto(torneo);
     }
 
     @PostMapping("/{id}/configure")
