@@ -285,14 +285,12 @@ const TournamentDetail = () => {
     const validateConfig = () => {
         const e = {};
         const g = parseInt(configData.numGrupos, 10);
-        const eq = parseInt(configData.equiposPorGrupo, 10);
+        const ins = tournament?.numEquiposInscritos || 0;
         if (isNaN(g) || g < 1) e.numGrupos = intl.formatMessage({ id: 'project.tournaments.Detail.config.error.numGruposMin', defaultMessage: 'Debe haber al menos 1 grupo' });
         else if (g > 32) e.numGrupos = intl.formatMessage({ id: 'project.tournaments.Detail.config.error.numGruposMax', defaultMessage: 'Máximo 32 grupos' });
-        if (isNaN(eq) || eq < 2) e.equiposPorGrupo = intl.formatMessage({ id: 'project.tournaments.Detail.config.error.equiposPorGrupoMin', defaultMessage: 'Debe haber al menos 2 equipos por grupo' });
-        else if (eq > 32) e.equiposPorGrupo = intl.formatMessage({ id: 'project.tournaments.Detail.config.error.equiposPorGrupoMax', defaultMessage: 'Máximo 32 equipos por grupo' });
-        const cap = g * eq;
-        const ins = tournament?.numEquiposInscritos || 0;
-        if (!isNaN(g) && !isNaN(eq) && cap < ins) e.capacidad = intl.formatMessage({ id: 'project.tournaments.Detail.config.error.capacidadInsuficiente', defaultMessage: 'Capacidad insuficiente: {capacidad} plazas para {inscritos} equipos inscritos' }, { capacidad: cap, inscritos: ins });
+        const porGrupo = Math.ceil(ins / g);
+        if (!isNaN(g) && g > 0 && porGrupo < 1) e.capacidad = intl.formatMessage({ id: 'project.tournaments.Detail.config.error.sinEquipos', defaultMessage: 'No hay equipos inscritos para distribuir' });
+        else if (!isNaN(g) && g > 0 && porGrupo > 32) e.capacidad = intl.formatMessage({ id: 'project.tournaments.Detail.config.error.demasiadosPorGrupo', defaultMessage: 'Demasiados equipos por grupo ({porGrupo}). Aumenta el número de grupos.' }, { porGrupo });
         setConfigErrors(e);
         return Object.keys(e).length === 0;
     };
@@ -310,11 +308,14 @@ const TournamentDetail = () => {
         setConfiguring(true);
         setBackendErrors(null);
         setConfigSuccess(false);
+        const equiposInscritos = tournament?.numEquiposInscritos || 0;
+        const grupos = parseInt(configData.numGrupos, 10) || 1;
+        const equiposPorGrupo = Math.ceil(equiposInscritos / grupos);
         try {
             const res = await backend.tournamentService.configureTournament(id, {
                 tipoTorneo: configData.tipoTorneo,
-                numGrupos: parseInt(configData.numGrupos, 10),
-                equiposPorGrupo: parseInt(configData.equiposPorGrupo, 10),
+                numGrupos: grupos,
+                equiposPorGrupo: equiposPorGrupo,
                 tienePlayoff: configData.tienePlayoff,
                 idaVueltaPlayoff: configData.idaVueltaPlayoff,
             });
@@ -328,8 +329,6 @@ const TournamentDetail = () => {
             setBackendErrors(err.message || intl.formatMessage({ id: 'project.tournaments.Detail.config.error.generic', defaultMessage: 'Error al configurar el torneo' }));
         } finally { setConfiguring(false); }
     };
-
-    // === Editores de la columna derecha ===
 
     const toggleEditMode = () => {
         if (editing) {
@@ -471,7 +470,6 @@ const TournamentDetail = () => {
 
             <Errors errors={backendErrors} onClose={() => setBackendErrors(null)} />
 
-            {/* Success feedback */}
             {enrollRequestSent && (
                 <Success message={intl.formatMessage(
                     { id: 'project.tournaments.Detail.enroll.requestSent', defaultMessage: '¡Solicitud de inscripción enviada para "{team}"! El organizador la revisará.' },
@@ -515,7 +513,6 @@ const TournamentDetail = () => {
 
             {activeTab === 'info' && (
                 <div className="td-info-profile">
-                    {/* ===== HERO — spread horizontally ===== */}
                     <div className="td-info-hero">
                         <div className="td-info-hero-icon">
                             <i className="fa-regular fa-trophy" />
@@ -573,14 +570,12 @@ const TournamentDetail = () => {
                         </div>
                     </div>
 
-                    {/* ===== ACTIONS SECTION ===== */}
                     {(tournament.estado === 'RECLUTANDO' || tournament.estado === 'INSCRIPCION_CERRADA') && (
                         <div className="td-info-section">
                             <h3 className="td-info-section-title">
                                 <FormattedMessage id="project.tournaments.Detail.section.inscriptions" defaultMessage="Inscripciones" />
                             </h3>
 
-                            {/* Close Inscriptions */}
                             {tournament.estado === 'RECLUTANDO' && isOrg && (
                                 <div className="td-action">
                                     <span className="td-action-text">
@@ -694,87 +689,99 @@ const TournamentDetail = () => {
                                 </div>
                             )}
 
-                            {/* Configurator */}
                             {tournament.estado === 'INSCRIPCION_CERRADA' && isOrg && (
-                                <div className="td-config">
-                                    <div className="td-config-title">
-                                        <i className="fa-regular fa-gear me-1" />
+                                <div className="td-config-card">
+                                    <div className="td-config-card-header">
+                                        <i className="fa-regular fa-gear" />
                                         <FormattedMessage id="project.tournaments.Detail.config.title" defaultMessage="Configurar estructura del torneo" />
                                     </div>
-                                    <div className="td-config-sub">
-                                        <FormattedMessage id="project.tournaments.Detail.config.subtitle" defaultMessage="Hay {count} equipo(s) inscrito(s). Define el formato de competición." values={{ count: tournament.numEquiposInscritos || 0 }} />
-                                    </div>
+                                    <p className="td-config-card-sub">
+                                        <FormattedMessage id="project.tournaments.Detail.config.subtitle" defaultMessage="Hay {count} equipos inscritos. Define el formato de competición." values={{ count: tournament.numEquiposInscritos || 0 }} />
+                                    </p>
 
                                     {configErrors.capacidad && (
                                         <div className="td-config-error">
-                                            <i className="fa-regular fa-circle-exclamation me-1" />
+                                            <i className="fa-regular fa-circle-exclamation" />
                                             {configErrors.capacidad}
                                         </div>
                                     )}
 
-                                    <Form onSubmit={handleConfigure}>
-                                        <div className="td-config-grid">
-                                            <div className="td-config-field">
-                                                <Form.Label><FormattedMessage id="project.tournaments.Detail.config.tipoTorneo" defaultMessage="Tipo de torneo" /></Form.Label>
-                                                <Form.Select value={configData.tipoTorneo} onChange={e => handleConfigChange('tipoTorneo', e.target.value)}>
-                                                    <option value="GRUPOS_PLAYOFF"><FormattedMessage id="project.tournaments.Detail.config.tipo.gruposPlayoff" defaultMessage="Grupos + Playoff" /></option>
-                                                    <option value="LIGA_UNICA"><FormattedMessage id="project.tournaments.Detail.config.tipo.ligaUnica" defaultMessage="Liga única" /></option>
-                                                    <option value="ELIMINATORIAS"><FormattedMessage id="project.tournaments.Detail.config.tipo.eliminatorias" defaultMessage="Eliminatorias" /></option>
-                                                </Form.Select>
+                                    <form onSubmit={handleConfigure} className="td-config-form">
+                                        <div className={`td-config-field ${configData.tipoTorneo === 'ELIMINATORIAS' ? 'td-config-field--full' : ''}`}>
+                                            <label><FormattedMessage id="project.tournaments.Detail.config.tipoTorneo" defaultMessage="Tipo de torneo" /></label>
+                                            <div className="td-config-segmented">
+                                                {[
+                                                    { value: 'GRUPOS_PLAYOFF', labelId: 'project.tournaments.Detail.config.tipo.gruposPlayoff', label: 'Grupos + Playoff' },
+                                                    { value: 'LIGA_UNICA', labelId: 'project.tournaments.Detail.config.tipo.ligaUnica', label: 'Liga única' },
+                                                    { value: 'ELIMINATORIAS', labelId: 'project.tournaments.Detail.config.tipo.eliminatorias', label: 'Eliminatorias' },
+                                                ].map(tipo => (
+                                                    <button
+                                                        key={tipo.value}
+                                                        type="button"
+                                                        className={`td-config-seg-btn ${configData.tipoTorneo === tipo.value ? 'active' : ''}`}
+                                                        onClick={() => handleConfigChange('tipoTorneo', tipo.value)}
+                                                    >
+                                                        <FormattedMessage id={tipo.labelId} defaultMessage={tipo.label} />
+                                                    </button>
+                                                ))}
                                             </div>
-
-                                            {configData.tipoTorneo !== 'ELIMINATORIAS' && (
-                                                <>
-                                                    <div className="td-config-field">
-                                                        <Form.Label><FormattedMessage id="project.tournaments.Detail.config.numGrupos" defaultMessage="Número de grupos" /></Form.Label>
-                                                        <Form.Control type="number" min={1} max={32} value={configData.numGrupos} onChange={e => handleConfigChange('numGrupos', e.target.value)} isInvalid={!!configErrors.numGrupos} />
-                                                        <Form.Control.Feedback type="invalid">{configErrors.numGrupos}</Form.Control.Feedback>
-                                                    </div>
-                                                    <div className="td-config-field">
-                                                        <Form.Label><FormattedMessage id="project.tournaments.Detail.config.equiposPorGrupo" defaultMessage="Equipos por grupo" /></Form.Label>
-                                                        <Form.Control type="number" min={2} max={32} value={configData.equiposPorGrupo} onChange={e => handleConfigChange('equiposPorGrupo', e.target.value)} isInvalid={!!configErrors.equiposPorGrupo} />
-                                                        <Form.Control.Feedback type="invalid">{configErrors.equiposPorGrupo}</Form.Control.Feedback>
-                                                    </div>
-                                                </>
-                                            )}
-
-                                            {configData.tipoTorneo === 'GRUPOS_PLAYOFF' && (
-                                                <>
-                                                    <div className="td-config-field td-config-check">
-                                                        <Form.Check type="switch" id="tienePlayoff" label={intl.formatMessage({ id: 'project.tournaments.Detail.config.tienePlayoff', defaultMessage: 'Playoff' })} checked={configData.tienePlayoff} onChange={e => handleConfigChange('tienePlayoff', e.target.checked)} />
-                                                    </div>
-                                                    {configData.tienePlayoff && (
-                                                        <div className="td-config-field td-config-check">
-                                                            <Form.Check type="switch" id="idaVueltaPlayoff" label={intl.formatMessage({ id: 'project.tournaments.Detail.config.idaVueltaPlayoff', defaultMessage: 'Ida y vuelta en playoff' })} checked={configData.idaVueltaPlayoff} onChange={e => handleConfigChange('idaVueltaPlayoff', e.target.checked)} />
-                                                        </div>
-                                                    )}
-                                                </>
-                                            )}
                                         </div>
 
-                                        {!configErrors.capacidad && configData.tipoTorneo !== 'ELIMINATORIAS' && (
-                                            <div className="td-config-cap">
-                                                <i className="fa-regular fa-circle-info me-1" />
-                                                <FormattedMessage id="project.tournaments.Detail.config.capacityInfo" defaultMessage="Capacidad: {capacidad} plazas ({inscritos} inscritos)" values={{
-                                                    capacidad: parseInt(configData.numGrupos, 10) * parseInt(configData.equiposPorGrupo, 10) || 0,
-                                                    inscritos: tournament.numEquiposInscritos || 0,
-                                                }} />
+                                        {configData.tipoTorneo !== 'ELIMINATORIAS' && (
+                                            <div className="td-config-field td-config-field--num">
+                                                <label><FormattedMessage id="project.tournaments.Detail.config.numGrupos" defaultMessage="Número de grupos" /></label>
+                                                <input type="number" min={1} max={32} value={configData.numGrupos}
+                                                    onChange={e => handleConfigChange('numGrupos', e.target.value)}
+                                                    className={configErrors.numGrupos ? 'error' : ''} />
+                                                {configErrors.numGrupos && (
+                                                    <span className="td-config-field-error">{configErrors.numGrupos}</span>
+                                                )}
+                                                {!configErrors.capacidad && (
+                                                    <div className="td-config-calc">
+                                                        <i className="fa-regular fa-circle-check" />
+                                                        <FormattedMessage id="project.tournaments.Detail.config.equiposPorGrupoCalc"
+                                                            defaultMessage="{inscritos} equipos · {grupos} grupos = {porGrupo} equipos por grupo"
+                                                            values={{
+                                                                inscritos: tournament.numEquiposInscritos || 0,
+                                                                grupos: parseInt(configData.numGrupos, 10) || 1,
+                                                                porGrupo: Math.ceil((tournament.numEquiposInscritos || 0) / (parseInt(configData.numGrupos, 10) || 1)),
+                                                            }} />
+                                                    </div>
+                                                )}
+                                            </div>
+                                        )}
+
+                                        {configData.tipoTorneo === 'GRUPOS_PLAYOFF' && (
+                                            <div className="td-config-toggles">
+                                                <label className="td-config-toggle">
+                                                    <span><FormattedMessage id="project.tournaments.Detail.config.tienePlayoff" defaultMessage="Playoff" /></span>
+                                                    <input type="checkbox" role="switch" checked={configData.tienePlayoff}
+                                                        onChange={e => handleConfigChange('tienePlayoff', e.target.checked)} />
+                                                </label>
+                                                {configData.tienePlayoff && (
+                                                    <label className="td-config-toggle">
+                                                        <span><FormattedMessage id="project.tournaments.Detail.config.idaVueltaPlayoff" defaultMessage="Ida y vuelta en playoff" /></span>
+                                                        <input type="checkbox" role="switch" checked={configData.idaVueltaPlayoff}
+                                                            onChange={e => handleConfigChange('idaVueltaPlayoff', e.target.checked)} />
+                                                    </label>
+                                                )}
                                             </div>
                                         )}
 
                                         <div className="td-config-actions">
-                                            <Button variant="outline-secondary" className="rounded-pill px-3" size="sm" onClick={() => navigate('/')} disabled={configuring}>
+                                            <button type="button" className="td-config-btn td-config-btn--secondary"
+                                                onClick={() => navigate('/')} disabled={configuring}>
                                                 <FormattedMessage id="project.tournaments.Detail.config.cancel" defaultMessage="Cancelar" />
-                                            </Button>
-                                            <Button type="submit" variant="dark" className="rounded-pill px-3" size="sm" disabled={configuring}>
+                                            </button>
+                                            <button type="submit" className="td-config-btn td-config-btn--primary" disabled={configuring}>
                                                 {configuring ? (
-                                                    <><Spinner animation="border" size="sm" className="me-1" /><FormattedMessage id="project.tournaments.Detail.config.generating" defaultMessage="Generando..." /></>
+                                                    <><span className="td-config-spinner" /><FormattedMessage id="project.tournaments.Detail.config.generating" defaultMessage="Generando..." /></>
                                                 ) : (
-                                                    <><i className="fa-regular fa-calendar-check me-1" /><FormattedMessage id="project.tournaments.Detail.config.generate" defaultMessage="Generar calendario" /></>
+                                                    <><i className="fa-regular fa-calendar-check" /><FormattedMessage id="project.tournaments.Detail.config.generate" defaultMessage="Generar calendario" /></>
                                                 )}
-                                            </Button>
+                                            </button>
                                         </div>
-                                    </Form>
+                                    </form>
                                 </div>
                             )}
                         </div>
@@ -790,7 +797,7 @@ const TournamentDetail = () => {
                                 <i className="fa-regular fa-sliders me-2" />
                                 <FormattedMessage id="project.tournaments.Detail.configPanel.title" defaultMessage="Configuración del torneo" />
                             </h5>
-                            {isOrg && (
+                            {isOrg && (tournament.estado === 'RECLUTANDO' || tournament.estado === 'INSCRIPCION_CERRADA') && (
                                 <Button
                                     variant={editing ? 'outline-dark' : 'dark'}
                                     size="sm"
