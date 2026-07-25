@@ -364,6 +364,10 @@ export default {
     'project.tournaments.Detail.registeredTeams': 'Registered teams',
     'project.tournaments.Detail.registeredTeamsCount': '{count} registered team(s)',
     'project.tournaments.Detail.noTeams': 'No teams registered yet',
+    'project.tournaments.Detail.tabs.info': 'Tournament Information',
+    'project.tournaments.Detail.tabs.params': 'Tournament Parameters',
+    'project.tournaments.Detail.section.inscriptions': 'Inscriptions',
+    'project.tournaments.Detail.section.teams': 'Registered teams',
 
     'project.tournaments.Detail.estado.reclutando': 'Recruiting',
     'project.tournaments.Detail.estado.inscripcionCerrada': 'Registration closed',
@@ -429,7 +433,7 @@ export default {
 
     'project.tournaments.MyTournaments.title': 'My Tournaments',
     'project.tournaments.MyTournaments.subtitle': 'Tournaments you have created',
-    'project.tournaments.MyTournaments.create': '+ Create tournament',
+    'project.tournaments.MyTournaments.create': 'Create tournament',
     'project.tournaments.MyTournaments.estado': 'Status: {estado}',
     'project.tournaments.MyTournaments.view': 'View →',
     'project.tournaments.MyTournaments.noTournaments': 'No tournaments yet',
@@ -457,8 +461,11 @@ export default {
     'project.tournaments.CreateTournament.step1.privadoHelp': 'Only teams with the code can enroll',
 
     'project.tournaments.Detail.privado': '🔒 Private tournament',
+    'project.tournaments.Detail.private.badge': 'Private',
     'project.tournaments.Detail.code': 'Code: {code}',
     'project.tournaments.Detail.code.organizerHint': '(share it to invite)',
+    'project.tournaments.Detail.myTeam': '(my team)',
+    'project.tournaments.Detail.noTeamsHelp': 'Teams will appear here when they register',
     'project.tournaments.Detail.code.private': 'Private tournament — request the code from the organizer',
     'project.tournaments.Detail.enroll.codePlaceholder': 'Tournament code...',
     'project.tournaments.Detail.follow.follow': 'Follow',

@@ -364,6 +364,10 @@ export default {
     'project.tournaments.Detail.registeredTeams': 'Equipos inscritos',
     'project.tournaments.Detail.registeredTeamsCount': '{count} equipo(s) inscrito(s)',
     'project.tournaments.Detail.noTeams': 'Non hai equipos inscritos aínda',
+    'project.tournaments.Detail.tabs.info': 'Información do torneo',
+    'project.tournaments.Detail.tabs.params': 'Parámetros do torneo',
+    'project.tournaments.Detail.section.inscriptions': 'Inscricións',
+    'project.tournaments.Detail.section.teams': 'Equipos inscritos',
 
     'project.tournaments.Detail.estado.reclutando': 'Recrutando',
     'project.tournaments.Detail.estado.inscripcionCerrada': 'Inscrición pechada',
@@ -429,7 +433,7 @@ export default {
 
     'project.tournaments.MyTournaments.title': 'Os Meus Torneos',
     'project.tournaments.MyTournaments.subtitle': 'Torneos que creaches',
-    'project.tournaments.MyTournaments.create': '+ Crear torneo',
+    'project.tournaments.MyTournaments.create': 'Crear torneo',
     'project.tournaments.MyTournaments.estado': 'Estado: {estado}',
     'project.tournaments.MyTournaments.view': 'Ver →',
     'project.tournaments.MyTournaments.noTournaments': 'Aínda non creaches ningún torneo',
@@ -457,8 +461,11 @@ export default {
     'project.tournaments.CreateTournament.step1.privadoHelp': 'Só equipos co código poden inscribirse',
 
     'project.tournaments.Detail.privado': '🔒 Torneo privado',
+    'project.tournaments.Detail.private.badge': 'Privado',
     'project.tournaments.Detail.code': 'Código: {code}',
     'project.tournaments.Detail.code.organizerHint': '(compárteo para invitar)',
+    'project.tournaments.Detail.myTeam': '(o meu equipo)',
+    'project.tournaments.Detail.noTeamsHelp': 'Os equipos aparecerán aquí cando se inscriban',
     'project.tournaments.Detail.code.private': 'Torneo privado — solicita o código ao organizador',
     'project.tournaments.Detail.enroll.codePlaceholder': 'Código do torneo...',
     'project.tournaments.MyTournaments.section.created': 'Creados',

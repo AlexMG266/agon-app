@@ -364,6 +364,10 @@ export default {
     'project.tournaments.Detail.registeredTeams': 'Equipos inscritos',
     'project.tournaments.Detail.registeredTeamsCount': '{count} equipo(s) inscrito(s)',
     'project.tournaments.Detail.noTeams': 'No hay equipos inscritos todavía',
+    'project.tournaments.Detail.tabs.info': 'Información del torneo',
+    'project.tournaments.Detail.tabs.params': 'Parámetros del torneo',
+    'project.tournaments.Detail.section.inscriptions': 'Inscripciones',
+    'project.tournaments.Detail.section.teams': 'Equipos inscritos',
 
     'project.tournaments.Detail.estado.reclutando': 'Reclutando',
     'project.tournaments.Detail.estado.inscripcionCerrada': 'Inscripción cerrada',
@@ -430,7 +434,7 @@ export default {
 
     'project.tournaments.MyTournaments.title': 'Mis Torneos',
     'project.tournaments.MyTournaments.subtitle': 'Torneos que has creado',
-    'project.tournaments.MyTournaments.create': '+ Crear torneo',
+    'project.tournaments.MyTournaments.create': 'Crear torneo',
     'project.tournaments.MyTournaments.estado': 'Estado: {estado}',
     'project.tournaments.MyTournaments.view': 'Ver →',
     'project.tournaments.MyTournaments.noTournaments': 'Aún no has creado ningún torneo',
@@ -458,8 +462,11 @@ export default {
     'project.tournaments.CreateTournament.step1.privadoHelp': 'Solo equipos con el código pueden inscribirse',
 
     'project.tournaments.Detail.privado': '🔒 Torneo privado',
+    'project.tournaments.Detail.private.badge': 'Privado',
     'project.tournaments.Detail.code': 'Código: {code}',
     'project.tournaments.Detail.code.organizerHint': '(compártelo para invitar)',
+    'project.tournaments.Detail.myTeam': '(mi equipo)',
+    'project.tournaments.Detail.noTeamsHelp': 'Los equipos aparecerán aquí cuando se inscriban',
     'project.tournaments.Detail.code.private': 'Torneo privado — solicita el código al organizador',
     'project.tournaments.Detail.enroll.codePlaceholder': 'Código del torneo...',
     'project.tournaments.Detail.follow.follow': 'Seguir',

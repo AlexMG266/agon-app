@@ -1,80 +1,187 @@
-/* ===== My Tournaments (3-column) ===== */
+/* ============================================
+   MyTournaments — card‑free professional layout
+   ============================================ */
 
-.my-t-section {
-    background: #fff;
-    border: 1px solid #e9ecef;
-    border-radius: 14px;
-    padding: 1.25rem;
-    box-shadow: 0 1px 4px rgba(0,0,0,0.04);
+/* ─── Dashboard Container ─── */
+.my-t-dashboard {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 2rem 1.5rem 3rem;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
 }
 
-.my-t-section-header {
+/* ─── Header ─── */
+.my-t-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    margin-bottom: 2rem;
+    gap: 1rem;
+}
+
+.my-t-title {
+    font-size: 1.8rem;
+    font-weight: 700;
+    color: #1d1d1f;
+    margin: 0;
+    letter-spacing: -0.02em;
+}
+
+.my-t-subtitle {
+    color: #8e8e93;
+    font-size: 0.88rem;
+    margin: 0.25rem 0 0;
+}
+
+.my-t-create-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.45rem;
+    background: #1d1d1f;
+    color: #ffffff;
+    border: none;
+    border-radius: 50px;
+    padding: 0.55rem 1.25rem;
+    font-size: 0.82rem;
+    font-weight: 500;
+    text-decoration: none;
+    transition: all 0.2s ease;
+    flex-shrink: 0;
+}
+
+.my-t-create-btn:hover {
+    background: #000000;
+    color: #ffffff;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+/* ─── Loading ─── */
+.my-t-loading {
+    display: flex;
+    justify-content: center;
+    padding: 3rem 0;
+}
+
+/* ─── 3-Column Grid ─── */
+.my-t-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1.5rem;
+    align-items: start;
+}
+
+/* ─── Column ─── */
+.my-t-column {
+    display: flex;
+    flex-direction: column;
+    min-height: 200px;
+}
+
+.my-t-column-header {
+    margin-bottom: 1rem;
+    padding-bottom: 0.75rem;
+    border-bottom: 1px solid #e5e5ea;
+}
+
+.my-t-column-title-row {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    margin-bottom: 1rem;
-    padding-bottom: 0.6rem;
-    border-bottom: 1px solid #f1f3f5;
+    margin-bottom: 0.35rem;
 }
 
-.my-t-section-badge {
-    font-size: 0.75rem;
+.my-t-badge {
+    font-size: 0.7rem;
     font-weight: 600;
-    padding: 0.2rem 0.7rem;
-    border-radius: 999px;
+    padding: 0.2rem 0.65rem;
+    border-radius: 50px;
     text-transform: uppercase;
-    letter-spacing: 0.03em;
+    letter-spacing: 0.04em;
 }
 
-.my-t-section-badge--created {
-    background: #e8d1f5;
-    color: #6f42c1;
+.my-t-badge--created {
+    background: #f0edff;
+    color: #5e5ce6;
 }
 
-.my-t-section-badge--followed {
-    background: #d1e7ff;
-    color: #0d6efd;
+.my-t-badge--followed {
+    background: #e8f1ff;
+    color: #0071e3;
 }
 
-.my-t-section-badge--enrolled {
-    background: #d1f5d3;
-    color: #0f7b1a;
+.my-t-badge--enrolled {
+    background: #e8f8ee;
+    color: #1a7d36;
 }
 
-.my-t-section-count {
-    font-size: 0.72rem;
-    color: #6c757d;
+.my-t-count {
+    font-size: 0.7rem;
+    font-weight: 600;
+    color: #8e8e93;
     background: #f1f3f5;
     padding: 0.15rem 0.5rem;
-    border-radius: 999px;
-    font-weight: 500;
+    border-radius: 50px;
 }
 
+.my-t-column-desc {
+    font-size: 0.75rem;
+    color: #aeaeb2;
+    margin: 0;
+    line-height: 1.4;
+}
+
+/* ─── Tournament List ─── */
 .my-t-list {
     display: flex;
     flex-direction: column;
-    gap: 0.5rem;
+    gap: 0.35rem;
+    flex: 1;
 }
 
+/* ─── Tournament Row ─── */
 .my-t-row {
-    display: block;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
     text-decoration: none;
-    padding: 0.65rem 0.75rem;
+    padding: 0.6rem 0.75rem;
     border-radius: 10px;
-    background: #fafbfc;
-    border: 1px solid #f1f3f5;
-    transition: background 0.12s ease, border-color 0.12s ease;
+    transition: all 0.15s ease;
+    background: transparent;
+    border: 1px solid transparent;
 }
 
 .my-t-row:hover {
-    background: #f1f3f5;
-    border-color: #e9ecef;
+    background: #f5f5f7;
+    border-color: #e8e8ed;
 }
 
-.my-t-row-top {
+.my-t-row-left {
+    flex-shrink: 0;
+}
+
+.my-t-row-icon {
+    width: 36px;
+    height: 36px;
+    border-radius: 8px;
+    background: #f1f3f5;
     display: flex;
     align-items: center;
-    margin-bottom: 0.2rem;
+    justify-content: center;
+    color: #6e6e73;
+    font-size: 0.9rem;
+    transition: all 0.15s ease;
+}
+
+.my-t-row:hover .my-t-row-icon {
+    background: #e8e8ed;
+    color: #1d1d1f;
+}
+
+.my-t-row-body {
+    flex: 1;
+    min-width: 0;
 }
 
 .my-t-row-name {
@@ -82,40 +189,121 @@
     font-size: 0.88rem;
     color: #1d1d1f;
     line-height: 1.3;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.my-t-row-lock {
+    margin-right: 0.2rem;
+    font-size: 0.7rem;
+    color: #aeaeb2;
 }
 
 .my-t-row-meta {
     display: flex;
     align-items: center;
     gap: 0.4rem;
+    margin-top: 0.1rem;
 }
 
 .my-t-row-estado {
-    font-size: 0.65rem;
-    color: #6c757d;
-    font-weight: 500;
+    font-size: 0.62rem;
+    font-weight: 600;
+    color: #8e8e93;
     text-transform: uppercase;
-    letter-spacing: 0.03em;
+    letter-spacing: 0.04em;
+}
+
+.my-t-row-estado--activo {
+    color: #1a7d36;
+}
+
+.my-t-row-estado--en_curso {
+    color: #0071e3;
+}
+
+.my-t-row-estado--finalizado {
+    color: #8e8e93;
 }
 
 .my-t-row-org-tag {
-    font-size: 0.6rem;
-    color: #6f42c1;
-    background: #e8d1f5;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.2rem;
+    font-size: 0.58rem;
+    color: #5e5ce6;
+    background: #f0edff;
     padding: 0.1rem 0.45rem;
-    border-radius: 999px;
+    border-radius: 50px;
     font-weight: 600;
 }
 
-.my-t-empty {
-    text-align: center;
-    padding: 1.5rem 1rem;
-    font-size: 0.82rem;
-    color: #9ca3af;
+.my-t-row-org-tag i {
+    font-size: 0.5rem;
 }
 
-@media (max-width: 768px) {
-    .home-dashboard > div[style*="grid-template-columns"] {
-        grid-template-columns: 1fr !important;
+.my-t-row-chevron {
+    flex-shrink: 0;
+    color: #d2d2d7;
+    font-size: 0.7rem;
+    transition: all 0.15s ease;
+    opacity: 0;
+}
+
+.my-t-row:hover .my-t-row-chevron {
+    opacity: 1;
+    color: #8e8e93;
+}
+
+/* ─── Empty State ─── */
+.my-t-empty {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    padding: 2rem 1rem;
+    text-align: center;
+    font-size: 0.8rem;
+    color: #aeaeb2;
+    border: 1px dashed #e8e8ed;
+    border-radius: 10px;
+    background: #fafafa;
+    flex: 1;
+}
+
+.my-t-empty i {
+    font-size: 1.2rem;
+    color: #d2d2d7;
+}
+
+/* ============================================
+   RESPONSIVE
+   ============================================ */
+
+@media (max-width: 900px) {
+    .my-t-grid {
+        grid-template-columns: 1fr;
+        gap: 1.5rem;
+    }
+}
+
+@media (max-width: 600px) {
+    .my-t-dashboard {
+        padding: 1.25rem 1rem;
+    }
+
+    .my-t-header {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .my-t-title {
+        font-size: 1.4rem;
+    }
+
+    .my-t-create-btn {
+        align-self: flex-start;
     }
 }
