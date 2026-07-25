@@ -1,17 +1,29 @@
 package es.udc.agon.backend.model.entities;
 
-import org.springframework.data.repository.CrudRepository;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 
 import java.util.List;
 import java.util.Optional;
 
-public interface TorneoDao extends CrudRepository<Torneo, Long> {
+public interface TorneoDao extends JpaRepository<Torneo, Long> {
 
-    List<Torneo> findByNombreContainingIgnoreCase(String filtro);
+    Page<Torneo> findByNombreContainingIgnoreCaseAndPrivadoFalse(String filtro, Pageable pageable);
 
-    List<Torneo> findByNombreContainingIgnoreCaseAndPrivadoFalse(String filtro);
+    Page<Torneo> findByPrivadoFalse(Pageable pageable);
 
-    List<Torneo> findByPrivadoFalse();
+    Page<Torneo> findByPrivadoFalseAndEstado(EstadoTorneo estado, Pageable pageable);
+
+    Page<Torneo> findByNombreContainingIgnoreCaseAndPrivadoFalseAndEstado(String filtro, EstadoTorneo estado, Pageable pageable);
+
+    @Query("SELECT t FROM Torneo t WHERE t.privado = false AND t.estado IN :estados")
+    Page<Torneo> findByPrivadoFalseAndEstadoIn(@Param("estados") List<EstadoTorneo> estados, Pageable pageable);
+
+    @Query("SELECT t FROM Torneo t WHERE t.privado = false AND LOWER(t.nombre) LIKE LOWER(CONCAT('%', :filtro, '%')) AND t.estado IN :estados")
+    Page<Torneo> findByNombreContainingIgnoreCaseAndPrivadoFalseAndEstadoIn(@Param("filtro") String filtro, @Param("estados") List<EstadoTorneo> estados, Pageable pageable);
 
     List<Torneo> findByOrganizadorId(Long organizadorId);
 

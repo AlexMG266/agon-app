@@ -1,12 +1,15 @@
 -- ============================================================
 -- SCRIPT DE DATOS DE PRUEBA (Seed Data)
 -- ============================================================
--- 41 usuarios, 20 equipos (2 miembros c/u), 1 torneo, 20 inscripciones
+-- 41 usuarios, 20 equipos (2 miembros c/u), 81 torneos
 --
 -- Organizador: user000 (contraseña: User000!)
 -- 40 competidores: test001 a test040 (contraseña: TestXXX!)
--- Equipos: 20 equipos de 2 miembros
--- Torneo: RECLUTANDO con los 20 equipos ya inscritos
+-- Equipos: 20 equipos de 2 miembros (códigos auto-generados)
+-- Torneos:
+--   1 torneo de prueba (user000) con 20 equipos inscritos
+--   40 torneos públicos (1 por test user)
+--   40 torneos privados (1 por test user)
 -- ============================================================
 
 -- ============================================================
@@ -60,30 +63,37 @@ VALUES
     (1400, 'test040', 'test040@email.com', NULL, '$2a$10$SXoee1gQkJ5HuOYF2pnopuYZXbh1IPgSzmC0Pc20UWO2MeGAjBBf6', '1993-05-01', FALSE, 'USER');
 
 -- ============================================================
--- 2. EQUIPOS (20 equipos, 2 miembros cada uno)
+-- 2. EQUIPOS (20 equipos, 2 miembros cada uno, códigos auto-generados)
 -- ============================================================
 INSERT INTO Equipo (nombreEquipo, descripcion, estado, creador_id, codigo_equipo)
-VALUES
-    ('Los Alfa',      'Equipo formado por test001 y test002',   'ACTIVO', 2,  'ALFA01'),
-    ('Los Beta',      'Equipo formado por test003 y test004',   'ACTIVO', 4,  'BETA02'),
-    ('Los Gamma',     'Equipo formado por test005 y test006',   'ACTIVO', 6,  'GAMA03'),
-    ('Los Delta',     'Equipo formado por test007 y test008',   'ACTIVO', 8,  'DELT04'),
-    ('Los Epsilon',   'Equipo formado por test009 y test010',   'ACTIVO', 10, 'EPSI05'),
-    ('Los Zeta',      'Equipo formado por test011 y test012',   'ACTIVO', 12, 'ZETA06'),
-    ('Los Eta',       'Equipo formado por test013 y test014',   'ACTIVO', 14, 'ETA_07'),
-    ('Los Theta',     'Equipo formado por test015 y test016',   'ACTIVO', 16, 'THET08'),
-    ('Los Iota',      'Equipo formado por test017 y test018',   'ACTIVO', 18, 'IOTA09'),
-    ('Los Kappa',     'Equipo formado por test019 y test020',   'ACTIVO', 20, 'KAPP10'),
-    ('Los Lambda',    'Equipo formado por test021 y test022',   'ACTIVO', 22, 'LAMB11'),
-    ('Los Mu',        'Equipo formado por test023 y test024',   'ACTIVO', 24, 'MU_12'),
-    ('Los Nu',        'Equipo formado por test025 y test026',   'ACTIVO', 26, 'NU_13'),
-    ('Los Xi',        'Equipo formado por test027 y test028',   'ACTIVO', 28, 'XI_14'),
-    ('Los Ómicron',   'Equipo formado por test029 y test030',   'ACTIVO', 30, 'OMIC15'),
-    ('Los Pi',        'Equipo formado por test031 y test032',   'ACTIVO', 32, 'PI_16'),
-    ('Los Rho',       'Equipo formado por test033 y test034',   'ACTIVO', 34, 'RHO_17'),
-    ('Los Sigma',     'Equipo formado por test035 y test036',   'ACTIVO', 36, 'SIGM18'),
-    ('Los Tau',       'Equipo formado por test037 y test038',   'ACTIVO', 38, 'TAU_19'),
-    ('Los Omega',     'Equipo formado por test039 y test040',   'ACTIVO', 40, 'OMEG20');
+SELECT
+    v.nombreEquipo,
+    v.descripcion,
+    v.estado::TEXT,
+    v.creador_id::BIGINT,
+    UPPER(SUBSTR(MD5(RANDOM()::TEXT || CLOCK_TIMESTAMP()::TEXT), 1, 8))
+FROM (VALUES
+    ('Los Alfa',      'Equipo formado por test001 y test002',   'ACTIVO', 2),
+    ('Los Beta',      'Equipo formado por test003 y test004',   'ACTIVO', 4),
+    ('Los Gamma',     'Equipo formado por test005 y test006',   'ACTIVO', 6),
+    ('Los Delta',     'Equipo formado por test007 y test008',   'ACTIVO', 8),
+    ('Los Epsilon',   'Equipo formado por test009 y test010',   'ACTIVO', 10),
+    ('Los Zeta',      'Equipo formado por test011 y test012',   'ACTIVO', 12),
+    ('Los Eta',       'Equipo formado por test013 y test014',   'ACTIVO', 14),
+    ('Los Theta',     'Equipo formado por test015 y test016',   'ACTIVO', 16),
+    ('Los Iota',      'Equipo formado por test017 y test018',   'ACTIVO', 18),
+    ('Los Kappa',     'Equipo formado por test019 y test020',   'ACTIVO', 20),
+    ('Los Lambda',    'Equipo formado por test021 y test022',   'ACTIVO', 22),
+    ('Los Mu',        'Equipo formado por test023 y test024',   'ACTIVO', 24),
+    ('Los Nu',        'Equipo formado por test025 y test026',   'ACTIVO', 26),
+    ('Los Xi',        'Equipo formado por test027 y test028',   'ACTIVO', 28),
+    ('Los Ómicron',   'Equipo formado por test029 y test030',   'ACTIVO', 30),
+    ('Los Pi',        'Equipo formado por test031 y test032',   'ACTIVO', 32),
+    ('Los Rho',       'Equipo formado por test033 y test034',   'ACTIVO', 34),
+    ('Los Sigma',     'Equipo formado por test035 y test036',   'ACTIVO', 36),
+    ('Los Tau',       'Equipo formado por test037 y test038',   'ACTIVO', 38),
+    ('Los Omega',     'Equipo formado por test039 y test040',   'ACTIVO', 40)
+) AS v(nombreEquipo, descripcion, estado, creador_id);
 
 -- ============================================================
 -- 3. MIEMBROS DE EQUIPOS (2 miembros por equipo)
@@ -112,23 +122,53 @@ VALUES
     (20, 40), (20, 41);  -- Los Omega:  test039 + test040
 
 -- ============================================================
--- 4. TORNEO (1 torneo público en RECLUTANDO)
+-- 4. TORNEOS
+--    4.1 Torneo principal (user000) — con estructura completa
+--    4.2 Torneos de prueba por cada test user (públicos + privados)
 -- ============================================================
+
+-- 4.1 Torneo principal de user000 (idOrganizador = 1, público, RECLUTANDO)
 INSERT INTO Torneo (idOrganizador, nombre, privado, codigoTorneo, numGrupos, equiposPorGrupo, tienePlayoff, tipoTorneo, idaVueltaPlayoff, estado,
                     fechaInicio, fechaFin, fechaLimiteInscripcion,
                     puntosVictoria, puntosEmpate, puntosDerrota,
                     formatoPartidos, criterioDesempate,
                     diasDisponibles, horaInicio, horaFin, duracionPartido,
                     fechasExcluidas, estrategiaDistribucion)
-VALUES (1, 'Torneo de Prueba 2026', FALSE, 'PRUEBA26', NULL, NULL, NULL, NULL, NULL, 'RECLUTANDO',
-        '2026-03-01', '2026-04-30', '2026-02-20',
-        3, 1, 0,
-        '4_SETS', 'PUNTOS',
-        'L,M,X,J,V', '16:00', '22:00', 45,
-        '2026-04-01,2026-04-02', 'JORNADAS');
+SELECT
+    1, 'Torneo de Prueba 2026', FALSE,
+    'T' || LPAD(FLOOR(RANDOM() * 100)::INT::TEXT, 2, '0') || '-' || UPPER(SUBSTR(MD5(RANDOM()::TEXT || CLOCK_TIMESTAMP()::TEXT), 1, 4)),
+    NULL, NULL, NULL, NULL, NULL, 'RECLUTANDO',
+    '2026-03-01', '2026-04-30', '2026-02-20',
+    3, 1, 0,
+    '4_SETS', 'PUNTOS',
+    'L,M,X,J,V', '16:00', '22:00', 45,
+    '2026-04-01,2026-04-02', 'JORNADAS';
+
+-- 4.2 Torneos de cada test user (40 públicos + 40 privados, con código auto-generado)
+INSERT INTO Torneo (idOrganizador, nombre, privado, codigoTorneo, estado)
+SELECT
+    u.id,
+    'Torneo_Publico_' || u.nombre,
+    FALSE,
+    'T' || LPAD(FLOOR(RANDOM() * 100)::INT::TEXT, 2, '0') || '-' || UPPER(SUBSTR(MD5(RANDOM()::TEXT || CLOCK_TIMESTAMP()::TEXT), 1, 4)),
+    'RECLUTANDO'
+FROM "User" u
+WHERE u.nombre LIKE 'test%'
+
+UNION ALL
+
+SELECT
+    u.id,
+    'Torneo_Privado_' || u.nombre,
+    TRUE,
+    'T' || LPAD(FLOOR(RANDOM() * 100)::INT::TEXT, 2, '0') || '-' || UPPER(SUBSTR(MD5(RANDOM()::TEXT || CLOCK_TIMESTAMP()::TEXT), 1, 4)),
+    'RECLUTANDO'
+FROM "User" u
+WHERE u.nombre LIKE 'test%'
+ORDER BY id;
 
 -- ============================================================
--- 5. SOLICITUDES DE INSCRIPCIÓN (20 solicitudes ACEPTADAS)
+-- 5. SOLICITUDES DE INSCRIPCIÓN (20 solicitudes ACEPTADAS al torneo principal)
 -- ============================================================
 INSERT INTO Solicitud (candidato_id, decisor_id, equipo_id, torneo_id, estado, tipo_solicitud, fecha_creacion)
 VALUES
@@ -154,7 +194,7 @@ VALUES
     (40, 1, 20, 1, 'ACEPTADA', 'SOLICITUD_INSCRIPCION', NOW() - INTERVAL '1 day');
 
 -- ============================================================
--- 6. INSCRIPCIONES CONFIRMADAS (20 inscripciones ACTIVAS)
+-- 6. INSCRIPCIONES CONFIRMADAS (20 inscripciones ACTIVAS al torneo principal)
 -- ============================================================
 INSERT INTO Inscripcion (idTorneo, idEquipo, idGrupo, partidosJugados, estadoInscripcion, puntosLiga, setsGanados, setsPerdidos)
 VALUES
@@ -187,7 +227,7 @@ VALUES
     (1, 'Inscripciones completadas', 'Los 20 equipos ya están inscritos en el Torneo de Prueba 2026. Revisa la configuración del torneo para comenzar.', TRUE, FALSE, 1, 'SOLICITUD_INSCRIPCION', NOW() - INTERVAL '1 day');
 
 -- ============================================================
--- 8. SEGUIMIENTO DE TORNEOS
+-- 8. SEGUIMIENTO DE TORNEOS (seguimientos al torneo principal)
 -- ============================================================
 INSERT INTO SeguimientoTorneo (usuarioId, torneoId, fechaCreacion)
 VALUES

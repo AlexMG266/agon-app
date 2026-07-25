@@ -4,6 +4,8 @@ import es.udc.agon.backend.model.entities.*;
 import es.udc.agon.backend.model.exceptions.InstanceNotFoundException;
 import es.udc.agon.backend.model.exceptions.PermissionException;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -53,11 +55,44 @@ public class TorneoServiceImpl implements TorneoService {
 
     @Override
     @Transactional(readOnly = true)
-    public List<Torneo> buscarTorneos(String filtro) {
-        if (filtro == null || filtro.trim().isEmpty()) {
-            return torneoDao.findByPrivadoFalse();
+    public Block<Torneo> buscarTorneos(String filtro, String estadoFilter, int page, int size) {
+        PageRequest pageRequest = PageRequest.of(page, size);
+        Page<Torneo> torneoPage;
+
+        // Convertir el filtro de estado a valores de EstadoTorneo
+        List<EstadoTorneo> estados = null;
+        if (estadoFilter != null && !estadoFilter.isBlank() && !"ALL".equalsIgnoreCase(estadoFilter)) {
+            switch (estadoFilter.toUpperCase()) {
+                case "RECLUTANDO":
+                    estados = List.of(EstadoTorneo.RECLUTANDO);
+                    break;
+                case "EN_JUEGO":
+                    estados = List.of(EstadoTorneo.INSCRIPCION_CERRADA, EstadoTorneo.FASE_GRUPOS, EstadoTorneo.PLAYOFF);
+                    break;
+                case "FINALIZADO":
+                    estados = List.of(EstadoTorneo.FINALIZADO);
+                    break;
+                default:
+                    // valor no reconocido -> sin filtro
+                    break;
+            }
         }
-        return torneoDao.findByNombreContainingIgnoreCaseAndPrivadoFalse(filtro.trim());
+
+        if (estados != null) {
+            if (filtro == null || filtro.trim().isEmpty()) {
+                torneoPage = torneoDao.findByPrivadoFalseAndEstadoIn(estados, pageRequest);
+            } else {
+                torneoPage = torneoDao.findByNombreContainingIgnoreCaseAndPrivadoFalseAndEstadoIn(filtro.trim(), estados, pageRequest);
+            }
+        } else {
+            if (filtro == null || filtro.trim().isEmpty()) {
+                torneoPage = torneoDao.findByPrivadoFalse(pageRequest);
+            } else {
+                torneoPage = torneoDao.findByNombreContainingIgnoreCaseAndPrivadoFalse(filtro.trim(), pageRequest);
+            }
+        }
+
+        return new Block<>(torneoPage.getContent(), torneoPage.hasNext());
     }
 
     @Override

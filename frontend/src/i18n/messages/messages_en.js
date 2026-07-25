@@ -446,6 +446,7 @@ export default {
     'project.tournaments.Browse.connectionError': 'Connection error',
     'project.tournaments.Browse.searchPlaceholder': 'Search by name...',
     'project.tournaments.Browse.filterAll': 'All statuses',
+    'project.tournaments.Browse.filterEnJuego': 'In progress',
     'project.tournaments.Browse.clearFilter': 'Clear filters',
     'project.tournaments.Browse.organizer': 'Organizer: {name}',
     'project.tournaments.Browse.teamsCount': '{count} team(s)',

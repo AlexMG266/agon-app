@@ -4,8 +4,10 @@ import es.udc.agon.backend.model.entities.Solicitud;
 import es.udc.agon.backend.model.entities.Torneo;
 import es.udc.agon.backend.model.exceptions.InstanceNotFoundException;
 import es.udc.agon.backend.model.exceptions.PermissionException;
+import es.udc.agon.backend.model.services.Block;
 import es.udc.agon.backend.model.services.TorneoService;
 import es.udc.agon.backend.rest.dtos.ActualizarTorneoParamsDto;
+import es.udc.agon.backend.rest.dtos.BlockDto;
 import es.udc.agon.backend.rest.dtos.ConfigurarEstructuraParamsDto;
 import es.udc.agon.backend.rest.dtos.CrearTorneoParamsDto;
 import es.udc.agon.backend.rest.dtos.InscribirEquipoParamsDto;
@@ -311,19 +313,25 @@ public class TorneoController {
 
     @GetMapping
     @Operation(
-            summary = "Listar todos los torneos",
-            description = "Recupera todos los torneos del sistema (opcionalmente filtrados por nombre)."
+            summary = "Listar todos los torneos (paginado)",
+            description = "Recupera los torneos públicos del sistema con paginación."
     )
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Lista de torneos recuperada con éxito",
-                    content = @Content(array = @ArraySchema(schema = @Schema(implementation = TorneoDto.class)))),
+            @ApiResponse(responseCode = "200", description = "Bloque de torneos recuperado con éxito",
+                    content = @Content(schema = @Schema(implementation = BlockDto.class))),
             @ApiResponse(responseCode = "401", description = "No autorizado",
                     content = @Content)
     })
-    public List<TorneoDto> obtenerTorneos(
-            @Parameter(hidden = true) @RequestAttribute Long userId) {
-        List<Torneo> torneos = torneoService.buscarTorneos(null);
-        return TorneoConversor.toTorneoDtos(torneos);
+    public BlockDto<TorneoDto> obtenerTorneos(
+            @Parameter(hidden = true) @RequestAttribute Long userId,
+            @Parameter(description = "Número de página (0-based)", example = "0")
+            @RequestParam(defaultValue = "0") int page,
+            @Parameter(description = "Tamaño de página", example = "10")
+            @RequestParam(defaultValue = "10") int size,
+            @Parameter(description = "Filtro de estado: ALL, RECLUTANDO, EN_JUEGO, FINALIZADO", example = "ALL")
+            @RequestParam(required = false, defaultValue = "ALL") String estado) {
+        Block<Torneo> block = torneoService.buscarTorneos(null, estado, page, size);
+        return TorneoConversor.toBlockTorneoDtos(block);
     }
 
     @GetMapping("/{id}")
@@ -373,22 +381,28 @@ public class TorneoController {
 
     @GetMapping("/search")
     @Operation(
-            summary = "Buscar torneos por nombre",
-            description = "Busca torneos cuyo nombre contenga el filtro proporcionado."
+            summary = "Buscar torneos por nombre (paginado)",
+            description = "Busca torneos cuyo nombre contenga el filtro proporcionado, con paginación."
     )
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Resultados de la búsqueda",
-                    content = @Content(array = @ArraySchema(schema = @Schema(implementation = TorneoDto.class)))),
+            @ApiResponse(responseCode = "200", description = "Resultados de la búsqueda paginados",
+                    content = @Content(schema = @Schema(implementation = BlockDto.class))),
             @ApiResponse(responseCode = "401", description = "No autorizado",
                     content = @Content)
     })
-    public List<TorneoDto> buscarTorneos(
+    public BlockDto<TorneoDto> buscarTorneos(
             @Parameter(hidden = true) @RequestAttribute Long userId,
             @Parameter(description = "Filtro de búsqueda por nombre", example = "Copa")
-            @RequestParam(required = false) String filtro) {
+            @RequestParam(required = false) String filtro,
+            @Parameter(description = "Número de página (0-based)", example = "0")
+            @RequestParam(defaultValue = "0") int page,
+            @Parameter(description = "Tamaño de página", example = "10")
+            @RequestParam(defaultValue = "10") int size,
+            @Parameter(description = "Filtro de estado: ALL, RECLUTANDO, EN_JUEGO, FINALIZADO", example = "ALL")
+            @RequestParam(required = false, defaultValue = "ALL") String estado) {
 
-        List<Torneo> torneos = torneoService.buscarTorneos(filtro);
-        return TorneoConversor.toTorneoDtos(torneos);
+        Block<Torneo> block = torneoService.buscarTorneos(filtro, estado, page, size);
+        return TorneoConversor.toBlockTorneoDtos(block);
     }
     @GetMapping("/{id}/enrollment-requests")
     @ResponseStatus(HttpStatus.OK)
@@ -468,9 +482,6 @@ public class TorneoController {
         torneoService.rechazarInscripcion(userId, solicitudId);
     }
 
-    /**
-     * Convierte una Solicitud a SolicitudDto para la respuesta de los endpoints de enrollment-requests.
-     */
     private SolicitudDto toSolicitudDto(Solicitud solicitud) {
         String nombreCandidato = solicitud.getCandidato() != null ? solicitud.getCandidato().getNombre() : null;
         String nombreEquipo = solicitud.getEquipo() != null ? solicitud.getEquipo().getNombreEquipo() : null;

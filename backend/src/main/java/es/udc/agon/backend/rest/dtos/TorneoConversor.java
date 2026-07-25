@@ -2,6 +2,7 @@ package es.udc.agon.backend.rest.dtos;
 
 import es.udc.agon.backend.model.entities.Inscripcion;
 import es.udc.agon.backend.model.entities.Torneo;
+import es.udc.agon.backend.model.services.Block;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -73,5 +74,12 @@ public class TorneoConversor {
         return torneos.stream()
                 .map(TorneoConversor::toTorneoDto)
                 .collect(Collectors.toList());
+    }
+
+    public static BlockDto<TorneoDto> toBlockTorneoDtos(Block<Torneo> block) {
+        List<TorneoDto> dtos = block.getItems().stream()
+                .map(TorneoConversor::toTorneoDto)
+                .collect(Collectors.toList());
+        return new BlockDto<>(dtos, block.getExistMoreItems());
     }
 }

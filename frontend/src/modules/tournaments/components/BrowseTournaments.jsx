@@ -5,14 +5,23 @@ import Spinner from 'react-bootstrap/Spinner';
 import Form from 'react-bootstrap/Form';
 import Button from 'react-bootstrap/Button';
 import backend from '../../../backend';
+import './BrowseTournaments.css';
+
+const PAGE_SIZE = 6;
 
 const ESTADO_MAP = {
-    'RECLUTANDO': { key: 'reclutando', color: '#2563eb' },
-    'INSCRIPCION_CERRADA': { key: 'inscripcionCerrada', color: '#d97706' },
-    'FASE_GRUPOS': { key: 'faseGrupos', color: '#16a34a' },
-    'PLAYOFF': { key: 'playoff', color: '#7c3aed' },
-    'FINALIZADO': { key: 'finalizado', color: '#6b7280' }
+    'RECLUTANDO': { key: 'reclutando', color: '#2563eb', bg: '#eef4ff' },
+    'INSCRIPCION_CERRADA': { key: 'inscripcionCerrada', color: '#d97706', bg: '#fffbeb' },
+    'FASE_GRUPOS': { key: 'faseGrupos', color: '#16a34a', bg: '#f0fdf4' },
+    'PLAYOFF': { key: 'playoff', color: '#7c3aed', bg: '#f5f3ff' },
+    'FINALIZADO': { key: 'finalizado', color: '#6b7280', bg: '#f3f4f6' }
 };
+
+const FILTER_OPTIONS = [
+    { value: 'RECLUTANDO', labelId: 'project.tournaments.Detail.estado.reclutando', label: 'Reclutando' },
+    { value: 'EN_JUEGO', labelId: 'project.tournaments.Browse.filterEnJuego', label: 'En juego' },
+    { value: 'FINALIZADO', labelId: 'project.tournaments.Detail.estado.finalizado', label: 'Finalizado' }
+];
 
 const BrowseTournaments = () => {
     const [tournaments, setTournaments] = useState([]);
@@ -21,7 +30,9 @@ const BrowseTournaments = () => {
     const [searchTerm, setSearchTerm] = useState('');
     const [statusFilter, setStatusFilter] = useState('');
 
-    // Code search state
+    const [page, setPage] = useState(0);
+    const [existMoreItems, setExistMoreItems] = useState(false);
+
     const [codeSearchTerm, setCodeSearchTerm] = useState('');
     const [codeSearchResult, setCodeSearchResult] = useState(null);
     const [codeSearching, setCodeSearching] = useState(false);
@@ -29,18 +40,22 @@ const BrowseTournaments = () => {
 
     const intl = useIntl();
 
-    const loadTournaments = useCallback(async (filtro) => {
+    const loadTournaments = useCallback(async (filtro, pageNum = 0, estado) => {
         setLoading(true);
         setError(null);
+        const estadoParam = estado ?? (statusFilter || 'ALL');
         try {
             const response = filtro
-                ? await backend.tournamentService.searchTournaments(filtro)
-                : await backend.tournamentService.getAllTournaments();
+                ? await backend.tournamentService.searchTournaments(filtro, pageNum, PAGE_SIZE, estadoParam)
+                : await backend.tournamentService.getAllTournaments(pageNum, PAGE_SIZE, estadoParam);
 
-            if (response.ok && Array.isArray(response.payload)) {
-                setTournaments(response.payload);
+            if (response.ok && response.payload) {
+                setTournaments(response.payload.items || []);
+                setExistMoreItems(response.payload.existMoreItems || false);
+                setPage(pageNum);
             } else {
                 setTournaments([]);
+                setExistMoreItems(false);
                 setError(response.error || intl.formatMessage({
                     id: 'project.tournaments.Browse.loadError',
                     defaultMessage: 'Error al cargar torneos'
@@ -49,6 +64,7 @@ const BrowseTournaments = () => {
         } catch (err) {
             console.error('Error loading tournaments:', err);
             setTournaments([]);
+            setExistMoreItems(false);
             setError(err.message || intl.formatMessage({
                 id: 'project.tournaments.Browse.connectionError',
                 defaultMessage: 'Error de conexión'
@@ -59,12 +75,12 @@ const BrowseTournaments = () => {
     }, [intl]);
 
     useEffect(() => {
-        loadTournaments();
+        loadTournaments('', 0, 'ALL');
     }, [loadTournaments]);
 
     const handleSearch = (e) => {
         e.preventDefault();
-        loadTournaments(searchTerm.trim());
+        loadTournaments(searchTerm.trim(), 0, statusFilter || 'ALL');
     };
 
     const handleClearSearch = () => {
@@ -73,7 +89,7 @@ const BrowseTournaments = () => {
         setCodeSearchTerm('');
         setCodeSearchResult(null);
         setCodeError(null);
-        loadTournaments();
+        loadTournaments('', 0, 'ALL');
     };
 
     const handleCodeSearch = async (e) => {
@@ -105,10 +121,19 @@ const BrowseTournaments = () => {
         }
     };
 
-    const filtered = tournaments.filter(t => {
-        if (statusFilter && t.estado !== statusFilter) return false;
-        return true;
-    });
+    const handlePreviousPage = () => {
+        if (page > 0) {
+            loadTournaments(searchTerm.trim(), page - 1, statusFilter || 'ALL');
+        }
+    };
+
+    const handleNextPage = () => {
+        if (existMoreItems) {
+            loadTournaments(searchTerm.trim(), page + 1, statusFilter || 'ALL');
+        }
+    };
+
+    const filtered = tournaments;
 
     const getEstadoLabel = (estado) => {
         const map = {
@@ -122,184 +147,143 @@ const BrowseTournaments = () => {
     };
 
     return (
-        <div className="home-dashboard" style={{ maxWidth: '1000px', margin: '0 auto', padding: '2rem 1.5rem' }}>
-            <div className="dashboard-header" style={{ marginBottom: '1rem' }}>
-                <div>
-                    <h1 className="dashboard-greeting" style={{ fontSize: '1.8rem', fontWeight: '700' }}>
-                        <FormattedMessage id="project.tournaments.Browse.title" defaultMessage="Explorar Torneos" />
-                    </h1>
-                    <p className="dashboard-subtitle" style={{ color: '#6b7280', marginTop: '0.25rem' }}>
-                        <FormattedMessage id="project.tournaments.Browse.subtitle" defaultMessage="Encuentra torneos disponibles para inscribirte" />
-                    </p>
+        <div className="bt-container">
+            {/* Header */}
+            <div className="bt-header">
+                <h1 className="bt-title">
+                    <FormattedMessage id="project.tournaments.Browse.title" defaultMessage="Explorar Torneos" />
+                </h1>
+                <p className="bt-subtitle">
+                    <FormattedMessage id="project.tournaments.Browse.subtitle" defaultMessage="Encuentra torneos disponibles para inscribirte" />
+                </p>
+            </div>
+
+            <div className="bt-toolbar">
+                <div className="bt-toolbar-left">
+                    <Form onSubmit={handleSearch} className="bt-search-form">
+                        <Form.Control
+                            type="text"
+                            className="bt-search-input"
+                            placeholder={intl.formatMessage({ id: 'project.tournaments.Browse.searchPlaceholder', defaultMessage: 'Buscar por nombre...' })}
+                            value={searchTerm}
+                            onChange={(e) => setSearchTerm(e.target.value)}
+                        />
+                        <Button type="submit" className="bt-search-btn bt-search-btn--dark" disabled={loading}>
+                            <i className="fa-solid fa-search" />
+                        </Button>
+                    </Form>
+                </div>
+
+                <div className="bt-toolbar-right">
+                    <Form onSubmit={handleCodeSearch} className="bt-code-form">
+                        <Form.Control
+                            type="text"
+                            className="bt-code-input"
+                            placeholder={intl.formatMessage({ id: 'project.tournaments.Browse.codePlaceholder', defaultMessage: 'Código torneo' })}
+                            value={codeSearchTerm}
+                            onChange={(e) => setCodeSearchTerm(e.target.value)}
+                        />
+                        <Button type="submit" className="bt-search-btn bt-search-btn--outline" disabled={codeSearching || !codeSearchTerm.trim()}>
+                            {codeSearching ? (
+                                <Spinner animation="border" size="sm" />
+                            ) : (
+                                <i className="fa-solid fa-qrcode" />
+                            )}
+                        </Button>
+                        {codeSearchResult && (
+                            <Button className="bt-search-btn bt-search-btn--outline" onClick={() => { setCodeSearchResult(null); setCodeError(null); }}>
+                                <i className="fa-solid fa-xmark" />
+                            </Button>
+                        )}
+                    </Form>
+
+                    <Form.Select
+                        className="bt-filter-select"
+                        value={statusFilter}
+                        onChange={(e) => {
+                            const newVal = e.target.value;
+                            setStatusFilter(newVal);
+                            loadTournaments(searchTerm.trim(), 0, newVal || 'ALL');
+                        }}
+                    >
+                        <option value="">
+                            <FormattedMessage id="project.tournaments.Browse.filterAll" defaultMessage="Todos los estados" />
+                        </option>
+                        {FILTER_OPTIONS.filter(o => o.value).map(opt => (
+                            <option key={opt.value} value={opt.value}>
+                                <FormattedMessage id={opt.labelId} defaultMessage={opt.label} />
+                            </option>
+                        ))}
+                    </Form.Select>
+
+                    {(searchTerm || statusFilter) && (
+                        <button className="bt-clear-btn" onClick={handleClearSearch}>
+                            <i className="fa-solid fa-xmark" />
+                            <FormattedMessage id="project.tournaments.Browse.clearFilter" defaultMessage="Limpiar" />
+                        </button>
+                    )}
                 </div>
             </div>
 
-            {/* Search, Filters & Code Search */}
-            <div style={{
-                display: 'flex',
-                gap: '0.5rem',
-                marginBottom: '0.75rem',
-                flexWrap: 'wrap',
-                alignItems: 'center'
-            }}>
-                <Form onSubmit={handleSearch} style={{ display: 'flex', gap: '0.5rem', flex: '1 1 280px' }}>
-                    <Form.Control
-                        type="text"
-                        placeholder={intl.formatMessage({ id: 'project.tournaments.Browse.searchPlaceholder', defaultMessage: 'Buscar por nombre...' })}
-                        value={searchTerm}
-                        onChange={(e) => setSearchTerm(e.target.value)}
-                        style={{ borderRadius: '999px' }}
-                    />
-                    <Button type="submit" variant="dark" className="rounded-pill px-3" disabled={loading}>
-                        <i className="fa-solid fa-search" />
-                    </Button>
-                </Form>
-
-                <Form onSubmit={handleCodeSearch} style={{ display: 'flex', gap: '0.5rem' }}>
-                    <Form.Control
-                        type="text"
-                        placeholder={intl.formatMessage({ id: 'project.tournaments.Browse.codePlaceholder', defaultMessage: 'Código torneo' })}
-                        value={codeSearchTerm}
-                        onChange={(e) => setCodeSearchTerm(e.target.value)}
-                        style={{ borderRadius: '999px', width: '160px' }}
-                        size="sm"
-                    />
-                    <Button type="submit" variant="outline-dark" className="rounded-pill px-3" size="sm" disabled={codeSearching || !codeSearchTerm.trim()}>
-                        {codeSearching ? (
-                            <Spinner animation="border" size="sm" />
-                        ) : (
-                            <i className="fa-solid fa-qrcode" />
-                        )}
-                    </Button>
-                    {codeSearchResult && (
-                        <Button variant="outline-secondary" className="rounded-pill" size="sm" onClick={() => { setCodeSearchResult(null); setCodeError(null); }}>
-                            <i className="fa-solid fa-xmark" />
-                        </Button>
-                    )}
-                </Form>
-
-                <Form.Select
-                    value={statusFilter}
-                    onChange={(e) => setStatusFilter(e.target.value)}
-                    style={{ width: 'auto', minWidth: '150px', borderRadius: '999px' }}
-                >
-                    <option value="">
-                        <FormattedMessage id="project.tournaments.Browse.filterAll" defaultMessage="Todos los estados" />
-                    </option>
-                    <option value="RECLUTANDO">
-                        <FormattedMessage id="project.tournaments.Detail.estado.reclutando" defaultMessage="Reclutando" />
-                    </option>
-                    <option value="INSCRIPCION_CERRADA">
-                        <FormattedMessage id="project.tournaments.Detail.estado.inscripcionCerrada" defaultMessage="Inscripción cerrada" />
-                    </option>
-                    <option value="FASE_GRUPOS">
-                        <FormattedMessage id="project.tournaments.Detail.estado.faseGrupos" defaultMessage="Fase de grupos" />
-                    </option>
-                    <option value="PLAYOFF">
-                        <FormattedMessage id="project.tournaments.Detail.estado.playoff" defaultMessage="Playoff" />
-                    </option>
-                    <option value="FINALIZADO">
-                        <FormattedMessage id="project.tournaments.Detail.estado.finalizado" defaultMessage="Finalizado" />
-                    </option>
-                </Form.Select>
-
-                {(searchTerm || statusFilter) && (
-                    <Button variant="outline-secondary" className="rounded-pill" onClick={handleClearSearch} size="sm">
-                        <i className="fa-solid fa-xmark me-1" />
-                        <FormattedMessage id="project.tournaments.Browse.clearFilter" defaultMessage="Limpiar" />
-                    </Button>
-                )}
-            </div>
-
-            {/* Code search result/error */}
             {codeError && (
-                <div style={{ color: '#dc2626', fontSize: '0.85rem', marginBottom: '0.75rem', paddingLeft: '0.25rem' }}>
-                    <i className="fa-regular fa-circle-exclamation me-1" />
+                <div className="bt-message bt-message--error">
+                    <i className="fa-regular fa-circle-exclamation" />
                     {codeError}
                 </div>
             )}
+
             {codeSearchResult && (
-                <div style={{ marginBottom: '0.75rem' }}>
-                    <Link
-                        to={`/tournaments/view/${codeSearchResult.id}`}
-                        style={{ textDecoration: 'none' }}
-                    >
-                        <div style={{
-                            display: 'flex',
-                            justifyContent: 'space-between',
-                            alignItems: 'center',
-                            padding: '0.6rem 1rem',
-                            background: '#fff',
-                            borderRadius: '12px',
-                            border: '1px solid #2563eb40'
-                        }}>
-                            <div>
-                                <div style={{ fontWeight: '600', color: '#1d1d1f', fontSize: '0.95rem' }}>
-                                    {codeSearchResult.privado && <span style={{ marginRight: '0.5rem' }}>🔒</span>}
-                                    {codeSearchResult.nombre}
-                                </div>
-                                <div style={{ fontSize: '0.8rem', color: '#6b7280' }}>
-                                    <FormattedMessage id="project.tournaments.Browse.codeFound" defaultMessage="Código: {code}" values={{ code: codeSearchResult.codigoTorneo }} />
-                                </div>
-                            </div>
-                            <i className="fa-solid fa-arrow-right" style={{ color: '#2563eb' }} />
+                <Link to={`/tournaments/view/${codeSearchResult.id}`} className="bt-code-result">
+                    <div>
+                        <div className="bt-code-result-name">
+                            {codeSearchResult.privado && <span className="me-1">🔒</span>}
+                            {codeSearchResult.nombre}
                         </div>
-                    </Link>
-                </div>
+                        <div className="bt-code-result-meta">
+                            <FormattedMessage id="project.tournaments.Browse.codeFound" defaultMessage="Código: {code}" values={{ code: codeSearchResult.codigoTorneo }} />
+                        </div>
+                    </div>
+                    <i className="fa-solid fa-arrow-right bt-code-result-arrow" />
+                </Link>
             )}
 
             {/* Error */}
             {error && (
-                <div style={{
-                    background: '#fef2f2',
-                    color: '#dc2626',
-                    padding: '0.75rem 1rem',
-                    borderRadius: '12px',
-                    marginBottom: '1rem',
-                    fontSize: '0.9rem'
-                }}>
-                    <i className="fa-regular fa-circle-exclamation me-2" />
+                <div className="bt-message bt-message--error">
+                    <i className="fa-regular fa-circle-exclamation" />
                     {error}
                 </div>
             )}
 
             {/* Loading */}
-            {loading ? (
-                <div className="text-center py-5">
+            {loading && (
+                <div className="bt-loading">
                     <Spinner animation="border" variant="secondary" />
                 </div>
-            ) : filtered.length > 0 ? (
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
-                    {filtered.map((t, idx) => {
-                        const estadoInfo = ESTADO_MAP[t.estado] || { key: 'reclutando', color: '#2563eb' };
-                        return (
-                            <Link
-                                key={t.id || idx}
-                                to={`/tournaments/view/${t.id}`}
-                                style={{ textDecoration: 'none', color: 'inherit' }}
-                            >
-                                <div style={{
-                                    display: 'flex',
-                                    justifyContent: 'space-between',
-                                    alignItems: 'center',
-                                    padding: '1rem 1.25rem',
-                                    background: '#fff',
-                                    borderRadius: '12px',
-                                    border: '1px solid #e5e7eb',
-                                    transition: 'box-shadow 0.2s, border-color 0.2s',
-                                    cursor: 'pointer'
-                                }}
-                                    onMouseEnter={(e) => { e.currentTarget.style.boxShadow = '0 2px 8px rgba(0,0,0,0.06)'; e.currentTarget.style.borderColor = '#d1d5db'; }}
-                                    onMouseLeave={(e) => { e.currentTarget.style.boxShadow = 'none'; e.currentTarget.style.borderColor = '#e5e7eb'; }}
+            )}
+
+            {/* Tournament list */}
+            {!loading && filtered.length > 0 && (
+                <>
+                    <div className="bt-list">
+                        {filtered.map((t, idx) => {
+                            const estadoInfo = ESTADO_MAP[t.estado] || ESTADO_MAP['RECLUTANDO'];
+                            return (
+                                <Link
+                                    key={t.id || idx}
+                                    to={`/tournaments/view/${t.id}`}
+                                    className="bt-row"
                                 >
-                                    <div style={{ flex: 1 }}>
-                                        <div style={{ fontWeight: '600', fontSize: '1.05rem', color: '#1d1d1f' }}>
+                                    <div className="bt-row-info">
+                                        <div className="bt-row-name">
                                             {t.privado && (
-                                                <span className="me-1" title={intl.formatMessage({ id: 'project.tournaments.Detail.privado', defaultMessage: 'Torneo privado' })}>🔒</span>
+                                                <span title={intl.formatMessage({ id: 'project.tournaments.Detail.privado', defaultMessage: 'Torneo privado' })}>
+                                                    🔒
+                                                </span>
                                             )}
                                             {t.nombre}
                                         </div>
-                                        <div style={{ fontSize: '0.85rem', color: '#6b7280', marginTop: '0.25rem', display: 'flex', gap: '1rem', flexWrap: 'wrap' }}>
+                                        <div className="bt-row-meta">
                                             <span>
                                                 <FormattedMessage id="project.tournaments.Browse.organizer" defaultMessage="Organizador: {name}" values={{ name: t.organizadorNombre }} />
                                             </span>
@@ -308,52 +292,70 @@ const BrowseTournaments = () => {
                                             </span>
                                         </div>
                                     </div>
-                                    <div style={{
-                                        display: 'flex',
-                                        alignItems: 'center',
-                                        gap: '0.75rem',
-                                        flexShrink: 0
-                                    }}>
-                                        <span style={{
-                                            display: 'inline-block',
-                                            padding: '0.2rem 0.75rem',
-                                            borderRadius: '999px',
-                                            fontSize: '0.78rem',
-                                            fontWeight: '500',
-                                            background: `${estadoInfo.color}15`,
-                                            color: estadoInfo.color,
-                                            border: `1px solid ${estadoInfo.color}30`
-                                        }}>
+                                    <div className="bt-row-right">
+                                        <span
+                                            className="bt-status-badge"
+                                            style={{
+                                                background: estadoInfo.bg,
+                                                color: estadoInfo.color
+                                            }}
+                                        >
+                                            <span className="bt-status-dot" style={{ background: estadoInfo.color }} />
                                             {getEstadoLabel(t.estado)}
                                         </span>
-                                        <i className="fa-solid fa-chevron-right" style={{ color: '#9ca3af', fontSize: '0.8rem' }} />
+                                        <i className="fa-solid fa-chevron-right bt-chevron" />
                                     </div>
-                                </div>
-                            </Link>
-                        );
-                    })}
-                </div>
-            ) : (
-                <div style={{ textAlign: 'center', padding: '4rem 2rem' }}>
-                    <div style={{ fontSize: '3rem', marginBottom: '1rem' }}>🔍</div>
-                    <div style={{ fontSize: '1.1rem', fontWeight: '600', color: '#374151' }}>
+                                </Link>
+                            );
+                        })}
+                    </div>
+
+                    {(page > 0 || existMoreItems) && (
+                        <div className="bt-pager">
+                            <button
+                                className="bt-pager-btn"
+                                disabled={page <= 0}
+                                onClick={handlePreviousPage}
+                            >
+                                <i className="fa-solid fa-chevron-left" />
+                                <FormattedMessage id="project.global.buttons.back" defaultMessage="Anterior" />
+                            </button>
+                            <button
+                                className="bt-pager-btn"
+                                disabled={!existMoreItems}
+                                onClick={handleNextPage}
+                            >
+                                <FormattedMessage id="project.global.buttons.next" defaultMessage="Siguiente" />
+                                <i className="fa-solid fa-chevron-right" />
+                            </button>
+                        </div>
+                    )}
+                </>
+            )}
+
+            {/* Empty state */}
+            {!loading && filtered.length === 0 && (
+                <div className="bt-empty">
+                    <span className="bt-empty-icon">🔍</span>
+                    <h3 className="bt-empty-title">
                         {searchTerm || statusFilter ? (
                             <FormattedMessage id="project.tournaments.Browse.noResults" defaultMessage="No se encontraron torneos con los filtros seleccionados" />
                         ) : (
                             <FormattedMessage id="project.tournaments.Browse.noTournaments" defaultMessage="No hay torneos disponibles" />
                         )}
-                    </div>
-                    <div style={{ fontSize: '0.9rem', color: '#6b7280', marginTop: '0.5rem' }}>
+                    </h3>
+                    <p className="bt-empty-desc">
                         {searchTerm || statusFilter ? (
                             <FormattedMessage id="project.tournaments.Browse.noResultsHelp" defaultMessage="Prueba con otros términos o limpia los filtros" />
                         ) : (
                             <FormattedMessage id="project.tournaments.Browse.noTournamentsHelp" defaultMessage="Cuando alguien cree un torneo, aparecerá aquí" />
                         )}
-                    </div>
+                    </p>
                     {(searchTerm || statusFilter) && (
-                        <Button variant="outline-dark" className="rounded-pill mt-3" onClick={handleClearSearch}>
+                        <button className="bt-clear-btn" onClick={handleClearSearch}>
+                            <i className="fa-solid fa-xmark" />
                             <FormattedMessage id="project.tournaments.Browse.clearFilter" defaultMessage="Limpiar filtros" />
-                        </Button>
+                        </button>
                     )}
                 </div>
             )}

@@ -447,6 +447,7 @@ export default {
     'project.tournaments.Browse.connectionError': 'Error de conexión',
     'project.tournaments.Browse.searchPlaceholder': 'Buscar por nombre...',
     'project.tournaments.Browse.filterAll': 'Todos los estados',
+    'project.tournaments.Browse.filterEnJuego': 'En juego',
     'project.tournaments.Browse.clearFilter': 'Limpiar filtros',
     'project.tournaments.Browse.organizer': 'Organizador: {name}',
     'project.tournaments.Browse.teamsCount': '{count} equipo(s)',

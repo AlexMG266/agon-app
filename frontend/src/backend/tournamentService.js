@@ -15,14 +15,14 @@ export const getTournament = async (id) => {
     return await appFetch('GET', `/tournaments/${id}`);
 };
 
-// GET /tournaments: obtiene todos los torneos del sistema.
-export const getAllTournaments = async () => {
-    return await appFetch('GET', '/tournaments');
+// GET /tournaments: obtiene todos los torneos del sistema (paginado).
+export const getAllTournaments = async (page = 0, size = 10, estado = 'ALL') => {
+    return await appFetch('GET', `/tournaments?page=${page}&size=${size}&estado=${encodeURIComponent(estado)}`);
 };
 
-// GET /tournaments/search?filtro=...: busca torneos por nombre.
-export const searchTournaments = async (filtro) => {
-    return await appFetch('GET', `/tournaments/search?filtro=${encodeURIComponent(filtro)}`);
+// GET /tournaments/search?filtro=...: busca torneos por nombre (paginado).
+export const searchTournaments = async (filtro, page = 0, size = 10, estado = 'ALL') => {
+    return await appFetch('GET', `/tournaments/search?filtro=${encodeURIComponent(filtro)}&page=${page}&size=${size}&estado=${encodeURIComponent(estado)}`);
 };
 
 // GET /tournaments/by-code/{codigo}: busca un torneo por su código único.

@@ -92,8 +92,8 @@ public class TorneoServiceTest {
         createTorneo(org, "Torneo A");
         createTorneo(org, "Torneo B");
 
-        assertEquals(2, torneoService.buscarTorneos(null).size());
-        assertEquals(2, torneoService.buscarTorneos("").size());
+        assertEquals(2, torneoService.buscarTorneos(null, 0, 100).getItems().size());
+        assertEquals(2, torneoService.buscarTorneos("", 0, 100).getItems().size());
     }
 
     @Test
@@ -102,9 +102,9 @@ public class TorneoServiceTest {
         createTorneo(org, "Campeonato Regional");
         createTorneo(org, "Liga Nacional");
 
-        assertEquals(1, torneoService.buscarTorneos("Regional").size());
-        assertEquals(1, torneoService.buscarTorneos("Liga").size());
-        assertEquals(0, torneoService.buscarTorneos("Inexistente").size());
+        assertEquals(1, torneoService.buscarTorneos("Regional", 0, 100).getItems().size());
+        assertEquals(1, torneoService.buscarTorneos("Liga", 0, 100).getItems().size());
+        assertEquals(0, torneoService.buscarTorneos("Inexistente", 0, 100).getItems().size());
     }
 
     @Test
@@ -112,8 +112,8 @@ public class TorneoServiceTest {
         User org = createUser("org_buscar3");
         createTorneo(org, "Torneo de Verano");
 
-        assertEquals(1, torneoService.buscarTorneos("verano").size());
-        assertEquals(1, torneoService.buscarTorneos("VERANO").size());
+        assertEquals(1, torneoService.buscarTorneos("verano", 0, 100).getItems().size());
+        assertEquals(1, torneoService.buscarTorneos("VERANO", 0, 100).getItems().size());
     }
 
 

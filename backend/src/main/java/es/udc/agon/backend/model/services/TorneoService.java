@@ -9,9 +9,10 @@ import java.util.List;
 public interface TorneoService {
 
     /**
-     * busca torneos publicos cuyo nombre contenga el filtro (busqueda por texto).
+     * busca torneos publicos cuyo nombre contenga el filtro (busqueda por texto). Paginado.
+     * @param estadoFilter filtro de estado: null/'ALL' = todos, 'RECLUTANDO', 'EN_JUEGO', 'FINALIZADO'
      */
-    List<Torneo> buscarTorneos(String filtro);
+    Block<Torneo> buscarTorneos(String filtro, String estadoFilter, int page, int size);
 
     /**
      * obtiene los torneos creados por un organizador.
