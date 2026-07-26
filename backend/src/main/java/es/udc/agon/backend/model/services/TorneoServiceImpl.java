@@ -104,8 +104,16 @@ public class TorneoServiceImpl implements TorneoService {
     @Override
     @Transactional(readOnly = true)
     public Torneo consultarTorneo(Long torneoId) throws InstanceNotFoundException {
-        return torneoDao.findById(torneoId)
+        Torneo torneo = torneoDao.findById(torneoId)
                 .orElseThrow(() -> new InstanceNotFoundException("project.entities.torneo", torneoId));
+        if (torneo.getInscripciones() != null) {
+            for (Inscripcion ins : torneo.getInscripciones()) {
+                if (ins.getEquipo() != null) {
+                    ins.getEquipo().getMiembros().size();
+                }
+            }
+        }
+        return torneo;
     }
 
     @Override

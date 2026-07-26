@@ -9,7 +9,6 @@ import './MyTournaments.css';
 const SECTIONS = [
     {
         key: 'created',
-        badgeClass: 'my-t-badge--created',
         titleId: 'project.tournaments.MyTournaments.section.created',
         titleDefault: 'Creados',
         descId: 'project.tournaments.MyTournaments.section.created.desc',
@@ -20,7 +19,6 @@ const SECTIONS = [
     },
     {
         key: 'followed',
-        badgeClass: 'my-t-badge--followed',
         titleId: 'project.tournaments.MyTournaments.section.followed',
         titleDefault: 'Siguiendo',
         descId: 'project.tournaments.MyTournaments.section.followed.desc',
@@ -31,7 +29,6 @@ const SECTIONS = [
     },
     {
         key: 'enrolled',
-        badgeClass: 'my-t-badge--enrolled',
         titleId: 'project.tournaments.MyTournaments.section.enrolled',
         titleDefault: 'Inscrito',
         descId: 'project.tournaments.MyTournaments.section.enrolled.desc',
@@ -90,7 +87,7 @@ const MyTournaments = () => {
                             <div key={section.key} className={`my-t-column my-t-column--${section.key}`}>
                                 <div className="my-t-column-header">
                                     <div className="my-t-column-title-row">
-                                        <span className={`my-t-badge ${section.badgeClass}`}>
+                                        <span className="my-t-section-title">
                                             <FormattedMessage id={section.titleId} defaultMessage={section.titleDefault} />
                                         </span>
                                         <span className="my-t-count">{items.length}</span>

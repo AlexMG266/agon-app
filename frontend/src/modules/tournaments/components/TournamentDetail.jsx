@@ -9,6 +9,7 @@ import Col from 'react-bootstrap/Col';
 import Spinner from 'react-bootstrap/Spinner';
 import { useSelector } from 'react-redux';
 import { Errors, Success } from '../../common';
+import ProfileAvatar from '../../common/components/ProfileAvatar';
 import users from '../../users';
 import backend from '../../../backend';
 import './TournamentDetail.css';
@@ -36,6 +37,16 @@ const DISTRIBUCION_OPTS = [
     { value: 'UNIFORME', labelId: 'project.tournaments.Create.Step4.dist.uniforme', label: 'Uniforme' },
     { value: 'RAPIDO', labelId: 'project.tournaments.Create.Step4.dist.rapido', label: 'Rápido' },
 ];
+
+
+const NAV_ITEMS = [
+    { key: 'info', icon: 'fa-regular fa-circle-info', labelId: 'project.tournaments.Detail.tabs.info', label: 'Información' },
+    { key: 'teams', icon: 'fa-regular fa-users', labelId: 'project.tournaments.Detail.section.teams', label: 'Equipos' },
+    { key: 'partidos', icon: 'fa-regular fa-calendar', labelId: 'project.tournaments.Detail.tabs.partidos', label: 'Partidos' },
+    { key: 'clasificacion', icon: 'fa-regular fa-trophy', labelId: 'project.tournaments.Detail.tabs.clasificacion', label: 'Clasificación' },
+    { key: 'params', icon: 'fa-regular fa-sliders', labelId: 'project.tournaments.Detail.tabs.params', label: 'Configuración' },
+];
+
 
 const TournamentDetail = () => {
     const { id } = useParams();
@@ -67,112 +78,86 @@ const TournamentDetail = () => {
         idaVueltaPlayoff: false,
     });
     const [configErrors, setConfigErrors] = useState({});
-
+    const [activeTab, setActiveTab] = useState('info');
     const [editing, setEditing] = useState(false);
-    const [updateSuccess, setUpdateSuccess] = useState(false);
-    const [updateLoading, setUpdateLoading] = useState(false);
     const [editFields, setEditFields] = useState({
         nombre: '',
         fechaInicio: '',
         fechaFin: '',
         fechaLimiteInscripcion: '',
-        puntosVictoria: '',
-        puntosEmpate: '',
-        puntosDerrota: '',
+        puntosVictoria: 0,
+        puntosEmpate: 0,
+        puntosDerrota: 0,
         formatoPartidos: '',
         criterioDesempate: '',
         diasDisponibles: [],
         horaInicio: '',
         horaFin: '',
-        duracionPartido: '',
-        fechasExcluidas: [],
+        duracionPartido: 0,
         estrategiaDistribucion: '',
+        fechasExcluidas: [],
     });
+    const [updateLoading, setUpdateLoading] = useState(false);
+    const [updateSuccess, setUpdateSuccess] = useState(false);
     const [newExcludedDate, setNewExcludedDate] = useState('');
-    const [activeTab, setActiveTab] = useState('info');
+    const [selectedGrupoIdx, setSelectedGrupoIdx] = useState(0);
 
-    useEffect(() => { loadTournament(); }, [id]);
-
-    useEffect(() => {
-        if (loggedUser && id) {
-            backend.tournamentService.getFollowedTournaments()
-                .then(res => {
-                    if (res.ok && Array.isArray(res.payload)) {
-                        setIsFollowing(res.payload.some(t => t.id === parseInt(id, 10)));
-                    }
-                })
-                .catch(err => console.error(err));
-        }
-    }, [id, loggedUser]);
 
     useEffect(() => {
-        if (tournament?.estado === 'RECLUTANDO') {
-            loadMyTeams();
-            if (isOrg && id) loadPendingRequests();
-        }
-    }, [tournament?.estado, tournament?.organizadorId, id]);
+        loadTournament();
+    }, [id]);
 
     useEffect(() => {
-        if (tournament && isOrg && tournament.estado === 'RECLUTANDO') {
-            loadPendingRequests();
-        }
-    }, [tournament?.inscripciones?.length]);
-
-    useEffect(() => {
-        if (tournament) {
-            const fechaInicio = tournament.fechaInicio || '';
-            const fechaFin = tournament.fechaFin || '';
-            const fechaLimite = tournament.fechaLimiteInscripcion || '';
-            setEditFields({
-                nombre: tournament.nombre || '',
-                fechaInicio: typeof fechaInicio === 'string' ? fechaInicio : (fechaInicio ? fechaInicio.substring(0, 10) : ''),
-                fechaFin: typeof fechaFin === 'string' ? fechaFin : (fechaFin ? fechaFin.substring(0, 10) : ''),
-                fechaLimiteInscripcion: typeof fechaLimite === 'string' ? fechaLimite : (fechaLimite ? fechaLimite.substring(0, 10) : ''),
-                puntosVictoria: tournament.puntosVictoria != null ? String(tournament.puntosVictoria) : '',
-                puntosEmpate: tournament.puntosEmpate != null ? String(tournament.puntosEmpate) : '',
-                puntosDerrota: tournament.puntosDerrota != null ? String(tournament.puntosDerrota) : '',
-                formatoPartidos: tournament.formatoPartidos || '',
-                criterioDesempate: tournament.criterioDesempate || '',
-                diasDisponibles: tournament.diasDisponibles || [],
-                horaInicio: tournament.horaInicio || '',
-                horaFin: tournament.horaFin || '',
-                duracionPartido: tournament.duracionPartido != null ? String(tournament.duracionPartido) : '',
-                fechasExcluidas: tournament.fechasExcluidas || [],
-                estrategiaDistribucion: tournament.estrategiaDistribucion || '',
-            });
-        }
-    }, [tournament]);
+        if (loggedUser) loadMyTeams();
+    }, [loggedUser]);
 
     const loadTournament = async () => {
-        setLoading(true);
-        setError(null);
         try {
-            const res = await backend.tournamentService.getTournament(id);
-            if (res.ok && res.payload) {
-                setTournament(res.payload);
+            setLoading(true);
+            setError(null);
+            const response = await backend.tournamentService.getTournament(id);
+            if (response.ok && response.payload) {
+                setTournament(response.payload);
+                if (response.payload.inscripciones && response.payload.inscripciones.length > 0 && response.payload.inscripciones[0].miembros) {
+                    const teams = response.payload.inscripciones.map(insc => ({
+                        id: insc.equipoId,
+                        nombreEquipo: insc.nombreEquipo,
+                    }));
+                    setMyTeams(prev => {
+                        const existing = new Set(prev.map(t => t.id));
+                        const merged = [...prev];
+                        teams.forEach(t => { if (!existing.has(t.id)) merged.push(t); });
+                        return merged;
+                    });
+                }
             } else {
-                setError(res.error || intl.formatMessage({ id: 'project.tournaments.Detail.loadError', defaultMessage: 'No se pudo cargar el torneo' }));
-                setTournament(null);
+                setError(response.error || 'Error loading tournament');
             }
         } catch (err) {
-            setError(err.message || intl.formatMessage({ id: 'project.tournaments.Detail.connectionError', defaultMessage: 'Error de conexión' }));
-            setTournament(null);
-        } finally { setLoading(false); }
+            setError(err.message || 'Error loading tournament');
+        } finally {
+            setLoading(false);
+        }
     };
 
     const loadMyTeams = async () => {
         try {
-            const res = await backend.teamService.getMyTeams();
-            if (res.ok && Array.isArray(res.payload)) setMyTeams(res.payload);
-        } catch (err) { console.error(err); }
+            const response = await backend.teamService.getMyTeams();
+            if (response.ok) {
+                setMyTeams(response.payload || []);
+            }
+        } catch (err) {
+            console.error(err);
+        }
     };
 
     const loadPendingRequests = async () => {
+        if (!isOrg) return;
         try {
             setLoadingRequests(true);
-            const res = await backend.tournamentService.getPendingRequests(id);
-            if (res.ok && Array.isArray(res.payload)) {
-                setPendingRequests(res.payload);
+            const response = await backend.tournamentService.getPendingRequests(id);
+            if (response.ok) {
+                setPendingRequests(response.payload || []);
             }
         } catch (err) {
             console.error(err);
@@ -183,67 +168,55 @@ const TournamentDetail = () => {
 
     const handleEnrollTeam = async () => {
         if (!selectedTeamId) return;
-        setEnrolling(true);
-        setBackendErrors(null);
-        setEnrollRequestSent(null);
         try {
-            const selectedTeam = myTeams.find(t => t.id === parseInt(selectedTeamId, 10));
-            const res = await backend.tournamentService.requestEnroll(id, parseInt(selectedTeamId, 10));
-            if (res.ok && res.payload) {
-                setEnrollRequestSent(selectedTeam?.nombreEquipo || '');
+            setEnrolling(true);
+            setBackendErrors(null);
+            const team = myTeams.find(t => t.id === parseInt(selectedTeamId));
+            const response = await backend.tournamentService.requestEnroll(id, parseInt(selectedTeamId));
+            if (response.ok) {
+                setEnrollRequestSent(team ? team.nombreEquipo : '');
                 setSelectedTeamId('');
             } else {
-                setBackendErrors(res.payload || res.error);
+                setBackendErrors(response.error || 'Error al solicitar inscripción');
             }
         } catch (err) {
-            setBackendErrors(err.message || intl.formatMessage({ id: 'project.tournaments.Detail.enroll.error.generic', defaultMessage: 'Error al solicitar inscripción' }));
-        } finally { setEnrolling(false); }
+            setBackendErrors(err.message || 'Error al solicitar inscripción');
+        } finally {
+            setEnrolling(false);
+        }
     };
 
     const handleApproveRequest = async (solicitudId) => {
-        setProcessingRequestId(solicitudId);
-        setBackendErrors(null);
         try {
-            const res = await backend.tournamentService.approveEnrollment(id, solicitudId);
-            if (res.ok && res.payload) {
-                setTournament(res.payload);
-                await loadPendingRequests();
-            } else {
-                setBackendErrors(res.payload || res.error);
-            }
+            setProcessingRequestId(solicitudId);
+            await backend.tournamentService.approveEnrollment(id, solicitudId);
+            loadPendingRequests();
+            loadTournament();
         } catch (err) {
-            setBackendErrors(err.message || intl.formatMessage({ id: 'project.tournaments.Detail.enroll.error.generic', defaultMessage: 'Error al aprobar solicitud' }));
+            console.error(err);
         } finally {
             setProcessingRequestId(null);
         }
     };
 
     const handleRejectRequest = async (solicitudId) => {
-        setProcessingRequestId(solicitudId);
-        setBackendErrors(null);
         try {
-            const res = await backend.tournamentService.rejectEnrollment(id, solicitudId);
-            if (res.ok) {
-                await loadPendingRequests();
-            } else {
-                setBackendErrors(res.payload || res.error);
-            }
+            setProcessingRequestId(solicitudId);
+            await backend.tournamentService.rejectEnrollment(id, solicitudId);
+            loadPendingRequests();
         } catch (err) {
-            setBackendErrors(err.message || intl.formatMessage({ id: 'project.tournaments.Detail.enroll.error.generic', defaultMessage: 'Error al rechazar solicitud' }));
+            console.error(err);
         } finally {
             setProcessingRequestId(null);
         }
     };
 
-    const myPendingRequest = pendingRequests.find(r => r.candidatoId === loggedUser?.id);
-
     const handleFollow = async () => {
-        setFollowLoading(true);
+        if (!loggedUser) return;
         try {
-            const res = await backend.tournamentService.followTournament(id);
-            if (res.ok) {
-                setIsFollowing(true);
-            }
+            setFollowLoading(true);
+            await backend.tournamentService.followTournament(id);
+            setIsFollowing(true);
         } catch (err) {
             console.error(err);
         } finally {
@@ -252,12 +225,11 @@ const TournamentDetail = () => {
     };
 
     const handleUnfollow = async () => {
-        setFollowLoading(true);
+        if (!loggedUser) return;
         try {
-            const res = await backend.tournamentService.unfollowTournament(id);
-            if (res.ok) {
-                setIsFollowing(false);
-            }
+            setFollowLoading(true);
+            await backend.tournamentService.unfollowTournament(id);
+            setIsFollowing(false);
         } catch (err) {
             console.error(err);
         } finally {
@@ -266,163 +238,128 @@ const TournamentDetail = () => {
     };
 
     const handleCloseInscripciones = async () => {
-        setClosing(true);
-        setBackendErrors(null);
-        setCloseSuccess(false);
         try {
-            const res = await backend.tournamentService.closeTournament(id);
-            if (res.ok && res.payload) {
-                setTournament(res.payload);
-                setCloseSuccess(true);
+            setClosing(true);
+            setBackendErrors(null);
+            const response = await backend.tournamentService.closeTournament(id);
+            if (!response.ok) {
+                setBackendErrors(response.error);
             } else {
-                setBackendErrors(res.payload || res.error);
+                setCloseSuccess(true);
+                loadTournament();
             }
         } catch (err) {
-            setBackendErrors(err.message || intl.formatMessage({ id: 'project.tournaments.Detail.close.error.generic', defaultMessage: 'Error al cerrar las inscripciones' }));
-        } finally { setClosing(false); }
+            setBackendErrors(err.message);
+        } finally {
+            setClosing(false);
+        }
     };
 
     const validateConfig = () => {
-        const e = {};
-        const g = parseInt(configData.numGrupos, 10);
-        const ins = tournament?.numEquiposInscritos || 0;
-        if (isNaN(g) || g < 1) e.numGrupos = intl.formatMessage({ id: 'project.tournaments.Detail.config.error.numGruposMin', defaultMessage: 'Debe haber al menos 1 grupo' });
-        else if (g > 32) e.numGrupos = intl.formatMessage({ id: 'project.tournaments.Detail.config.error.numGruposMax', defaultMessage: 'Máximo 32 grupos' });
-        const porGrupo = Math.ceil(ins / g);
-        if (!isNaN(g) && g > 0 && porGrupo < 1) e.capacidad = intl.formatMessage({ id: 'project.tournaments.Detail.config.error.sinEquipos', defaultMessage: 'No hay equipos inscritos para distribuir' });
-        else if (!isNaN(g) && g > 0 && porGrupo > 32) e.capacidad = intl.formatMessage({ id: 'project.tournaments.Detail.config.error.demasiadosPorGrupo', defaultMessage: 'Demasiados equipos por grupo ({porGrupo}). Aumenta el número de grupos.' }, { porGrupo });
-        setConfigErrors(e);
-        return Object.keys(e).length === 0;
+        const errors = {};
+        if (!configData.numGrupos || parseInt(configData.numGrupos) < 1) errors.numGrupos = true;
+        if (!configData.equiposPorGrupo || parseInt(configData.equiposPorGrupo) < 1) errors.equiposPorGrupo = true;
+        setConfigErrors(errors);
+        return Object.keys(errors).length === 0;
     };
 
     const handleConfigChange = (field, value) => {
-        setConfigData(p => ({ ...p, [field]: value }));
-        if (configErrors[field] || configErrors.capacidad) {
-            setConfigErrors(p => { const n = { ...p }; delete n[field]; delete n.capacidad; return n; });
-        }
+        setConfigData(prev => ({ ...prev, [field]: value }));
     };
 
     const handleConfigure = async (e) => {
         e.preventDefault();
         if (!validateConfig()) return;
-        setConfiguring(true);
-        setBackendErrors(null);
-        setConfigSuccess(false);
-        const equiposInscritos = tournament?.numEquiposInscritos || 0;
-        const grupos = parseInt(configData.numGrupos, 10) || 1;
-        const equiposPorGrupo = Math.ceil(equiposInscritos / grupos);
         try {
-            const res = await backend.tournamentService.configureTournament(id, {
+            setConfiguring(true);
+            setBackendErrors(null);
+            const response = await backend.tournamentService.configureTournament(id, {
                 tipoTorneo: configData.tipoTorneo,
-                numGrupos: grupos,
-                equiposPorGrupo: equiposPorGrupo,
-                tienePlayoff: configData.tienePlayoff,
+                numGrupos: parseInt(configData.numGrupos),
+                equiposPorGrupo: parseInt(configData.equiposPorGrupo),
+                tienePlayoff: configData.tipoTorneo !== 'LIGA_UNICA',
                 idaVueltaPlayoff: configData.idaVueltaPlayoff,
             });
-            if (res.ok && res.payload) {
-                setTournament(res.payload);
+            if (response.ok) {
                 setConfigSuccess(true);
+                loadTournament();
             } else {
-                setBackendErrors(res.payload || res.error);
+                setBackendErrors(response.error);
             }
         } catch (err) {
-            setBackendErrors(err.message || intl.formatMessage({ id: 'project.tournaments.Detail.config.error.generic', defaultMessage: 'Error al configurar el torneo' }));
-        } finally { setConfiguring(false); }
+            setBackendErrors(err.message);
+        } finally {
+            setConfiguring(false);
+        }
     };
 
     const toggleEditMode = () => {
-        if (editing) {
-            setEditFields(p => ({
-                ...p,
-                ...(tournament ? {
-                    nombre: tournament.nombre || '',
-                    fechaInicio: tournament.fechaInicio ? (typeof tournament.fechaInicio === 'string' ? tournament.fechaInicio : tournament.fechaInicio.substring(0, 10)) : '',
-                    fechaFin: tournament.fechaFin ? (typeof tournament.fechaFin === 'string' ? tournament.fechaFin : tournament.fechaFin.substring(0, 10)) : '',
-                    fechaLimiteInscripcion: tournament.fechaLimiteInscripcion ? (typeof tournament.fechaLimiteInscripcion === 'string' ? tournament.fechaLimiteInscripcion : tournament.fechaLimiteInscripcion.substring(0, 10)) : '',
-                    puntosVictoria: tournament.puntosVictoria != null ? String(tournament.puntosVictoria) : '',
-                    puntosEmpate: tournament.puntosEmpate != null ? String(tournament.puntosEmpate) : '',
-                    puntosDerrota: tournament.puntosDerrota != null ? String(tournament.puntosDerrota) : '',
-                    formatoPartidos: tournament.formatoPartidos || '',
-                    criterioDesempate: tournament.criterioDesempate || '',
-                    diasDisponibles: tournament.diasDisponibles || [],
-                    horaInicio: tournament.horaInicio || '',
-                    horaFin: tournament.horaFin || '',
-                    duracionPartido: tournament.duracionPartido != null ? String(tournament.duracionPartido) : '',
-                    fechasExcluidas: tournament.fechasExcluidas || [],
-                    estrategiaDistribucion: tournament.estrategiaDistribucion || '',
-                } : {})
-            }));
-            setUpdateSuccess(false);
+        if (!editing && tournament) {
+            setEditFields({
+                nombre: tournament.nombre || '',
+                fechaInicio: tournament.fechaInicio || '',
+                fechaFin: tournament.fechaFin || '',
+                fechaLimiteInscripcion: tournament.fechaLimiteInscripcion || '',
+                puntosVictoria: tournament.puntosVictoria || 0,
+                puntosEmpate: tournament.puntosEmpate || 0,
+                puntosDerrota: tournament.puntosDerrota || 0,
+                formatoPartidos: tournament.formatoPartidos || '',
+                criterioDesempate: tournament.criterioDesempate || '',
+                diasDisponibles: tournament.diasDisponibles || [],
+                horaInicio: tournament.horaInicio || '',
+                horaFin: tournament.horaFin || '',
+                duracionPartido: tournament.duracionPartido || 0,
+                estrategiaDistribucion: tournament.estrategiaDistribucion || '',
+                fechasExcluidas: tournament.fechasExcluidas || [],
+            });
         }
         setEditing(!editing);
     };
 
     const handleEditFieldChange = (field, value) => {
-        setEditFields(p => ({ ...p, [field]: value }));
+        setEditFields(prev => ({ ...prev, [field]: value }));
     };
 
     const handleToggleDay = (dayKey) => {
-        setEditFields(p => {
-            const current = p.diasDisponibles || [];
-            if (current.includes(dayKey)) {
-                return { ...p, diasDisponibles: current.filter(d => d !== dayKey) };
-            } else {
-                return { ...p, diasDisponibles: [...current, dayKey] };
-            }
-        });
+        setEditFields(prev => ({
+            ...prev,
+            diasDisponibles: (prev.diasDisponibles || []).includes(dayKey)
+                ? prev.diasDisponibles.filter(d => d !== dayKey)
+                : [...(prev.diasDisponibles || []), dayKey],
+        }));
     };
 
     const handleAddExcludedDate = () => {
-        if (newExcludedDate && !editFields.fechasExcluidas.includes(newExcludedDate)) {
-            setEditFields(p => ({
-                ...p,
-                fechasExcluidas: [...(p.fechasExcluidas || []), newExcludedDate]
-            }));
-            setNewExcludedDate('');
-        }
+        if (!newExcludedDate) return;
+        setEditFields(prev => ({
+            ...prev,
+            fechasExcluidas: [...(prev.fechasExcluidas || []), newExcludedDate],
+        }));
+        setNewExcludedDate('');
     };
 
     const handleRemoveExcludedDate = (date) => {
-        setEditFields(p => ({
-            ...p,
-            fechasExcluidas: (p.fechasExcluidas || []).filter(d => d !== date)
+        setEditFields(prev => ({
+            ...prev,
+            fechasExcluidas: (prev.fechasExcluidas || []).filter(d => d !== date),
         }));
     };
 
     const handleUpdateConfig = async (e) => {
         e.preventDefault();
-        setUpdateLoading(true);
-        setBackendErrors(null);
-        setUpdateSuccess(false);
         try {
-            const body = {
-                nombre: editFields.nombre || null,
-                fechaInicio: editFields.fechaInicio || null,
-                fechaFin: editFields.fechaFin || null,
-                fechaLimiteInscripcion: editFields.fechaLimiteInscripcion || null,
-                puntosVictoria: editFields.puntosVictoria ? parseInt(editFields.puntosVictoria, 10) : null,
-                puntosEmpate: editFields.puntosEmpate ? parseInt(editFields.puntosEmpate, 10) : null,
-                puntosDerrota: editFields.puntosDerrota ? parseInt(editFields.puntosDerrota, 10) : null,
-                formatoPartidos: editFields.formatoPartidos || null,
-                criterioDesempate: editFields.criterioDesempate || null,
-                diasDisponibles: (editFields.diasDisponibles && editFields.diasDisponibles.length > 0) ? editFields.diasDisponibles : null,
-                horaInicio: editFields.horaInicio || null,
-                horaFin: editFields.horaFin || null,
-                duracionPartido: editFields.duracionPartido ? parseInt(editFields.duracionPartido, 10) : null,
-                fechasExcluidas: (editFields.fechasExcluidas && editFields.fechasExcluidas.length > 0) ? editFields.fechasExcluidas : null,
-                estrategiaDistribucion: editFields.estrategiaDistribucion || null,
-            };
-            const res = await backend.tournamentService.updateTournament(id, body);
-            if (res.ok && res.payload) {
-                setTournament(res.payload);
+            setUpdateLoading(true);
+            setBackendErrors(null);
+            const response = await backend.tournamentService.updateTournament(id, editFields);
+            if (response.ok) {
                 setUpdateSuccess(true);
                 setEditing(false);
-                setTimeout(() => setUpdateSuccess(false), 3000);
+                loadTournament();
             } else {
-                setBackendErrors(res.payload || res.error);
+                setBackendErrors(response.error);
             }
         } catch (err) {
-            setBackendErrors(err.message || intl.formatMessage({ id: 'project.tournaments.Detail.updateError', defaultMessage: 'Error al actualizar la configuración' }));
+            setBackendErrors(err.message);
         } finally {
             setUpdateLoading(false);
         }
@@ -462,12 +399,7 @@ const TournamentDetail = () => {
     );
 
     return (
-        <Container className="td-container">
-            <button className="td-back" onClick={() => navigate('/')}>
-                <i className="fa-solid fa-arrow-left" />
-                <FormattedMessage id="project.tournaments.Detail.back" defaultMessage="Volver" />
-            </button>
-
+        <div className="td-container">
             <Errors errors={backendErrors} onClose={() => setBackendErrors(null)} />
 
             {enrollRequestSent && (
@@ -492,283 +424,239 @@ const TournamentDetail = () => {
                 )} onClose={() => setUpdateSuccess(false)} />
             )}
 
-            <div className="segmented-control p-1 mb-4 rounded-3 d-flex">
-                <button
-                    className={`segmented-btn flex-grow-1 border-0 py-2 rounded-3 text-center transition-all ${activeTab === 'info' ? 'active shadow-sm fw-medium text-dark' : 'text-secondary'}`}
-                    onClick={() => setActiveTab('info')}
-                    role="tab"
-                >
-                    <i className="fa-regular fa-circle-info me-1" />
-                    <FormattedMessage id="project.tournaments.Detail.tabs.info" defaultMessage="Información del torneo" />
-                </button>
-                <button
-                    className={`segmented-btn flex-grow-1 border-0 py-2 rounded-3 text-center transition-all ${activeTab === 'params' ? 'active shadow-sm fw-medium text-dark' : 'text-secondary'}`}
-                    onClick={() => setActiveTab('params')}
-                    role="tab"
-                >
-                    <i className="fa-regular fa-sliders me-1" />
-                    <FormattedMessage id="project.tournaments.Detail.tabs.params" defaultMessage="Parámetros del torneo" />
-                </button>
-            </div>
+            <nav className="td-top-nav">
+                {NAV_ITEMS.map(item => (
+                    <button
+                        key={item.key}
+                        className={`td-top-nav-item ${activeTab === item.key ? 'active' : ''}`}
+                        onClick={() => setActiveTab(item.key)}
+                        role="tab"
+                    >
+                        <i className={item.icon} />
+                        <FormattedMessage id={item.labelId} defaultMessage={item.label} />
+                    </button>
+                ))}
+            </nav>
 
             {activeTab === 'info' && (
                 <div className="td-info-profile">
-                    <div className="td-info-hero">
-                        <div className="td-info-hero-icon">
-                            <i className="fa-regular fa-trophy" />
-                        </div>
-                        <div className="td-info-hero-body">
-                            <div className="td-info-hero-name">{tournament.nombre}</div>
-                            <div className="td-info-hero-meta">
-                                <span className="td-info-hero-org">
-                                    <i className="fa-regular fa-user" />{tournament.organizadorNombre}
-                                </span>
-                                <span className="td-info-hero-sep">·</span>
-                                {!tournament.privado ? (
-                                    <span className="td-info-hero-code">
-                                        <i className="fa-regular fa-qrcode" />
-                                        <span className="td-info-code-val">{tournament.codigoTorneo}</span>
-                                    </span>
-                                ) : isOrg ? (
-                                    <span className="td-info-hero-code td-info-code--org">
-                                        <i className="fa-regular fa-qrcode" />
-                                        <span className="td-info-code-val">{tournament.codigoTorneo}</span>
-                                        <span className="td-info-code-hint">
-                                            <FormattedMessage id="project.tournaments.Detail.code.organizerHint" defaultMessage="(compártelo para invitar)" />
-                                        </span>
-                                    </span>
-                                ) : (
-                                    <span className="td-info-hero-code td-info-code--locked">
-                                        <i className="fa-solid fa-lock" />
-                                        <span className="td-info-code-txt">
-                                            <FormattedMessage id="project.tournaments.Detail.code.private" defaultMessage="Torneo privado" />
-                                        </span>
-                                    </span>
-                                )}
+                    <div className="td-hero-panel">
+                        <div className="td-hero-top">
+                            <div className="td-hero-title-row">
+                                <div className="td-hero-name">{tournament.nombre}</div>
+                                {est && <span className={`td-hero-badge ${est.css}`}><FormattedMessage id={est.labelId} defaultMessage={est.label} /></span>}
                                 {tournament.privado && <span className="td-info-badge-private">🔒 <FormattedMessage id="project.tournaments.Detail.private.badge" defaultMessage="Privado" /></span>}
                             </div>
+                            <div className="td-hero-actions">
+                                {loggedUser && (
+                                    <Button
+                                        variant={isFollowing ? 'outline-danger' : 'outline-dark'}
+                                        className="rounded-pill td-hero-follow-btn"
+                                        size="sm"
+                                        onClick={isFollowing ? handleUnfollow : handleFollow}
+                                        disabled={followLoading}
+                                    >
+                                        {followLoading ? (
+                                            <Spinner animation="border" size="sm" />
+                                        ) : isFollowing ? (
+                                            <><i className="fa-regular fa-bookmark me-1" /><FormattedMessage id="project.tournaments.Detail.follow.unfollow" defaultMessage="Dejar de seguir" /></>
+                                        ) : (
+                                            <><i className="fa-regular fa-bookmark me-1" /><FormattedMessage id="project.tournaments.Detail.follow.follow" defaultMessage="Seguir" /></>
+                                        )}
+                                    </Button>
+                                )}
+                            </div>
                         </div>
-                        <div className="td-info-hero-aside">
-                            {est && <span className={`td-info-badge ${est.css}`}><FormattedMessage id={est.labelId} defaultMessage={est.label} /></span>}
-                            {loggedUser && (
-                                <Button
-                                    variant={isFollowing ? 'outline-danger' : 'outline-dark'}
-                                    className="rounded-pill td-info-hero-follow"
-                                    size="sm"
-                                    onClick={isFollowing ? handleUnfollow : handleFollow}
-                                    disabled={followLoading}
-                                >
-                                    {followLoading ? (
-                                        <Spinner animation="border" size="sm" />
-                                    ) : isFollowing ? (
-                                        <><i className="fa-regular fa-bookmark me-1" /><FormattedMessage id="project.tournaments.Detail.follow.unfollow" defaultMessage="Dejar de seguir" /></>
-                                    ) : (
-                                        <><i className="fa-regular fa-bookmark me-1" /><FormattedMessage id="project.tournaments.Detail.follow.follow" defaultMessage="Seguir" /></>
-                                    )}
-                                </Button>
+
+                        <div className="td-hero-meta">
+                            <span className="td-hero-meta-item">
+                                <i className="fa-regular fa-user" />{tournament.organizadorNombre}
+                            </span>
+                            <span className="td-hero-meta-sep">·</span>
+                            {!tournament.privado ? (
+                                <span className="td-hero-code">
+                                    <i className="fa-regular fa-qrcode" />
+                                    <span className="td-hero-code-val">{tournament.codigoTorneo}</span>
+                                </span>
+                            ) : isOrg ? (
+                                <span className="td-hero-code td-hero-code--org">
+                                    <i className="fa-regular fa-qrcode" />
+                                    <span className="td-hero-code-val">{tournament.codigoTorneo}</span>
+                                </span>
+                            ) : (
+                                <span className="td-hero-code td-hero-code--locked">
+                                    <i className="fa-solid fa-lock" />
+                                    <FormattedMessage id="project.tournaments.Detail.code.private" defaultMessage="Torneo privado" />
+                                </span>
                             )}
+                            <span className="td-hero-meta-sep">·</span>
+                            <span className="td-hero-meta-item">
+                                <i className="fa-regular fa-users" />
+                                {tournament.inscripciones ? tournament.inscripciones.length : 0} / {tournament.maxEquipos || '∞'} <FormattedMessage id="project.tournaments.Detail.teams" defaultMessage="equipos" />
+                            </span>
+                        </div>
+
+                        <div className="td-hero-stats">
+                            <div className="td-hero-stat">
+                                <span className="td-hero-stat-value">{tournament.fechaInicio ? (typeof tournament.fechaInicio === 'string' ? tournament.fechaInicio.substring(0, 10) : tournament.fechaInicio.substring(0, 10)) : '—'}</span>
+                                <span className="td-hero-stat-label"><FormattedMessage id="project.tournaments.Create.Step1.fechaInicio" defaultMessage="Fecha de inicio" /></span>
+                            </div>
+                            <div className="td-hero-stat">
+                                <span className="td-hero-stat-value">{tournament.fechaFin ? (typeof tournament.fechaFin === 'string' ? tournament.fechaFin.substring(0, 10) : tournament.fechaFin.substring(0, 10)) : '—'}</span>
+                                <span className="td-hero-stat-label"><FormattedMessage id="project.tournaments.Create.Step1.fechaFin" defaultMessage="Fecha de fin" /></span>
+                            </div>
+                            <div className="td-hero-stat">
+                                <span className="td-hero-stat-value">{tournament.fechaLimiteInscripcion ? (typeof tournament.fechaLimiteInscripcion === 'string' ? tournament.fechaLimiteInscripcion.substring(0, 10) : tournament.fechaLimiteInscripcion.substring(0, 10)) : '—'}</span>
+                                <span className="td-hero-stat-label"><FormattedMessage id="project.tournaments.Create.Step1.fechaLimite" defaultMessage="Límite inscripción" /></span>
+                            </div>
                         </div>
                     </div>
 
                     {(tournament.estado === 'RECLUTANDO' || tournament.estado === 'INSCRIPCION_CERRADA') && (
-                        <div className="td-info-section">
-                            <h3 className="td-info-section-title">
+                        <div className="td-inscriptions-section">
+                            <div className="td-inscriptions-title">
                                 <FormattedMessage id="project.tournaments.Detail.section.inscriptions" defaultMessage="Inscripciones" />
-                            </h3>
+                                <span className="td-inscriptions-count">{tournament.numEquiposInscritos || 0}</span>
+                            </div>
+                            <p className="td-inscriptions-sub">
+                                <FormattedMessage id="project.tournaments.Detail.section.inscriptions.sub" defaultMessage="Gestiona las inscripciones de los equipos al torneo." />
+                            </p>
 
                             {tournament.estado === 'RECLUTANDO' && isOrg && (
                                 <div className="td-action">
                                     <span className="td-action-text">
-                                        <i className="fa-regular fa-clock" />
-                                        <FormattedMessage id="project.tournaments.Detail.close.info" defaultMessage="Las inscripciones están abiertas. Ciérralas cuando tengas suficientes equipos." />
+                                        <i className="fa-regular fa-circle-xmark" />
+                                        <FormattedMessage id="project.tournaments.Detail.closeInscriptions" defaultMessage="Cerrar inscripciones" />
                                     </span>
-                                    <Button variant="dark" className="rounded-pill px-3 td-action-btn" size="sm" onClick={handleCloseInscripciones} disabled={closing}>
+                                    <Button
+                                        variant="outline-dark"
+                                        size="sm"
+                                        className="rounded-pill td-action-btn"
+                                        onClick={handleCloseInscripciones}
+                                        disabled={closing}
+                                    >
                                         {closing ? (
-                                            <><Spinner animation="border" size="sm" className="me-1" /><FormattedMessage id="project.tournaments.Detail.close.closing" defaultMessage="Cerrando..." /></>
+                                            <Spinner animation="border" size="sm" />
                                         ) : (
-                                            <><i className="fa-regular fa-door-closed me-1" /><FormattedMessage id="project.tournaments.Detail.close.button" defaultMessage="Cerrar inscripciones" /></>
+                                            <FormattedMessage id="project.tournaments.Detail.close.button" defaultMessage="Cerrar" />
                                         )}
                                     </Button>
                                 </div>
                             )}
 
-                            {/* Enroll section for non-organizers */}
                             {tournament.estado === 'RECLUTANDO' && !isOrg && loggedUser && (
                                 <div className="td-enroll">
-                                    {myPendingRequest ? (
-                                        <div className="td-enroll-pending-status">
-                                            <div className="td-enroll-pending-icon"><i className="fa-regular fa-hourglass-half" /></div>
-                                            <div className="td-enroll-pending-text">
-                                                <FormattedMessage id="project.tournaments.Detail.enroll.pendingRequest" defaultMessage="Solicitud de inscripción enviada — pendiente de aprobación" />
-                                            </div>
-                                        </div>
-                                    ) : (
+                                    {availableTeams.length > 0 ? (
                                         <>
                                             <div className="td-enroll-title">
-                                                <FormattedMessage id="project.tournaments.Detail.enroll.title" defaultMessage="Solicitar inscripción" />
+                                                <FormattedMessage id="project.tournaments.Detail.enroll.title" defaultMessage="Inscribir equipo" />
                                             </div>
                                             <div className="td-enroll-sub">
-                                                <FormattedMessage id="project.tournaments.Detail.enroll.info" defaultMessage="Selecciona uno de tus equipos para solicitar la inscripción. El organizador deberá aprobarla." />
+                                                <FormattedMessage id="project.tournaments.Detail.enroll.sub" defaultMessage="Selecciona uno de tus equipos para solicitar la inscripción." />
                                             </div>
-
-                                            {availableTeams.length === 0 ? (
-                                                <div className="td-enroll-no-teams">
-                                                    <i className="fa-regular fa-circle-info me-1" />
-                                                    <FormattedMessage id="project.tournaments.Detail.enroll.noTeamsAvailable" defaultMessage="No tienes equipos disponibles para solicitar inscripción en este torneo." />
-                                                </div>
-                                            ) : (
-                                                <div className="td-enroll-row">
-                                                    <Form.Select value={selectedTeamId} onChange={e => setSelectedTeamId(e.target.value)} className="td-enroll-select" disabled={enrolling}>
-                                                        <option value="">{intl.formatMessage({ id: 'project.tournaments.Detail.enroll.selectTeam', defaultMessage: 'Seleccionar equipo...' })}</option>
-                                                        {availableTeams.map(t => (
-                                                            <option key={t.id} value={t.id}>{t.nombreEquipo}</option>
-                                                        ))}
-                                                    </Form.Select>
-                                                    <Button variant="dark" className="rounded-pill px-3 flex-shrink-0" size="sm" onClick={handleEnrollTeam} disabled={enrolling || !selectedTeamId}>
-                                                        {enrolling ? (
-                                                            <><Spinner animation="border" size="sm" className="me-1" /><FormattedMessage id="project.tournaments.Detail.enroll.enrolling" defaultMessage="Solicitando..." /></>
-                                                        ) : (
-                                                            <><i className="fa-regular fa-paper-plane me-1" /><FormattedMessage id="project.tournaments.Detail.enroll.button" defaultMessage="Solicitar inscripción" /></>
-                                                        )}
-                                                    </Button>
-                                                </div>
-                                            )}
+                                            <div className="td-enroll-row">
+                                                <Form.Select className="td-enroll-select" value={selectedTeamId} onChange={e => setSelectedTeamId(e.target.value)}>
+                                                    <option value="">
+                                                        <FormattedMessage id="project.tournaments.Detail.enroll.select" defaultMessage="Seleccionar equipo..." />
+                                                    </option>
+                                                    {availableTeams.map(t => (
+                                                        <option key={t.id} value={t.id}>{t.nombreEquipo}</option>
+                                                    ))}
+                                                </Form.Select>
+                                                <Button
+                                                    variant="dark"
+                                                    size="sm"
+                                                    className="rounded-pill"
+                                                    onClick={handleEnrollTeam}
+                                                    disabled={!selectedTeamId || enrolling}
+                                                >
+                                                    {enrolling ? (
+                                                        <Spinner animation="border" size="sm" />
+                                                    ) : (
+                                                        <FormattedMessage id="project.tournaments.Detail.enroll.button" defaultMessage="Solicitar inscripción" />
+                                                    )}
+                                                </Button>
+                                            </div>
                                         </>
+                                    ) : (
+                                        <div className="td-enroll-no-teams">
+                                            <FormattedMessage id="project.tournaments.Detail.enroll.noTeams" defaultMessage="No tienes equipos disponibles para inscribir o ya están inscritos." />
+                                        </div>
                                     )}
                                 </div>
                             )}
 
-                            {/* Pending enrollment requests for organizer */}
-                            {tournament.estado === 'RECLUTANDO' && isOrg && pendingRequests.length > 0 && (
-                                <div className="td-enroll-requests">
-                                    <div className="td-enroll-requests-title">
-                                        <i className="fa-regular fa-clock me-1" />
-                                        <FormattedMessage id="project.tournaments.Detail.enroll.pendingRequests" defaultMessage="Solicitudes pendientes" />
-                                        <span className="td-enroll-requests-count">{pendingRequests.length}</span>
-                                    </div>
-                                    <div className="td-enroll-requests-list">
-                                        {pendingRequests.map(req => (
-                                            <div key={req.id} className="td-enroll-request-item">
-                                                <div className="td-enroll-request-info">
-                                                    <div className="td-enroll-request-team">{req.nombreEquipo}</div>
-                                                    <div className="td-enroll-request-captain">
-                                                        <i className="fa-regular fa-user me-1" />
-                                                        {req.nombreCandidato}
-                                                    </div>
-                                                </div>
-                                                <div className="td-enroll-request-actions">
-                                                    <Button variant="outline-success" size="sm" className="rounded-pill"
-                                                        disabled={processingRequestId === req.id}
-                                                        onClick={() => handleApproveRequest(req.id)}>
-                                                        {processingRequestId === req.id ? (
-                                                            <Spinner animation="border" size="sm" />
-                                                        ) : (
-                                                            <><i className="fa-regular fa-check me-1" /><FormattedMessage id="project.tournaments.Detail.enroll.approve" defaultMessage="Aceptar" /></>
-                                                        )}
-                                                    </Button>
-                                                    <Button variant="outline-danger" size="sm" className="rounded-pill"
-                                                        disabled={processingRequestId === req.id}
-                                                        onClick={() => handleRejectRequest(req.id)}>
-                                                        {processingRequestId === req.id ? (
-                                                            <Spinner animation="border" size="sm" />
-                                                        ) : (
-                                                            <><i className="fa-regular fa-xmark me-1" /><FormattedMessage id="project.tournaments.Detail.enroll.reject" defaultMessage="Rechazar" /></>
-                                                        )}
-                                                    </Button>
-                                                </div>
-                                            </div>
-                                        ))}
-                                    </div>
-                                </div>
-                            )}
-
-                            {tournament.estado === 'RECLUTANDO' && isOrg && loadingRequests && (
-                                <div className="td-enroll-requests-loading">
-                                    <Spinner animation="border" size="sm" />
-                                    <span className="ms-2"><FormattedMessage id="project.tournaments.Detail.enroll.loadingRequests" defaultMessage="Cargando solicitudes..." /></span>
-                                </div>
-                            )}
-
-                            {tournament.estado === 'INSCRIPCION_CERRADA' && isOrg && (
+                            {tournament.estado === 'INSCRIPCION_CERRADA' && isOrg && loggedUser && !tournament.tipoTorneo && tournament.inscripciones && tournament.inscripciones.length > 1 && (
                                 <div className="td-config-card">
                                     <div className="td-config-card-header">
                                         <i className="fa-regular fa-gear" />
-                                        <FormattedMessage id="project.tournaments.Detail.config.title" defaultMessage="Configurar estructura del torneo" />
+                                        <FormattedMessage id="project.tournaments.Detail.config.header" defaultMessage="Configurar estructura" />
                                     </div>
-                                    <p className="td-config-card-sub">
-                                        <FormattedMessage id="project.tournaments.Detail.config.subtitle" defaultMessage="Hay {count} equipos inscritos. Define el formato de competición." values={{ count: tournament.numEquiposInscritos || 0 }} />
-                                    </p>
-
-                                    {configErrors.capacidad && (
+                                    <div className="td-config-card-sub">
+                                        <FormattedMessage id="project.tournaments.Detail.config.sub" defaultMessage="Define el formato del torneo antes de generar el calendario." />
+                                    </div>
+                                    {backendErrors && (
                                         <div className="td-config-error">
-                                            <i className="fa-regular fa-circle-exclamation" />
-                                            {configErrors.capacidad}
+                                            <i className="fa-regular fa-circle-exclamation" />{backendErrors}
                                         </div>
                                     )}
-
                                     <form onSubmit={handleConfigure} className="td-config-form">
-                                        <div className={`td-config-field ${configData.tipoTorneo === 'ELIMINATORIAS' ? 'td-config-field--full' : ''}`}>
-                                            <label><FormattedMessage id="project.tournaments.Detail.config.tipoTorneo" defaultMessage="Tipo de torneo" /></label>
+                                        <div className="td-config-field td-config-field--full">
+                                            <label>
+                                                <FormattedMessage id="project.tournaments.Create.Step2.tipoTorneo" defaultMessage="Tipo de torneo" />
+                                            </label>
                                             <div className="td-config-segmented">
                                                 {[
-                                                    { value: 'GRUPOS_PLAYOFF', labelId: 'project.tournaments.Detail.config.tipo.gruposPlayoff', label: 'Grupos + Playoff' },
-                                                    { value: 'LIGA_UNICA', labelId: 'project.tournaments.Detail.config.tipo.ligaUnica', label: 'Liga única' },
-                                                    { value: 'ELIMINATORIAS', labelId: 'project.tournaments.Detail.config.tipo.eliminatorias', label: 'Eliminatorias' },
-                                                ].map(tipo => (
-                                                    <button
-                                                        key={tipo.value}
-                                                        type="button"
-                                                        className={`td-config-seg-btn ${configData.tipoTorneo === tipo.value ? 'active' : ''}`}
-                                                        onClick={() => handleConfigChange('tipoTorneo', tipo.value)}
-                                                    >
-                                                        <FormattedMessage id={tipo.labelId} defaultMessage={tipo.label} />
+                                                    { value: 'LIGA_UNICA', label: 'Liga única' },
+                                                    { value: 'GRUPOS_PLAYOFF', label: 'Grupos + Playoff' },
+                                                    { value: 'ELIMINATORIAS', label: 'Eliminatorias' },
+                                                ].map(opt => (
+                                                    <button key={opt.value} type="button"
+                                                        className={`td-config-seg-btn ${configData.tipoTorneo === opt.value ? 'active' : ''}`}
+                                                        onClick={() => handleConfigChange('tipoTorneo', opt.value)}>
+                                                        {opt.label}
                                                     </button>
                                                 ))}
                                             </div>
                                         </div>
-
-                                        {configData.tipoTorneo !== 'ELIMINATORIAS' && (
-                                            <div className="td-config-field td-config-field--num">
-                                                <label><FormattedMessage id="project.tournaments.Detail.config.numGrupos" defaultMessage="Número de grupos" /></label>
-                                                <input type="number" min={1} max={32} value={configData.numGrupos}
-                                                    onChange={e => handleConfigChange('numGrupos', e.target.value)}
-                                                    className={configErrors.numGrupos ? 'error' : ''} />
-                                                {configErrors.numGrupos && (
-                                                    <span className="td-config-field-error">{configErrors.numGrupos}</span>
-                                                )}
-                                                {!configErrors.capacidad && (
-                                                    <div className="td-config-calc">
-                                                        <i className="fa-regular fa-circle-check" />
-                                                        <FormattedMessage id="project.tournaments.Detail.config.equiposPorGrupoCalc"
-                                                            defaultMessage="{inscritos} equipos · {grupos} grupos = {porGrupo} equipos por grupo"
-                                                            values={{
-                                                                inscritos: tournament.numEquiposInscritos || 0,
-                                                                grupos: parseInt(configData.numGrupos, 10) || 1,
-                                                                porGrupo: Math.ceil((tournament.numEquiposInscritos || 0) / (parseInt(configData.numGrupos, 10) || 1)),
-                                                            }} />
-                                                    </div>
-                                                )}
-                                            </div>
-                                        )}
-
-                                        {configData.tipoTorneo === 'GRUPOS_PLAYOFF' && (
-                                            <div className="td-config-toggles">
+                                        <div className={`td-config-field td-config-field--num ${configErrors.numGrupos ? 'error' : ''}`}>
+                                            <label>
+                                                <FormattedMessage id="project.tournaments.Create.Step2.numGrupos" defaultMessage="Grupos" />
+                                            </label>
+                                            <input type="number" min={1} max={20} value={configData.numGrupos}
+                                                onChange={e => handleConfigChange('numGrupos', e.target.value)} />
+                                            {configErrors.numGrupos && <span className="td-config-field-error">Válido requerido</span>}
+                                        </div>
+                                        <div className={`td-config-field td-config-field--num ${configErrors.equiposPorGrupo ? 'error' : ''}`}>
+                                            <label>
+                                                <FormattedMessage id="project.tournaments.Create.Step2.equiposPorGrupo" defaultMessage="Equipos x grupo" />
+                                            </label>
+                                            <input type="number" min={1} max={20} value={configData.equiposPorGrupo}
+                                                onChange={e => handleConfigChange('equiposPorGrupo', e.target.value)} />
+                                            {configErrors.equiposPorGrupo && <span className="td-config-field-error">Válido requerido</span>}
+                                        </div>
+                                        <div className="td-config-calc td-config-field--full">
+                                            <i className="fa-regular fa-calculator" />
+                                            {configData.tipoTorneo === 'LIGA_UNICA' ? (
+                                                <FormattedMessage id="project.tournaments.Detail.config.calc.liga" defaultMessage="Liga única: {n} equipos en 1 grupo" values={{ n: parseInt(configData.equiposPorGrupo) * parseInt(configData.numGrupos) || 0 }} />
+                                            ) : configData.tipoTorneo === 'GRUPOS_PLAYOFF' ? (
+                                                <FormattedMessage id="project.tournaments.Detail.config.calc.grupos" defaultMessage="Grupos + Playoff: {total} equipos, {g} grupos de {e}" values={{ total: parseInt(configData.equiposPorGrupo) * parseInt(configData.numGrupos) || 0, g: configData.numGrupos, e: configData.equiposPorGrupo }} />
+                                            ) : (
+                                                <FormattedMessage id="project.tournaments.Detail.config.calc.elim" defaultMessage="Eliminatorias: {n} equipos" values={{ n: parseInt(configData.equiposPorGrupo) * parseInt(configData.numGrupos) || 0 }} />
+                                            )}
+                                        </div>
+                                        {(configData.tipoTorneo === 'GRUPOS_PLAYOFF' || configData.tipoTorneo === 'ELIMINATORIAS') && (
+                                            <div className="td-config-toggles td-config-field--full">
                                                 <label className="td-config-toggle">
-                                                    <span><FormattedMessage id="project.tournaments.Detail.config.tienePlayoff" defaultMessage="Playoff" /></span>
-                                                    <input type="checkbox" role="switch" checked={configData.tienePlayoff}
-                                                        onChange={e => handleConfigChange('tienePlayoff', e.target.checked)} />
+                                                    <span>
+                                                        <FormattedMessage id="project.tournaments.Create.Step2.idaVuelta" defaultMessage="Playoff ida y vuelta" />
+                                                    </span>
+                                                    <input type="checkbox" checked={configData.idaVueltaPlayoff}
+                                                        onChange={e => handleConfigChange('idaVueltaPlayoff', e.target.checked)} />
                                                 </label>
-                                                {configData.tienePlayoff && (
-                                                    <label className="td-config-toggle">
-                                                        <span><FormattedMessage id="project.tournaments.Detail.config.idaVueltaPlayoff" defaultMessage="Ida y vuelta en playoff" /></span>
-                                                        <input type="checkbox" role="switch" checked={configData.idaVueltaPlayoff}
-                                                            onChange={e => handleConfigChange('idaVueltaPlayoff', e.target.checked)} />
-                                                    </label>
-                                                )}
                                             </div>
                                         )}
-
-                                        <div className="td-config-actions">
+                                        <div className="td-config-actions td-config-field--full">
                                             <button type="button" className="td-config-btn td-config-btn--secondary"
                                                 onClick={() => navigate('/')} disabled={configuring}>
                                                 <FormattedMessage id="project.tournaments.Detail.config.cancel" defaultMessage="Cancelar" />
@@ -789,266 +677,461 @@ const TournamentDetail = () => {
                 </div>
             )}
 
-            {activeTab === 'params' && (
-                <div className="td-tab-content">
-                    <div className="td-config-panel">
-                        <div className="td-config-panel-header">
-                            <h5 className="td-config-panel-title">
-                                <i className="fa-regular fa-sliders me-2" />
-                                <FormattedMessage id="project.tournaments.Detail.configPanel.title" defaultMessage="Configuración del torneo" />
-                            </h5>
-                            {isOrg && (tournament.estado === 'RECLUTANDO' || tournament.estado === 'INSCRIPCION_CERRADA') && (
-                                <Button
-                                    variant={editing ? 'outline-dark' : 'dark'}
-                                    size="sm"
-                                    className="rounded-pill td-config-panel-edit-btn"
-                                    onClick={toggleEditMode}
-                                >
-                                    {editing ? (
-                                        <><i className="fa-regular fa-xmark me-1" /><FormattedMessage id="project.global.buttons.cancel" defaultMessage="Cancelar" /></>
-                                    ) : (
-                                        <><i className="fa-regular fa-pen me-1" /><FormattedMessage id="project.global.buttons.edit" defaultMessage="Editar" /></>
-                                    )}
-                                </Button>
-                            )}
+            {activeTab === 'teams' && (
+                <div className="td-teams-section">
+                    <div className="td-teams-header">
+                        <h5 className="td-teams-title">
+                            <i className="fa-regular fa-users me-2" />
+                            <FormattedMessage id="project.tournaments.Detail.registeredTeams" defaultMessage="Equipos inscritos" />
+                        </h5>
+                        <span className="td-teams-count">{tournament.inscripciones ? tournament.inscripciones.length : 0} / {tournament.maxEquipos || '∞'}</span>
+                    </div>
+
+                    {tournament.inscripciones && tournament.inscripciones.length > 0 ? (
+                        <div className="td-teams-grid">
+                            {tournament.inscripciones.map(insc => (
+                                <div key={insc.equipoId} className="td-teams-card">
+                                    <div className="td-teams-card-header">
+                                        <div className="td-teams-card-icon">
+                                            <i className="fa-regular fa-shield-halved" />
+                                        </div>
+                                        <div className="td-teams-card-header-info">
+                                            <div className="td-teams-card-name">{insc.nombreEquipo}</div>
+                                            <div className="td-teams-card-meta">{insc.miembros ? insc.miembros.length : 1} {insc.miembros && insc.miembros.length === 1 ? 'miembro' : 'miembros'}</div>
+                                        </div>
+                                    </div>
+                                    <div className="td-teams-card-body">
+                                        <div className="td-teams-card-members">
+                                            {insc.miembros && insc.miembros.length > 0 ? (
+                                                insc.miembros.map((m, i) => (
+                                                    <div key={i} className="td-teams-card-member">
+                                                        <ProfileAvatar
+                                                            imageUrl={m.imagenPerfil}
+                                                            name={m.nombre}
+                                                            size={28}
+                                                        />
+                                                        <div className="td-teams-card-member-info">
+                                                            <div className="td-teams-card-member-name-row">
+                                                                <span className="td-teams-card-member-name">{m.nombre}</span>
+                                                                <span className={`td-elo ${m.elo >= 1500 ? 'high' : ''}`}>
+                                                                    <i className="fa-solid fa-bolt" />
+                                                                    {m.elo}{m.eloProvisional && <span className="td-elo-provisional">*</span>}
+                                                                </span>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                ))
+                                            ) : (
+                                                <div className="td-teams-card-member td-teams-card-member--empty">
+                                                    <FormattedMessage id="project.tournaments.Detail.teams.noMembers" defaultMessage="Sin miembros" />
+                                                </div>
+                                            )}
+                                        </div>
+                                    </div>
+                                </div>
+                            ))}
                         </div>
+                    ) : (
+                        <div className="td-teams-empty">
+                            <i className="fa-regular fa-users-slash me-2" />
+                            <FormattedMessage id="project.tournaments.Detail.teams.empty" defaultMessage="No hay equipos inscritos aún." />
+                        </div>
+                    )}
+                </div>
+            )}
 
-                        {!editing ? (
-                            <div className="td-config-panel-body">
-                                <ConfigSection
-                                    title={<FormattedMessage id="project.tournaments.Detail.configPanel.basicInfo" defaultMessage="Información básica" />}
-                                    fields={[
-                                        { label: <FormattedMessage id="project.global.fields.name" defaultMessage="Nombre" />, value: tournament.nombre },
-                                        { label: <FormattedMessage id="project.tournaments.Create.Step1.fechaInicio" defaultMessage="Fecha de inicio" />, value: tournament.fechaInicio ? (typeof tournament.fechaInicio === 'string' ? tournament.fechaInicio : tournament.fechaInicio.substring(0, 10)) : '—' },
-                                        { label: <FormattedMessage id="project.tournaments.Create.Step1.fechaFin" defaultMessage="Fecha de fin" />, value: tournament.fechaFin ? (typeof tournament.fechaFin === 'string' ? tournament.fechaFin : tournament.fechaFin.substring(0, 10)) : '—' },
-                                        { label: <FormattedMessage id="project.tournaments.Create.Step1.fechaLimite" defaultMessage="Límite inscripción" />, value: tournament.fechaLimiteInscripcion ? (typeof tournament.fechaLimiteInscripcion === 'string' ? tournament.fechaLimiteInscripcion : tournament.fechaLimiteInscripcion.substring(0, 10)) : '—' },
-                                    ]}
-                                />
-                                <ConfigSection
-                                    title={<FormattedMessage id="project.tournaments.Detail.configPanel.rules" defaultMessage="Reglas y puntuación" />}
-                                    fields={[
-                                        { label: <FormattedMessage id="project.tournaments.Create.Step3.puntosVictoria" defaultMessage="Pts. victoria" />, value: tournament.puntosVictoria != null ? tournament.puntosVictoria : '—' },
-                                        { label: <FormattedMessage id="project.tournaments.Create.Step3.puntosEmpate" defaultMessage="Pts. empate" />, value: tournament.puntosEmpate != null ? tournament.puntosEmpate : '—' },
-                                        { label: <FormattedMessage id="project.tournaments.Create.Step3.puntosDerrota" defaultMessage="Pts. derrota" />, value: tournament.puntosDerrota != null ? tournament.puntosDerrota : '—' },
-                                        { label: <FormattedMessage id="project.tournaments.Create.Step3.formatoPartidos" defaultMessage="Formato partidos" />, value: tournament.formatoPartidos ? (tournament.formatoPartidos === '4_SETS' ? '4 sets' : tournament.formatoPartidos === '5_SETS' ? '5 sets' : tournament.formatoPartidos) : '—' },
-                                        { label: <FormattedMessage id="project.tournaments.Create.Step3.criterioDesempate" defaultMessage="Desempate" />, value: tournament.criterioDesempate || '—' },
-                                    ]}
-                                />
-                                <ConfigSection
-                                    title={<FormattedMessage id="project.tournaments.Detail.configPanel.calendar" defaultMessage="Calendario" />}
-                                    fields={[
-                                        { label: <FormattedMessage id="project.tournaments.Create.Step4.diasDisponibles" defaultMessage="Días" />, value: (tournament.diasDisponibles || []).length > 0 ? (tournament.diasDisponibles || []).join(', ') : '—' },
-                                        { label: <FormattedMessage id="project.tournaments.Create.Step4.horaInicio" defaultMessage="Hora inicio" />, value: tournament.horaInicio || '—' },
-                                        { label: <FormattedMessage id="project.tournaments.Create.Step4.horaFin" defaultMessage="Hora fin" />, value: tournament.horaFin || '—' },
-                                        { label: <FormattedMessage id="project.tournaments.Create.Step4.duracionPartido" defaultMessage="Duración (min)" />, value: tournament.duracionPartido != null ? tournament.duracionPartido : '—' },
-                                        { label: <FormattedMessage id="project.tournaments.Create.Step4.fechasExcluidas" defaultMessage="Fechas excluidas" />, value: (tournament.fechasExcluidas || []).length > 0 ? (tournament.fechasExcluidas || []).join(', ') : '—' },
-                                        { label: <FormattedMessage id="project.tournaments.Create.Step4.estrategiaDistribucion" defaultMessage="Distribución" />, value: tournament.estrategiaDistribucion || '—' },
-                                    ]}
-                                />
-                            </div>
-                        ) : (
-                            <Form onSubmit={handleUpdateConfig} className="td-config-panel-form">
-                                <div className="td-config-panel-body">
-                                    {/* Basic Info */}
-                                    <div className="td-config-panel-subsection">
-                                        <h6 className="td-config-panel-subtitle">
-                                            <FormattedMessage id="project.tournaments.Detail.configPanel.basicInfo" defaultMessage="Información básica" />
-                                        </h6>
-                                        <Form.Group className="td-edit-field" controlId="edit-nombre">
-                                            <Form.Label className="td-edit-label">
-                                                <FormattedMessage id="project.global.fields.name" defaultMessage="Nombre" />
-                                            </Form.Label>
-                                            <Form.Control type="text" className="form-control-apple" value={editFields.nombre}
-                                                onChange={e => handleEditFieldChange('nombre', e.target.value)} />
-                                        </Form.Group>
-                                        <Row className="g-2">
-                                            <Col>
-                                                <Form.Group className="td-edit-field" controlId="edit-fechaInicio">
-                                                    <Form.Label className="td-edit-label">
-                                                        <FormattedMessage id="project.tournaments.Create.Step1.fechaInicio" defaultMessage="Fecha inicio" />
-                                                    </Form.Label>
-                                                    <Form.Control type="date" className="form-control-apple" value={editFields.fechaInicio}
-                                                        onChange={e => handleEditFieldChange('fechaInicio', e.target.value)} />
-                                                </Form.Group>
-                                            </Col>
-                                            <Col>
-                                                <Form.Group className="td-edit-field" controlId="edit-fechaFin">
-                                                    <Form.Label className="td-edit-label">
-                                                        <FormattedMessage id="project.tournaments.Create.Step1.fechaFin" defaultMessage="Fecha fin" />
-                                                    </Form.Label>
-                                                    <Form.Control type="date" className="form-control-apple" value={editFields.fechaFin}
-                                                        onChange={e => handleEditFieldChange('fechaFin', e.target.value)} />
-                                                </Form.Group>
-                                            </Col>
-                                        </Row>
-                                        <Form.Group className="td-edit-field" controlId="edit-fechaLimite">
-                                            <Form.Label className="td-edit-label">
-                                                <FormattedMessage id="project.tournaments.Create.Step1.fechaLimite" defaultMessage="Límite inscripción" />
-                                            </Form.Label>
-                                            <Form.Control type="date" className="form-control-apple" value={editFields.fechaLimiteInscripcion}
-                                                onChange={e => handleEditFieldChange('fechaLimiteInscripcion', e.target.value)} />
-                                        </Form.Group>
-                                    </div>
-
-                                    <div className="td-config-panel-subsection">
-                                        <h6 className="td-config-panel-subtitle">
-                                            <FormattedMessage id="project.tournaments.Detail.configPanel.rules" defaultMessage="Reglas y puntuación" />
-                                        </h6>
-                                        <Row className="g-2">
-                                            <Col>
-                                                <Form.Group className="td-edit-field" controlId="edit-puntosVictoria">
-                                                    <Form.Label className="td-edit-label">
-                                                        <FormattedMessage id="project.tournaments.Create.Step3.puntosVictoria" defaultMessage="Pts. victoria" />
-                                                    </Form.Label>
-                                                    <Form.Control type="number" min={0} className="form-control-apple" value={editFields.puntosVictoria}
-                                                        onChange={e => handleEditFieldChange('puntosVictoria', e.target.value)} />
-                                                </Form.Group>
-                                            </Col>
-                                            <Col>
-                                                <Form.Group className="td-edit-field" controlId="edit-puntosEmpate">
-                                                    <Form.Label className="td-edit-label">
-                                                        <FormattedMessage id="project.tournaments.Create.Step3.puntosEmpate" defaultMessage="Pts. empate" />
-                                                    </Form.Label>
-                                                    <Form.Control type="number" min={0} className="form-control-apple" value={editFields.puntosEmpate}
-                                                        onChange={e => handleEditFieldChange('puntosEmpate', e.target.value)} />
-                                                </Form.Group>
-                                            </Col>
-                                            <Col>
-                                                <Form.Group className="td-edit-field" controlId="edit-puntosDerrota">
-                                                    <Form.Label className="td-edit-label">
-                                                        <FormattedMessage id="project.tournaments.Create.Step3.puntosDerrota" defaultMessage="Pts. derrota" />
-                                                    </Form.Label>
-                                                    <Form.Control type="number" min={0} className="form-control-apple" value={editFields.puntosDerrota}
-                                                        onChange={e => handleEditFieldChange('puntosDerrota', e.target.value)} />
-                                                </Form.Group>
-                                            </Col>
-                                        </Row>
-                                        <Form.Group className="td-edit-field" controlId="edit-formatoPartidos">
-                                            <Form.Label className="td-edit-label">
-                                                <FormattedMessage id="project.tournaments.Create.Step3.formatoPartidos" defaultMessage="Formato partidos" />
-                                            </Form.Label>
-                                            <Form.Select className="form-control-apple" value={editFields.formatoPartidos}
-                                                onChange={e => handleEditFieldChange('formatoPartidos', e.target.value)}>
-                                                <option value="">—</option>
-                                                <option value="4_SETS">4 sets</option>
-                                                <option value="5_SETS">5 sets</option>
-                                            </Form.Select>
-                                        </Form.Group>
-                                        <Form.Group className="td-edit-field" controlId="edit-criterioDesempate">
-                                            <Form.Label className="td-edit-label">
-                                                <FormattedMessage id="project.tournaments.Create.Step3.criterioDesempate" defaultMessage="Desempate" />
-                                            </Form.Label>
-                                            <Form.Select className="form-control-apple" value={editFields.criterioDesempate}
-                                                onChange={e => handleEditFieldChange('criterioDesempate', e.target.value)}>
-                                                <option value="">—</option>
-                                                <option value="PUNTOS"><FormattedMessage id="project.tournaments.Create.Step3.tiebreaker.points" defaultMessage="Puntos" /></option>
-                                                <option value="SET_AVERAGE"><FormattedMessage id="project.tournaments.Create.Step3.tiebreaker.setAvg" defaultMessage="Average de sets" /></option>
-                                                <option value="GAME_AVERAGE"><FormattedMessage id="project.tournaments.Create.Step3.tiebreaker.gameAvg" defaultMessage="Average de juegos" /></option>
-                                            </Form.Select>
-                                        </Form.Group>
-                                    </div>
-
-                                    <div className="td-config-panel-subsection">
-                                        <h6 className="td-config-panel-subtitle">
-                                            <FormattedMessage id="project.tournaments.Detail.configPanel.calendar" defaultMessage="Calendario" />
-                                        </h6>
-                                        <Form.Group className="td-edit-field">
-                                            <Form.Label className="td-edit-label">
-                                                <FormattedMessage id="project.tournaments.Create.Step4.diasDisponibles" defaultMessage="Días disponibles" />
-                                            </Form.Label>
-                                            <div className="td-edit-days">
-                                                {DAYS_OF_WEEK.map(day => (
-                                                    <button key={day.key} type="button"
-                                                        className={`td-edit-day-btn ${(editFields.diasDisponibles || []).includes(day.key) ? 'active' : ''}`}
-                                                        onClick={() => handleToggleDay(day.key)}>
-                                                        <FormattedMessage id={day.labelId} defaultMessage={day.label} />
-                                                    </button>
-                                                ))}
-                                            </div>
-                                        </Form.Group>
-                                        <Row className="g-2">
-                                            <Col>
-                                                <Form.Group className="td-edit-field" controlId="edit-horaInicio">
-                                                    <Form.Label className="td-edit-label">
-                                                        <FormattedMessage id="project.tournaments.Create.Step4.horaInicio" defaultMessage="Hora inicio" />
-                                                    </Form.Label>
-                                                    <Form.Control type="time" className="form-control-apple" value={editFields.horaInicio}
-                                                        onChange={e => handleEditFieldChange('horaInicio', e.target.value)} />
-                                                </Form.Group>
-                                            </Col>
-                                            <Col>
-                                                <Form.Group className="td-edit-field" controlId="edit-horaFin">
-                                                    <Form.Label className="td-edit-label">
-                                                        <FormattedMessage id="project.tournaments.Create.Step4.horaFin" defaultMessage="Hora fin" />
-                                                    </Form.Label>
-                                                    <Form.Control type="time" className="form-control-apple" value={editFields.horaFin}
-                                                        onChange={e => handleEditFieldChange('horaFin', e.target.value)} />
-                                                </Form.Group>
-                                            </Col>
-                                        </Row>
-                                        <Form.Group className="td-edit-field" controlId="edit-duracion">
-                                            <Form.Label className="td-edit-label">
-                                                <FormattedMessage id="project.tournaments.Create.Step4.duracionPartido" defaultMessage="Duración (min)" />
-                                            </Form.Label>
-                                            <Form.Control type="number" min={5} step={5} className="form-control-apple" value={editFields.duracionPartido}
-                                                onChange={e => handleEditFieldChange('duracionPartido', e.target.value)} />
-                                        </Form.Group>
-                                        <Form.Group className="td-edit-field" controlId="edit-estrategia">
-                                            <Form.Label className="td-edit-label">
-                                                <FormattedMessage id="project.tournaments.Create.Step4.estrategiaDistribucion" defaultMessage="Distribución" />
-                                            </Form.Label>
-                                            <Form.Select className="form-control-apple" value={editFields.estrategiaDistribucion}
-                                                onChange={e => handleEditFieldChange('estrategiaDistribucion', e.target.value)}>
-                                                <option value="">—</option>
-                                                {DISTRIBUCION_OPTS.map(opt => (
-                                                    <option key={opt.value} value={opt.value}>
-                                                        <FormattedMessage id={opt.labelId} defaultMessage={opt.label} />
-                                                    </option>
-                                                ))}
-                                            </Form.Select>
-                                        </Form.Group>
-                                        <Form.Group className="td-edit-field">
-                                            <Form.Label className="td-edit-label">
-                                                <FormattedMessage id="project.tournaments.Create.Step4.fechasExcluidas" defaultMessage="Fechas excluidas" />
-                                            </Form.Label>
-                                            <div className="td-edit-excluded-dates">
-                                                {(editFields.fechasExcluidas || []).map(date => (
-                                                    <span key={date} className="td-edit-excluded-date">
-                                                        {date}
-                                                        <button type="button" className="td-edit-excluded-remove" onClick={() => handleRemoveExcludedDate(date)}>
-                                                            <i className="fa-regular fa-xmark" />
-                                                        </button>
-                                                    </span>
-                                                ))}
-                                            </div>
-                                            <div className="td-edit-excluded-add">
-                                                <Form.Control type="date" className="form-control-apple" value={newExcludedDate}
-                                                    onChange={e => setNewExcludedDate(e.target.value)} />
-                                                <Button type="button" variant="outline-dark" size="sm" className="rounded-pill"
-                                                    onClick={handleAddExcludedDate} disabled={!newExcludedDate}>
-                                                    <i className="fa-regular fa-plus" />
-                                                </Button>
-                                            </div>
-                                        </Form.Group>
-                                    </div>
-                                </div>
-
-                                <div className="td-config-panel-footer">
-                                    <Button type="submit" variant="dark" className="rounded-pill px-4 td-save-btn"
-                                        disabled={updateLoading}>
-                                        {updateLoading ? (
-                                            <><Spinner animation="border" size="sm" className="me-1" /><FormattedMessage id="project.global.buttons.saving" defaultMessage="Guardando..." /></>
-                                        ) : (
-                                            <><i className="fa-regular fa-floppy-disk me-1" /><FormattedMessage id="project.global.buttons.save" defaultMessage="Guardar" /></>
-                                        )}
-                                    </Button>
-                                </div>
-                            </Form>
-                        )}
+            {activeTab === 'partidos' && (
+                <div className="td-fullbleed td-partidos-section">
+                    <div className="td-partidos-header">
+                        <h5 className="td-partidos-title">
+                            <i className="fa-regular fa-calendar" />
+                            <FormattedMessage id="project.tournaments.Detail.partidos.title" defaultMessage="Partidos" />
+                        </h5>
+                    </div>
+                    <div className="td-empty-state">
+                        <div className="td-empty-state-icon">
+                            <i className="fa-regular fa-calendar-circle-exclamation" />
+                        </div>
+                        <p className="td-empty-state-text">
+                            <FormattedMessage id="project.tournaments.Detail.partidos.noCalendar" defaultMessage="Aún no hay partidos. El calendario se generará cuando el organizador configure el torneo." />
+                        </p>
                     </div>
                 </div>
             )}
-        </Container>
+
+            {activeTab === 'clasificacion' && (
+                <div className="td-fullbleed td-clasificacion-section">
+                    <div className="td-clasificacion-header">
+                        <h5 className="td-clasificacion-title">
+                            <i className="fa-regular fa-trophy" />
+                            <FormattedMessage id="project.tournaments.Detail.clasificacion.title" defaultMessage="Clasificación" />
+                        </h5>
+                        {tournament.estado === 'FASE_GRUPOS' || tournament.estado === 'PLAYOFF' || tournament.estado === 'FINALIZADO' ? (
+                            (() => {
+                                const gruposMap = {};
+                                (tournament.inscripciones || []).forEach(insc => {
+                                    const gId = insc.grupoId || 0;
+                                    const gNombre = insc.grupoNombre || 'Sin grupo';
+                                    if (!gruposMap[gId]) gruposMap[gId] = { nombre: gNombre, equipos: [] };
+                                    gruposMap[gId].equipos.push(insc);
+                                });
+                                const gruposList = Object.entries(gruposMap).map(([id, g]) => ({ id: parseInt(id), ...g }));
+                                const currentGrupo = gruposList.length > 0 ? (gruposList.find(g => g.id === selectedGrupoIdx) || gruposList[0]) : null;
+                                return (
+                                    <>
+                                        {gruposList.length > 1 && (
+                                            <select
+                                                className="td-clasificacion-grupo-select"
+                                                value={currentGrupo ? currentGrupo.id : 0}
+                                                onChange={e => setSelectedGrupoIdx(parseInt(e.target.value))}
+                                            >
+                                                {gruposList.map(g => (
+                                                    <option key={g.id} value={g.id}>{g.nombre}</option>
+                                                ))}
+                                            </select>
+                                        )}
+                                    </>
+                                );
+                            })()
+                        ) : null}
+                    </div>
+
+                    {tournament.estado === 'FASE_GRUPOS' || tournament.estado === 'PLAYOFF' || tournament.estado === 'FINALIZADO' ? (
+                        (() => {
+                            const gruposMap = {};
+                            (tournament.inscripciones || []).forEach(insc => {
+                                const gId = insc.grupoId || 0;
+                                const gNombre = insc.grupoNombre || 'Sin grupo';
+                                if (!gruposMap[gId]) gruposMap[gId] = { nombre: gNombre, equipos: [] };
+                                gruposMap[gId].equipos.push(insc);
+                            });
+                            const gruposList = Object.entries(gruposMap).map(([id, g]) => ({ id: parseInt(id), ...g }));
+                            const currentGrupo = gruposList.length > 0 ? (gruposList.find(g => g.id === selectedGrupoIdx) || gruposList[0]) : null;
+                            const equiposGrupo = currentGrupo ? currentGrupo.equipos : tournament.inscripciones || [];
+                            return equiposGrupo.length > 0 ? (
+                                <table className="td-clasificacion-table">
+                                    <thead>
+                                        <tr>
+                                            <th>#</th>
+                                            <th><FormattedMessage id="project.tournaments.Detail.clasificacion.team" defaultMessage="Equipo" /></th>
+                                            <th><FormattedMessage id="project.tournaments.Detail.clasificacion.pj" defaultMessage="PJ" /></th>
+                                            <th><FormattedMessage id="project.tournaments.Detail.clasificacion.g" defaultMessage="G" /></th>
+                                            <th><FormattedMessage id="project.tournaments.Detail.clasificacion.e" defaultMessage="E" /></th>
+                                            <th><FormattedMessage id="project.tournaments.Detail.clasificacion.p" defaultMessage="P" /></th>
+                                            <th><FormattedMessage id="project.tournaments.Detail.clasificacion.dg" defaultMessage="DG" /></th>
+                                            <th><FormattedMessage id="project.tournaments.Detail.clasificacion.pts" defaultMessage="PTS" /></th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {equiposGrupo.map((insc, idx) => {
+                                            const pos = idx + 1;
+                                            return (
+                                                <tr key={insc.equipoId}>
+                                                    <td>
+                                                        <span className={`td-clasificacion-pos ${pos <= 3 ? `td-clasificacion-pos--${pos}` : ''}`}>
+                                                            {pos}
+                                                        </span>
+                                                    </td>
+                                                    <td>
+                                                        <div className="td-clasificacion-team">
+                                                            <div className="td-clasificacion-shield">
+                                                                <i className="fa-regular fa-shield-halved" />
+                                                            </div>
+                                                            {insc.nombreEquipo}
+                                                        </div>
+                                                    </td>
+                                                    <td>0</td>
+                                                    <td>0</td>
+                                                    <td>0</td>
+                                                    <td>0</td>
+                                                    <td style={{ color: '#8e8e93' }}>0</td>
+                                                    <td>0</td>
+                                                </tr>
+                                            );
+                                        })}
+                                    </tbody>
+                                </table>
+                            ) : (
+                                <div className="td-empty-state">
+                                    <div className="td-empty-state-icon">
+                                        <i className="fa-regular fa-trophy" />
+                                    </div>
+                                    <p className="td-empty-state-text">
+                                        <FormattedMessage id="project.tournaments.Detail.clasificacion.noTeams" defaultMessage="No hay equipos inscritos para mostrar clasificación." />
+                                    </p>
+                                </div>
+                            );
+                        })()
+                    ) : (
+                        <div className="td-empty-state">
+                            <div className="td-empty-state-icon">
+                                <i className="fa-regular fa-trophy" />
+                            </div>
+                            <p className="td-empty-state-text">
+                                <FormattedMessage id="project.tournaments.Detail.clasificacion.notAvailable" defaultMessage="La clasificación estará disponible cuando el torneo esté en fase de grupos." />
+                            </p>
+                        </div>
+                    )}
+                </div>
+            )}
+
+            {activeTab === 'params' && (
+                <div className="td-config-panel">
+                    <div className="td-config-panel-header">
+                        <h5 className="td-config-panel-title">
+                            <i className="fa-regular fa-sliders me-2" />
+                            <FormattedMessage id="project.tournaments.Detail.configPanel.title" defaultMessage="Configuración del torneo" />
+                        </h5>
+                        {isOrg && (tournament.estado === 'RECLUTANDO' || tournament.estado === 'INSCRIPCION_CERRADA') && (
+                            <Button
+                                variant={editing ? 'outline-dark' : 'dark'}
+                                size="sm"
+                                className="rounded-pill td-config-panel-edit-btn"
+                                onClick={toggleEditMode}
+                            >
+                                {editing ? (
+                                    <><i className="fa-regular fa-xmark me-1" /><FormattedMessage id="project.global.buttons.cancel" defaultMessage="Cancelar" /></>
+                                ) : (
+                                    <><i className="fa-regular fa-pen me-1" /><FormattedMessage id="project.global.buttons.edit" defaultMessage="Editar" /></>
+                                )}
+                            </Button>
+                        )}
+                    </div>
+
+                    {!editing ? (
+                        <div className="td-config-panel-body">
+                            <ConfigSection
+                                title={<FormattedMessage id="project.tournaments.Detail.configPanel.basicInfo" defaultMessage="Información básica" />}
+                                fields={[
+                                    { label: <FormattedMessage id="project.global.fields.name" defaultMessage="Nombre" />, value: tournament.nombre },
+                                    { label: <FormattedMessage id="project.tournaments.Create.Step1.fechaInicio" defaultMessage="Fecha de inicio" />, value: tournament.fechaInicio ? (typeof tournament.fechaInicio === 'string' ? tournament.fechaInicio : tournament.fechaInicio.substring(0, 10)) : '—' },
+                                    { label: <FormattedMessage id="project.tournaments.Create.Step1.fechaFin" defaultMessage="Fecha de fin" />, value: tournament.fechaFin ? (typeof tournament.fechaFin === 'string' ? tournament.fechaFin : tournament.fechaFin.substring(0, 10)) : '—' },
+                                    { label: <FormattedMessage id="project.tournaments.Create.Step1.fechaLimite" defaultMessage="Límite inscripción" />, value: tournament.fechaLimiteInscripcion ? (typeof tournament.fechaLimiteInscripcion === 'string' ? tournament.fechaLimiteInscripcion : tournament.fechaLimiteInscripcion.substring(0, 10)) : '—' },
+                                ]}
+                            />
+                            <ConfigSection
+                                title={<FormattedMessage id="project.tournaments.Detail.configPanel.rules" defaultMessage="Reglas y puntuación" />}
+                                fields={[
+                                    { label: <FormattedMessage id="project.tournaments.Create.Step3.puntosVictoria" defaultMessage="Pts. victoria" />, value: tournament.puntosVictoria != null ? tournament.puntosVictoria : '—' },
+                                    { label: <FormattedMessage id="project.tournaments.Create.Step3.puntosEmpate" defaultMessage="Pts. empate" />, value: tournament.puntosEmpate != null ? tournament.puntosEmpate : '—' },
+                                    { label: <FormattedMessage id="project.tournaments.Create.Step3.puntosDerrota" defaultMessage="Pts. derrota" />, value: tournament.puntosDerrota != null ? tournament.puntosDerrota : '—' },
+                                    { label: <FormattedMessage id="project.tournaments.Create.Step3.formatoPartidos" defaultMessage="Formato partidos" />, value: tournament.formatoPartidos ? (tournament.formatoPartidos === '4_SETS' ? '4 sets' : tournament.formatoPartidos === '5_SETS' ? '5 sets' : tournament.formatoPartidos) : '—' },
+                                    { label: <FormattedMessage id="project.tournaments.Create.Step3.criterioDesempate" defaultMessage="Desempate" />, value: tournament.criterioDesempate || '—' },
+                                ]}
+                            />
+                            <ConfigSection
+                                title={<FormattedMessage id="project.tournaments.Detail.configPanel.calendar" defaultMessage="Calendario" />}
+                                fields={[
+                                    { label: <FormattedMessage id="project.tournaments.Create.Step4.diasDisponibles" defaultMessage="Días" />, value: (tournament.diasDisponibles || []).length > 0 ? (tournament.diasDisponibles || []).join(', ') : '—' },
+                                    { label: <FormattedMessage id="project.tournaments.Create.Step4.horaInicio" defaultMessage="Hora inicio" />, value: tournament.horaInicio || '—' },
+                                    { label: <FormattedMessage id="project.tournaments.Create.Step4.horaFin" defaultMessage="Hora fin" />, value: tournament.horaFin || '—' },
+                                    { label: <FormattedMessage id="project.tournaments.Create.Step4.duracionPartido" defaultMessage="Duración (min)" />, value: tournament.duracionPartido != null ? tournament.duracionPartido : '—' },
+                                    { label: <FormattedMessage id="project.tournaments.Create.Step4.fechasExcluidas" defaultMessage="Fechas excluidas" />, value: (tournament.fechasExcluidas || []).length > 0 ? (tournament.fechasExcluidas || []).join(', ') : '—' },
+                                    { label: <FormattedMessage id="project.tournaments.Create.Step4.estrategiaDistribucion" defaultMessage="Distribución" />, value: tournament.estrategiaDistribucion || '—' },
+                                ]}
+                            />
+                        </div>
+                    ) : (
+                        <Form onSubmit={handleUpdateConfig} className="td-config-panel-form">
+                            <div className="td-config-panel-body">
+                                <div className="td-config-panel-subsection">
+                                    <h6 className="td-config-panel-subtitle">
+                                        <FormattedMessage id="project.tournaments.Detail.configPanel.basicInfo" defaultMessage="Información básica" />
+                                    </h6>
+                                    <Form.Group className="td-edit-field" controlId="edit-nombre">
+                                        <Form.Label className="td-edit-label">
+                                            <FormattedMessage id="project.global.fields.name" defaultMessage="Nombre" />
+                                        </Form.Label>
+                                        <Form.Control type="text" className="form-control-apple" value={editFields.nombre}
+                                            onChange={e => handleEditFieldChange('nombre', e.target.value)} />
+                                    </Form.Group>
+                                    <Row className="g-2">
+                                        <Col>
+                                            <Form.Group className="td-edit-field" controlId="edit-fechaInicio">
+                                                <Form.Label className="td-edit-label">
+                                                    <FormattedMessage id="project.tournaments.Create.Step1.fechaInicio" defaultMessage="Fecha inicio" />
+                                                </Form.Label>
+                                                <Form.Control type="date" className="form-control-apple" value={editFields.fechaInicio}
+                                                    onChange={e => handleEditFieldChange('fechaInicio', e.target.value)} />
+                                            </Form.Group>
+                                        </Col>
+                                        <Col>
+                                            <Form.Group className="td-edit-field" controlId="edit-fechaFin">
+                                                <Form.Label className="td-edit-label">
+                                                    <FormattedMessage id="project.tournaments.Create.Step1.fechaFin" defaultMessage="Fecha fin" />
+                                                </Form.Label>
+                                                <Form.Control type="date" className="form-control-apple" value={editFields.fechaFin}
+                                                    onChange={e => handleEditFieldChange('fechaFin', e.target.value)} />
+                                            </Form.Group>
+                                        </Col>
+                                    </Row>
+                                    <Form.Group className="td-edit-field" controlId="edit-fechaLimite">
+                                        <Form.Label className="td-edit-label">
+                                            <FormattedMessage id="project.tournaments.Create.Step1.fechaLimite" defaultMessage="Límite inscripción" />
+                                        </Form.Label>
+                                        <Form.Control type="date" className="form-control-apple" value={editFields.fechaLimiteInscripcion}
+                                            onChange={e => handleEditFieldChange('fechaLimiteInscripcion', e.target.value)} />
+                                    </Form.Group>
+                                </div>
+
+                                <div className="td-config-panel-subsection">
+                                    <h6 className="td-config-panel-subtitle">
+                                        <FormattedMessage id="project.tournaments.Detail.configPanel.rules" defaultMessage="Reglas y puntuación" />
+                                    </h6>
+                                    <Row className="g-2">
+                                        <Col>
+                                            <Form.Group className="td-edit-field" controlId="edit-puntosVictoria">
+                                                <Form.Label className="td-edit-label">
+                                                    <FormattedMessage id="project.tournaments.Create.Step3.puntosVictoria" defaultMessage="Pts. victoria" />
+                                                </Form.Label>
+                                                <Form.Control type="number" min={0} className="form-control-apple" value={editFields.puntosVictoria}
+                                                    onChange={e => handleEditFieldChange('puntosVictoria', e.target.value)} />
+                                            </Form.Group>
+                                        </Col>
+                                        <Col>
+                                            <Form.Group className="td-edit-field" controlId="edit-puntosEmpate">
+                                                <Form.Label className="td-edit-label">
+                                                    <FormattedMessage id="project.tournaments.Create.Step3.puntosEmpate" defaultMessage="Pts. empate" />
+                                                </Form.Label>
+                                                <Form.Control type="number" min={0} className="form-control-apple" value={editFields.puntosEmpate}
+                                                    onChange={e => handleEditFieldChange('puntosEmpate', e.target.value)} />
+                                            </Form.Group>
+                                        </Col>
+                                        <Col>
+                                            <Form.Group className="td-edit-field" controlId="edit-puntosDerrota">
+                                                <Form.Label className="td-edit-label">
+                                                    <FormattedMessage id="project.tournaments.Create.Step3.puntosDerrota" defaultMessage="Pts. derrota" />
+                                                </Form.Label>
+                                                <Form.Control type="number" min={0} className="form-control-apple" value={editFields.puntosDerrota}
+                                                    onChange={e => handleEditFieldChange('puntosDerrota', e.target.value)} />
+                                            </Form.Group>
+                                        </Col>
+                                    </Row>
+                                    <Form.Group className="td-edit-field" controlId="edit-formatoPartidos">
+                                        <Form.Label className="td-edit-label">
+                                            <FormattedMessage id="project.tournaments.Create.Step3.formatoPartidos" defaultMessage="Formato partidos" />
+                                        </Form.Label>
+                                        <Form.Select className="form-control-apple" value={editFields.formatoPartidos}
+                                            onChange={e => handleEditFieldChange('formatoPartidos', e.target.value)}>
+                                            <option value="">—</option>
+                                            <option value="4_SETS">4 sets</option>
+                                            <option value="5_SETS">5 sets</option>
+                                        </Form.Select>
+                                    </Form.Group>
+                                    <Form.Group className="td-edit-field" controlId="edit-criterioDesempate">
+                                        <Form.Label className="td-edit-label">
+                                            <FormattedMessage id="project.tournaments.Create.Step3.criterioDesempate" defaultMessage="Desempate" />
+                                        </Form.Label>
+                                        <Form.Select className="form-control-apple" value={editFields.criterioDesempate}
+                                            onChange={e => handleEditFieldChange('criterioDesempate', e.target.value)}>
+                                            <option value="">—</option>
+                                            <option value="PUNTOS"><FormattedMessage id="project.tournaments.Create.Step3.tiebreaker.points" defaultMessage="Puntos" /></option>
+                                            <option value="SET_AVERAGE"><FormattedMessage id="project.tournaments.Create.Step3.tiebreaker.setAvg" defaultMessage="Average de sets" /></option>
+                                            <option value="GAME_AVERAGE"><FormattedMessage id="project.tournaments.Create.Step3.tiebreaker.gameAvg" defaultMessage="Average de juegos" /></option>
+                                        </Form.Select>
+                                    </Form.Group>
+                                </div>
+
+                                <div className="td-config-panel-subsection">
+                                    <h6 className="td-config-panel-subtitle">
+                                        <FormattedMessage id="project.tournaments.Detail.configPanel.calendar" defaultMessage="Calendario" />
+                                    </h6>
+                                    <Form.Group className="td-edit-field">
+                                        <Form.Label className="td-edit-label">
+                                            <FormattedMessage id="project.tournaments.Create.Step4.diasDisponibles" defaultMessage="Días disponibles" />
+                                        </Form.Label>
+                                        <div className="td-edit-days">
+                                            {DAYS_OF_WEEK.map(day => (
+                                                <button key={day.key} type="button"
+                                                    className={`td-edit-day-btn ${(editFields.diasDisponibles || []).includes(day.key) ? 'active' : ''}`}
+                                                    onClick={() => handleToggleDay(day.key)}>
+                                                    <FormattedMessage id={day.labelId} defaultMessage={day.label} />
+                                                </button>
+                                            ))}
+                                        </div>
+                                    </Form.Group>
+                                    <Row className="g-2">
+                                        <Col>
+                                            <Form.Group className="td-edit-field" controlId="edit-horaInicio">
+                                                <Form.Label className="td-edit-label">
+                                                    <FormattedMessage id="project.tournaments.Create.Step4.horaInicio" defaultMessage="Hora inicio" />
+                                                </Form.Label>
+                                                <Form.Control type="time" className="form-control-apple" value={editFields.horaInicio}
+                                                    onChange={e => handleEditFieldChange('horaInicio', e.target.value)} />
+                                            </Form.Group>
+                                        </Col>
+                                        <Col>
+                                            <Form.Group className="td-edit-field" controlId="edit-horaFin">
+                                                <Form.Label className="td-edit-label">
+                                                    <FormattedMessage id="project.tournaments.Create.Step4.horaFin" defaultMessage="Hora fin" />
+                                                </Form.Label>
+                                                <Form.Control type="time" className="form-control-apple" value={editFields.horaFin}
+                                                    onChange={e => handleEditFieldChange('horaFin', e.target.value)} />
+                                            </Form.Group>
+                                        </Col>
+                                    </Row>
+                                    <Form.Group className="td-edit-field" controlId="edit-duracion">
+                                        <Form.Label className="td-edit-label">
+                                            <FormattedMessage id="project.tournaments.Create.Step4.duracionPartido" defaultMessage="Duración (min)" />
+                                        </Form.Label>
+                                        <Form.Control type="number" min={5} step={5} className="form-control-apple" value={editFields.duracionPartido}
+                                            onChange={e => handleEditFieldChange('duracionPartido', e.target.value)} />
+                                    </Form.Group>
+                                    <Form.Group className="td-edit-field" controlId="edit-estrategia">
+                                        <Form.Label className="td-edit-label">
+                                            <FormattedMessage id="project.tournaments.Create.Step4.estrategiaDistribucion" defaultMessage="Distribución" />
+                                        </Form.Label>
+                                        <Form.Select className="form-control-apple" value={editFields.estrategiaDistribucion}
+                                            onChange={e => handleEditFieldChange('estrategiaDistribucion', e.target.value)}>
+                                            <option value="">—</option>
+                                            {DISTRIBUCION_OPTS.map(opt => (
+                                                <option key={opt.value} value={opt.value}>
+                                                    <FormattedMessage id={opt.labelId} defaultMessage={opt.label} />
+                                                </option>
+                                            ))}
+                                        </Form.Select>
+                                    </Form.Group>
+                                    <Form.Group className="td-edit-field">
+                                        <Form.Label className="td-edit-label">
+                                            <FormattedMessage id="project.tournaments.Create.Step4.fechasExcluidas" defaultMessage="Fechas excluidas" />
+                                        </Form.Label>
+                                        <div className="td-edit-excluded-dates">
+                                            {(editFields.fechasExcluidas || []).map(date => (
+                                                <span key={date} className="td-edit-excluded-date">
+                                                    {date}
+                                                    <button type="button" className="td-edit-excluded-remove" onClick={() => handleRemoveExcludedDate(date)}>
+                                                        <i className="fa-regular fa-xmark" />
+                                                    </button>
+                                                </span>
+                                            ))}
+                                        </div>
+                                        <div className="td-edit-excluded-add">
+                                            <Form.Control type="date" className="form-control-apple" value={newExcludedDate}
+                                                onChange={e => setNewExcludedDate(e.target.value)} />
+                                            <Button type="button" variant="outline-dark" size="sm" className="rounded-pill"
+                                                onClick={handleAddExcludedDate} disabled={!newExcludedDate}>
+                                                <i className="fa-regular fa-plus" />
+                                            </Button>
+                                        </div>
+                                    </Form.Group>
+                                </div>
+                            </div>
+
+                            <div className="td-config-panel-footer">
+                                <Button type="submit" variant="dark" className="rounded-pill px-4 td-save-btn"
+                                    disabled={updateLoading}>
+                                    {updateLoading ? (
+                                        <><Spinner animation="border" size="sm" className="me-1" /><FormattedMessage id="project.global.buttons.saving" defaultMessage="Guardando..." /></>
+                                    ) : (
+                                        <><i className="fa-regular fa-floppy-disk me-1" /><FormattedMessage id="project.global.buttons.save" defaultMessage="Guardar" /></>
+                                    )}
+                                </Button>
+                            </div>
+                        </Form>
+                    )}
+                </div>
+            )}
+        </div>
     );
 };
 

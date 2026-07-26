@@ -1,0 +1,73 @@
+.ct-container {
+    max-width: 800px;
+}
+
+.ct-form-panel {
+    background-color: rgba(255, 255, 255, 0.82);
+    backdrop-filter: blur(24px);
+    -webkit-backdrop-filter: blur(24px);
+    border: 1px solid rgba(210, 210, 215, 0.6);
+    border-radius: 18px;
+    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.04);
+    padding: 2rem 2.25rem;
+    transition: box-shadow 0.2s ease;
+}
+
+.ct-form-title {
+    font-size: 1.3rem;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    color: #1d1d1f;
+    margin-bottom: 0.25rem;
+}
+
+.ct-form-subtitle {
+    font-size: 0.88rem;
+    color: #86868b;
+    line-height: 1.5;
+    margin-bottom: 1.5rem;
+}
+
+.ct-btn-cancel {
+    font-size: 0.9rem;
+    font-weight: 500;
+    border-radius: 999px;
+    border: 1px solid #d2d2d7;
+    padding: 0.5rem 1.25rem;
+    background: #ffffff;
+    color: #1d1d1f;
+    transition: background 0.15s ease;
+}
+
+.ct-btn-cancel:hover {
+    background: #f5f5f7;
+}
+
+.ct-btn-create {
+    font-size: 0.9rem;
+    font-weight: 500;
+    border-radius: 999px;
+    padding: 0.5rem 1.5rem;
+    background: #1d1d1f;
+    color: #ffffff;
+    border: none;
+    min-width: 140px;
+    transition: background 0.15s ease, transform 0.15s ease;
+}
+
+.ct-btn-create:hover {
+    background: #2d2d2f;
+    transform: scale(1.02);
+}
+
+.ct-btn-create:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    transform: none;
+}
+
+@media (max-width: 768px) {
+    .ct-form-panel {
+        padding: 1.5rem;
+    }
+}
