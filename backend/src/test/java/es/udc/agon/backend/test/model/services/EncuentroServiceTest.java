@@ -110,7 +110,7 @@ public class EncuentroServiceTest {
 
         torneoService.cerrarInscripciones(torneo.getId());
         torneoService.configurarEstructuraYGenerarCalendario(
-                torneo.getId(), "LIGA_UNICA", 1, 2, false, false);
+                torneo.getId(), "LIGA_UNICA", 1, 2, false, false, null, null, null);
 
         // obtener la primera jornada y su encuentro generado
         List<Jornada> jornadas = jornadaDao.findByTorneoIdOrderByNumeroJornadaAsc(torneo.getId());
