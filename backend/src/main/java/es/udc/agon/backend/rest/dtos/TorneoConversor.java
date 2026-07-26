@@ -23,7 +23,12 @@ public class TorneoConversor {
                     .map(ins -> new InscripcionDto(
                             ins.getEquipo().getId(),
                             ins.getEquipo().getNombreEquipo(),
-                            ins.getEquipo().getCreador().getId()
+                            ins.getEquipo().getCreador().getId(),
+                            ins.getEquipo().getMiembros().stream()
+                                    .map(UserConversor::toUserDto)
+                                    .collect(Collectors.toList()),
+                            ins.getGrupo() != null ? ins.getGrupo().getId() : null,
+                            ins.getGrupo() != null ? ins.getGrupo().getNombreGrupo() : null
                     ))
                     .collect(Collectors.toList());
         }
