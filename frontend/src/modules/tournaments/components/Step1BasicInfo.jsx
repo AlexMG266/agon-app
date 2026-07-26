@@ -81,25 +81,6 @@ const Step1BasicInfo = ({ data, onChange, errors }) => {
                     </Form.Group>
                 </Col>
                 <Col md={4}>
-                    <Form.Group className="mb-3" controlId="tournamentEndDate">
-                        <Form.Label className="text-secondary small fw-medium mb-2">
-                            <FormattedMessage id="project.tournaments.CreateTournament.step1.endDate" defaultMessage="Fecha de fin" />
-                            <span className="text-danger ms-1">*</span>
-                        </Form.Label>
-                        <Form.Control
-                            type="date"
-                            value={data.fechaFin || ''}
-                            onChange={e => handleChange('fechaFin', e.target.value)}
-                            required
-                            isInvalid={!!errors?.fechaFin}
-                            className="form-control-apple"
-                        />
-                        <Form.Control.Feedback type="invalid">
-                            {errors?.fechaFin || <FormattedMessage id="project.global.validator.required" />}
-                        </Form.Control.Feedback>
-                    </Form.Group>
-                </Col>
-                <Col md={4}>
                     <Form.Group className="mb-3" controlId="tournamentInscriptionDeadline">
                         <Form.Label className="text-secondary small fw-medium mb-2">
                             <FormattedMessage id="project.tournaments.CreateTournament.step1.inscriptionDeadline" defaultMessage="Fecha límite de inscripción" />

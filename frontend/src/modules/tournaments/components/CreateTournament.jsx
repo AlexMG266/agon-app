@@ -28,7 +28,6 @@ const STEPS = [
 const INITIAL_DATA = {
     nombre: '',
     fechaInicio: '',
-    fechaFin: '',
     fechaLimiteInscripcion: '',
     puntosVictoria: 3,
     puntosEmpate: 1,
@@ -41,6 +40,7 @@ const INITIAL_DATA = {
     duracionPartido: 45,
     fechasExcluidas: [],
     estrategiaDistribucion: 'JORNADAS',
+    diasEntreJornadas: 7,
 };
 
 const CreateTournament = () => {

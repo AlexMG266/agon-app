@@ -24,12 +24,6 @@ const Step5Summary = ({ data }) => {
                         </td>
                         <td className="py-2">{data.fechaInicio || '—'}</td>
                     </tr>
-                    <tr>
-                        <td className="text-secondary ps-3 py-2">
-                            <FormattedMessage id="project.tournaments.CreateTournament.step1.endDate" defaultMessage="Fecha de fin" />
-                        </td>
-                        <td className="py-2">{data.fechaFin || '—'}</td>
-                    </tr>
                     <tr className="border-bottom">
                         <td className="text-secondary ps-3 py-2">
                             <FormattedMessage id="project.tournaments.CreateTournament.step1.inscriptionDeadline" defaultMessage="Fecha límite de inscripción" />
