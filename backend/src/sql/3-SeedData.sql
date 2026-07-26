@@ -133,7 +133,7 @@ INSERT INTO Torneo (idOrganizador, nombre, privado, codigoTorneo, numGrupos, equ
                     puntosVictoria, puntosEmpate, puntosDerrota,
                     formatoPartidos, criterioDesempate,
                     diasDisponibles, horaInicio, horaFin, duracionPartido,
-                    fechasExcluidas, estrategiaDistribucion)
+                    fechasExcluidas, estrategiaDistribucion, diasEntreJornadas)
 SELECT
     1, 'Torneo de Prueba 2026', FALSE,
     'T' || LPAD(FLOOR(RANDOM() * 100)::INT::TEXT, 2, '0') || '-' || UPPER(SUBSTR(MD5(RANDOM()::TEXT || CLOCK_TIMESTAMP()::TEXT), 1, 4)),
@@ -142,7 +142,7 @@ SELECT
     3, 1, 0,
     '4_SETS', 'PUNTOS',
     'L,M,X,J,V', '16:00', '22:00', 45,
-    '2026-04-01,2026-04-02', 'JORNADAS';
+    '2026-04-01,2026-04-02', 'JORNADAS', 7;
 
 -- 4.2 Torneos de cada test user (40 públicos + 40 privados, con código auto-generado)
 INSERT INTO Torneo (idOrganizador, nombre, privado, codigoTorneo, estado)
