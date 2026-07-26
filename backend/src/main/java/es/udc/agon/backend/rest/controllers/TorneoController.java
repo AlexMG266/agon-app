@@ -67,7 +67,6 @@ public class TorneoController {
         Torneo torneo = new Torneo();
         torneo.setNombre(params.getNombre());
         torneo.setFechaInicio(params.getFechaInicio() != null ? LocalDate.parse(params.getFechaInicio()) : null);
-        torneo.setFechaFin(params.getFechaFin() != null ? LocalDate.parse(params.getFechaFin()) : null);
         torneo.setFechaLimiteInscripcion(params.getFechaLimiteInscripcion() != null ? LocalDate.parse(params.getFechaLimiteInscripcion()) : null);
         torneo.setPuntosVictoria(params.getPuntosVictoria());
         torneo.setPuntosEmpate(params.getPuntosEmpate());
@@ -84,6 +83,7 @@ public class TorneoController {
             torneo.setFechasExcluidas(String.join(",", params.getFechasExcluidas()));
         }
         torneo.setEstrategiaDistribucion(params.getEstrategiaDistribucion());
+        torneo.setDiasEntreJornadas(params.getDiasEntreJornadas());
 
         Torneo savedTorneo = torneoService.crearTorneo(userId, torneo, params.getPrivado());
         return TorneoConversor.toTorneoDto(savedTorneo);
@@ -131,6 +131,7 @@ public class TorneoController {
             datos.setFechasExcluidas(String.join(",", params.getFechasExcluidas()));
         }
         datos.setEstrategiaDistribucion(params.getEstrategiaDistribucion());
+        datos.setDiasEntreJornadas(params.getDiasEntreJornadas());
 
         Torneo torneo = torneoService.actualizarTorneo(userId, id, datos);
         return TorneoConversor.toTorneoDto(torneo);
@@ -164,7 +165,10 @@ public class TorneoController {
                 params.getNumGrupos(),
                 params.getEquiposPorGrupo(),
                 params.isTienePlayoff(),
-                params.isIdaVueltaPlayoff()
+                params.isIdaVueltaPlayoff(),
+                params.getEstrategiaPlayoff(),
+                params.getDiasEntrePlayoff(),
+                params.getFechaFin()
         );
         return TorneoConversor.toTorneoDto(torneo);
     }

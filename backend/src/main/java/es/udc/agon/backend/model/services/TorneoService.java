@@ -38,7 +38,9 @@ public interface TorneoService {
 
     Torneo configurarEstructuraYGenerarCalendario(Long torneoId, String tipoTorneo,
                                                    int numGrupos, int equiposPorGrupo,
-                                                   boolean tienePlayoff, boolean idaVueltaPlayoff)
+                                                   boolean tienePlayoff, boolean idaVueltaPlayoff,
+                                                   String estrategiaPlayoff, Integer diasEntrePlayoff,
+                                                   String fechaFin)
             throws InstanceNotFoundException, IllegalArgumentException;
 
     void generarCalendario(Long torneoId) throws InstanceNotFoundException, IllegalArgumentException;
