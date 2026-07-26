@@ -101,6 +101,9 @@ const TournamentDetail = () => {
     const [updateSuccess, setUpdateSuccess] = useState(false);
     const [newExcludedDate, setNewExcludedDate] = useState('');
     const [selectedGrupoIdx, setSelectedGrupoIdx] = useState(0);
+    const [jornadas, setJornadas] = useState([]);
+    const [currentJornadaIdx, setCurrentJornadaIdx] = useState(0);
+    const [loadingJornadas, setLoadingJornadas] = useState(false);
 
 
     useEffect(() => {
@@ -110,6 +113,10 @@ const TournamentDetail = () => {
     useEffect(() => {
         if (loggedUser) loadMyTeams();
     }, [loggedUser]);
+
+    useEffect(() => {
+        loadJornadas();
+    }, [id]);
 
     const loadTournament = async () => {
         try {
@@ -148,6 +155,21 @@ const TournamentDetail = () => {
             }
         } catch (err) {
             console.error(err);
+        }
+    };
+
+    const loadJornadas = async () => {
+        try {
+            setLoadingJornadas(true);
+            const response = await backend.tournamentService.getTournamentJornadas(id);
+            if (response.ok && response.payload) {
+                setJornadas(response.payload);
+                setCurrentJornadaIdx(0);
+            }
+        } catch (err) {
+            console.error(err);
+        } finally {
+            setLoadingJornadas(false);
         }
     };
 
@@ -748,14 +770,86 @@ const TournamentDetail = () => {
                             <FormattedMessage id="project.tournaments.Detail.partidos.title" defaultMessage="Partidos" />
                         </h5>
                     </div>
-                    <div className="td-empty-state">
-                        <div className="td-empty-state-icon">
-                            <i className="fa-regular fa-calendar-circle-exclamation" />
+                    {loadingJornadas ? (
+                        <div className="td-empty-state">
+                            <Spinner animation="border" variant="dark" />
                         </div>
-                        <p className="td-empty-state-text">
-                            <FormattedMessage id="project.tournaments.Detail.partidos.noCalendar" defaultMessage="Aún no hay partidos. El calendario se generará cuando el organizador configure el torneo." />
-                        </p>
-                    </div>
+                    ) : jornadas.length > 0 ? (
+                        <>
+                            <div className="td-partidos-nav">
+                                <button className="td-partidos-nav-btn"
+                                    disabled={currentJornadaIdx <= 0}
+                                    onClick={() => setCurrentJornadaIdx(prev => prev - 1)}>
+                                    <i className="fa-regular fa-chevron-left" />
+                                </button>
+                                <div className="td-partidos-nav-info">
+                                    <span className="td-partidos-nav-label">
+                                        <FormattedMessage id="project.tournaments.Detail.partidos.jornada" defaultMessage="Jornada" /> {jornadas[currentJornadaIdx].numeroJornada}
+                                    </span>
+                                    <span className="td-partidos-nav-phase">
+                                        {jornadas[currentJornadaIdx].tipoFase}
+                                    </span>
+                                </div>
+                                <button className="td-partidos-nav-btn"
+                                    disabled={currentJornadaIdx >= jornadas.length - 1}
+                                    onClick={() => setCurrentJornadaIdx(prev => prev + 1)}>
+                                    <i className="fa-regular fa-chevron-right" />
+                                </button>
+                            </div>
+                            {jornadas[currentJornadaIdx].encuentros && jornadas[currentJornadaIdx].encuentros.length > 0 ? (
+                                <div className="td-partidos-grid">
+                                    {jornadas[currentJornadaIdx].encuentros.map(enc => {
+                                        const fecha = enc.fechaRealizacion ? new Date(enc.fechaRealizacion) : null;
+                                        const fechaStr = fecha ? fecha.toLocaleDateString('es-ES', { day: 'numeric', month: 'short', year: 'numeric' }) : '';
+                                        const horaStr = fecha ? fecha.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' }) : '';
+                                        return (
+                                            <div key={enc.id} className="td-partido-card">
+                                                <div className="td-partido-card-teams">
+                                                    <div className="td-partido-card-team">
+                                                        <span className="td-partido-card-team-name">{enc.equipoLocalNombre}</span>
+                                                    </div>
+                                                    <div className="td-partido-card-vs">
+                                                        <span className="td-partido-card-vs-text">VS</span>
+                                                    </div>
+                                                    <div className="td-partido-card-team td-partido-card-team--away">
+                                                        <span className="td-partido-card-team-name">{enc.equipoVisitanteNombre}</span>
+                                                    </div>
+                                                </div>
+                                                <div className="td-partido-card-meta">
+                                                    {fecha && (
+                                                        <span className="td-partido-card-datetime">
+                                                            <i className="fa-regular fa-calendar me-1" />{fechaStr}
+                                                            <span className="td-partido-card-time ms-2"><i className="fa-regular fa-clock me-1" />{horaStr}</span>
+                                                        </span>
+                                                    )}
+                                                    {enc.estado && (
+                                                        <span className={`td-partido-card-badge ${enc.estado === 'FINALIZADO' ? 'td-badge--finished' : enc.estado === 'EN_CURSO' ? 'td-badge--groups' : ''}`}>
+                                                            {enc.estado}
+                                                        </span>
+                                                    )}
+                                                </div>
+                                            </div>
+                                        );
+                                    })}
+                                </div>
+                            ) : (
+                                <div className="td-empty-state">
+                                    <p className="td-empty-state-text">
+                                        <FormattedMessage id="project.tournaments.Detail.partidos.noEncuentros" defaultMessage="No hay encuentros en esta jornada." />
+                                    </p>
+                                </div>
+                            )}
+                        </>
+                    ) : (
+                        <div className="td-empty-state">
+                            <div className="td-empty-state-icon">
+                                <i className="fa-regular fa-calendar-circle-exclamation" />
+                            </div>
+                            <p className="td-empty-state-text">
+                                <FormattedMessage id="project.tournaments.Detail.partidos.noCalendar" defaultMessage="Aún no hay partidos. El calendario se generará cuando el organizador configure el torneo." />
+                            </p>
+                        </div>
+                    )}
                 </div>
             )}
 

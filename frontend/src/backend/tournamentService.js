@@ -89,6 +89,11 @@ export const updateTournament = async (id, data) => {
     return await appFetch('PUT', `/tournaments/${id}`, data);
 };
 
+// GET /tournaments/{id}/jornadas: obtiene las jornadas y encuentros de un torneo.
+export const getTournamentJornadas = async (id) => {
+    return await appFetch('GET', `/tournaments/${id}/jornadas`);
+};
+
 export default {
     createTournament,
     getMyTournaments,
@@ -106,5 +111,6 @@ export default {
     getEnrolledTournaments,
     followTournament,
     unfollowTournament,
-    updateTournament
+    updateTournament,
+    getTournamentJornadas
 };
