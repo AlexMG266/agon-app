@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router';
 import { FormattedMessage, useIntl } from 'react-intl';
 import Container from 'react-bootstrap/Container';
@@ -65,6 +65,7 @@ const TournamentDetail = () => {
     const [configSuccess, setConfigSuccess] = useState(false);
     const [closeSuccess, setCloseSuccess] = useState(false);
     const [enrollRequestSent, setEnrollRequestSent] = useState(null);
+    const carouselRef = useRef(null);
     const [pendingRequests, setPendingRequests] = useState([]);
     const [loadingRequests, setLoadingRequests] = useState(false);
     const [processingRequestId, setProcessingRequestId] = useState(null);
@@ -76,6 +77,7 @@ const TournamentDetail = () => {
         equiposPorGrupo: 2,
         tienePlayoff: true,
         idaVueltaPlayoff: false,
+        fechaFin: '',
     });
     const [configErrors, setConfigErrors] = useState({});
     const [activeTab, setActiveTab] = useState('info');
@@ -136,6 +138,10 @@ const TournamentDetail = () => {
                         teams.forEach(t => { if (!existing.has(t.id)) merged.push(t); });
                         return merged;
                     });
+                }
+                // Inicializar configData.fechaFin con el valor existente o el calculado
+                if (response.payload.fechaFin) {
+                    setConfigData(prev => ({ ...prev, fechaFin: response.payload.fechaFin }));
                 }
             } else {
                 setError(response.error || 'Error loading tournament');
@@ -285,8 +291,59 @@ const TournamentDetail = () => {
         return Object.keys(errors).length === 0;
     };
 
+    /**
+     * Calcula una fecha de fin propuesta basada en la configuración actual del torneo.
+     * Usa los datos reales: número de grupos, equipos, estrategia de distribución y playoff.
+     */
+    const calcularFinPropuesto = (data, tournament) => {
+        if (!tournament?.fechaInicio) return '';
+        const estrategia = tournament.estrategiaDistribucion || 'JORNADAS';
+        const diasEntre = tournament.diasEntreJornadas != null ? tournament.diasEntreJornadas : 7;
+        const equiposPorGrupo = parseInt(data.equiposPorGrupo) || 2;
+        const tienePlayoff = data.tipoTorneo === 'GRUPOS_PLAYOFF' || data.tipoTorneo === 'ELIMINATORIAS';
+        const idaVuelta = data.idaVueltaPlayoff || false;
+
+        // Calcular el número de rondas de liga necesarias
+        const N = equiposPorGrupo;
+        const rondasLiga = (N % 2 === 0) ? N - 1 : N; // circle method
+
+        // Calcular días según estrategia de distribución
+        let diasLiga;
+        if (estrategia === 'JORNADAS') {
+            diasLiga = (rondasLiga - 1) * diasEntre;
+        } else {
+            // RAPIDO o UNIFORME: consecutivos
+            diasLiga = rondasLiga - 1;
+        }
+
+        let totalDays = diasLiga;
+
+        // Añadir buffer para playoff si aplica
+        if (tienePlayoff) {
+            const estrPlayoff = data.estrategiaPlayoff || 'RAPIDO';
+            const diasEntrePlayoff = (estrPlayoff === 'JORNADAS') ? (data.diasEntrePlayoff || 7) : 1;
+            const rondasPlayoff = idaVuelta ? 6 : 3;
+            totalDays += rondasPlayoff * diasEntrePlayoff;
+        }
+
+        // Buffer de seguridad de 3 días
+        totalDays += 3;
+
+        const start = new Date(tournament.fechaInicio + 'T12:00:00');
+        const end = new Date(start);
+        end.setDate(end.getDate() + totalDays);
+        return end.toISOString().split('T')[0];
+    };
+
     const handleConfigChange = (field, value) => {
-        setConfigData(prev => ({ ...prev, [field]: value }));
+        setConfigData(prev => {
+            const newData = { ...prev, [field]: value };
+            // Auto-calcular fechaFin cuando cambian parámetros relevantes
+            if (field !== 'fechaFin' && tournament) {
+                newData.fechaFin = calcularFinPropuesto(newData, tournament);
+            }
+            return newData;
+        });
     };
 
     const handleConfigure = async (e) => {
@@ -301,13 +358,16 @@ const TournamentDetail = () => {
                 equiposPorGrupo: parseInt(configData.equiposPorGrupo),
                 tienePlayoff: configData.tipoTorneo !== 'LIGA_UNICA',
                 idaVueltaPlayoff: configData.idaVueltaPlayoff,
+                estrategiaPlayoff: configData.estrategiaPlayoff || 'RAPIDO',
+                diasEntrePlayoff: configData.diasEntrePlayoff || null,
+                fechaFin: configData.fechaFin || null,
             });
             if (response.ok) {
                 setConfigSuccess(true);
                 loadTournament();
                 loadJornadas();
             } else {
-                setBackendErrors(response.error);
+                setBackendErrors(response.payload || response.error);
             }
         } catch (err) {
             setBackendErrors(err.message);
@@ -333,6 +393,7 @@ const TournamentDetail = () => {
                 horaFin: tournament.horaFin || '',
                 duracionPartido: tournament.duracionPartido || 0,
                 estrategiaDistribucion: tournament.estrategiaDistribucion || '',
+                diasEntreJornadas: tournament.diasEntreJornadas ?? 7,
                 fechasExcluidas: tournament.fechasExcluidas || [],
             });
         }
@@ -620,7 +681,8 @@ const TournamentDetail = () => {
                                     </div>
                                     {backendErrors && (
                                         <div className="td-config-error">
-                                            <i className="fa-regular fa-circle-exclamation" />{backendErrors}
+                                            <i className="fa-regular fa-circle-exclamation" />
+                                            {typeof backendErrors === 'string' ? backendErrors : backendErrors.globalError}
                                         </div>
                                     )}
                                     <form onSubmit={handleConfigure} className="td-config-form">
@@ -669,16 +731,62 @@ const TournamentDetail = () => {
                                             )}
                                         </div>
                                         {(configData.tipoTorneo === 'GRUPOS_PLAYOFF' || configData.tipoTorneo === 'ELIMINATORIAS') && (
-                                            <div className="td-config-toggles td-config-field--full">
-                                                <label className="td-config-toggle">
-                                                    <span>
-                                                        <FormattedMessage id="project.tournaments.Create.Step2.idaVuelta" defaultMessage="Playoff ida y vuelta" />
-                                                    </span>
-                                                    <input type="checkbox" checked={configData.idaVueltaPlayoff}
-                                                        onChange={e => handleConfigChange('idaVueltaPlayoff', e.target.checked)} />
-                                                </label>
-                                            </div>
+                                            <>
+                                                <div className="td-config-toggles td-config-field--full">
+                                                    <label className="td-config-toggle">
+                                                        <span>
+                                                            <FormattedMessage id="project.tournaments.Create.Step2.idaVuelta" defaultMessage="Playoff ida y vuelta" />
+                                                        </span>
+                                                        <input type="checkbox" checked={configData.idaVueltaPlayoff}
+                                                            onChange={e => handleConfigChange('idaVueltaPlayoff', e.target.checked)} />
+                                                    </label>
+                                                </div>
+                                                <div className="td-config-field td-config-field--full">
+                                                    <label className="td-edit-label">
+                                                        <FormattedMessage id="project.tournaments.Detail.config.playoffDistribution" defaultMessage="Distribución playoff" />
+                                                    </label>
+                                                    <select className="form-control-apple" value={configData.estrategiaPlayoff || 'RAPIDO'}
+                                                        onChange={e => handleConfigChange('estrategiaPlayoff', e.target.value)}>
+                                                        <option value="RAPIDO">Rápido</option>
+                                                        <option value="JORNADAS">Jornadas</option>
+                                                        <option value="UNIFORME">Uniforme</option>
+                                                    </select>
+                                                </div>
+                                                {configData.estrategiaPlayoff === 'JORNADAS' && (
+                                                    <div className="td-config-field td-config-field--num">
+                                                        <label className="td-edit-label">
+                                                            <FormattedMessage id="project.tournaments.Detail.config.daysBetweenPlayoff" defaultMessage="Días entre rondas" />
+                                                        </label>
+                                                        <input type="number" min={1} max={30} step={1} className="form-control-apple" value={configData.diasEntrePlayoff ?? 7}
+                                                            onChange={e => handleConfigChange('diasEntrePlayoff', parseInt(e.target.value))} />
+                                                    </div>
+                                                )}
+                                            </>
                                         )}
+                                        <div className="td-config-field td-config-field--full" style={{ marginTop: '8px' }}>
+                                            <label className="td-edit-label">
+                                                <FormattedMessage id="project.tournaments.Detail.config.endDate" defaultMessage="Fecha de fin (estimada)" />
+                                                <i className="fa-regular fa-circle-question ms-1 text-muted" title="Se calcula automáticamente según la configuración. Puedes modificarla manualmente." />
+                                            </label>
+                                            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                                <input type="date" className="form-control-apple" style={{ flex: 1 }}
+                                                    value={configData.fechaFin || ''}
+                                                    onChange={e => handleConfigChange('fechaFin', e.target.value)} />
+                                                {!configData.fechaFin && tournament?.fechaInicio && (
+                                                    <button type="button" className="td-config-btn td-config-btn--secondary" style={{ whiteSpace: 'nowrap', padding: '6px 12px', fontSize: '0.8rem' }}
+                                                        onClick={() => handleConfigChange('fechaFin', calcularFinPropuesto(configData, tournament))}>
+                                                        <i className="fa-regular fa-calculator me-1" />
+                                                        Calcular
+                                                    </button>
+                                                )}
+                                            </div>
+                                            {configData.fechaFin && tournament?.fechaInicio && (
+                                                <small className="text-muted" style={{ display: 'block', marginTop: '4px', fontSize: '0.75rem' }}>
+                                                    <i className="fa-regular fa-calendar me-1" />
+                                                    Inicio: {tournament.fechaInicio} → Fin: {configData.fechaFin}
+                                                </small>
+                                            )}
+                                        </div>
                                         <div className="td-config-actions td-config-field--full">
                                             <button type="button" className="td-config-btn td-config-btn--secondary"
                                                 onClick={() => navigate('/')} disabled={configuring}>
@@ -777,18 +885,45 @@ const TournamentDetail = () => {
                         </div>
                     ) : jornadas.length > 0 ? (
                         <>
-                            <div className="td-partidos-nav">
-                                <select
-                                    className="td-partidos-jornada-select"
-                                    value={currentJornadaIdx}
-                                    onChange={e => setCurrentJornadaIdx(Number(e.target.value))}
+                            <div className="td-partidos-carousel">
+                                <button
+                                    className="td-partidos-carousel-btn"
+                                    disabled={currentJornadaIdx <= 0}
+                                    onClick={() => setCurrentJornadaIdx(prev => Math.max(0, prev - 1))}
+                                    aria-label="Jornada anterior"
                                 >
-                                    {jornadas.map((j, idx) => (
-                                        <option key={j.id} value={idx}>
-                                            {intl.formatMessage({ id: 'project.tournaments.Detail.partidos.jornada', defaultMessage: 'Jornada' })} {j.numeroJornada} - {j.tipoFase}
-                                        </option>
-                                    ))}
-                                </select>
+                                    <i className="fa-regular fa-chevron-left" />
+                                </button>
+                                <div className="td-partidos-carousel-track" ref={carouselRef}>
+                                    {jornadas.map((j, idx) => {
+                                        const fecha = j.fechaInicio ? new Date(j.fechaInicio) : null;
+                                        const fechaStr = fecha ? fecha.toLocaleDateString('es-ES', { day: 'numeric', month: 'short' }) : '';
+                                        return (
+                                            <div
+                                                key={j.id}
+                                                className={`td-partidos-carousel-item${idx === currentJornadaIdx ? ' td-partidos-carousel-item--active' : ''}`}
+                                                onClick={() => setCurrentJornadaIdx(idx)}
+                                                role="button"
+                                                tabIndex={0}
+                                                onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') setCurrentJornadaIdx(idx); }}
+                                            >
+                                                <span className="td-partidos-carousel-item-num">
+                                                    {intl.formatMessage({ id: 'project.tournaments.Detail.partidos.jornada', defaultMessage: 'Jornada' })} {j.numeroJornada}
+                                                </span>
+                                                {fechaStr && <span className="td-partidos-carousel-item-date">{fechaStr}</span>}
+                                                {j.tipoFase && <span className="td-partidos-carousel-item-phase">{j.tipoFase}</span>}
+                                            </div>
+                                        );
+                                    })}
+                                </div>
+                                <button
+                                    className="td-partidos-carousel-btn"
+                                    disabled={currentJornadaIdx >= jornadas.length - 1}
+                                    onClick={() => setCurrentJornadaIdx(prev => Math.min(jornadas.length - 1, prev + 1))}
+                                    aria-label="Jornada siguiente"
+                                >
+                                    <i className="fa-regular fa-chevron-right" />
+                                </button>
                             </div>
                             {(() => {
                                 const currentJornada = jornadas[currentJornadaIdx];
@@ -1084,6 +1219,7 @@ const TournamentDetail = () => {
                                 title={<FormattedMessage id="project.tournaments.Detail.configPanel.basicInfo" defaultMessage="Información básica" />}
                                 fields={[
                                     { label: <FormattedMessage id="project.global.fields.name" defaultMessage="Nombre" />, value: tournament.nombre },
+                                    { label: <FormattedMessage id="project.tournaments.Detail.configPanel.tipoTorneo" defaultMessage="Tipo de torneo" />, value: tournament.tipoTorneo === 'LIGA_UNICA' ? 'Liga única' : tournament.tipoTorneo === 'GRUPOS_PLAYOFF' ? 'Grupos + Playoff' : tournament.tipoTorneo === 'ELIMINATORIAS' ? 'Eliminatorias' : '—' },
                                     { label: <FormattedMessage id="project.tournaments.Create.Step1.fechaInicio" defaultMessage="Fecha de inicio" />, value: tournament.fechaInicio ? (typeof tournament.fechaInicio === 'string' ? tournament.fechaInicio : tournament.fechaInicio.substring(0, 10)) : '—' },
                                     { label: <FormattedMessage id="project.tournaments.Create.Step1.fechaFin" defaultMessage="Fecha de fin" />, value: tournament.fechaFin ? (typeof tournament.fechaFin === 'string' ? tournament.fechaFin : tournament.fechaFin.substring(0, 10)) : '—' },
                                     { label: <FormattedMessage id="project.tournaments.Create.Step1.fechaLimite" defaultMessage="Límite inscripción" />, value: tournament.fechaLimiteInscripcion ? (typeof tournament.fechaLimiteInscripcion === 'string' ? tournament.fechaLimiteInscripcion : tournament.fechaLimiteInscripcion.substring(0, 10)) : '—' },
@@ -1108,6 +1244,7 @@ const TournamentDetail = () => {
                                     { label: <FormattedMessage id="project.tournaments.Create.Step4.duracionPartido" defaultMessage="Duración (min)" />, value: tournament.duracionPartido != null ? tournament.duracionPartido : '—' },
                                     { label: <FormattedMessage id="project.tournaments.Create.Step4.fechasExcluidas" defaultMessage="Fechas excluidas" />, value: (tournament.fechasExcluidas || []).length > 0 ? (tournament.fechasExcluidas || []).join(', ') : '—' },
                                     { label: <FormattedMessage id="project.tournaments.Create.Step4.estrategiaDistribucion" defaultMessage="Distribución" />, value: tournament.estrategiaDistribucion || '—' },
+                                    { label: <FormattedMessage id="project.tournaments.Detail.configPanel.daysBetweenMatchdays" defaultMessage="Días entre jornadas" />, value: tournament.diasEntreJornadas != null ? tournament.diasEntreJornadas : '—' },
                                 ]}
                             />
                         </div>
@@ -1271,6 +1408,15 @@ const TournamentDetail = () => {
                                             ))}
                                         </Form.Select>
                                     </Form.Group>
+                                    {editFields.estrategiaDistribucion === 'JORNADAS' && (
+                                        <Form.Group className="td-edit-field" controlId="edit-diasEntreJornadas">
+                                            <Form.Label className="td-edit-label">
+                                                <FormattedMessage id="project.tournaments.CreateTournament.step4.daysBetweenMatchdays" defaultMessage="Días entre jornadas" />
+                                            </Form.Label>
+                                            <Form.Control type="number" min={1} max={14} step={1} className="form-control-apple" value={editFields.diasEntreJornadas ?? 7}
+                                                onChange={e => handleEditFieldChange('diasEntreJornadas', parseInt(e.target.value))} />
+                                        </Form.Group>
+                                    )}
                                     <Form.Group className="td-edit-field">
                                         <Form.Label className="td-edit-label">
                                             <FormattedMessage id="project.tournaments.Create.Step4.fechasExcluidas" defaultMessage="Fechas excluidas" />

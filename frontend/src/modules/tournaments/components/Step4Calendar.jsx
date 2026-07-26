@@ -214,6 +214,27 @@ const Step4Calendar = ({ data, onChange, errors }) => {
                         <div className="text-danger small mt-1">{errors.estrategiaDistribucion}</div>
                     )}
                 </div>
+
+                {data.estrategiaDistribucion === 'JORNADAS' && (
+                    <Form.Group className="mt-3" controlId="diasEntreJornadas">
+                        <Form.Label className="text-secondary small fw-medium mb-2">
+                            <FormattedMessage id="project.tournaments.CreateTournament.step4.daysBetweenMatchdays" defaultMessage="Días entre jornadas" />
+                        </Form.Label>
+                        <div className="d-flex align-items-center gap-3">
+                            <Form.Range
+                                min={1}
+                                max={14}
+                                step={1}
+                                value={data.diasEntreJornadas ?? 7}
+                                onChange={e => handleChange('diasEntreJornadas', parseInt(e.target.value))}
+                                style={{ flex: 1 }}
+                            />
+                            <span className="fw-semibold text-nowrap" style={{ minWidth: '60px', fontSize: '0.9rem' }}>
+                                {data.diasEntreJornadas ?? 7} <FormattedMessage id="project.tournaments.CreateTournament.step4.days" defaultMessage="días" />
+                            </span>
+                        </div>
+                    </Form.Group>
+                )}
             </Form.Group>
         </div>
     );
