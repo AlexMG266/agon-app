@@ -29,4 +29,4 @@ recompile
     done
 ) &
 
-exec mvn spring-boot:run
+exec mvn spring-boot:run -DskipTests

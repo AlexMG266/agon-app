@@ -11,6 +11,7 @@ import es.udc.agon.backend.rest.dtos.BlockDto;
 import es.udc.agon.backend.rest.dtos.ConfigurarEstructuraParamsDto;
 import es.udc.agon.backend.rest.dtos.CrearTorneoParamsDto;
 import es.udc.agon.backend.rest.dtos.InscribirEquipoParamsDto;
+import es.udc.agon.backend.rest.dtos.JornadaDto;
 import es.udc.agon.backend.rest.dtos.SolicitudDto;
 import es.udc.agon.backend.rest.dtos.TorneoConversor;
 import es.udc.agon.backend.rest.dtos.TorneoDto;
@@ -480,6 +481,12 @@ public class TorneoController {
             throws InstanceNotFoundException, PermissionException, IllegalArgumentException {
 
         torneoService.rechazarInscripcion(userId, solicitudId);
+    }
+
+    @GetMapping("/{id}/jornadas")
+    @ResponseStatus(HttpStatus.OK)
+    public List<JornadaDto> obtenerJornadas(@PathVariable Long id) {
+        return TorneoConversor.toJornadaDtos(torneoService.obtenerJornadas(id));
     }
 
     private SolicitudDto toSolicitudDto(Solicitud solicitud) {

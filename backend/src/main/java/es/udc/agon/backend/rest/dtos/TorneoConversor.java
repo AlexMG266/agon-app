@@ -1,6 +1,7 @@
 package es.udc.agon.backend.rest.dtos;
 
 import es.udc.agon.backend.model.entities.Inscripcion;
+import es.udc.agon.backend.model.entities.Jornada;
 import es.udc.agon.backend.model.entities.Torneo;
 import es.udc.agon.backend.model.services.Block;
 
@@ -78,6 +79,39 @@ public class TorneoConversor {
     public static List<TorneoDto> toTorneoDtos(List<Torneo> torneos) {
         return torneos.stream()
                 .map(TorneoConversor::toTorneoDto)
+                .collect(Collectors.toList());
+    }
+
+    public static JornadaDto toJornadaDto(Jornada jornada) {
+        List<EncuentroDto> encuentroDtos = null;
+        if (jornada.getEncuentros() != null) {
+            encuentroDtos = jornada.getEncuentros().stream().map(enc -> {
+                String estado = enc.getEstadoEncuentro() != null ? enc.getEstadoEncuentro().name() : null;
+                return new EncuentroDto(
+                    enc.getId(),
+                    enc.getLocal() != null ? enc.getLocal().getId() : null,
+                    enc.getLocal() != null ? enc.getLocal().getNombreEquipo() : null,
+                    enc.getVisitante() != null ? enc.getVisitante().getId() : null,
+                    enc.getVisitante() != null ? enc.getVisitante().getNombreEquipo() : null,
+                    estado,
+                    enc.getFechaRealizacion()
+                );
+            }).collect(Collectors.toList());
+        }
+        String tipoFase = jornada.getTipoFase() != null ? jornada.getTipoFase().name() : null;
+        return new JornadaDto(
+            jornada.getId(),
+            jornada.getNumeroJornada(),
+            tipoFase,
+            jornada.getFechaInicio(),
+            jornada.getFechaFin(),
+            encuentroDtos
+        );
+    }
+
+    public static List<JornadaDto> toJornadaDtos(List<Jornada> jornadas) {
+        return jornadas.stream()
+                .map(TorneoConversor::toJornadaDto)
                 .collect(Collectors.toList());
     }
 

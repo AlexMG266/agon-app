@@ -624,4 +624,10 @@ public class TorneoServiceImpl implements TorneoService {
         jornada.setEstado(nuevoEstado);
         jornadaDao.save(jornada);
     }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<Jornada> obtenerJornadas(Long torneoId) {
+        return jornadaDao.findByTorneoIdOrderByNumeroJornadaAsc(torneoId);
+    }
 }
