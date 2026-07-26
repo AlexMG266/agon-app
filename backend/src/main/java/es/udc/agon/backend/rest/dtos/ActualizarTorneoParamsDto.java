@@ -52,6 +52,9 @@ public class ActualizarTorneoParamsDto {
     @Schema(description = "Estrategia de distribución: JORNADAS, UNIFORME, RAPIDO", example = "JORNADAS")
     private String estrategiaDistribucion;
 
+    @Schema(description = "Días de separación entre jornadas (solo para estrategia JORNADAS)", example = "7")
+    private Integer diasEntreJornadas;
+
     public ActualizarTorneoParamsDto() {
     }
 
@@ -101,4 +104,7 @@ public class ActualizarTorneoParamsDto {
 
     public String getEstrategiaDistribucion() { return estrategiaDistribucion; }
     public void setEstrategiaDistribucion(String estrategiaDistribucion) { this.estrategiaDistribucion = estrategiaDistribucion; }
+
+    public Integer getDiasEntreJornadas() { return diasEntreJornadas; }
+    public void setDiasEntreJornadas(Integer diasEntreJornadas) { this.diasEntreJornadas = diasEntreJornadas; }
 }

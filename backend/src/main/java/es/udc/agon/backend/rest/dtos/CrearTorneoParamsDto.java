@@ -13,9 +13,6 @@ public class CrearTorneoParamsDto {
     @Schema(description = "Fecha de inicio (yyyy-MM-dd)", example = "2026-03-01")
     private String fechaInicio;
 
-    @Schema(description = "Fecha de fin (yyyy-MM-dd)", example = "2026-04-30")
-    private String fechaFin;
-
     @Schema(description = "Fecha límite de inscripción (yyyy-MM-dd)", example = "2026-02-20")
     private String fechaLimiteInscripcion;
 
@@ -52,6 +49,9 @@ public class CrearTorneoParamsDto {
     @Schema(description = "Estrategia de distribución: JORNADAS, UNIFORME, RAPIDO", example = "JORNADAS")
     private String estrategiaDistribucion;
 
+    @Schema(description = "Días de separación entre jornadas (solo para estrategia JORNADAS)", example = "7")
+    private Integer diasEntreJornadas;
+
     @Schema(description = "Indica si el torneo es privado (requiere código para inscribirse)", example = "false")
     private Boolean privado;
 
@@ -72,14 +72,6 @@ public class CrearTorneoParamsDto {
 
     public void setFechaInicio(String fechaInicio) {
         this.fechaInicio = fechaInicio;
-    }
-
-    public String getFechaFin() {
-        return fechaFin;
-    }
-
-    public void setFechaFin(String fechaFin) {
-        this.fechaFin = fechaFin;
     }
 
     public String getFechaLimiteInscripcion() {
@@ -176,6 +168,14 @@ public class CrearTorneoParamsDto {
 
     public void setEstrategiaDistribucion(String estrategiaDistribucion) {
         this.estrategiaDistribucion = estrategiaDistribucion;
+    }
+
+    public Integer getDiasEntreJornadas() {
+        return diasEntreJornadas;
+    }
+
+    public void setDiasEntreJornadas(Integer diasEntreJornadas) {
+        this.diasEntreJornadas = diasEntreJornadas;
     }
 
     public Boolean getPrivado() {

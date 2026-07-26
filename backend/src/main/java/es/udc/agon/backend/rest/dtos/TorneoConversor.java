@@ -72,7 +72,10 @@ public class TorneoConversor {
                 torneo.getHoraFin(),
                 torneo.getDuracionPartido(),
                 fechasExcluidasList,
-                torneo.getEstrategiaDistribucion()
+                torneo.getEstrategiaDistribucion(),
+                torneo.getDiasEntreJornadas(),
+                torneo.getEstrategiaPlayoff(),
+                torneo.getDiasEntrePlayoff()
         );
     }
 

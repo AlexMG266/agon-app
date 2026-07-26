@@ -20,6 +20,15 @@ public class ConfigurarEstructuraParamsDto {
     @Schema(description = "Partidos de ida y vuelta en playoffs", example = "false")
     private boolean idaVueltaPlayoff;
 
+    @Schema(description = "Estrategia de distribución para playoffs: RAPIDO, JORNADAS, UNIFORME", example = "RAPIDO")
+    private String estrategiaPlayoff;
+
+    @Schema(description = "Días de separación entre rondas de playoff (solo JORNADAS)", example = "7")
+    private Integer diasEntrePlayoff;
+
+    @Schema(description = "Fecha de fin del torneo (yyyy-MM-dd). Si no se proporciona, se calculará automáticamente", example = "2026-05-15", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
+    private String fechaFin;
+
     public ConfigurarEstructuraParamsDto() {
     }
 
@@ -61,5 +70,29 @@ public class ConfigurarEstructuraParamsDto {
 
     public void setIdaVueltaPlayoff(boolean idaVueltaPlayoff) {
         this.idaVueltaPlayoff = idaVueltaPlayoff;
+    }
+
+    public String getEstrategiaPlayoff() {
+        return estrategiaPlayoff;
+    }
+
+    public void setEstrategiaPlayoff(String estrategiaPlayoff) {
+        this.estrategiaPlayoff = estrategiaPlayoff;
+    }
+
+    public Integer getDiasEntrePlayoff() {
+        return diasEntrePlayoff;
+    }
+
+    public void setDiasEntrePlayoff(Integer diasEntrePlayoff) {
+        this.diasEntrePlayoff = diasEntrePlayoff;
+    }
+
+    public String getFechaFin() {
+        return fechaFin;
+    }
+
+    public void setFechaFin(String fechaFin) {
+        this.fechaFin = fechaFin;
     }
 }

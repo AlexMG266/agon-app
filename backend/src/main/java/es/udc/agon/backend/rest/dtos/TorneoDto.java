@@ -65,6 +65,9 @@ public class TorneoDto {
     private Integer duracionPartido;
     private List<String> fechasExcluidas;
     private String estrategiaDistribucion;
+    private Integer diasEntreJornadas;
+    private String estrategiaPlayoff;
+    private Integer diasEntrePlayoff;
 
     public TorneoDto() {
     }
@@ -78,7 +81,9 @@ public class TorneoDto {
                      Integer puntosVictoria, Integer puntosEmpate, Integer puntosDerrota,
                      String formatoPartidos, String criterioDesempate, List<String> diasDisponibles,
                      String horaInicio, String horaFin, Integer duracionPartido,
-                     List<String> fechasExcluidas, String estrategiaDistribucion) {
+                     List<String> fechasExcluidas, String estrategiaDistribucion,
+                     Integer diasEntreJornadas, String estrategiaPlayoff,
+                     Integer diasEntrePlayoff) {
         this.id = id;
         this.nombre = nombre;
         this.numGrupos = numGrupos;
@@ -107,6 +112,9 @@ public class TorneoDto {
         this.duracionPartido = duracionPartido;
         this.fechasExcluidas = fechasExcluidas;
         this.estrategiaDistribucion = estrategiaDistribucion;
+        this.diasEntreJornadas = diasEntreJornadas;
+        this.estrategiaPlayoff = estrategiaPlayoff;
+        this.diasEntrePlayoff = diasEntrePlayoff;
     }
 
     // Getters y setters
@@ -194,4 +202,13 @@ public class TorneoDto {
 
     public String getEstrategiaDistribucion() { return estrategiaDistribucion; }
     public void setEstrategiaDistribucion(String estrategiaDistribucion) { this.estrategiaDistribucion = estrategiaDistribucion; }
+
+    public Integer getDiasEntreJornadas() { return diasEntreJornadas; }
+    public void setDiasEntreJornadas(Integer diasEntreJornadas) { this.diasEntreJornadas = diasEntreJornadas; }
+
+    public String getEstrategiaPlayoff() { return estrategiaPlayoff; }
+    public void setEstrategiaPlayoff(String estrategiaPlayoff) { this.estrategiaPlayoff = estrategiaPlayoff; }
+
+    public Integer getDiasEntrePlayoff() { return diasEntrePlayoff; }
+    public void setDiasEntrePlayoff(Integer diasEntrePlayoff) { this.diasEntrePlayoff = diasEntrePlayoff; }
 }
