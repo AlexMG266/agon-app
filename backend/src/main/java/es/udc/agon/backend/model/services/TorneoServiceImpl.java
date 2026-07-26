@@ -13,8 +13,12 @@ import java.security.SecureRandom;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -382,9 +386,9 @@ public class TorneoServiceImpl implements TorneoService {
             throw new IllegalArgumentException("El torneo ya tiene un calendario generado");
         }
 
-        LocalDate fechaInicio = LocalDate.now().plusDays(7);
-        int numeroJornada = 1;
-
+        // Preparar los equipos de cada grupo y calcular el numero maximo de rondas
+        Map<Grupo, List<Inscripcion>> gruposConEquipos = new LinkedHashMap<>();
+        int maxRondas = 0;
         for (Grupo grupo : grupos) {
             List<Inscripcion> inscripcionesGrupo = new ArrayList<>();
             for (Inscripcion ins : inscripciones) {
@@ -393,32 +397,131 @@ public class TorneoServiceImpl implements TorneoService {
                 }
             }
             int numEquiposGrupo = inscripcionesGrupo.size();
-
-            if (numEquiposGrupo < 2) continue;
-
-            // algoritmo round-robin: cada equipo juega contra todos los demas una vez
-            for (int ronda = 0; ronda < numEquiposGrupo - 1; ronda++) {
-                Jornada jornada = new Jornada(torneo, numeroJornada, TipoFase.LIGA_GRUPO,
-                        TipoJornada.LIGA_4_SETS, fechaInicio, fechaInicio.plusDays(6));
-
-                for (int i = 0; i < numEquiposGrupo / 2; i++) {
-                    int idxLocal = (ronda + i) % (numEquiposGrupo - 1);
-                    int idxVisitante = (numEquiposGrupo - 1 - i + ronda) % (numEquiposGrupo - 1);
-                    if (i == 0) {
-                        idxVisitante = numEquiposGrupo - 1;
-                    }
-
-                    Equipo equipoLocal = inscripcionesGrupo.get(idxLocal).getEquipo();
-                    Equipo equipoVisitante = inscripcionesGrupo.get(idxVisitante).getEquipo();
-                    Encuentro encuentro = new Encuentro(jornada, equipoLocal, equipoVisitante,
-                            fechaInicio.atStartOfDay());
-                    jornada.getEncuentros().add(encuentro);
-                }
-
-                jornadaDao.save(jornada);
-                numeroJornada++;
-                fechaInicio = fechaInicio.plusWeeks(1);
+            if (numEquiposGrupo >= 2) {
+                gruposConEquipos.put(grupo, inscripcionesGrupo);
+                maxRondas = Math.max(maxRondas, numEquiposGrupo - 1);
             }
+        }
+
+        // Leer configuracion de calendario del torneo
+        LocalDate calFechaInicio = torneo.getFechaInicio() != null
+                ? torneo.getFechaInicio() : LocalDate.now().plusDays(7);
+        LocalDate calFechaFin = torneo.getFechaFin();
+        String[] diasDisponibles = torneo.getDiasDisponibles() != null
+                ? torneo.getDiasDisponibles().split(",") : new String[]{"L","M","X","J","V","S","D"};
+        Set<String> diasSet = new HashSet<>(Arrays.asList(diasDisponibles));
+        Set<LocalDate> fechasExcluidasSet = new HashSet<>();
+        if (torneo.getFechasExcluidas() != null && !torneo.getFechasExcluidas().isEmpty()) {
+            for (String fechaStr : torneo.getFechasExcluidas().split(",")) {
+                fechasExcluidasSet.add(LocalDate.parse(fechaStr.trim()));
+            }
+        }
+        int horaInicioMinutos = torneo.getHoraInicio() != null
+                ? Integer.parseInt(torneo.getHoraInicio().split(":")[0]) * 60
+                  + Integer.parseInt(torneo.getHoraInicio().split(":")[1])
+                : 16 * 60; // default 16:00
+        int horaFinMinutos = torneo.getHoraFin() != null
+                ? Integer.parseInt(torneo.getHoraFin().split(":")[0]) * 60
+                  + Integer.parseInt(torneo.getHoraFin().split(":")[1])
+                : 22 * 60; // default 22:00
+        int duracionPartidoMinutos = torneo.getDuracionPartido() != null
+                ? torneo.getDuracionPartido() : 60;
+
+        // Mapa de clave de dia a DayOfWeek
+        Map<String, java.time.DayOfWeek> dayMap = new HashMap<>();
+        dayMap.put("L", java.time.DayOfWeek.MONDAY);
+        dayMap.put("M", java.time.DayOfWeek.TUESDAY);
+        dayMap.put("X", java.time.DayOfWeek.WEDNESDAY);
+        dayMap.put("J", java.time.DayOfWeek.THURSDAY);
+        dayMap.put("V", java.time.DayOfWeek.FRIDAY);
+        dayMap.put("S", java.time.DayOfWeek.SATURDAY);
+        dayMap.put("D", java.time.DayOfWeek.SUNDAY);
+
+        Set<java.time.DayOfWeek> diasSemana = new HashSet<>();
+        for (String d : diasSet) {
+            java.time.DayOfWeek dow = dayMap.get(d);
+            if (dow != null) diasSemana.add(dow);
+        }
+
+        int numeroJornada = 1;
+        int maxEncuentrosPorDia = 0;
+        for (Map.Entry<Grupo, List<Inscripcion>> entry : gruposConEquipos.entrySet()) {
+            int numEquiposGrupo = entry.getValue().size();
+            int encuentrosPorRonda = numEquiposGrupo / 2;
+            maxEncuentrosPorDia += encuentrosPorRonda;
+        }
+
+        // Para cada ronda global, crear UNA jornada con partidos de TODOS los grupos
+        for (int ronda = 0; ronda < maxRondas; ronda++) {
+            // Encontrar el siguiente dia disponible que cumpla las condiciones
+            LocalDate fechaJornada = null;
+            LocalDate probe = (ronda == 0) ? calFechaInicio : calFechaInicio;
+
+            // Si no es la primera ronda, buscar desde el dia siguiente a la ultima fecha usada
+            // (esto se maneja avanzando el probe despues de cada ronda)
+
+            // Recorrer desde calFechaInicio hacia adelante buscando un dia valido
+            int maxIter = 365; // safety limit
+            int iter = 0;
+            LocalDate searchDate = calFechaInicio;
+            while (iter < maxIter) {
+                if (calFechaFin != null && searchDate.isAfter(calFechaFin)) {
+                    break;
+                }
+                if (diasSemana.contains(searchDate.getDayOfWeek()) && !fechasExcluidasSet.contains(searchDate)) {
+                    fechaJornada = searchDate;
+                    break;
+                }
+                searchDate = searchDate.plusDays(1);
+                iter++;
+            }
+
+            if (fechaJornada == null) {
+                // No hay dias disponibles dentro del rango, saltamos esta ronda
+                break;
+            }
+
+            Jornada jornada = new Jornada(torneo, numeroJornada, TipoFase.LIGA_GRUPO,
+                    TipoJornada.LIGA_4_SETS, fechaJornada, fechaJornada);
+
+            int slotActual = 0;
+            for (Map.Entry<Grupo, List<Inscripcion>> entry : gruposConEquipos.entrySet()) {
+                List<Inscripcion> inscripcionesGrupo = entry.getValue();
+                int numEquiposGrupo = inscripcionesGrupo.size();
+
+                if (ronda < numEquiposGrupo - 1) {
+                    for (int i = 0; i < numEquiposGrupo / 2; i++) {
+                        int idxLocal = (ronda + i) % (numEquiposGrupo - 1);
+                        int idxVisitante = (numEquiposGrupo - 1 - i + ronda) % (numEquiposGrupo - 1);
+                        if (i == 0) {
+                            idxVisitante = numEquiposGrupo - 1;
+                        }
+
+                        Equipo equipoLocal = inscripcionesGrupo.get(idxLocal).getEquipo();
+                        Equipo equipoVisitante = inscripcionesGrupo.get(idxVisitante).getEquipo();
+
+                        // Calcular hora del encuentro
+                        int minutosInicio = horaInicioMinutos + slotActual * duracionPartidoMinutos;
+                        if (minutosInicio + duracionPartidoMinutos > horaFinMinutos) {
+                            minutosInicio = horaInicioMinutos;
+                        }
+                        LocalDateTime fechaHoraEncuentro = fechaJornada.atTime(
+                                minutosInicio / 60, minutosInicio % 60);
+
+                        Encuentro encuentro = new Encuentro(jornada, equipoLocal, equipoVisitante,
+                                fechaHoraEncuentro);
+                        jornada.getEncuentros().add(encuentro);
+                        slotActual++;
+                    }
+                }
+            }
+
+            if (!jornada.getEncuentros().isEmpty()) {
+                jornadaDao.save(jornada);
+            }
+            numeroJornada++;
+            // Avanzar al dia siguiente para la proxima ronda
+            calFechaInicio = fechaJornada.plusDays(1);
         }
 
         // cambiar estado a FASE_GRUPOS
