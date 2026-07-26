@@ -1039,6 +1039,14 @@
     margin-bottom: 0.75rem;
 }
 
+.td-partidos-grupo-section {
+    margin-bottom: 1.25rem;
+}
+
+.td-partidos-grupo-section:last-child {
+    margin-bottom: 0;
+}
+
 .td-partidos-grid {
     display: grid;
     grid-template-columns: 1fr 1fr;

@@ -305,6 +305,7 @@ const TournamentDetail = () => {
             if (response.ok) {
                 setConfigSuccess(true);
                 loadTournament();
+                loadJornadas();
             } else {
                 setBackendErrors(response.error);
             }
@@ -777,68 +778,153 @@ const TournamentDetail = () => {
                     ) : jornadas.length > 0 ? (
                         <>
                             <div className="td-partidos-nav">
-                                <button className="td-partidos-nav-btn"
-                                    disabled={currentJornadaIdx <= 0}
-                                    onClick={() => setCurrentJornadaIdx(prev => prev - 1)}>
-                                    <i className="fa-regular fa-chevron-left" />
-                                </button>
-                                <div className="td-partidos-nav-info">
-                                    <span className="td-partidos-nav-label">
-                                        <FormattedMessage id="project.tournaments.Detail.partidos.jornada" defaultMessage="Jornada" /> {jornadas[currentJornadaIdx].numeroJornada}
-                                    </span>
-                                    <span className="td-partidos-nav-phase">
-                                        {jornadas[currentJornadaIdx].tipoFase}
-                                    </span>
-                                </div>
-                                <button className="td-partidos-nav-btn"
-                                    disabled={currentJornadaIdx >= jornadas.length - 1}
-                                    onClick={() => setCurrentJornadaIdx(prev => prev + 1)}>
-                                    <i className="fa-regular fa-chevron-right" />
-                                </button>
+                                <select
+                                    className="td-partidos-jornada-select"
+                                    value={currentJornadaIdx}
+                                    onChange={e => setCurrentJornadaIdx(Number(e.target.value))}
+                                >
+                                    {jornadas.map((j, idx) => (
+                                        <option key={j.id} value={idx}>
+                                            {intl.formatMessage({ id: 'project.tournaments.Detail.partidos.jornada', defaultMessage: 'Jornada' })} {j.numeroJornada} - {j.tipoFase}
+                                        </option>
+                                    ))}
+                                </select>
                             </div>
-                            {jornadas[currentJornadaIdx].encuentros && jornadas[currentJornadaIdx].encuentros.length > 0 ? (
-                                <div className="td-partidos-grid">
-                                    {jornadas[currentJornadaIdx].encuentros.map(enc => {
-                                        const fecha = enc.fechaRealizacion ? new Date(enc.fechaRealizacion) : null;
-                                        const fechaStr = fecha ? fecha.toLocaleDateString('es-ES', { day: 'numeric', month: 'short', year: 'numeric' }) : '';
-                                        const horaStr = fecha ? fecha.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' }) : '';
-                                        return (
-                                            <div key={enc.id} className="td-partido-card">
-                                                <div className="td-partido-card-teams">
-                                                    <div className="td-partido-card-team">
-                                                        <span className="td-partido-card-team-name">{enc.equipoLocalNombre}</span>
-                                                    </div>
-                                                    <div className="td-partido-card-vs">
-                                                        <span className="td-partido-card-vs-text">VS</span>
-                                                    </div>
-                                                    <div className="td-partido-card-team td-partido-card-team--away">
-                                                        <span className="td-partido-card-team-name">{enc.equipoVisitanteNombre}</span>
-                                                    </div>
+                            {(() => {
+                                const currentJornada = jornadas[currentJornadaIdx];
+                                const encuentros = currentJornada.encuentros || [];
+
+                                // Build equipo -> grupo mapping from tournament.inscripciones
+                                const equipoGrupoMap = {};
+                                if (tournament.inscripciones) {
+                                    tournament.inscripciones.forEach(insc => {
+                                        if (insc.grupoId && insc.grupoNombre) {
+                                            equipoGrupoMap[insc.equipoId] = { grupoId: insc.grupoId, grupoNombre: insc.grupoNombre };
+                                        }
+                                    });
+                                }
+
+                                // Group encuentros by grupo
+                                const gruposMap = {};
+                                const sinGrupo = [];
+                                encuentros.forEach(enc => {
+                                    const grupoInfo = equipoGrupoMap[enc.equipoLocalId] || equipoGrupoMap[enc.equipoVisitanteId];
+                                    if (grupoInfo) {
+                                        const key = grupoInfo.grupoId;
+                                        if (!gruposMap[key]) {
+                                            gruposMap[key] = { grupoId: grupoInfo.grupoId, grupoNombre: grupoInfo.grupoNombre, encuentros: [] };
+                                        }
+                                        gruposMap[key].encuentros.push(enc);
+                                    } else {
+                                        sinGrupo.push(enc);
+                                    }
+                                });
+
+                                const gruposList = Object.values(gruposMap).sort((a, b) => a.grupoId - b.grupoId);
+
+                                if (encuentros.length === 0) {
+                                    return (
+                                        <div className="td-empty-state">
+                                            <p className="td-empty-state-text">
+                                                <FormattedMessage id="project.tournaments.Detail.partidos.noEncuentros" defaultMessage="No hay encuentros en esta jornada." />
+                                            </p>
+                                        </div>
+                                    );
+                                }
+
+                                return (
+                                    <>
+                                        {/* Render each grupo as a subsection */}
+                                        {gruposList.map(grupo => (
+                                            <div key={grupo.grupoId} className="td-partidos-grupo-section">
+                                                <div className="td-partidos-jornada-label">
+                                                    <i className="fa-regular fa-layer-group me-1" />
+                                                    {grupo.grupoNombre}
                                                 </div>
-                                                <div className="td-partido-card-meta">
-                                                    {fecha && (
-                                                        <span className="td-partido-card-datetime">
-                                                            <i className="fa-regular fa-calendar me-1" />{fechaStr}
-                                                            <span className="td-partido-card-time ms-2"><i className="fa-regular fa-clock me-1" />{horaStr}</span>
-                                                        </span>
-                                                    )}
-                                                    {enc.estado && (
-                                                        <span className={`td-partido-card-badge ${enc.estado === 'FINALIZADO' ? 'td-badge--finished' : enc.estado === 'EN_CURSO' ? 'td-badge--groups' : ''}`}>
-                                                            {enc.estado}
-                                                        </span>
-                                                    )}
+                                                <div className="td-partidos-grid">
+                                                    {grupo.encuentros.map(enc => {
+                                                        const fecha = enc.fechaRealizacion ? new Date(enc.fechaRealizacion) : null;
+                                                        const fechaStr = fecha ? fecha.toLocaleDateString('es-ES', { day: 'numeric', month: 'short', year: 'numeric' }) : '';
+                                                        const horaStr = fecha ? fecha.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' }) : '';
+                                                        return (
+                                                            <div key={enc.id} className="td-partido-card">
+                                                                <div className="td-partido-card-teams">
+                                                                    <div className="td-partido-card-team">
+                                                                        <span className="td-partido-card-team-name">{enc.equipoLocalNombre}</span>
+                                                                    </div>
+                                                                    <div className="td-partido-card-vs">
+                                                                        <span className="td-partido-card-vs-text">VS</span>
+                                                                    </div>
+                                                                    <div className="td-partido-card-team td-partido-card-team--away">
+                                                                        <span className="td-partido-card-team-name">{enc.equipoVisitanteNombre}</span>
+                                                                    </div>
+                                                                </div>
+                                                                <div className="td-partido-card-meta">
+                                                                    {fecha && (
+                                                                        <span className="td-partido-card-datetime">
+                                                                            <i className="fa-regular fa-calendar me-1" />{fechaStr}
+                                                                            <span className="td-partido-card-time ms-2"><i className="fa-regular fa-clock me-1" />{horaStr}</span>
+                                                                        </span>
+                                                                    )}
+                                                                    {enc.estado && (
+                                                                        <span className={`td-partido-card-badge ${enc.estado === 'FINALIZADO' ? 'td-badge--finished' : enc.estado === 'EN_CURSO' ? 'td-badge--groups' : ''}`}>
+                                                                            {enc.estado}
+                                                                        </span>
+                                                                    )}
+                                                                </div>
+                                                            </div>
+                                                        );
+                                                    })}
                                                 </div>
                                             </div>
-                                        );
-                                    })}
-                                </div>
-                            ) : (
-                                <div className="td-empty-state">
-                                    <p className="td-empty-state-text">
-                                        <FormattedMessage id="project.tournaments.Detail.partidos.noEncuentros" defaultMessage="No hay encuentros en esta jornada." />
-                                    </p>
-                                </div>
-                            )}
+                                        ))}
+                                        {/* Render encounters without grupo at the end */}
+                                        {sinGrupo.length > 0 && (
+                                            <div className="td-partidos-grupo-section">
+                                                <div className="td-partidos-jornada-label">
+                                                    <i className="fa-regular fa-circle me-1" />
+                                                    <FormattedMessage id="project.tournaments.Detail.partidos.sinGrupo" defaultMessage="Sin grupo" />
+                                                </div>
+                                                <div className="td-partidos-grid">
+                                                    {sinGrupo.map(enc => {
+                                                        const fecha = enc.fechaRealizacion ? new Date(enc.fechaRealizacion) : null;
+                                                        const fechaStr = fecha ? fecha.toLocaleDateString('es-ES', { day: 'numeric', month: 'short', year: 'numeric' }) : '';
+                                                        const horaStr = fecha ? fecha.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' }) : '';
+                                                        return (
+                                                            <div key={enc.id} className="td-partido-card">
+                                                                <div className="td-partido-card-teams">
+                                                                    <div className="td-partido-card-team">
+                                                                        <span className="td-partido-card-team-name">{enc.equipoLocalNombre}</span>
+                                                                    </div>
+                                                                    <div className="td-partido-card-vs">
+                                                                        <span className="td-partido-card-vs-text">VS</span>
+                                                                    </div>
+                                                                    <div className="td-partido-card-team td-partido-card-team--away">
+                                                                        <span className="td-partido-card-team-name">{enc.equipoVisitanteNombre}</span>
+                                                                    </div>
+                                                                </div>
+                                                                <div className="td-partido-card-meta">
+                                                                    {fecha && (
+                                                                        <span className="td-partido-card-datetime">
+                                                                            <i className="fa-regular fa-calendar me-1" />{fechaStr}
+                                                                            <span className="td-partido-card-time ms-2"><i className="fa-regular fa-clock me-1" />{horaStr}</span>
+                                                                        </span>
+                                                                    )}
+                                                                    {enc.estado && (
+                                                                        <span className={`td-partido-card-badge ${enc.estado === 'FINALIZADO' ? 'td-badge--finished' : enc.estado === 'EN_CURSO' ? 'td-badge--groups' : ''}`}>
+                                                                            {enc.estado}
+                                                                        </span>
+                                                                    )}
+                                                                </div>
+                                                            </div>
+                                                        );
+                                                    })}
+                                                </div>
+                                            </div>
+                                        )}
+                                    </>
+                                );
+                            })()}
                         </>
                     ) : (
                         <div className="td-empty-state">
