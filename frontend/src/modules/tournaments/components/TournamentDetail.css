@@ -772,23 +772,17 @@
     background: rgba(255, 255, 255, 0.6);
     border: 1px solid rgba(0, 0, 0, 0.06);
     border-radius: 16px;
-    padding: 0;
+    padding: 0.75rem 1rem;
     transition: box-shadow 0.2s ease, border-color 0.2s ease;
-    overflow: hidden;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 0.65rem;
 }
 
 .td-teams-card:hover {
     border-color: rgba(0, 0, 0, 0.1);
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
-}
-
-.td-teams-card-header {
-    display: flex;
-    align-items: center;
-    gap: 0.65rem;
-    padding: 0.85rem 1rem;
-    border-bottom: 1px solid rgba(0, 0, 0, 0.04);
-    background: rgba(0, 0, 0, 0.02);
 }
 
 .td-teams-card-icon {
@@ -804,86 +798,11 @@
     color: #495057;
 }
 
-.td-teams-card-header-info {
-    flex: 1;
-    min-width: 0;
-    display: flex;
-    flex-direction: column;
-    gap: 0.1rem;
-}
-
 .td-teams-card-name {
     font-size: 0.9rem;
     font-weight: 600;
     color: #1a1a1a;
     line-height: 1.2;
-}
-
-.td-teams-card-meta {
-    font-size: 0.7rem;
-    color: #8c8c8c;
-}
-
-.td-teams-card-body {
-    padding: 0.65rem 1rem 0.85rem;
-}
-
-.td-teams-card-members {
-    display: flex;
-    flex-direction: column;
-    gap: 0.4rem;
-}
-
-.td-teams-card-member {
-    display: flex;
-    align-items: center;
-    gap: 0.55rem;
-    padding: 0.3rem 0.4rem;
-    border-radius: 10px;
-    transition: background 0.15s ease;
-}
-
-.td-teams-card-member:hover {
-    background: rgba(0, 0, 0, 0.03);
-}
-
-.td-teams-card-member .profile-avatar-image,
-.td-teams-card-member .profile-avatar-placeholder {
-    width: 28px !important;
-    height: 28px !important;
-    font-size: 12px !important;
-    border-radius: 50%;
-    flex-shrink: 0;
-}
-
-.td-teams-card-member-info {
-    flex: 1;
-    min-width: 0;
-}
-
-.td-teams-card-member-name-row {
-    display: flex;
-    align-items: center;
-    gap: 0.4rem;
-}
-
-.td-teams-card-member-name {
-    font-size: 0.8rem;
-    font-weight: 500;
-    color: #1a1a1a;
-}
-
-.td-teams-card-member-info .td-elo {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.18rem;
-    font-size: 0.55rem;
-    font-weight: 600;
-    padding: 0.06rem 0.35rem;
-    border-radius: 50px;
-    background: #f1f3f5;
-    color: #6e6e73;
-    line-height: 1.35;
 }
 
 .td-teams-card-member-info .td-elo.high {

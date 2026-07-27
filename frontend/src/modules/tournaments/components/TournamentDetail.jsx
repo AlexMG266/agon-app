@@ -9,7 +9,7 @@ import Col from 'react-bootstrap/Col';
 import Spinner from 'react-bootstrap/Spinner';
 import { useSelector } from 'react-redux';
 import { Errors, Success } from '../../common';
-import ProfileAvatar from '../../common/components/ProfileAvatar';
+import TeamInfoModal from '../../teams/components/TeamInfoModal';
 import users from '../../users';
 import backend from '../../../backend';
 import './TournamentDetail.css';
@@ -68,6 +68,8 @@ const TournamentDetail = () => {
     const carouselRef = useRef(null);
     const [pendingRequests, setPendingRequests] = useState([]);
     const [loadingRequests, setLoadingRequests] = useState(false);
+    const [showTeamModal, setShowTeamModal] = useState(false);
+    const [modalEquipoId, setModalEquipoId] = useState(null);
     const [processingRequestId, setProcessingRequestId] = useState(null);
     const [isFollowing, setIsFollowing] = useState(false);
     const [followLoading, setFollowLoading] = useState(false);
@@ -205,7 +207,8 @@ const TournamentDetail = () => {
                 setEnrollRequestSent(team ? team.nombreEquipo : '');
                 setSelectedTeamId('');
             } else {
-                setBackendErrors(response.error || 'Error al solicitar inscripción');
+                const errorMsg = response.payload?.message || response.error || (typeof response.payload === 'string' ? response.payload : 'Error al solicitar inscripción');
+                setBackendErrors(errorMsg);
             }
         } catch (err) {
             setBackendErrors(err.message || 'Error al solicitar inscripción');
@@ -483,6 +486,7 @@ const TournamentDetail = () => {
     );
 
     return (
+        <>
         <div className="td-container">
             <Errors errors={backendErrors} onClose={() => setBackendErrors(null)} />
 
@@ -821,44 +825,18 @@ const TournamentDetail = () => {
                     {tournament.inscripciones && tournament.inscripciones.length > 0 ? (
                         <div className="td-teams-grid">
                             {tournament.inscripciones.map(insc => (
-                                <div key={insc.equipoId} className="td-teams-card">
-                                    <div className="td-teams-card-header">
-                                        <div className="td-teams-card-icon">
-                                            <i className="fa-regular fa-shield-halved" />
-                                        </div>
-                                        <div className="td-teams-card-header-info">
-                                            <div className="td-teams-card-name">{insc.nombreEquipo}</div>
-                                            <div className="td-teams-card-meta">{insc.miembros ? insc.miembros.length : 1} {insc.miembros && insc.miembros.length === 1 ? 'miembro' : 'miembros'}</div>
-                                        </div>
+                                <div
+                                    key={insc.equipoId}
+                                    className="td-teams-card"
+                                    onClick={() => {
+                                        setModalEquipoId(insc.equipoId);
+                                        setShowTeamModal(true);
+                                    }}
+                                >
+                                    <div className="td-teams-card-icon">
+                                        <i className="fa-regular fa-shield-halved" />
                                     </div>
-                                    <div className="td-teams-card-body">
-                                        <div className="td-teams-card-members">
-                                            {insc.miembros && insc.miembros.length > 0 ? (
-                                                insc.miembros.map((m, i) => (
-                                                    <div key={i} className="td-teams-card-member">
-                                                        <ProfileAvatar
-                                                            imageUrl={m.imagenPerfil}
-                                                            name={m.nombre}
-                                                            size={28}
-                                                        />
-                                                        <div className="td-teams-card-member-info">
-                                                            <div className="td-teams-card-member-name-row">
-                                                                <span className="td-teams-card-member-name">{m.nombre}</span>
-                                                                <span className={`td-elo ${m.elo >= 1500 ? 'high' : ''}`}>
-                                                                    <i className="fa-solid fa-bolt" />
-                                                                    {m.elo}{m.eloProvisional && <span className="td-elo-provisional">*</span>}
-                                                                </span>
-                                                            </div>
-                                                        </div>
-                                                    </div>
-                                                ))
-                                            ) : (
-                                                <div className="td-teams-card-member td-teams-card-member--empty">
-                                                    <FormattedMessage id="project.tournaments.Detail.teams.noMembers" defaultMessage="Sin miembros" />
-                                                </div>
-                                            )}
-                                        </div>
-                                    </div>
+                                    <div className="td-teams-card-name">{insc.nombreEquipo}</div>
                                 </div>
                             ))}
                         </div>
@@ -1460,6 +1438,17 @@ const TournamentDetail = () => {
                 </div>
             )}
         </div>
+
+        {/* Modal de información del equipo */}
+        <TeamInfoModal
+            show={showTeamModal}
+            equipoId={modalEquipoId}
+            onHide={() => {
+                setShowTeamModal(false);
+                setModalEquipoId(null);
+            }}
+        />
+        </>
     );
 };
 
