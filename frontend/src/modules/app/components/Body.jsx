@@ -5,7 +5,7 @@ import { FormattedMessage } from 'react-intl';
 import AppGlobalComponents from './AppGlobalComponents';
 import Home from './Home';
 import { Login, SignUp, Profile, Logout, Notifications } from '../../users';
-import { CreateTeam, TeamDetail, JoinTeam } from '../../teams';
+import { CreateTeam, TeamDetail, TeamInfo, JoinTeam } from '../../teams';
 import { CreateTournament, TournamentDetail, BrowseTournaments } from '../../tournaments';
 import MyTournaments from '../../tournaments/components/MyTournaments';
 import MyTeams from '../../teams/components/MyTeams';
@@ -96,6 +96,7 @@ const Body = () => {
                     {loggedIn && <Route path="/teams/my" element={<MyTeams />} />}
                     {loggedIn && <Route path="/teams/create" element={<CreateTeam />} />}
                     {loggedIn && <Route path="/teams/view/:id" element={<TeamDetail />} />}
+                    {loggedIn && <Route path="/teams/info/:id" element={<TeamInfo />} />}
                     {loggedIn && <Route path="/teams/join" element={<JoinTeam />} />}
                     {loggedIn && <Route path="/tournaments/my" element={<MyTournaments />} />}
                     {loggedIn && <Route path="/tournaments/create" element={<CreateTournament />} />}
