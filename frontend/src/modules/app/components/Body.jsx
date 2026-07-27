@@ -1,4 +1,5 @@
 // src/modules/app/components/Body.jsx
+import { useState, useCallback } from 'react';
 import { useSelector } from 'react-redux';
 import { Route, Routes, NavLink, useLocation } from 'react-router';
 import { FormattedMessage } from 'react-intl';
@@ -14,23 +15,38 @@ import NotFoundPage from '../../common/components/NotFoundPage';
 import users from '../../users';
 import './Body.css';
 
+const SIDEBAR_STORAGE_KEY = 'agon_sidebar_collapsed';
+
 const Body = () => {
     const loggedIn = useSelector(users.selectors.isLoggedIn);
     const location = useLocation();
 
+    const [collapsed, setCollapsed] = useState(() => {
+        const saved = localStorage.getItem(SIDEBAR_STORAGE_KEY);
+        return saved === 'true';
+    });
+
+    const toggleSidebar = useCallback(() => {
+        setCollapsed(prev => {
+            const next = !prev;
+            localStorage.setItem(SIDEBAR_STORAGE_KEY, String(next));
+            return next;
+        });
+    }, []);
+
     const isNotificationRoute = location.pathname.startsWith('/users/notifications');
 
     return (
-        <div className="main-layout-wrapper">
+        <div className={`main-layout-wrapper ${collapsed ? 'sidebar-collapsed' : ''}`}>
             <AppGlobalComponents />
 
             {loggedIn && (
-                <aside className="app-sidebar">
+                <aside className={`app-sidebar ${collapsed ? 'collapsed' : ''}`}>
                     <div className="sidebar-group">
                         <span className="sidebar-title"><FormattedMessage id="project.app.sidebar.competition" defaultMessage="Competición" /></span>
                         <NavLink to="/" className={({ isActive }) => `sidebar-link ${isActive ? 'active' : ''}`} end>
                             <i className="fa-solid fa-chart-simple"></i>
-                            <span><FormattedMessage id="project.app.sidebar.dashboard" defaultMessage="Panel Principal" /></span>
+                            <span className="sidebar-label"><FormattedMessage id="project.app.sidebar.dashboard" defaultMessage="Panel Principal" /></span>
                         </NavLink>
                     </div>
 
@@ -38,11 +54,11 @@ const Body = () => {
                         <span className="sidebar-title"><FormattedMessage id="project.app.sidebar.myTeams" defaultMessage="Equipos" /></span>
                         <NavLink to="/teams/my" className={({ isActive }) => `sidebar-link ${isActive ? 'active' : ''}`}>
                             <i className="fa-solid fa-users"></i>
-                            <span><FormattedMessage id="project.app.sidebar.myTeams" defaultMessage="Equipos" /></span>
+                            <span className="sidebar-label"><FormattedMessage id="project.app.sidebar.myTeams" defaultMessage="Equipos" /></span>
                         </NavLink>
                         <NavLink to="/teams/create" className={({ isActive }) => `sidebar-link ${isActive ? 'active' : ''}`}>
                             <i className="fa-solid fa-plus"></i>
-                            <span><FormattedMessage id="project.app.sidebar.createTeam" defaultMessage="Crear equipo" /></span>
+                            <span className="sidebar-label"><FormattedMessage id="project.app.sidebar.createTeam" defaultMessage="Crear equipo" /></span>
                         </NavLink>
                     </div>
 
@@ -50,15 +66,15 @@ const Body = () => {
                         <span className="sidebar-title"><FormattedMessage id="project.app.sidebar.myTournaments" defaultMessage="Torneos" /></span>
                         <NavLink to="/tournaments/browse" className={({ isActive }) => `sidebar-link ${isActive ? 'active' : ''}`}>
                             <i className="fa-solid fa-compass"></i>
-                            <span><FormattedMessage id="project.app.sidebar.browseTournaments" defaultMessage="Explorar" /></span>
+                            <span className="sidebar-label"><FormattedMessage id="project.app.sidebar.browseTournaments" defaultMessage="Explorar" /></span>
                         </NavLink>
                         <NavLink to="/tournaments/my" className={({ isActive }) => `sidebar-link ${isActive ? 'active' : ''}`}>
                             <i className="fa-solid fa-trophy"></i>
-                            <span><FormattedMessage id="project.app.sidebar.myTournaments" defaultMessage="Mis Torneos" /></span>
+                            <span className="sidebar-label"><FormattedMessage id="project.app.sidebar.myTournaments" defaultMessage="Mis Torneos" /></span>
                         </NavLink>
                         <NavLink to="/tournaments/create" className={({ isActive }) => `sidebar-link ${isActive ? 'active' : ''}`}>
                             <i className="fa-solid fa-plus"></i>
-                            <span><FormattedMessage id="project.app.sidebar.createTournament" defaultMessage="Crear torneo" /></span>
+                            <span className="sidebar-label"><FormattedMessage id="project.app.sidebar.createTournament" defaultMessage="Crear torneo" /></span>
                         </NavLink>
                     </div>
 
@@ -66,7 +82,7 @@ const Body = () => {
                         <span className="sidebar-title"><FormattedMessage id="project.app.sidebar.alertCenter" defaultMessage="Centro de Alertas" /></span>
                         <NavLink to="/users/notifications" className={({ isActive }) => `sidebar-link ${isActive ? 'active' : ''}`}>
                             <i className="fa-solid fa-bell"></i>
-                            <span><FormattedMessage id="project.app.sidebar.notifications" defaultMessage="Notificaciones" /></span>
+                            <span className="sidebar-label"><FormattedMessage id="project.app.sidebar.notifications" defaultMessage="Notificaciones" /></span>
                         </NavLink>
                     </div>
 
@@ -74,13 +90,25 @@ const Body = () => {
                         <span className="sidebar-title"><FormattedMessage id="project.app.sidebar.account" defaultMessage="Cuenta" /></span>
                         <NavLink to="/users/profile" className={({ isActive }) => `sidebar-link ${isActive ? 'active' : ''}`}>
                             <i className="fa-solid fa-user-gear"></i>
-                            <span><FormattedMessage id="project.app.sidebar.profileSettings" defaultMessage="Ajustes de Perfil" /></span>
+                            <span className="sidebar-label"><FormattedMessage id="project.app.sidebar.profileSettings" defaultMessage="Ajustes de Perfil" /></span>
                         </NavLink>
                         <NavLink to="/users/logout" className="sidebar-link text-danger-hover">
                             <i className="fa-solid fa-arrow-right-from-bracket"></i>
-                            <span><FormattedMessage id="project.app.sidebar.logout" defaultMessage="Cerrar Sesión" /></span>
+                            <span className="sidebar-label"><FormattedMessage id="project.app.sidebar.logout" defaultMessage="Cerrar Sesión" /></span>
                         </NavLink>
                     </div>
+
+                    <button
+                        className="sidebar-collapse-btn"
+                        onClick={toggleSidebar}
+                        title={collapsed ? 'Expandir sidebar' : 'Colapsar sidebar'}
+                        aria-label={collapsed ? 'Expandir sidebar' : 'Colapsar sidebar'}
+                    >
+                        <i className={`fa-solid fa-chevron-left ${collapsed ? 'rotated' : ''}`}></i>
+                        <span className="sidebar-label">
+                            <FormattedMessage id="project.app.sidebar.collapse" defaultMessage="Colapsar" />
+                        </span>
+                    </button>
                 </aside>
             )}
 

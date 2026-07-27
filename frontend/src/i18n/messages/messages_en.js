@@ -47,6 +47,7 @@ export default {
     'project.app.sidebar.notifications': 'Notifications',
     'project.app.sidebar.account': 'Account',
     'project.app.sidebar.profileSettings': 'Profile Settings',
+    'project.app.sidebar.collapse': 'Collapse',
     'project.app.sidebar.logout': 'Logout',
 
     'project.common.ErrorDialog.title': 'Error',
