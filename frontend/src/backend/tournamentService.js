@@ -54,6 +54,11 @@ export const getPendingRequests = async (tournamentId) => {
     return await appFetch('GET', `/tournaments/${tournamentId}/enrollment-requests`);
 };
 
+// GET /tournaments/solicitud/{solicitudId}: obtiene una solicitud de inscripción por su ID.
+export const getSolicitud = async (solicitudId) => {
+    return await appFetch('GET', `/tournaments/solicitud/${solicitudId}`);
+};
+
 // POST /tournaments/{id}/enrollment-requests/{solicitudId}/approve: aprueba una solicitud de inscripción.
 export const approveEnrollment = async (tournamentId, solicitudId) => {
     return await appFetch('POST', `/tournaments/${tournamentId}/enrollment-requests/${solicitudId}/approve`);
@@ -95,6 +100,7 @@ export const getTournamentJornadas = async (id) => {
 };
 
 export default {
+    getSolicitud,
     createTournament,
     getMyTournaments,
     getTournament,
