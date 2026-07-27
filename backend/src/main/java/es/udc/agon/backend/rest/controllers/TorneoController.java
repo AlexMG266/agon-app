@@ -493,6 +493,26 @@ public class TorneoController {
         return TorneoConversor.toJornadaDtos(torneoService.obtenerJornadas(id));
     }
 
+    @GetMapping("/solicitud/{solicitudId}")
+    @ResponseStatus(HttpStatus.OK)
+    @Operation(
+            summary = "Obtener una solicitud de inscripción por su ID",
+            description = "Devuelve los detalles de una solicitud de inscripción, incluyendo equipoId y torneoId."
+    )
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Solicitud encontrada",
+                    content = @Content(schema = @Schema(implementation = SolicitudDto.class))),
+            @ApiResponse(responseCode = "404", description = "Solicitud no encontrada",
+                    content = @Content)
+    })
+    public SolicitudDto obtenerSolicitud(
+            @Parameter(description = "ID de la solicitud", example = "10") @PathVariable Long solicitudId)
+            throws InstanceNotFoundException {
+
+        Solicitud solicitud = torneoService.obtenerSolicitud(solicitudId);
+        return toSolicitudDto(solicitud);
+    }
+
     private SolicitudDto toSolicitudDto(Solicitud solicitud) {
         String nombreCandidato = solicitud.getCandidato() != null ? solicitud.getCandidato().getNombre() : null;
         String nombreEquipo = solicitud.getEquipo() != null ? solicitud.getEquipo().getNombreEquipo() : null;
@@ -500,7 +520,7 @@ public class TorneoController {
         if (solicitud.getFechaCreacion() != null) {
             fecha = solicitud.getFechaCreacion().atZone(java.time.ZoneOffset.UTC).toInstant().toEpochMilli();
         }
-        return new SolicitudDto(
+        SolicitudDto dto = new SolicitudDto(
                 solicitud.getId(),
                 solicitud.getCandidato() != null ? solicitud.getCandidato().getId() : null,
                 nombreCandidato,
@@ -511,5 +531,9 @@ public class TorneoController {
                 solicitud.getTipoSolicitud().name(),
                 fecha
         );
+        if (solicitud.getTorneo() != null) {
+            dto.setTorneoId(solicitud.getTorneo().getId());
+        }
+        return dto;
     }
 }

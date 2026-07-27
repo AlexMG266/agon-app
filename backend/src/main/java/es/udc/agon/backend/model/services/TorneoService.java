@@ -58,4 +58,6 @@ public interface TorneoService {
             throws InstanceNotFoundException, PermissionException;
 
     List<Jornada> obtenerJornadas(Long torneoId);
+
+    Solicitud obtenerSolicitud(Long solicitudId) throws InstanceNotFoundException;
 }

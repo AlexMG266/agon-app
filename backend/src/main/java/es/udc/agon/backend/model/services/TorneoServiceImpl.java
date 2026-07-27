@@ -19,6 +19,7 @@ import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -155,13 +156,6 @@ public class TorneoServiceImpl implements TorneoService {
             throw new IllegalArgumentException("El torneo no está en periodo de reclutamiento");
         }
 
-        // validar codigo si el torneo es privado
-        if (torneo.getPrivado() != null && torneo.getPrivado()) {
-            if (codigoTorneo == null || codigoTorneo.isBlank() || !codigoTorneo.equals(torneo.getCodigoTorneo())) {
-                throw new IllegalArgumentException("Código de torneo incorrecto");
-            }
-        }
-
         // buscar el equipo y verificar que el capitan es el creador
         Equipo equipo = equipoDao.findById(equipoId)
                 .orElseThrow(() -> new InstanceNotFoundException("project.entities.equipo", equipoId));
@@ -261,6 +255,16 @@ public class TorneoServiceImpl implements TorneoService {
         Inscripcion inscripcion = new Inscripcion(torneo, equipo);
         inscripcionDao.save(inscripcion);
 
+        // Marcar como procesada la notificacion original del organizador
+        Optional<Notification> notificationOpt = notificationDao.findByUsuarioIdAndReferenciaIdAndTipo(
+                organizadorId, solicitudId, Notification.TipoNotificacion.SOLICITUD_INSCRIPCION);
+        if (notificationOpt.isPresent()) {
+            Notification notification = notificationOpt.get();
+            notification.setLeido(true);
+            notification.setPendienteDeAccion(false);
+            notificationDao.save(notification);
+        }
+
         // Notificar al candidato que su solicitud fue aceptada
         String asunto = "Solicitud de inscripción aceptada";
         String cuerpo = "Tu solicitud para inscribir al equipo \"" + equipo.getNombreEquipo()
@@ -294,6 +298,16 @@ public class TorneoServiceImpl implements TorneoService {
 
         solicitud.rechazar();
         solicitudDao.save(solicitud);
+
+        // Marcar como procesada la notificacion original del organizador
+        Optional<Notification> notificationOpt = notificationDao.findByUsuarioIdAndReferenciaIdAndTipo(
+                organizadorId, solicitudId, Notification.TipoNotificacion.SOLICITUD_INSCRIPCION);
+        if (notificationOpt.isPresent()) {
+            Notification notification = notificationOpt.get();
+            notification.setLeido(true);
+            notification.setPendienteDeAccion(false);
+            notificationDao.save(notification);
+        }
 
         // Notificar al candidato que su solicitud fue rechazada
         String asunto = "Solicitud de inscripción rechazada";
@@ -787,5 +801,12 @@ public class TorneoServiceImpl implements TorneoService {
     @Transactional(readOnly = true)
     public List<Jornada> obtenerJornadas(Long torneoId) {
         return jornadaDao.findByTorneoIdOrderByNumeroJornadaAsc(torneoId);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public Solicitud obtenerSolicitud(Long solicitudId) throws InstanceNotFoundException {
+        return solicitudDao.findById(solicitudId)
+                .orElseThrow(() -> new InstanceNotFoundException("project.entities.solicitud", solicitudId));
     }
 }
