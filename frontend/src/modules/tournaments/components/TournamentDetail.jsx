@@ -916,6 +916,24 @@ const TournamentDetail = () => {
                                         );
                                     })}
                                 </div>
+                                <div className="td-partidos-mobile-select-wrapper">
+                                    <select
+                                        className="td-partidos-mobile-select"
+                                        value={currentJornadaIdx}
+                                        onChange={e => setCurrentJornadaIdx(parseInt(e.target.value))}
+                                        aria-label="Seleccionar jornada"
+                                    >
+                                        {jornadas.map((j, idx) => {
+                                            const fecha = j.fechaInicio ? new Date(j.fechaInicio) : null;
+                                            const fechaStr = fecha ? fecha.toLocaleDateString('es-ES', { day: 'numeric', month: 'short' }) : '';
+                                            return (
+                                                <option key={j.id} value={idx}>
+                                                    {intl.formatMessage({ id: 'project.tournaments.Detail.partidos.jornada', defaultMessage: 'Jornada' })} {j.numeroJornada}{fechaStr ? ` (${fechaStr})` : ''}
+                                                </option>
+                                            );
+                                        })}
+                                    </select>
+                                </div>
                                 <button
                                     className="td-partidos-carousel-btn"
                                     disabled={currentJornadaIdx >= jornadas.length - 1}
@@ -985,28 +1003,20 @@ const TournamentDetail = () => {
                                                             <div key={enc.id} className="td-partido-card">
                                                                 <div className="td-partido-card-teams">
                                                                     <div className="td-partido-card-team">
+                                                                        <i className="fa-regular fa-shield-halved td-partido-card-shield" />
                                                                         <span className="td-partido-card-team-name">{enc.equipoLocalNombre}</span>
                                                                     </div>
-                                                                    <div className="td-partido-card-vs">
-                                                                        <span className="td-partido-card-vs-text">VS</span>
-                                                                    </div>
-                                                                    <div className="td-partido-card-team td-partido-card-team--away">
+                                                                    <div className="td-partido-card-team">
+                                                                        <i className="fa-regular fa-shield-halved td-partido-card-shield" />
                                                                         <span className="td-partido-card-team-name">{enc.equipoVisitanteNombre}</span>
                                                                     </div>
                                                                 </div>
-                                                                <div className="td-partido-card-meta">
-                                                                    {fecha && (
-                                                                        <span className="td-partido-card-datetime">
-                                                                            <i className="fa-regular fa-calendar me-1" />{fechaStr}
-                                                                            <span className="td-partido-card-time ms-2"><i className="fa-regular fa-clock me-1" />{horaStr}</span>
-                                                                        </span>
-                                                                    )}
-                                                                    {enc.estado && (
-                                                                        <span className={`td-partido-card-badge ${enc.estado === 'FINALIZADO' ? 'td-badge--finished' : enc.estado === 'EN_CURSO' ? 'td-badge--groups' : ''}`}>
-                                                                            {enc.estado}
-                                                                        </span>
-                                                                    )}
-                                                                </div>
+                                                                {fecha && (
+                                                                    <div className="td-partido-card-datetime">
+                                                                        <span className="td-partido-card-date">{fechaStr}</span>
+                                                                        <span className="td-partido-card-time">{horaStr}</span>
+                                                                    </div>
+                                                                )}
                                                             </div>
                                                         );
                                                     })}
@@ -1029,28 +1039,20 @@ const TournamentDetail = () => {
                                                             <div key={enc.id} className="td-partido-card">
                                                                 <div className="td-partido-card-teams">
                                                                     <div className="td-partido-card-team">
+                                                                        <i className="fa-regular fa-shield-halved td-partido-card-shield" />
                                                                         <span className="td-partido-card-team-name">{enc.equipoLocalNombre}</span>
                                                                     </div>
-                                                                    <div className="td-partido-card-vs">
-                                                                        <span className="td-partido-card-vs-text">VS</span>
-                                                                    </div>
-                                                                    <div className="td-partido-card-team td-partido-card-team--away">
+                                                                    <div className="td-partido-card-team">
+                                                                        <i className="fa-regular fa-shield-halved td-partido-card-shield" />
                                                                         <span className="td-partido-card-team-name">{enc.equipoVisitanteNombre}</span>
                                                                     </div>
                                                                 </div>
-                                                                <div className="td-partido-card-meta">
-                                                                    {fecha && (
-                                                                        <span className="td-partido-card-datetime">
-                                                                            <i className="fa-regular fa-calendar me-1" />{fechaStr}
-                                                                            <span className="td-partido-card-time ms-2"><i className="fa-regular fa-clock me-1" />{horaStr}</span>
-                                                                        </span>
-                                                                    )}
-                                                                    {enc.estado && (
-                                                                        <span className={`td-partido-card-badge ${enc.estado === 'FINALIZADO' ? 'td-badge--finished' : enc.estado === 'EN_CURSO' ? 'td-badge--groups' : ''}`}>
-                                                                            {enc.estado}
-                                                                        </span>
-                                                                    )}
-                                                                </div>
+                                                                {fecha && (
+                                                                    <div className="td-partido-card-datetime">
+                                                                        <span className="td-partido-card-date">{fechaStr}</span>
+                                                                        <span className="td-partido-card-time">{horaStr}</span>
+                                                                    </div>
+                                                                )}
                                                             </div>
                                                         );
                                                     })}

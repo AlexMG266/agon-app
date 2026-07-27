@@ -1093,6 +1093,34 @@
     margin-bottom: 0.75rem;
 }
 
+.td-partidos-mobile-select-wrapper {
+    display: none;
+    flex: 1;
+}
+
+.td-partidos-mobile-select {
+    width: 100%;
+    padding: 0.55rem 0.85rem;
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: #fff;
+    background: #0071e3;
+    border: none;
+    border-radius: 10px;
+    cursor: pointer;
+    outline: none;
+    appearance: auto;
+    -webkit-appearance: auto;
+    text-align: center;
+    text-align-last: center;
+}
+
+.td-partidos-mobile-select option {
+    color: #1d1d1f;
+    background: #fff;
+    text-align: center;
+}
+
 .td-partidos-grupo-section {
     margin-bottom: 1.25rem;
 }
@@ -1110,6 +1138,7 @@
 .td-partido-card {
     display: flex;
     align-items: center;
+    justify-content: space-between;
     gap: 0.75rem;
     background: #fff;
     border: 1px solid #e8e8ed;
@@ -1135,86 +1164,45 @@
 .td-partido-card-teams {
     display: flex;
     flex-direction: column;
-    gap: 0.2rem;
+    gap: 0.35rem;
 }
 
 .td-partido-card-team {
     display: flex;
     align-items: center;
-    gap: 0.4rem;
+    gap: 0.45rem;
     font-size: 0.82rem;
     font-weight: 500;
     color: #1d1d1f;
 }
 
-.td-partido-card-team--winner {
-    font-weight: 600;
-}
-
-.td-partido-card-score {
-    font-weight: 700;
-    font-size: 0.85rem;
-    min-width: 22px;
-    text-align: right;
-    color: #1d1d1f;
-}
-
-.td-partido-card-score--empty {
-    color: #aeaeb2;
-    font-weight: 400;
-}
-
-.td-partido-card-sep {
-    color: #d2d2d7;
-    font-weight: 300;
-    font-size: 0.75rem;
-    margin: 0 0.35rem;
-}
-
-.td-partido-card-meta {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    font-size: 0.68rem;
+.td-partido-card-shield {
+    font-size: 0.7rem;
     color: #8e8e93;
-}
-
-.td-partido-card-meta i {
-    font-size: 0.6rem;
-    color: #aeaeb2;
-    margin-right: 0.15rem;
-}
-
-.td-partido-card-badge {
-    font-size: 0.55rem;
-    font-weight: 600;
-    padding: 0.1rem 0.35rem;
-    border-radius: 999px;
-    text-transform: uppercase;
-    letter-spacing: 0.02em;
-    background: #f1f3f5;
-    color: #9e9e9e;
-}
-
-.td-partido-card-badge--finalizado {
-    background: #e8f5e9;
-    color: #2e7d32;
-}
-
-.td-partido-card-badge--en_curso {
-    background: #e3f2fd;
-    color: #1565c0;
-}
-
-.td-partido-card-badge--pendiente {
-    background: #f1f3f5;
-    color: #9e9e9e;
+    width: 18px;
+    flex-shrink: 0;
 }
 
 .td-partido-card-datetime {
     display: flex;
-    align-items: center;
-    gap: 0.25rem;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 0.15rem;
+    flex-shrink: 0;
+}
+
+.td-partido-card-date {
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: #1d1d1f;
+    white-space: nowrap;
+}
+
+.td-partido-card-time {
+    font-size: 0.7rem;
+    font-weight: 500;
+    color: #1d1d1f;
+    white-space: nowrap;
 }
 
 .td-partidos-empty {
@@ -1417,15 +1405,12 @@
 }
 
 .td-config-panel {
-    background: #fff;
-    border: 1px solid #e9ecef;
-    border-radius: 14px;
-    box-shadow: 0 1px 4px rgba(0,0,0,0.04);
+    background: transparent;
+    border: none;
+    border-radius: 0;
+    box-shadow: none;
     display: flex;
     flex-direction: column;
-    overflow: hidden;
-    position: sticky;
-    top: 1.5rem;
     margin-top: 0.5rem;
 }
 
@@ -1433,9 +1418,9 @@
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 1rem 1.25rem;
-    border-bottom: 1px solid #e9ecef;
-    background: #fafbfc;
+    padding: 1rem 0;
+    border-bottom: 1px solid rgba(0,0,0,0.06);
+    background: transparent;
 }
 
 .td-config-panel-title {
@@ -1453,7 +1438,7 @@
 }
 
 .td-config-panel-body {
-    padding: 1rem 1.25rem;
+    padding: 1rem 0;
 }
 
 .td-view-section {
@@ -1634,9 +1619,9 @@
 }
 
 .td-config-panel-footer {
-    padding: 0.85rem 1.25rem;
-    border-top: 1px solid #e9ecef;
-    background: #fafbfc;
+    padding: 0.85rem 0;
+    border-top: 1px solid rgba(0,0,0,0.06);
+    background: transparent;
     display: flex;
     justify-content: flex-end;
 }
@@ -1663,9 +1648,6 @@
     .td-container {
         padding-left: 1.25rem;
         padding-right: 1.25rem;
-    }
-    .td-config-panel {
-        position: static;
     }
 }
 
@@ -1711,5 +1693,15 @@
     }
     .td-config-panel-body {
         max-height: none;
+    }
+}
+
+@media (max-width: 640px) {
+    .td-partidos-carousel-track {
+        display: none;
+    }
+    .td-partidos-mobile-select-wrapper {
+        display: block;
+        flex: 1;
     }
 }
