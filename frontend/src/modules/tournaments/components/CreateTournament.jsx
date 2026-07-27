@@ -67,19 +67,11 @@ const CreateTournament = () => {
                 if (!data.fechaInicio) newErrors.fechaInicio = intl.formatMessage({ id: 'project.global.validator.required' });
                 else if (data.fechaInicio < todayStr) newErrors.fechaInicio = intl.formatMessage({ id: 'project.tournaments.CreateTournament.error.startInPast', defaultMessage: 'La fecha de inicio no puede ser en el pasado' });
 
-                if (!data.fechaFin) newErrors.fechaFin = intl.formatMessage({ id: 'project.global.validator.required' });
-
                 if (!data.fechaLimiteInscripcion) newErrors.fechaLimiteInscripcion = intl.formatMessage({ id: 'project.global.validator.required' });
                 else if (data.fechaLimiteInscripcion < todayStr) newErrors.fechaLimiteInscripcion = intl.formatMessage({ id: 'project.tournaments.CreateTournament.error.inscriptionInPast', defaultMessage: 'La fecha límite de inscripción no puede ser en el pasado' });
 
-                if (data.fechaInicio && data.fechaFin && data.fechaInicio > data.fechaFin) {
-                    newErrors.fechaFin = intl.formatMessage({ id: 'project.tournaments.CreateTournament.error.endBeforeStart', defaultMessage: 'La fecha de fin debe ser posterior a la fecha de inicio' });
-                }
                 if (data.fechaLimiteInscripcion && data.fechaInicio && data.fechaLimiteInscripcion > data.fechaInicio) {
                     newErrors.fechaLimiteInscripcion = intl.formatMessage({ id: 'project.tournaments.CreateTournament.error.inscriptionAfterStart', defaultMessage: 'La fecha límite de inscripción debe ser anterior a la fecha de inicio' });
-                }
-                if (data.fechaLimiteInscripcion && data.fechaFin && data.fechaLimiteInscripcion > data.fechaFin) {
-                    newErrors.fechaLimiteInscripcion = intl.formatMessage({ id: 'project.tournaments.CreateTournament.error.inscriptionAfterEnd', defaultMessage: 'La fecha límite de inscripción debe ser anterior a la fecha de fin' });
                 }
                 break;
             }
