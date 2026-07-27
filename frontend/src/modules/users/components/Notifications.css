@@ -455,6 +455,18 @@
     opacity: 0.6;
 }
 
+.btn-action-details {
+    border-radius: 50px !important;
+    border-color: #8e8e93 !important;
+    color: #1d1d1f !important;
+    font-weight: 500 !important;
+}
+
+.btn-action-details:hover:not(:disabled) {
+    background-color: #f5f5f7 !important;
+    border-color: #1d1d1f !important;
+}
+
 .btn-action-reject {
     border-radius: 50px !important;
     padding: 0.5rem 1.5rem !important;

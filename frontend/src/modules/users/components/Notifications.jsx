@@ -1,9 +1,10 @@
-// src/modules/users/components/Notifications.jsx
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import { FormattedMessage, useIntl } from 'react-intl';
 import Spinner from 'react-bootstrap/Spinner';
 import Button from 'react-bootstrap/Button';
 import backend from '../../../backend';
+import ConfirmationModal from '../../common/components/ConfirmationModal';
+import TeamInfoModal from '../../teams/components/TeamInfoModal';
 import './Notifications.css';
 
 const formatTimestamp = (date) => {
@@ -52,6 +53,10 @@ const Notifications = () => {
     const [markingAsRead, setMarkingAsRead] = useState(false);
     const [respondiendoId, setRespondiendoId] = useState(null);
     const [actionFeedback, setActionFeedback] = useState(null);
+    const [showConfirmModal, setShowConfirmModal] = useState(false);
+    const [pendingConfirmAction, setPendingConfirmAction] = useState(null);
+    const [showTeamModal, setShowTeamModal] = useState(false);
+    const [modalEquipoId, setModalEquipoId] = useState(null);
 
     useEffect(() => {
         const initNotifications = async () => {
@@ -119,6 +124,9 @@ const Notifications = () => {
                         : intl.formatMessage({ id: 'project.notifications.feedback.rejected', defaultMessage: 'Solicitud rechazada correctamente' })
                 });
 
+                // Marcar la notificación como sin acción pendiente localmente
+                setSelectedNotification(prev => prev ? { ...prev, pendienteDeAccion: false } : prev);
+
                 // Recargar notificaciones para reflejar el cambio
                 const notifResponse = await backend.notificationService.getNotifications();
                 if (notifResponse.ok) {
@@ -126,7 +134,7 @@ const Notifications = () => {
                     // Actualizar la notificación seleccionada si sigue visible
                     const updatedNotif = notifResponse.payload.find(n => n.id === selectedNotification?.id);
                     if (updatedNotif) {
-                        setSelectedNotification(updatedNotif);
+                        setSelectedNotification(prev => ({ ...prev, ...updatedNotif, pendienteDeAccion: false }));
                     } else {
                         setSelectedNotification(null);
                     }
@@ -157,10 +165,168 @@ const Notifications = () => {
         return typeUpper.includes('INVITACION') || typeUpper.includes('INVITATION');
     };
 
+    const isTipoInscripcion = (tipo) => {
+        const typeUpper = tipo?.toUpperCase() || '';
+        return typeUpper.includes('SOLICITUD_INSCRIPCION');
+    };
+
+    const handleResponderInscripcion = async (solicitudId, aceptar) => {
+        setRespondiendoId(solicitudId);
+        setActionFeedback(null);
+        try {
+            // Primero obtenemos la solicitud para saber el torneoId
+            const solicitudResp = await backend.tournamentService.getSolicitud(solicitudId);
+            if (!solicitudResp.ok || !solicitudResp.payload) {
+                setActionFeedback({
+                    type: 'error',
+                    message: intl.formatMessage({ id: 'project.notifications.feedback.loadError', defaultMessage: 'No se pudo cargar la solicitud' })
+                });
+                setRespondiendoId(null);
+                return;
+            }
+            const torneoId = solicitudResp.payload.torneoId;
+            if (!torneoId) {
+                setActionFeedback({
+                    type: 'error',
+                    message: intl.formatMessage({ id: 'project.notifications.feedback.torneoError', defaultMessage: 'No se pudo identificar el torneo' })
+                });
+                setRespondiendoId(null);
+                return;
+            }
+
+            const response = aceptar
+                ? await backend.tournamentService.approveEnrollment(torneoId, solicitudId)
+                : await backend.tournamentService.rejectEnrollment(torneoId, solicitudId);
+
+            if (response.ok) {
+                setActionFeedback({
+                    type: 'success',
+                    message: aceptar
+                        ? intl.formatMessage({ id: 'project.notifications.feedback.inscripcionAccepted', defaultMessage: 'Inscripción aceptada correctamente' })
+                        : intl.formatMessage({ id: 'project.notifications.feedback.inscripcionRejected', defaultMessage: 'Inscripción rechazada correctamente' })
+                });
+
+                // Marcar la notificación como sin acción pendiente localmente
+                setSelectedNotification(prev => prev ? { ...prev, pendienteDeAccion: false } : prev);
+
+                // Recargar notificaciones
+                const notifResponse = await backend.notificationService.getNotifications();
+                if (notifResponse.ok) {
+                    setNotifications(notifResponse.payload);
+                    const updatedNotif = notifResponse.payload.find(n => n.id === selectedNotification?.id);
+                    if (updatedNotif) {
+                        setSelectedNotification(prev => ({ ...prev, ...updatedNotif, pendienteDeAccion: false }));
+                    } else {
+                        setSelectedNotification(null);
+                    }
+                }
+            } else {
+                const errorMsg = response.payload?.message || response.payload?.error ||
+                    (aceptar
+                        ? intl.formatMessage({ id: 'project.notifications.feedback.acceptError', defaultMessage: 'No se pudo aceptar la solicitud' })
+                        : intl.formatMessage({ id: 'project.notifications.feedback.rejectError', defaultMessage: 'No se pudo rechazar la solicitud' }));
+                setActionFeedback({
+                    type: 'error',
+                    message: errorMsg
+                });
+            }
+        } catch (error) {
+            console.error('Error respondiendo solicitud de inscripción:', error);
+            setActionFeedback({
+                type: 'error',
+                message: intl.formatMessage({ id: 'project.notifications.feedback.connectionError', defaultMessage: 'Error de conexión al responder la solicitud' })
+            });
+        } finally {
+            setRespondiendoId(null);
+        }
+    };
+
+    const handleVerEquipo = async (solicitudId) => {
+        try {
+            const solicitudResp = await backend.tournamentService.getSolicitud(solicitudId);
+            if (solicitudResp.ok && solicitudResp.payload?.equipoId) {
+                setModalEquipoId(solicitudResp.payload.equipoId);
+                setShowTeamModal(true);
+            } else {
+                setActionFeedback({
+                    type: 'error',
+                    message: intl.formatMessage({ id: 'project.notifications.feedback.loadError', defaultMessage: 'No se pudo cargar la información del equipo' })
+                });
+            }
+        } catch (error) {
+            console.error('Error cargando solicitud:', error);
+            setActionFeedback({
+                type: 'error',
+                message: intl.formatMessage({ id: 'project.notifications.feedback.connectionError', defaultMessage: 'Error de conexión' })
+            });
+        }
+    };
+
+    // === Modal de confirmación ===
+    const handleShowConfirm = (solicitudId, aceptar, type) => {
+        setPendingConfirmAction({ solicitudId, aceptar, type });
+        setShowConfirmModal(true);
+    };
+
+    const handleCancelConfirm = () => {
+        setShowConfirmModal(false);
+        setPendingConfirmAction(null);
+    };
+
+    const handleConfirmAction = () => {
+        if (!pendingConfirmAction) return;
+        const { solicitudId, aceptar, type } = pendingConfirmAction;
+        setShowConfirmModal(false);
+        setPendingConfirmAction(null);
+
+        if (type === 'invitacion') {
+            handleResponderSolicitud(solicitudId, aceptar);
+        } else if (type === 'inscripcion') {
+            handleResponderInscripcion(solicitudId, aceptar);
+        }
+    };
+
+    const getConfirmModalConfig = () => {
+        if (!pendingConfirmAction) return { title: '', description: '', confirmText: '', variant: 'primary' };
+        const { aceptar, type } = pendingConfirmAction;
+
+        if (type === 'invitacion') {
+            return {
+                title: aceptar
+                    ? intl.formatMessage({ id: 'project.notifications.confirm.acceptInvitationTitle', defaultMessage: '¿Aceptar invitación?' })
+                    : intl.formatMessage({ id: 'project.notifications.confirm.rejectInvitationTitle', defaultMessage: '¿Rechazar invitación?' }),
+                description: aceptar
+                    ? intl.formatMessage({ id: 'project.notifications.confirm.acceptInvitationDesc', defaultMessage: 'Vas a aceptar la invitación al equipo. ¿Estás seguro?' })
+                    : intl.formatMessage({ id: 'project.notifications.confirm.rejectInvitationDesc', defaultMessage: 'Vas a rechazar la invitación al equipo. ¿Estás seguro?' }),
+                confirmText: aceptar
+                    ? intl.formatMessage({ id: 'project.notifications.confirm.accept', defaultMessage: 'Aceptar' })
+                    : intl.formatMessage({ id: 'project.notifications.confirm.reject', defaultMessage: 'Rechazar' }),
+                variant: aceptar ? 'primary' : 'danger'
+            };
+        } else if (type === 'inscripcion') {
+            return {
+                title: aceptar
+                    ? intl.formatMessage({ id: 'project.notifications.confirm.acceptInscripcionTitle', defaultMessage: '¿Aceptar inscripción?' })
+                    : intl.formatMessage({ id: 'project.notifications.confirm.rejectInscripcionTitle', defaultMessage: '¿Rechazar inscripción?' }),
+                description: aceptar
+                    ? intl.formatMessage({ id: 'project.notifications.confirm.acceptInscripcionDesc', defaultMessage: 'Vas a aceptar la inscripción del equipo en el torneo. ¿Estás seguro?' })
+                    : intl.formatMessage({ id: 'project.notifications.confirm.rejectInscripcionDesc', defaultMessage: 'Vas a rechazar la inscripción del equipo en el torneo. ¿Estás seguro?' }),
+                confirmText: aceptar
+                    ? intl.formatMessage({ id: 'project.notifications.confirm.accept', defaultMessage: 'Aceptar' })
+                    : intl.formatMessage({ id: 'project.notifications.confirm.reject', defaultMessage: 'Rechazar' }),
+                variant: aceptar ? 'primary' : 'danger'
+            };
+        }
+        return { title: '', description: '', confirmText: '', variant: 'primary' };
+    };
+
+    const confirmModalConfig = useMemo(() => getConfirmModalConfig(), [pendingConfirmAction, intl]);
+
     const getTipoLabel = (tipo) => {
         const typeUpper = tipo?.toUpperCase() || '';
         if (typeUpper.includes('SISTEMA') || typeUpper.includes('SYSTEM')) return intl.formatMessage({ id: 'project.notifications.types.system', defaultMessage: 'Sistema' });
         if (typeUpper.includes('INVITACION') || typeUpper.includes('INVITATION') || typeUpper.includes('TEAM')) return intl.formatMessage({ id: 'project.notifications.types.invitation', defaultMessage: 'Invitación' });
+        if (typeUpper.includes('SOLICITUD_INSCRIPCION')) return intl.formatMessage({ id: 'project.notifications.types.inscripcion', defaultMessage: 'Inscripción' });
         if (typeUpper.includes('PARTIDO') || typeUpper.includes('MATCH')) return intl.formatMessage({ id: 'project.notifications.types.match', defaultMessage: 'Partido' });
         if (typeUpper.includes('TORNEO') || typeUpper.includes('TOURNAMENT')) return intl.formatMessage({ id: 'project.notifications.types.tournament', defaultMessage: 'Torneo' });
         return intl.formatMessage({ id: 'project.notifications.types.generic', defaultMessage: 'Notificación' });
@@ -333,11 +499,20 @@ const Notifications = () => {
                             </div>
                         )}
 
-                        {/* Botones de acción para invitaciones (PROPUESTA/PETICION) */}
-                        {selectedNotification.pendienteDeAccion && isTipoInvitacion(selectedNotification.tipo) && (
+                        {/* Botones de acción para inscripciones en torneo */}
+                        {selectedNotification.pendienteDeAccion && isTipoInscripcion(selectedNotification.tipo) && (
                             <div className="detail-actions-buttons">
                                 <Button
-                                    onClick={() => handleResponderSolicitud(selectedNotification.referenciaId, true)}
+                                    onClick={() => handleVerEquipo(selectedNotification.referenciaId)}
+                                    variant="outline-secondary"
+                                    className="btn-action-details me-2"
+                                    disabled={respondiendoId !== null}
+                                >
+                                    <i className="fa-solid fa-eye me-2"></i>
+                                    <FormattedMessage id="project.notifications.detail.viewTeam" defaultMessage="Ver detalles" />
+                                </Button>
+                                <Button
+                                    onClick={() => handleShowConfirm(selectedNotification.referenciaId, true, 'inscripcion')}
                                     className="btn-action-accept"
                                     disabled={respondiendoId !== null}
                                 >
@@ -351,7 +526,42 @@ const Notifications = () => {
                                     )}
                                 </Button>
                                 <Button
-                                    onClick={() => handleResponderSolicitud(selectedNotification.referenciaId, false)}
+                                    onClick={() => handleShowConfirm(selectedNotification.referenciaId, false, 'inscripcion')}
+                                    variant="outline-danger"
+                                    className="btn-action-reject"
+                                    disabled={respondiendoId !== null}
+                                >
+                                    {respondiendoId === selectedNotification.referenciaId ? (
+                                        <Spinner as="span" animation="border" size="sm" role="status" />
+                                    ) : (
+                                        <>
+                                            <i className="fa-solid fa-xmark me-2"></i>
+                                            <FormattedMessage id="project.notifications.detail.reject" defaultMessage="Rechazar" />
+                                        </>
+                                    )}
+                                </Button>
+                            </div>
+                        )}
+
+                        {/* Botones de acción para invitaciones (PROPUESTA/PETICION) */}
+                        {selectedNotification.pendienteDeAccion && isTipoInvitacion(selectedNotification.tipo) && (
+                            <div className="detail-actions-buttons">
+                                <Button
+                                    onClick={() => handleShowConfirm(selectedNotification.referenciaId, true, 'invitacion')}
+                                    className="btn-action-accept"
+                                    disabled={respondiendoId !== null}
+                                >
+                                    {respondiendoId === selectedNotification.referenciaId ? (
+                                        <Spinner as="span" animation="border" size="sm" role="status" />
+                                    ) : (
+                                        <>
+                                            <i className="fa-solid fa-check me-2"></i>
+                                            <FormattedMessage id="project.notifications.detail.accept" defaultMessage="Aceptar" />
+                                        </>
+                                    )}
+                                </Button>
+                                <Button
+                                    onClick={() => handleShowConfirm(selectedNotification.referenciaId, false, 'invitacion')}
                                     variant="outline-danger"
                                     className="btn-action-reject"
                                     disabled={respondiendoId !== null}
@@ -369,7 +579,7 @@ const Notifications = () => {
                         )}
 
                         {/* Botón de acción genérico para otros tipos */}
-                        {selectedNotification.pendienteDeAccion && !isTipoInvitacion(selectedNotification.tipo) && (
+                        {selectedNotification.pendienteDeAccion && !isTipoInvitacion(selectedNotification.tipo) && !isTipoInscripcion(selectedNotification.tipo) && (
                             <div className="detail-actions">
                                 <Button
                                     className="btn-action-primary"
@@ -388,8 +598,29 @@ const Notifications = () => {
                     </div>
                 )}
             </div>
-        </div>
-    );
-};
+                {/* Modal de confirmación para aceptar/rechazar */}
+                <ConfirmationModal
+                    show={showConfirmModal}
+                    onHide={handleCancelConfirm}
+                    onConfirm={handleConfirmAction}
+                    title={confirmModalConfig.title}
+                    description={confirmModalConfig.description}
+                    confirmText={confirmModalConfig.confirmText}
+                    variant={confirmModalConfig.variant}
+                    isSubmitting={respondiendoId !== null}
+                />
 
-export default Notifications;
+                {/* Modal de información del equipo (popup) */}
+                <TeamInfoModal
+                    show={showTeamModal}
+                    equipoId={modalEquipoId}
+                    onHide={() => {
+                        setShowTeamModal(false);
+                        setModalEquipoId(null);
+                    }}
+                />
+            </div>
+        );
+    };
+
+    export default Notifications;
