@@ -47,7 +47,8 @@ const Step5Summary = ({ data }) => {
                             {!data.tipoTorneo && '—'}
                         </td>
                     </tr>
-                    {(data.numGrupos > 0) && (
+                    {/* Groups config — only for GRUPOS_PLAYOFF */}
+                    {data.tipoTorneo === 'GRUPOS_PLAYOFF' && data.numGrupos > 0 && (
                         <tr>
                             <td className="text-secondary ps-3 py-2">
                                 <FormattedMessage id="project.tournaments.CreateTournament.step2.numGroups" defaultMessage="Número de grupos" />
@@ -55,7 +56,7 @@ const Step5Summary = ({ data }) => {
                             <td className="py-2">{data.numGrupos}</td>
                         </tr>
                     )}
-                    {(data.equiposPorGrupo > 0) && (
+                    {data.tipoTorneo === 'GRUPOS_PLAYOFF' && data.equiposPorGrupo > 0 && (
                         <tr>
                             <td className="text-secondary ps-3 py-2">
                                 <FormattedMessage id="project.tournaments.CreateTournament.step2.teamsPerGroup" defaultMessage="Equipos por grupo" />
@@ -63,19 +64,23 @@ const Step5Summary = ({ data }) => {
                             <td className="py-2">{data.equiposPorGrupo}</td>
                         </tr>
                     )}
-                    {data.tipoTorneo === 'GRUPOS_PLAYOFF' && (
+                    {/* Playoff info — for GRUPOS_PLAYOFF and ELIMINATORIAS */}
+                    {(data.tipoTorneo === 'GRUPOS_PLAYOFF' || data.tipoTorneo === 'ELIMINATORIAS') && (
                         <tr className="border-bottom">
                             <td className="text-secondary ps-3 py-2">
-                                <FormattedMessage id="project.tournaments.CreateTournament.step2.playoffAfterGroups" defaultMessage="Playoff después de fase de grupos" />
+                                <FormattedMessage id="project.tournaments.CreateTournament.step2.playoffAfterGroups" defaultMessage="Playoff" />
                             </td>
                             <td className="py-2">
-                                {data.tienePlayoff
-                                    ? <FormattedMessage id="project.global.buttons.yes" defaultMessage="Sí" />
-                                    : <FormattedMessage id="project.global.buttons.no" defaultMessage="No" />
-                                }
-                                {data.tienePlayoff && data.idaVueltaPlayoff && (
+                                {data.idaVueltaPlayoff ? (
+                                    <FormattedMessage id="project.tournaments.CreateTournament.step2.homeAwayPlayoff" defaultMessage="Ida y vuelta" />
+                                ) : (
+                                    <FormattedMessage id="project.tournaments.CreateTournament.step2.playoffSingle" defaultMessage="Partido único" />
+                                )}
+                                {data.estrategiaPlayoff && (
                                     <span className="text-muted ms-2 small">
-                                        (<FormattedMessage id="project.tournaments.CreateTournament.step2.homeAwayPlayoff" defaultMessage="Ida y vuelta" />)
+                                        ({data.estrategiaPlayoff === 'RAPIDO' && <FormattedMessage id="project.tournaments.CreateTournament.step4.distribution.fast" defaultMessage="Rápido" />}
+                                        {data.estrategiaPlayoff === 'JORNADAS' && <FormattedMessage id="project.tournaments.CreateTournament.step4.distribution.matchdays" defaultMessage="Jornadas" />}
+                                        {data.estrategiaPlayoff === 'UNIFORME' && <FormattedMessage id="project.tournaments.CreateTournament.step4.distribution.uniform" defaultMessage="Uniforme" />})
                                     </span>
                                 )}
                             </td>

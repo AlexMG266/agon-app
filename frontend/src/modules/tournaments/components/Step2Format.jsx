@@ -15,12 +15,21 @@ const EQUIPOS_POR_GRUPO_OPTIONS = [4, 5, 6, 8];
 
 const Step2Format = ({ data, onChange, errors }) => {
     const handleChange = (field, value) => {
-        onChange({ ...data, [field]: value });
+        // Auto-set tienePlayoff based on tournament type
+        const updated = { ...data, [field]: value };
+        if (field === 'tipoTorneo') {
+            if (value === 'GRUPOS_PLAYOFF' || value === 'ELIMINATORIAS') {
+                updated.tienePlayoff = true;
+            } else {
+                updated.tienePlayoff = false;
+            }
+        }
+        onChange(updated);
     };
 
     const tipo = data.tipoTorneo || 'LIGA_UNICA';
     const isGroupsPlayoff = tipo === 'GRUPOS_PLAYOFF';
-    const showGroupConfig = tipo === 'LIGA_UNICA' || tipo === 'GRUPOS_PLAYOFF';
+    const hasPlayoff = tipo === 'GRUPOS_PLAYOFF' || tipo === 'ELIMINATORIAS';
 
     return (
         <div>
@@ -56,76 +65,113 @@ const Step2Format = ({ data, onChange, errors }) => {
                 </div>
             </Form.Group>
 
-            {showGroupConfig && (
-                <>
-                    <Row className="mb-4">
-                        <Col md={6}>
-                            <Form.Label className="text-secondary small fw-medium mb-2">
-                                <FormattedMessage id="project.tournaments.CreateTournament.step2.numGroups" defaultMessage="Número de grupos" />
-                                {isGroupsPlayoff && <span className="text-danger ms-1">*</span>}
-                            </Form.Label>
-                            <div className="d-flex flex-wrap gap-2">
-                                {GRUPO_OPTIONS.map(n => (
-                                    <Button
-                                        key={n}
-                                        variant={data.numGrupos === n ? 'dark' : 'outline-secondary'}
-                                        size="sm"
-                                        className="rounded-pill px-3"
-                                        onClick={() => handleChange('numGrupos', n)}
-                                    >
-                                        {n}
-                                    </Button>
-                                ))}
-                            </div>
-                            {errors?.numGrupos && (
-                                <div className="text-danger small mt-1">{errors.numGrupos}</div>
-                            )}
-                        </Col>
-                        <Col md={6}>
-                            <Form.Label className="text-secondary small fw-medium mb-2">
-                                <FormattedMessage id="project.tournaments.CreateTournament.step2.teamsPerGroup" defaultMessage="Equipos por grupo" />
-                                {isGroupsPlayoff && <span className="text-danger ms-1">*</span>}
-                            </Form.Label>
-                            <div className="d-flex flex-wrap gap-2">
-                                {EQUIPOS_POR_GRUPO_OPTIONS.map(n => (
-                                    <Button
-                                        key={n}
-                                        variant={data.equiposPorGrupo === n ? 'dark' : 'outline-secondary'}
-                                        size="sm"
-                                        className="rounded-pill px-3"
-                                        onClick={() => handleChange('equiposPorGrupo', n)}
-                                    >
-                                        {n}
-                                    </Button>
-                                ))}
-                            </div>
-                            {errors?.equiposPorGrupo && (
-                                <div className="text-danger small mt-1">{errors.equiposPorGrupo}</div>
-                            )}
-                        </Col>
-                    </Row>
+            {/* Groups config — only for GRUPOS_PLAYOFF */}
+            {isGroupsPlayoff && (
+                <Row className="mb-4">
+                    <Col md={6}>
+                        <Form.Label className="text-secondary small fw-medium mb-2">
+                            <FormattedMessage id="project.tournaments.CreateTournament.step2.numGroups" defaultMessage="Número de grupos" />
+                            <span className="text-danger ms-1">*</span>
+                        </Form.Label>
+                        <div className="d-flex flex-wrap gap-2">
+                            {GRUPO_OPTIONS.map(n => (
+                                <Button
+                                    key={n}
+                                    variant={data.numGrupos === n ? 'dark' : 'outline-secondary'}
+                                    size="sm"
+                                    className="rounded-pill px-3"
+                                    onClick={() => handleChange('numGrupos', n)}
+                                >
+                                    {n}
+                                </Button>
+                            ))}
+                        </div>
+                        {errors?.numGrupos && (
+                            <div className="text-danger small mt-1">{errors.numGrupos}</div>
+                        )}
+                    </Col>
+                    <Col md={6}>
+                        <Form.Label className="text-secondary small fw-medium mb-2">
+                            <FormattedMessage id="project.tournaments.CreateTournament.step2.teamsPerGroup" defaultMessage="Equipos por grupo" />
+                            <span className="text-danger ms-1">*</span>
+                        </Form.Label>
+                        <div className="d-flex flex-wrap gap-2">
+                            {EQUIPOS_POR_GRUPO_OPTIONS.map(n => (
+                                <Button
+                                    key={n}
+                                    variant={data.equiposPorGrupo === n ? 'dark' : 'outline-secondary'}
+                                    size="sm"
+                                    className="rounded-pill px-3"
+                                    onClick={() => handleChange('equiposPorGrupo', n)}
+                                >
+                                    {n}
+                                </Button>
+                            ))}
+                        </div>
+                        {errors?.equiposPorGrupo && (
+                            <div className="text-danger small mt-1">{errors.equiposPorGrupo}</div>
+                        )}
+                    </Col>
+                </Row>
+            )}
 
-                    {isGroupsPlayoff && (
-                        <>
-                            <Form.Check
-                                type="checkbox"
-                                id="tienePlayoff"
-                                label={<FormattedMessage id="project.tournaments.CreateTournament.step2.playoffAfterGroups" defaultMessage="Playoff después de fase de grupos" />}
-                                checked={data.tienePlayoff || false}
-                                onChange={e => handleChange('tienePlayoff', e.target.checked)}
-                                className="mb-2"
-                            />
-                            {data.tienePlayoff && (
-                                <Form.Check
-                                    type="checkbox"
-                                    id="idaVueltaPlayoff"
-                                    label={<FormattedMessage id="project.tournaments.CreateTournament.step2.homeAwayPlayoff" defaultMessage="Partidos de ida y vuelta en playoffs" />}
-                                    checked={data.idaVueltaPlayoff || false}
-                                    onChange={e => handleChange('idaVueltaPlayoff', e.target.checked)}
-                                    className="mb-3 ms-4"
+            {/* Playoff config — for GRUPOS_PLAYOFF and ELIMINATORIAS */}
+            {hasPlayoff && (
+                <>
+                    <hr className="my-3" />
+                    <h6 className="fw-semibold mb-2">
+                        <FormattedMessage id="project.tournaments.CreateTournament.step2.playoffSection" defaultMessage="Configuración de Playoff" />
+                    </h6>
+
+                    <Form.Check
+                        type="checkbox"
+                        id="idaVueltaPlayoff"
+                        label={<FormattedMessage id="project.tournaments.CreateTournament.step2.homeAwayPlayoff" defaultMessage="Partidos de ida y vuelta en playoffs" />}
+                        checked={data.idaVueltaPlayoff || false}
+                        onChange={e => handleChange('idaVueltaPlayoff', e.target.checked)}
+                        className="mb-2"
+                    />
+
+                    <Form.Group className="mb-3">
+                        <Form.Label className="text-secondary small fw-medium mb-2">
+                            <FormattedMessage id="project.tournaments.CreateTournament.step2.playoffDistribution" defaultMessage="Distribución de playoff" />
+                        </Form.Label>
+                        <Form.Select
+                            value={data.estrategiaPlayoff || 'RAPIDO'}
+                            onChange={e => handleChange('estrategiaPlayoff', e.target.value)}
+                            style={{ maxWidth: '300px' }}
+                        >
+                            <option value="RAPIDO">
+                                <FormattedMessage id="project.tournaments.CreateTournament.step4.distribution.fast" defaultMessage="Rápido" />
+                            </option>
+                            <option value="JORNADAS">
+                                <FormattedMessage id="project.tournaments.CreateTournament.step4.distribution.matchdays" defaultMessage="Jornadas" />
+                            </option>
+                            <option value="UNIFORME">
+                                <FormattedMessage id="project.tournaments.CreateTournament.step4.distribution.uniform" defaultMessage="Uniforme" />
+                            </option>
+                        </Form.Select>
+                    </Form.Group>
+
+                    {data.estrategiaPlayoff === 'JORNADAS' && (
+                        <Form.Group className="mb-3" controlId="diasEntrePlayoff">
+                            <Form.Label className="text-secondary small fw-medium mb-2">
+                                <FormattedMessage id="project.tournaments.CreateTournament.step4.daysBetweenMatchdays" defaultMessage="Días entre rondas" />
+                            </Form.Label>
+                            <div className="d-flex align-items-center gap-3" style={{ maxWidth: '300px' }}>
+                                <Form.Range
+                                    min={1}
+                                    max={14}
+                                    step={1}
+                                    value={data.diasEntrePlayoff ?? 7}
+                                    onChange={e => handleChange('diasEntrePlayoff', parseInt(e.target.value))}
+                                    style={{ flex: 1 }}
                                 />
-                            )}
-                        </>
+                                <span className="fw-semibold text-nowrap" style={{ minWidth: '60px', fontSize: '0.9rem' }}>
+                                    {data.diasEntrePlayoff ?? 7} <FormattedMessage id="project.tournaments.CreateTournament.step4.days" defaultMessage="días" />
+                                </span>
+                            </div>
+                        </Form.Group>
                     )}
                 </>
             )}

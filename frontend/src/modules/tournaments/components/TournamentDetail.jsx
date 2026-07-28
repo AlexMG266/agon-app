@@ -75,6 +75,8 @@ const TournamentDetail = () => {
         equiposPorGrupo: 2,
         tienePlayoff: true,
         idaVueltaPlayoff: false,
+        estrategiaPlayoff: 'RAPIDO',
+        diasEntrePlayoff: 7,
         fechaFin: '',
     });
     const [configErrors, setConfigErrors] = useState({});
@@ -245,8 +247,11 @@ const TournamentDetail = () => {
 
     const validateConfig = () => {
         const errors = {};
-        if (!configData.numGrupos || parseInt(configData.numGrupos) < 1) errors.numGrupos = true;
-        if (!configData.equiposPorGrupo || parseInt(configData.equiposPorGrupo) < 1) errors.equiposPorGrupo = true;
+        // Only validate groups fields for GRUPOS_PLAYOFF
+        if (configData.tipoTorneo === 'GRUPOS_PLAYOFF') {
+            if (!configData.numGrupos || parseInt(configData.numGrupos) < 1) errors.numGrupos = true;
+            if (!configData.equiposPorGrupo || parseInt(configData.equiposPorGrupo) < 1) errors.equiposPorGrupo = true;
+        }
         setConfigErrors(errors);
         return Object.keys(errors).length === 0;
     };
@@ -298,6 +303,10 @@ const TournamentDetail = () => {
     const handleConfigChange = (field, value) => {
         setConfigData(prev => {
             const newData = { ...prev, [field]: value };
+            // Auto-set tienePlayoff based on tournament type
+            if (field === 'tipoTorneo') {
+                newData.tienePlayoff = (value === 'GRUPOS_PLAYOFF' || value === 'ELIMINATORIAS');
+            }
             // Auto-calcular fechaFin cuando cambian parámetros relevantes
             if (field !== 'fechaFin' && tournament) {
                 newData.fechaFin = calcularFinPropuesto(newData, tournament);
@@ -659,32 +668,40 @@ const TournamentDetail = () => {
                                                 ))}
                                             </div>
                                         </div>
-                                        <div className={`td-config-field td-config-field--num ${configErrors.numGrupos ? 'error' : ''}`}>
-                                            <label>
-                                                <FormattedMessage id="project.tournaments.Create.Step2.numGrupos" defaultMessage="Grupos" />
-                                            </label>
-                                            <input type="number" min={1} max={20} value={configData.numGrupos}
-                                                onChange={e => handleConfigChange('numGrupos', e.target.value)} />
-                                            {configErrors.numGrupos && <span className="td-config-field-error">Válido requerido</span>}
-                                        </div>
-                                        <div className={`td-config-field td-config-field--num ${configErrors.equiposPorGrupo ? 'error' : ''}`}>
-                                            <label>
-                                                <FormattedMessage id="project.tournaments.Create.Step2.equiposPorGrupo" defaultMessage="Equipos x grupo" />
-                                            </label>
-                                            <input type="number" min={1} max={20} value={configData.equiposPorGrupo}
-                                                onChange={e => handleConfigChange('equiposPorGrupo', e.target.value)} />
-                                            {configErrors.equiposPorGrupo && <span className="td-config-field-error">Válido requerido</span>}
-                                        </div>
+                                        {/* Groups config — only for GRUPOS_PLAYOFF */}
+                                        {configData.tipoTorneo === 'GRUPOS_PLAYOFF' && (
+                                            <>
+                                                <div className={`td-config-field td-config-field--num ${configErrors.numGrupos ? 'error' : ''}`}>
+                                                    <label>
+                                                        <FormattedMessage id="project.tournaments.Create.Step2.numGrupos" defaultMessage="Grupos" />
+                                                    </label>
+                                                    <input type="number" min={1} max={20} value={configData.numGrupos}
+                                                        onChange={e => handleConfigChange('numGrupos', e.target.value)} />
+                                                    {configErrors.numGrupos && <span className="td-config-field-error">Válido requerido</span>}
+                                                </div>
+                                                <div className={`td-config-field td-config-field--num ${configErrors.equiposPorGrupo ? 'error' : ''}`}>
+                                                    <label>
+                                                        <FormattedMessage id="project.tournaments.Create.Step2.equiposPorGrupo" defaultMessage="Equipos x grupo" />
+                                                    </label>
+                                                    <input type="number" min={1} max={20} value={configData.equiposPorGrupo}
+                                                        onChange={e => handleConfigChange('equiposPorGrupo', e.target.value)} />
+                                                    {configErrors.equiposPorGrupo && <span className="td-config-field-error">Válido requerido</span>}
+                                                </div>
+                                            </>
+                                        )}
+
                                         <div className="td-config-calc td-config-field--full">
                                             <i className="fa-regular fa-calculator" />
                                             {configData.tipoTorneo === 'LIGA_UNICA' ? (
-                                                <FormattedMessage id="project.tournaments.Detail.config.calc.liga" defaultMessage="Liga única: {n} equipos en 1 grupo" values={{ n: parseInt(configData.equiposPorGrupo) * parseInt(configData.numGrupos) || 0 }} />
+                                                <FormattedMessage id="project.tournaments.Detail.config.calc.liga" defaultMessage="Liga única" />
                                             ) : configData.tipoTorneo === 'GRUPOS_PLAYOFF' ? (
-                                                <FormattedMessage id="project.tournaments.Detail.config.calc.grupos" defaultMessage="Grupos + Playoff: {total} equipos, {g} grupos de {e}" values={{ total: parseInt(configData.equiposPorGrupo) * parseInt(configData.numGrupos) || 0, g: configData.numGrupos, e: configData.equiposPorGrupo }} />
+                                                <FormattedMessage id="project.tournaments.Detail.config.calc.grupos" defaultMessage="Grupos + Playoff: {g} grupos de {e}" values={{ g: configData.numGrupos, e: configData.equiposPorGrupo }} />
                                             ) : (
-                                                <FormattedMessage id="project.tournaments.Detail.config.calc.elim" defaultMessage="Eliminatorias: {n} equipos" values={{ n: parseInt(configData.equiposPorGrupo) * parseInt(configData.numGrupos) || 0 }} />
+                                                <FormattedMessage id="project.tournaments.Detail.config.calc.elim" defaultMessage="Eliminatorias directas" />
                                             )}
                                         </div>
+
+                                        {/* Playoff config — for GRUPOS_PLAYOFF and ELIMINATORIAS */}
                                         {(configData.tipoTorneo === 'GRUPOS_PLAYOFF' || configData.tipoTorneo === 'ELIMINATORIAS') && (
                                             <>
                                                 <div className="td-config-toggles td-config-field--full">
