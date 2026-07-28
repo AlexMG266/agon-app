@@ -56,8 +56,6 @@ CU16: cerrar inscripciones (organizador)
 
 CU17: generar calendario (organizador)
 
-CU18: generar codigo QR (organizador)
-
 CU19: gestionar jornadas (organizador)
 
 CU20: consultar encuentros propios (usuario)
