@@ -30,10 +30,12 @@ public class EncuentroServiceImpl implements IEncuentroService {
     @Autowired
     private EquipoDao equipoDao;
 
+    @Autowired
+    private UserDao userDao;
+
     @Override
     @Transactional(readOnly = true)
     public List<Encuentro> consultarEncuentrosPropios(Long userId) {
-        // obtener todos los equipos del usuario
         List<Equipo> equipos = equipoDao.findByMiembrosId(userId);
         List<Encuentro> encuentros = new ArrayList<>();
         for (Equipo equipo : equipos) {
@@ -117,6 +119,25 @@ public class EncuentroServiceImpl implements IEncuentroService {
                         insc.actualizarEstadisticas(setsGanadosVisitante, setsPerdidosVisitante);
                         inscripcionDao.save(insc);
                     });
+        }
+
+        // actualizar ELO de los jugadores (CU23)
+        Equipo local = encuentro.getLocal();
+        Equipo visitante = encuentro.getVisitante();
+
+        double avgEloLocal = local.getMiembros().stream().mapToInt(User::getElo).average().orElse(0);
+        double avgEloVisitante = visitante.getMiembros().stream().mapToInt(User::getElo).average().orElse(0);
+
+        boolean ganoLocal = ganador.getId().equals(local.getId());
+
+        for (User miembro : local.getMiembros()) {
+            miembro.actualizarElo(avgEloVisitante, ganoLocal);
+            userDao.save(miembro);
+        }
+
+        for (User miembro : visitante.getMiembros()) {
+            miembro.actualizarElo(avgEloLocal, !ganoLocal);
+            userDao.save(miembro);
         }
     }
 

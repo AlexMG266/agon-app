@@ -1,6 +1,7 @@
 package es.udc.agon.backend.test.model.services;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -398,5 +399,57 @@ public class EncuentroServiceTest {
         assertThrows(InstanceNotFoundException.class,
                 () -> encuentroService.solicitarAplazamiento(user.getId(), 999L,
                         LocalDateTime.now().plusDays(5), "NotFound"));
+    }
+
+    // tests de actualizar ELO (CU23)
+
+    @Test
+    public void testRegistrarResultadoActualizaEloJugadorGanador() throws InstanceNotFoundException, PermissionException {
+        User org = createUser("org_elo1");
+        User cap1 = createUser("cap_elo1_1");
+        User cap2 = createUser("cap_elo1_2");
+
+        Encuentro encuentro = setupEncuentro(org, cap1, cap2);
+
+        int eloAntes = cap1.getElo();
+
+        List<SetEntity> sets = new ArrayList<>();
+        sets.add(new SetEntity(null, 1, 25, 20));
+        sets.add(new SetEntity(null, 2, 25, 18));
+        sets.add(new SetEntity(null, 3, 25, 20));
+
+        encuentroService.registrarResultado(encuentro.getId(), sets);
+
+        User cap1Actualizado = userDao.findById(cap1.getId()).get();
+        User cap2Actualizado = userDao.findById(cap2.getId()).get();
+
+        // El ganador (cap1, equipo local) debe subir ELO, el perdedor debe bajar
+        assertTrue(cap1Actualizado.getElo() > eloAntes, "El ELO del ganador deberia aumentar");
+        assertTrue(cap2Actualizado.getElo() < 1500, "El ELO del perdedor deberia disminuir");
+        assertEquals(1, cap1Actualizado.getPartidosJugados());
+    }
+
+    @Test
+    public void testRegistrarResultadoEloProvisionalFalseDespuesDe20Partidos() throws Exception {
+        User org = createUser("org_elo20");
+        User cap1 = createUser("cap_elo20_1");
+        User cap2 = createUser("cap_elo20_2");
+
+        // Simular que cap1 ya ha jugado 19 partidos
+        cap1.setPartidosJugados(19);
+        userDao.save(cap1);
+
+        Encuentro encuentro = setupEncuentro(org, cap1, cap2);
+
+        List<SetEntity> sets = new ArrayList<>();
+        sets.add(new SetEntity(null, 1, 25, 20));
+        sets.add(new SetEntity(null, 2, 25, 18));
+        sets.add(new SetEntity(null, 3, 25, 20));
+
+        encuentroService.registrarResultado(encuentro.getId(), sets);
+
+        User cap1Actualizado = userDao.findById(cap1.getId()).get();
+        assertEquals(20, cap1Actualizado.getPartidosJugados());
+        assertFalse(cap1Actualizado.isEloProvisional(), "ELO deberia dejar de ser provisional tras 20 partidos");
     }
 }
