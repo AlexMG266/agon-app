@@ -1,5 +1,6 @@
 package es.udc.agon.backend.rest.controllers;
 
+import es.udc.agon.backend.model.entities.EstadoJornada;
 import es.udc.agon.backend.model.entities.Solicitud;
 import es.udc.agon.backend.model.entities.Torneo;
 import es.udc.agon.backend.model.exceptions.InstanceNotFoundException;
@@ -10,6 +11,7 @@ import es.udc.agon.backend.rest.dtos.ActualizarTorneoParamsDto;
 import es.udc.agon.backend.rest.dtos.BlockDto;
 import es.udc.agon.backend.rest.dtos.ConfigurarEstructuraParamsDto;
 import es.udc.agon.backend.rest.dtos.CrearTorneoParamsDto;
+import es.udc.agon.backend.rest.dtos.GestionarJornadaParamsDto;
 import es.udc.agon.backend.rest.dtos.InscribirEquipoParamsDto;
 import es.udc.agon.backend.rest.dtos.JornadaDto;
 import es.udc.agon.backend.rest.dtos.SolicitudDto;
@@ -26,6 +28,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
@@ -489,8 +492,41 @@ public class TorneoController {
 
     @GetMapping("/{id}/jornadas")
     @ResponseStatus(HttpStatus.OK)
+    @Operation(
+            summary = "Obtener jornadas de un torneo",
+            description = "Recupera todas las jornadas de un torneo con sus encuentros."
+    )
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Lista de jornadas",
+                    content = @Content(array = @ArraySchema(schema = @Schema(implementation = JornadaDto.class)))),
+            @ApiResponse(responseCode = "401", description = "No autorizado",
+                    content = @Content)
+    })
     public List<JornadaDto> obtenerJornadas(@PathVariable Long id) {
         return TorneoConversor.toJornadaDtos(torneoService.obtenerJornadas(id));
+    }
+
+    @PatchMapping("/{id}/jornadas/{jornadaId}")
+    @ResponseStatus(HttpStatus.OK)
+    @Operation(
+            summary = "Gestionar estado de una jornada",
+            description = "Permite al organizador cambiar el estado de una jornada (ACTIVA, APLAZADA)."
+    )
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Estado de la jornada actualizado"),
+            @ApiResponse(responseCode = "400", description = "La jornada no pertenece al torneo"),
+            @ApiResponse(responseCode = "401", description = "No autorizado"),
+            @ApiResponse(responseCode = "403", description = "El usuario no es el organizador"),
+            @ApiResponse(responseCode = "404", description = "Torneo o jornada no encontrados")
+    })
+    public void gestionarJornada(
+            @Parameter(hidden = true) @RequestAttribute Long userId,
+            @Parameter(description = "ID del torneo", example = "1") @PathVariable Long id,
+            @Parameter(description = "ID de la jornada", example = "1") @PathVariable Long jornadaId,
+            @Valid @RequestBody GestionarJornadaParamsDto params)
+            throws InstanceNotFoundException, PermissionException {
+
+        torneoService.gestionarJornadas(id, jornadaId, EstadoJornada.valueOf(params.getEstado()));
     }
 
     @GetMapping("/solicitud/{solicitudId}")

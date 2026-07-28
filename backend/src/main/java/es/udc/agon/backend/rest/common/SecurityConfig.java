@@ -66,7 +66,12 @@ public class SecurityConfig {
                     .requestMatchers(HttpMethod.POST, "/tournaments/**").hasRole("USER")
                     .requestMatchers(HttpMethod.GET, "/tournaments").hasRole("USER")
                     .requestMatchers(HttpMethod.GET, "/tournaments/**").hasRole("USER")
+                    .requestMatchers(HttpMethod.PATCH, "/tournaments/**").hasRole("USER")
                     .requestMatchers(HttpMethod.DELETE, "/tournaments/**").hasRole("USER")
+
+                    .requestMatchers(HttpMethod.GET, "/encounters/my").hasRole("USER")
+                    .requestMatchers(HttpMethod.POST, "/encounters/*/result").hasRole("USER")
+                    .requestMatchers(HttpMethod.POST, "/encounters/*/postpone").hasRole("USER")
 
                     .anyRequest().denyAll()
                 );
