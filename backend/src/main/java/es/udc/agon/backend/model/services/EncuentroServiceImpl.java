@@ -7,9 +7,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 @Service
 @Transactional
@@ -30,6 +33,12 @@ public class EncuentroServiceImpl implements IEncuentroService {
     @Autowired
     private EquipoDao equipoDao;
 
+    @Autowired
+    private NotificationDispatcher notificationDispatcher;
+
+    @Autowired
+    private NotificationDao notificationDao;
+
     @Override
     @Transactional(readOnly = true)
     public List<Encuentro> consultarEncuentrosPropios(Long userId) {
@@ -40,6 +49,45 @@ public class EncuentroServiceImpl implements IEncuentroService {
             encuentros.addAll(encuentroDao.findByEquipoId(equipo.getId()));
         }
         return encuentros;
+    }
+
+    @Override
+    public void generarRecordatoriosPartidos(Long userId) throws InstanceNotFoundException {
+
+        User user = permissionChecker.checkUser(userId);
+
+        // si el usuario ha desactivado las notificaciones de partidos no se genera nada
+        if (!user.isNotificacionesPartidos()) {
+            return;
+        }
+
+        int diasAntelacion = Math.max(0, user.getDiasAntelacionPartidos());
+
+        LocalDate hoy = LocalDate.now();
+        LocalDate fechaRecordatorio = hoy.plusDays(diasAntelacion);
+
+        // solo recordatorios para partidos aún no jugados
+        List<Encuentro> encuentros = consultarEncuentrosPropios(userId).stream()
+                .filter(enc -> enc.getFechaRealizacion() != null)
+                .filter(enc -> enc.getFechaRealizacion().toLocalDate().equals(fechaRecordatorio))
+                .filter(enc -> enc.getEstadoEncuentro() != EstadoEncuentro.JUGADO)
+                .toList();
+
+        Set<Long> yaRecordados = new HashSet<>();
+        for (Encuentro encuentro : encuentros) {
+            Long encuentroId = encuentro.getId();
+            if (yaRecordados.contains(encuentroId)) {
+                continue;
+            }
+            // idempotencia: si ya existe un recordatorio para este encuentro no se duplica
+            if (notificationDao.findByUsuarioIdAndReferenciaIdAndTipo(
+                    userId, encuentroId, Notification.TipoNotificacion.RECORDATORIO_PARTIDO).isPresent()) {
+                yaRecordados.add(encuentroId);
+                continue;
+            }
+            notificationDispatcher.recordatorioPartido(user, encuentro);
+            yaRecordados.add(encuentroId);
+        }
     }
 
     @Override

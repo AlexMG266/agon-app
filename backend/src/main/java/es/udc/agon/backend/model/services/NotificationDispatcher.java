@@ -1,5 +1,6 @@
 package es.udc.agon.backend.model.services;
 
+import es.udc.agon.backend.model.entities.Encuentro;
 import es.udc.agon.backend.model.entities.Notification;
 import es.udc.agon.backend.model.entities.Notification.TipoNotificacion;
 import es.udc.agon.backend.model.entities.NotificationDao;
@@ -8,6 +9,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.MessageSource;
 import org.springframework.stereotype.Component;
 
+import java.time.format.DateTimeFormatter;
 import java.util.Locale;
 
 /**
@@ -99,6 +101,32 @@ public class NotificationDispatcher {
     public void notificacionPendienteDeAccion(User destinatario, String asunto, String cuerpo, Long referenciaId) {
         notificationDao.save(new Notification(
                 destinatario, asunto, cuerpo, false, true, referenciaId, TipoNotificacion.INVITACION));
+    }
+
+    // -----------------------------------------------------------------------
+    //   Notificaciones de tipo RECORDATORIO_PARTIDO
+    // -----------------------------------------------------------------------
+
+    /**
+     * Notifica al usuario que tiene un encuentro programado en los próximos días.
+     *
+     * @param destinatario usuario que participa en el encuentro.
+     * @param encuentro    encuentro que se acerca.
+     */
+    public void recordatorioPartido(User destinatario, Encuentro encuentro) {
+        String local = encuentro.getLocal() != null ? encuentro.getLocal().getNombreEquipo() : "?";
+        String visitante = encuentro.getVisitante() != null ? encuentro.getVisitante().getNombreEquipo() : "?";
+        String fecha = encuentro.getFechaRealizacion() != null
+                ? encuentro.getFechaRealizacion().format(DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm"))
+                : "?";
+        String asunto = messageSource.getMessage(
+                "notifications.recordatorio.partido.asunto",
+                new Object[]{local, visitante}, Locale.getDefault());
+        String cuerpo = messageSource.getMessage(
+                "notifications.recordatorio.partido.cuerpo",
+                new Object[]{local, visitante, fecha}, Locale.getDefault());
+        notificationDao.save(new Notification(
+                destinatario, asunto, cuerpo, false, false, encuentro.getId(), TipoNotificacion.RECORDATORIO_PARTIDO));
     }
 
 }

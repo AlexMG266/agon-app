@@ -18,6 +18,16 @@ public interface IEncuentroService {
     List<Encuentro> consultarEncuentrosPropios(Long userId);
 
     /**
+     * Genera (de forma idempotente) recordatorios de partidos próximos para el usuario
+     * según su configuración de notificaciones ({@code notificacionesPartidos} y
+     * {@code diasAntelacionPartidos}).
+     *
+     * @param userId id del usuario.
+     * @throws InstanceNotFoundException si el usuario no existe.
+     */
+    void generarRecordatoriosPartidos(Long userId) throws InstanceNotFoundException;
+
+    /**
      * registra el resultado de un encuentro (lista de sets).
      *
      * @param encuentroId  id del encuentro.

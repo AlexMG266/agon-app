@@ -44,11 +44,13 @@ public class SecurityConfig {
                     .requestMatchers(HttpMethod.PUT, "/users/*").hasRole("USER")  
                     .requestMatchers(HttpMethod.POST, "/users/*/changePassword").hasRole("USER")  
 
-                    .requestMatchers(HttpMethod.GET, "/notifications").hasRole("USER")  
-                    .requestMatchers(HttpMethod.GET, "/notifications/*").hasRole("USER")  
-                    .requestMatchers(HttpMethod.POST, "/notifications").hasRole("USER")  
-                    .requestMatchers(HttpMethod.POST, "/notifications/*").hasRole("USER")  
-                    .requestMatchers(HttpMethod.PUT, "/notifications/*").hasRole("USER")  
+                    .requestMatchers(HttpMethod.GET, "/notifications").hasRole("USER")
+                    .requestMatchers(HttpMethod.GET, "/notifications/*").hasRole("USER")
+                    .requestMatchers(HttpMethod.POST, "/notifications").hasRole("USER")
+                    .requestMatchers(HttpMethod.POST, "/notifications/*").hasRole("USER")
+                    .requestMatchers(HttpMethod.PUT, "/notifications/*").hasRole("USER")
+
+                    .requestMatchers(HttpMethod.GET, "/encuentros/**").hasRole("USER")
 
                     .requestMatchers(HttpMethod.POST, "/teams").hasRole("USER")
                     .requestMatchers(HttpMethod.GET, "/teams").hasRole("USER")

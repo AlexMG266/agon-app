@@ -1,12 +1,17 @@
 package es.udc.agon.backend.rest.dtos;
 
+import es.udc.agon.backend.model.entities.Encuentro;
 import es.udc.agon.backend.model.entities.Inscripcion;
 import es.udc.agon.backend.model.entities.Jornada;
 import es.udc.agon.backend.model.entities.Torneo;
 import es.udc.agon.backend.model.services.Block;
 
+import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 public class TorneoConversor {
@@ -123,5 +128,45 @@ public class TorneoConversor {
                 .map(TorneoConversor::toTorneoDto)
                 .collect(Collectors.toList());
         return new BlockDto<>(dtos, block.getExistMoreItems());
+    }
+
+    /**
+     * Convierte los encuentros de un usuario en una lista de grupos por fecha,
+     * ordenados cronológicamente de más reciente a más lejana.
+     */
+    public static List<FechaEncuentrosDto> toFechaEncuentrosDtos(List<Encuentro> encuentros) {
+        if (encuentros == null || encuentros.isEmpty()) {
+            return new ArrayList<>();
+        }
+
+        // agrupar por fecha de realización conservando el orden
+        Map<LocalDate, List<EncuentroDto>> porFecha = new LinkedHashMap<>();
+        encuentros.stream()
+                .sorted(Comparator.comparing(Encuentro::getFechaRealizacion,
+                        Comparator.nullsLast(Comparator.reverseOrder())))
+                .forEach(enc -> {
+                    LocalDate fecha = enc.getFechaRealizacion() != null
+                            ? enc.getFechaRealizacion().toLocalDate()
+                            : null;
+                    porFecha.computeIfAbsent(fecha, k -> new ArrayList<>())
+                            .add(toEncuentroDto(enc));
+                });
+
+        return porFecha.entrySet().stream()
+                .map(entry -> new FechaEncuentrosDto(entry.getKey(), entry.getValue()))
+                .collect(Collectors.toList());
+    }
+
+    private static EncuentroDto toEncuentroDto(Encuentro enc) {
+        String estado = enc.getEstadoEncuentro() != null ? enc.getEstadoEncuentro().name() : null;
+        return new EncuentroDto(
+                enc.getId(),
+                enc.getLocal() != null ? enc.getLocal().getId() : null,
+                enc.getLocal() != null ? enc.getLocal().getNombreEquipo() : null,
+                enc.getVisitante() != null ? enc.getVisitante().getId() : null,
+                enc.getVisitante() != null ? enc.getVisitante().getNombreEquipo() : null,
+                estado,
+                enc.getFechaRealizacion()
+        );
     }
 }
