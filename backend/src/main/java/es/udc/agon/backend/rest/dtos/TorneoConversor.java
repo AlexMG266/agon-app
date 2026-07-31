@@ -1,8 +1,10 @@
 package es.udc.agon.backend.rest.dtos;
 
 import es.udc.agon.backend.model.entities.Encuentro;
+import es.udc.agon.backend.model.entities.EstadoEncuentro;
 import es.udc.agon.backend.model.entities.Inscripcion;
 import es.udc.agon.backend.model.entities.Jornada;
+import es.udc.agon.backend.model.entities.SetEntity;
 import es.udc.agon.backend.model.entities.Torneo;
 import es.udc.agon.backend.model.services.Block;
 
@@ -93,18 +95,9 @@ public class TorneoConversor {
     public static JornadaDto toJornadaDto(Jornada jornada) {
         List<EncuentroDto> encuentroDtos = null;
         if (jornada.getEncuentros() != null) {
-            encuentroDtos = jornada.getEncuentros().stream().map(enc -> {
-                String estado = enc.getEstadoEncuentro() != null ? enc.getEstadoEncuentro().name() : null;
-                return new EncuentroDto(
-                    enc.getId(),
-                    enc.getLocal() != null ? enc.getLocal().getId() : null,
-                    enc.getLocal() != null ? enc.getLocal().getNombreEquipo() : null,
-                    enc.getVisitante() != null ? enc.getVisitante().getId() : null,
-                    enc.getVisitante() != null ? enc.getVisitante().getNombreEquipo() : null,
-                    estado,
-                    enc.getFechaRealizacion()
-                );
-            }).collect(Collectors.toList());
+            encuentroDtos = jornada.getEncuentros().stream()
+                    .map(TorneoConversor::toEncuentroDto)
+                    .collect(Collectors.toList());
         }
         String tipoFase = jornada.getTipoFase() != null ? jornada.getTipoFase().name() : null;
         return new JornadaDto(
@@ -159,6 +152,34 @@ public class TorneoConversor {
 
     private static EncuentroDto toEncuentroDto(Encuentro enc) {
         String estado = enc.getEstadoEncuentro() != null ? enc.getEstadoEncuentro().name() : null;
+
+        List<SetDto> setDtos = null;
+        if (enc.getSets() != null && !enc.getSets().isEmpty()) {
+            setDtos = enc.getSets().stream()
+                    .sorted(Comparator.comparingInt(SetEntity::getNumeroSet))
+                    .map(set -> new SetDto(set.getNumeroSet(), set.getGolesLocal(), set.getGolesVisitante()))
+                    .collect(Collectors.toList());
+        }
+
+        Long ganadorId = null;
+        if (EstadoEncuentro.JUGADO.equals(enc.getEstadoEncuentro()) && enc.getGanador() != null) {
+            ganadorId = enc.getGanador().getId();
+        }
+
+        String resultado = null;
+        if (EstadoEncuentro.JUGADO.equals(enc.getEstadoEncuentro()) && setDtos != null) {
+            int setsLocal = 0;
+            int setsVisitante = 0;
+            for (SetDto set : setDtos) {
+                if (set.getGolesLocal() > set.getGolesVisitante()) {
+                    setsLocal++;
+                } else {
+                    setsVisitante++;
+                }
+            }
+            resultado = setsLocal + "-" + setsVisitante;
+        }
+
         return new EncuentroDto(
                 enc.getId(),
                 enc.getLocal() != null ? enc.getLocal().getId() : null,
@@ -166,7 +187,10 @@ public class TorneoConversor {
                 enc.getVisitante() != null ? enc.getVisitante().getId() : null,
                 enc.getVisitante() != null ? enc.getVisitante().getNombreEquipo() : null,
                 estado,
-                enc.getFechaRealizacion()
+                enc.getFechaRealizacion(),
+                setDtos,
+                ganadorId,
+                resultado
         );
     }
 }

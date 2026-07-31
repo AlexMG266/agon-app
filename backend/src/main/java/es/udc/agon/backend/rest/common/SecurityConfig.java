@@ -51,6 +51,7 @@ public class SecurityConfig {
                     .requestMatchers(HttpMethod.PUT, "/notifications/*").hasRole("USER")
 
                     .requestMatchers(HttpMethod.GET, "/encuentros/**").hasRole("USER")
+                    .requestMatchers(HttpMethod.POST, "/encuentros/**").hasRole("USER")
 
                     .requestMatchers(HttpMethod.POST, "/teams").hasRole("USER")
                     .requestMatchers(HttpMethod.GET, "/teams").hasRole("USER")

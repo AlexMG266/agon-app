@@ -163,7 +163,7 @@ public class EncuentroServiceTest {
         sets.add(new SetEntity(null, 3, 20, 25));
         sets.add(new SetEntity(null, 4, 25, 22));
 
-        encuentroService.registrarResultado(encuentro.getId(), sets);
+        encuentroService.registrarResultado(cap1.getId(), encuentro.getId(), sets);
 
         Encuentro actualizado = encuentroDao.findById(encuentro.getId()).get();
         assertEquals(EstadoEncuentro.JUGADO, actualizado.getEstadoEncuentro());
@@ -188,7 +188,7 @@ public class EncuentroServiceTest {
         sets.add(new SetEntity(null, 3, 18, 25));
         sets.add(new SetEntity(null, 4, 22, 25));
 
-        encuentroService.registrarResultado(encuentro.getId(), sets);
+        encuentroService.registrarResultado(cap1.getId(), encuentro.getId(), sets);
 
         Encuentro actualizado = encuentroDao.findById(encuentro.getId()).get();
         assertEquals(EstadoEncuentro.JUGADO, actualizado.getEstadoEncuentro());
@@ -208,11 +208,11 @@ public class EncuentroServiceTest {
         sets.add(new SetEntity(null, 2, 25, 18));
         sets.add(new SetEntity(null, 3, 25, 20));
 
-        encuentroService.registrarResultado(encuentro.getId(), sets);
+        encuentroService.registrarResultado(cap1.getId(), encuentro.getId(), sets);
 
         // intentar registrar de nuevo
         assertThrows(IllegalArgumentException.class,
-                () -> encuentroService.registrarResultado(encuentro.getId(), sets));
+                () -> encuentroService.registrarResultado(cap1.getId(), encuentro.getId(), sets));
     }
 
     @Test
@@ -224,7 +224,7 @@ public class EncuentroServiceTest {
         Encuentro encuentro = setupEncuentro(org, cap1, cap2);
 
         assertThrows(IllegalArgumentException.class,
-                () -> encuentroService.registrarResultado(encuentro.getId(), new ArrayList<>()));
+                () -> encuentroService.registrarResultado(cap1.getId(), encuentro.getId(), new ArrayList<>()));
     }
 
     @Test
@@ -239,7 +239,7 @@ public class EncuentroServiceTest {
         sets.add(new SetEntity(null, 1, -5, 25));
 
         assertThrows(IllegalArgumentException.class,
-                () -> encuentroService.registrarResultado(encuentro.getId(), sets));
+                () -> encuentroService.registrarResultado(cap1.getId(), encuentro.getId(), sets));
     }
 
     @Test
@@ -254,7 +254,7 @@ public class EncuentroServiceTest {
         sets.add(new SetEntity(null, 1, 25, 25));
 
         assertThrows(IllegalArgumentException.class,
-                () -> encuentroService.registrarResultado(encuentro.getId(), sets));
+                () -> encuentroService.registrarResultado(cap1.getId(), encuentro.getId(), sets));
     }
 
     @Test
@@ -274,7 +274,7 @@ public class EncuentroServiceTest {
         sets.add(new SetEntity(null, 3, 20, 25));
         sets.add(new SetEntity(null, 4, 25, 22));
 
-        encuentroService.registrarResultado(encuentro.getId(), sets);
+        encuentroService.registrarResultado(cap1.getId(), encuentro.getId(), sets);
 
         // Find inscripciones for both equipos in the torneo
         Long torneoId = encuentro.getJornada().getTorneo().getId();
@@ -298,8 +298,27 @@ public class EncuentroServiceTest {
 
     @Test
     public void testRegistrarResultadoInstanceNotFoundException() {
+        User user = createUser("user_res_notfound");
         assertThrows(InstanceNotFoundException.class,
-                () -> encuentroService.registrarResultado(999L, new ArrayList<>()));
+                () -> encuentroService.registrarResultado(user.getId(), 999L, new ArrayList<>()));
+    }
+
+    @Test
+    public void testRegistrarResultadoPermissionException() throws InstanceNotFoundException, PermissionException {
+        User org = createUser("org_resultado_perm");
+        User cap1 = createUser("cap_perm1");
+        User cap2 = createUser("cap_perm2");
+        User otroUser = createUser("otro_perm");
+
+        Encuentro encuentro = setupEncuentro(org, cap1, cap2);
+
+        List<SetEntity> sets = new ArrayList<>();
+        sets.add(new SetEntity(null, 1, 25, 20));
+        sets.add(new SetEntity(null, 2, 25, 18));
+        sets.add(new SetEntity(null, 3, 25, 20));
+
+        assertThrows(PermissionException.class,
+                () -> encuentroService.registrarResultado(otroUser.getId(), encuentro.getId(), sets));
     }
 
 
@@ -371,7 +390,7 @@ public class EncuentroServiceTest {
         sets.add(new SetEntity(null, 1, 25, 20));
         sets.add(new SetEntity(null, 2, 25, 18));
         sets.add(new SetEntity(null, 3, 25, 20));
-        encuentroService.registrarResultado(encuentro.getId(), sets);
+        encuentroService.registrarResultado(cap1.getId(), encuentro.getId(), sets);
 
         // ahora intentar aplazar
         assertThrows(IllegalArgumentException.class,

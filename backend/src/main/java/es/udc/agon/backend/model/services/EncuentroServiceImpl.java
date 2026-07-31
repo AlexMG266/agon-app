@@ -90,12 +90,24 @@ public class EncuentroServiceImpl implements IEncuentroService {
         }
     }
 
-    @Override
-    public void registrarResultado(Long encuentroId, List<SetEntity> sets)
-            throws InstanceNotFoundException, IllegalArgumentException {
+    @Autowired
+    private TorneoService torneoService;
 
+    @Override
+    public void registrarResultado(Long capitanId, Long encuentroId, List<SetEntity> sets)
+            throws InstanceNotFoundException, PermissionException, IllegalArgumentException {
+
+        permissionChecker.checkUser(capitanId);
         Encuentro encuentro = encuentroDao.findById(encuentroId)
                 .orElseThrow(() -> new InstanceNotFoundException("project.entities.encuentro", encuentroId));
+
+        // verificar que el capitan pertenece a uno de los equipos del encuentro
+        boolean esCapitanLocal = encuentro.getLocal().getCreador().getId().equals(capitanId);
+        boolean esCapitanVisitante = encuentro.getVisitante().getCreador().getId().equals(capitanId);
+
+        if (!esCapitanLocal && !esCapitanVisitante) {
+            throw new PermissionException();
+        }
 
         if (encuentro.getEstadoEncuentro() == EstadoEncuentro.JUGADO) {
             throw new IllegalArgumentException("El encuentro ya tiene un resultado registrado");
@@ -165,6 +177,34 @@ public class EncuentroServiceImpl implements IEncuentroService {
                         insc.actualizarEstadisticas(setsGanadosVisitante, setsPerdidosVisitante);
                         inscripcionDao.save(insc);
                     });
+        }
+
+        // si el torneo tiene playoffs y la fase de grupos esta completa, generar los playoffs automaticamente
+        if (jornada != null && jornada.getTorneo() != null
+                && Boolean.TRUE.equals(jornada.getTorneo().getTienePlayoff())) {
+            Long torneoId = jornada.getTorneo().getId();
+            List<Jornada> jornadasTorneo = torneoService.obtenerJornadas(torneoId);
+            boolean faseGruposCompleta = true;
+            boolean hayPlayoffsGenerados = false;
+            for (Jornada j : jornadasTorneo) {
+                if (j.getTipoFase() == TipoFase.ELIMINATORIA) {
+                    hayPlayoffsGenerados = true;
+                }
+                if (j.getTipoFase() == TipoFase.LIGA_GRUPO) {
+                    for (Encuentro e : j.getEncuentros()) {
+                        if (e.getEstadoEncuentro() != EstadoEncuentro.JUGADO) {
+                            faseGruposCompleta = false;
+                            break;
+                        }
+                    }
+                }
+                if (!faseGruposCompleta) {
+                    break;
+                }
+            }
+            if (faseGruposCompleta && !hayPlayoffsGenerados) {
+                torneoService.generarPlayoffs(torneoId);
+            }
         }
     }
 

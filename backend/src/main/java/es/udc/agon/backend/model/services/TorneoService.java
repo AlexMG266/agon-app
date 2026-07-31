@@ -60,4 +60,15 @@ public interface TorneoService {
     List<Jornada> obtenerJornadas(Long torneoId);
 
     Solicitud obtenerSolicitud(Long solicitudId) throws InstanceNotFoundException;
+
+    /**
+     * Genera automaticamente el calendario de playoffs (eliminatorias) del torneo
+     * con los equipos clasificados de la fase de grupos (los 2 mejores de cada grupo).
+     *
+     * @param torneoId id del torneo.
+     * @throws InstanceNotFoundException si el torneo no existe.
+     * @throws IllegalArgumentException  si el torneo no tiene playoffs configurados,
+     *                                   si la fase de grupos no esta completa o si ya hay playoffs generados.
+     */
+    List<Jornada> generarPlayoffs(Long torneoId) throws InstanceNotFoundException, IllegalArgumentException;
 }

@@ -12,8 +12,10 @@ import org.springframework.transaction.annotation.Transactional;
 import java.security.SecureRandom;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.DayOfWeek;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
@@ -815,5 +817,201 @@ public class TorneoServiceImpl implements TorneoService {
     public Solicitud obtenerSolicitud(Long solicitudId) throws InstanceNotFoundException {
         return solicitudDao.findById(solicitudId)
                 .orElseThrow(() -> new InstanceNotFoundException("project.entities.solicitud", solicitudId));
+    }
+
+    @Override
+    public List<Jornada> generarPlayoffs(Long torneoId) throws InstanceNotFoundException, IllegalArgumentException {
+
+        Torneo torneo = torneoDao.findById(torneoId)
+                .orElseThrow(() -> new InstanceNotFoundException("project.entities.torneo", torneoId));
+
+        if (torneo.getTienePlayoff() == null || !torneo.getTienePlayoff()) {
+            throw new IllegalArgumentException("El torneo no tiene playoffs configurados");
+        }
+
+        // ya existen jornadas de eliminatorias
+        List<Jornada> jornadasTorneo = jornadaDao.findByTorneoIdOrderByNumeroJornadaAsc(torneoId);
+        boolean hayPlayoffs = jornadasTorneo.stream()
+                .anyMatch(j -> j.getTipoFase() == TipoFase.ELIMINATORIA);
+        if (hayPlayoffs) {
+            throw new IllegalArgumentException("El torneo ya tiene playoffs generados");
+        }
+
+        // obtener los clasificados: los 2 mejores de cada grupo por puntos
+        List<Grupo> grupos = grupoDao.findByTorneoId(torneoId);
+        List<Equipo> clasificados = new ArrayList<>();
+        for (Grupo grupo : grupos) {
+            List<Inscripcion> inscripcionesGrupo = inscripcionDao.findByGrupoId(grupo.getId());
+            inscripcionesGrupo.sort(Comparator.comparingInt(Inscripcion::getPuntosLiga).reversed()
+                    .thenComparingInt(Inscripcion::getSetsGanados).reversed()
+                    .thenComparingInt(Inscripcion::getSetsPerdidos));
+            for (int i = 0; i < Math.min(2, inscripcionesGrupo.size()); i++) {
+                clasificados.add(inscripcionesGrupo.get(i).getEquipo());
+            }
+        }
+
+        if (clasificados.size() < 2) {
+            throw new IllegalArgumentException("No hay suficientes equipos clasificados para los playoffs");
+        }
+
+        // rellenar hasta una potencia de 2 con "byes" (null) para el bracket
+        int numEquipos = clasificados.size();
+        int potencia = 1;
+        while (potencia < numEquipos) {
+            potencia *= 2;
+        }
+        while (clasificados.size() < potencia) {
+            clasificados.add(null);
+        }
+
+        boolean idaVuelta = Boolean.TRUE.equals(torneo.getIdaVueltaPlayoff());
+        String estrategia = torneo.getEstrategiaPlayoff();
+        int diasEntre = 1;
+        if ("JORNADAS".equals(estrategia)) {
+            diasEntre = torneo.getDiasEntrePlayoff() != null ? torneo.getDiasEntrePlayoff() : 7;
+        }
+
+        int numeroJornada = jornadasTorneo.stream()
+                .mapToInt(Jornada::getNumeroJornada)
+                .max().orElse(0) + 1;
+
+        // fecha de inicio: siguiente dia disponible segun la configuracion del torneo
+        LocalDate fechaBase = LocalDate.now();
+        if (torneo.getFechaFin() != null) {
+            // si hay fechaFin, partir del ultimo encuentro de fase de grupos
+            Jornada ultimaLiga = null;
+            for (Jornada j : jornadasTorneo) {
+                if (j.getTipoFase() == TipoFase.LIGA_GRUPO) {
+                    ultimaLiga = j;
+                }
+            }
+            if (ultimaLiga != null && ultimaLiga.getFechaFin() != null) {
+                fechaBase = ultimaLiga.getFechaFin();
+            }
+        }
+
+        int horaInicioMinutos = torneo.getHoraInicio() != null
+                ? Integer.parseInt(torneo.getHoraInicio().split(":")[0]) * 60
+                  + Integer.parseInt(torneo.getHoraInicio().split(":")[1])
+                : 16 * 60;
+        int horaFinMinutos = torneo.getHoraFin() != null
+                ? Integer.parseInt(torneo.getHoraFin().split(":")[0]) * 60
+                  + Integer.parseInt(torneo.getHoraFin().split(":")[1])
+                : 22 * 60;
+        int duracionPartidoMinutos = torneo.getDuracionPartido() != null
+                ? torneo.getDuracionPartido() : 60;
+
+        // construir el bracket de eliminatorias de forma idempotente:
+        // se recrea el bracket a partir de los clasificados y de los resultados ya registrados.
+        // Solo se crean encuentros cuyos dos participantes ya son conocidos (los byes avanzan solos
+        // y los ganadores de encuentros jugados se van incorporando en rondas posteriores).
+        List<Jornada> eliminatorias = jornadasTorneo.stream()
+                .filter(j -> j.getTipoFase() == TipoFase.ELIMINATORIA)
+                .sorted(Comparator.comparingInt(Jornada::getNumeroJornada))
+                .collect(Collectors.toList());
+        Map<Integer, Jornada> jornadaPorRonda = new LinkedHashMap<>();
+        for (int i = 0; i < eliminatorias.size(); i++) {
+            jornadaPorRonda.put(i, eliminatorias.get(i));
+        }
+
+        // copias finales para usar dentro de las lambdas del bracket
+        final LocalDate fechaBaseFinal = fechaBase;
+        final int diasEntreFinal = diasEntre;
+
+        List<Equipo> rondaActual = new ArrayList<>(clasificados);
+        int ronda = 0;
+        while (rondaActual.size() > 1) {
+            final int rondaIdx = ronda;
+            Jornada jornadaRonda = jornadaPorRonda.computeIfAbsent(rondaIdx, r -> new Jornada(
+                    torneo, numeroJornada + rondaIdx, TipoFase.ELIMINATORIA,
+                    TipoJornada.PLAYOFF_BEST_OF_5,
+                    fechaBaseFinal.plusDays((long) rondaIdx * diasEntreFinal),
+                    fechaBaseFinal.plusDays((long) rondaIdx * diasEntreFinal)));
+
+            int slotActual = jornadaRonda.getEncuentros().size();
+            List<Equipo> siguienteRonda = new ArrayList<>();
+
+            for (int i = 0; i < rondaActual.size(); i += 2) {
+                Equipo a = rondaActual.get(i);
+                Equipo b = (i + 1 < rondaActual.size()) ? rondaActual.get(i + 1) : null;
+
+                // emparejamiento incompleto o bye doble: no hay nada que crear
+                if (a == null && b == null) {
+                    continue;
+                }
+                // bye: el equipo conocido avanza directamente
+                if (a == null) {
+                    siguienteRonda.add(b);
+                    continue;
+                }
+                if (b == null) {
+                    siguienteRonda.add(a);
+                    continue;
+                }
+
+                // ambos equipos conocidos: comprobar si el encuentro ya existe
+                boolean existe = jornadaRonda.getEncuentros().stream().anyMatch(e ->
+                        (e.getLocal().getId().equals(a.getId()) && e.getVisitante().getId().equals(b.getId()))
+                                || (e.getLocal().getId().equals(b.getId()) && e.getVisitante().getId().equals(a.getId())));
+
+                if (!existe) {
+                    int minutosInicio = horaInicioMinutos + slotActual * duracionPartidoMinutos;
+                    if (minutosInicio + duracionPartidoMinutos > horaFinMinutos) {
+                        minutosInicio = horaInicioMinutos;
+                    }
+                    LocalDateTime fechaHora = fechaBase.plusDays((long) rondaIdx * diasEntre)
+                            .atTime(minutosInicio / 60, minutosInicio % 60);
+                    Encuentro encuentro = new Encuentro(jornadaRonda, a, b, fechaHora);
+                    jornadaRonda.getEncuentros().add(encuentro);
+                    slotActual++;
+
+                    if (idaVuelta) {
+                        int minutosVuelta = horaInicioMinutos + slotActual * duracionPartidoMinutos;
+                        if (minutosVuelta + duracionPartidoMinutos > horaFinMinutos) {
+                            minutosVuelta = horaInicioMinutos;
+                        }
+                        LocalDateTime fechaHoraVuelta = fechaBase.plusDays((long) rondaIdx * diasEntre + 1)
+                                .atTime(minutosVuelta / 60, minutosVuelta % 60);
+                        Encuentro vuelta = new Encuentro(jornadaRonda, b, a, fechaHoraVuelta);
+                        jornadaRonda.getEncuentros().add(vuelta);
+                        slotActual++;
+                    }
+                }
+
+                // el ganador se incorpora a la siguiente ronda si ya se ha decidido
+                siguienteRonda.add(ganadorEmparejamiento(jornadaRonda.getEncuentros(), a, b));
+            }
+
+            if (!jornadaRonda.getEncuentros().isEmpty() && jornadaRonda.getId() == null) {
+                jornadaDao.save(jornadaRonda);
+            }
+
+            rondaActual = siguienteRonda;
+            ronda++;
+        }
+
+        // cambiar el estado del torneo a PLAYOFF
+        if (torneo.getEstado() != EstadoTorneo.PLAYOFF) {
+            torneo.setEstado(EstadoTorneo.PLAYOFF);
+            torneoDao.save(torneo);
+        }
+
+        return jornadaDao.findByTorneoIdOrderByNumeroJornadaAsc(torneoId);
+    }
+
+    /**
+     * Devuelve el equipo ganador del emparejamiento entre {@code a} y {@code b} dentro de la lista de
+     * encuentros de una ronda. Si el encuentro aun no esta jugado, devuelve {@code null} para indicar
+     * que el ganador todavia no se conoce (y el hueco del bracket queda pendiente).
+     */
+    private Equipo ganadorEmparejamiento(List<Encuentro> encuentros, Equipo a, Equipo b) {
+        for (Encuentro e : encuentros) {
+            boolean esEmparejamiento = (e.getLocal().getId().equals(a.getId()) && e.getVisitante().getId().equals(b.getId()))
+                    || (e.getLocal().getId().equals(b.getId()) && e.getVisitante().getId().equals(a.getId()));
+            if (esEmparejamiento) {
+                return e.getEstadoEncuentro() == EstadoEncuentro.JUGADO ? e.getGanador() : null;
+            }
+        }
+        return null;
     }
 }

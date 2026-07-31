@@ -29,14 +29,17 @@ public interface IEncuentroService {
 
     /**
      * registra el resultado de un encuentro (lista de sets).
+     * Solo los capitanes de los dos equipos participantes pueden registrar el resultado.
      *
+     * @param capitanId    id del capitan que registra el resultado.
      * @param encuentroId  id del encuentro.
-     * @param sets        Lista de sets con los resultados.
+     * @param sets         Lista de sets con los resultados.
      * @throws InstanceNotFoundException Si el encuentro no existe.
+     * @throws PermissionException       si el capitanId no es capitan de uno de los equipos participantes.
      * @throws IllegalArgumentException  si el encuentro ya esta jugado o los datos de sets son invalidos.
      */
-    void registrarResultado(Long encuentroId, List<SetEntity> sets)
-            throws InstanceNotFoundException, IllegalArgumentException;
+    void registrarResultado(Long capitanId, Long encuentroId, List<SetEntity> sets)
+            throws InstanceNotFoundException, PermissionException, IllegalArgumentException;
 
     /**
      * solicita el aplazamiento de un encuentro.
