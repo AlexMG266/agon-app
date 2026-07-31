@@ -146,6 +146,17 @@
     margin-bottom: 1.75rem;
 }
 
+/* ── Mis Partidos (sección embebida a ancho completo) ── */
+.dashboard-matches-section {
+    margin-top: 1.5rem;
+    padding-top: 1.75rem;
+    border-top: 1px solid #eaecee;
+}
+
+.dashboard-matches-section .section-header {
+    margin-bottom: 1rem;
+}
+
 .dashboard-section {
     display: flex;
     flex-direction: column;

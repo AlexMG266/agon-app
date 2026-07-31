@@ -6,7 +6,7 @@ import AppGlobalComponents from './AppGlobalComponents';
 import Home from './Home';
 import { Login, SignUp, Profile, Logout, Notifications } from '../../users';
 import { CreateTeam, TeamDetail, TeamInfo, JoinTeam } from '../../teams';
-import { CreateTournament, TournamentDetail, BrowseTournaments, MyMatches } from '../../tournaments';
+import { CreateTournament, TournamentDetail, BrowseTournaments } from '../../tournaments';
 import MyTournaments from '../../tournaments/components/MyTournaments';
 import MyTeams from '../../teams/components/MyTeams';
 import ForbiddenPage from '../../common/components/ForbiddenPage';
@@ -46,10 +46,6 @@ const Body = () => {
                         <NavLink to="/" className={({ isActive }) => `sidebar-link ${isActive ? 'active' : ''}`} end>
                             <i className="fa-solid fa-chart-simple"></i>
                             <span className="sidebar-label"><FormattedMessage id="project.app.sidebar.dashboard" defaultMessage="Panel Principal" /></span>
-                        </NavLink>
-                        <NavLink to="/matches/my" className={({ isActive }) => `sidebar-link ${isActive ? 'active' : ''}`}>
-                            <i className="fa-solid fa-calendar-days"></i>
-                            <span className="sidebar-label"><FormattedMessage id="project.app.sidebar.myMatches" defaultMessage="Mis Partidos" /></span>
                         </NavLink>
                     </div>
 
@@ -131,7 +127,6 @@ const Body = () => {
                     {loggedIn && <Route path="/teams/join" element={<JoinTeam />} />}
                     {loggedIn && <Route path="/tournaments/my" element={<MyTournaments />} />}
                     {loggedIn && <Route path="/tournaments/create" element={<CreateTournament />} />}
-                    {loggedIn && <Route path="/matches/my" element={<MyMatches />} />}
                     {loggedIn && <Route path="/tournaments/browse" element={<BrowseTournaments />} />}
                     {loggedIn && <Route path="/tournaments/view/:id" element={<TournamentDetail />} />}
                     <Route path="/forbidden" element={<ForbiddenPage />} />

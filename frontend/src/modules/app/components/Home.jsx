@@ -11,6 +11,7 @@ import Spinner from 'react-bootstrap/Spinner';
 import users from '../../users';
 import teams from '../../teams';
 import tournaments from '../../tournaments';
+import MyMatches from '../../tournaments/components/MyMatches';
 import Table from '../../common/components/Table';
 import JoinTeamModal from './JoinTeamModal';
 import CodeSearchModal from './CodeSearchModal';
@@ -278,6 +279,16 @@ const Dashboard = () => {
                         )}
                     </div>
                 </div>
+            </div>
+
+            {/* ── Mis Partidos ── */}
+            <div className="dashboard-matches-section">
+                <div className="section-header">
+                    <h5>
+                        <FormattedMessage id="project.matches.title" defaultMessage="Mis Partidos" />
+                    </h5>
+                </div>
+                <MyMatches embedded />
             </div>
 
             {/* ── Modals ── */}
