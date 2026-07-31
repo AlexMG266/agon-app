@@ -43,6 +43,35 @@ const NAV_ITEMS = [
     { key: 'clasificacion', icon: 'fa-regular fa-trophy', labelId: 'project.tournaments.Detail.tabs.clasificacion', label: 'Clasificación' },
 ];
 
+/**
+ * Calcula la distribución de equipos entre grupos de forma equilibrada.
+ * Reparte los equipos "round-robin": base = floor(total/grupos) y los
+ * sobrantes se añaden uno a cada grupo hasta agotarlos, de modo que la
+ * diferencia de tamaño entre el grupo más grande y el más pequeño es como
+ * mucho de 1 equipo.
+ *
+ * @param {number|string} numGrupos Número de grupos
+ * @param {number|string} totalEquipos Equipos inscritos
+ * @returns {Array<number>} Tamaño de cada grupo (índice = grupo)
+ */
+const calcularDistribucionGrupos = (numGrupos, totalEquipos) => {
+    const g = Math.max(1, parseInt(numGrupos) || 1);
+    const total = Math.max(0, parseInt(totalEquipos) || 0);
+    if (total === 0) return [];
+    const base = Math.floor(total / g);
+    const resto = total % g;
+    return Array.from({ length: g }, (_, i) => (i < resto ? base + 1 : base));
+};
+
+/**
+ * Devuelve el mayor tamaño de grupo para la distribución equilibrada.
+ * Es el valor que se envía como `equiposPorGrupo` al backend.
+ */
+const calcularEquiposPorGrupoMax = (numGrupos, totalEquipos) => {
+    const dist = calcularDistribucionGrupos(numGrupos, totalEquipos);
+    return dist.length ? Math.max(...dist) : 0;
+};
+
 
 const TournamentDetail = () => {
     const { id } = useParams();
@@ -137,13 +166,20 @@ const TournamentDetail = () => {
                         return merged;
                     });
                 }
-                // Inicializar configData.fechaFin con el valor existente o el calculado
                 if (response.payload.fechaFin) {
                     setConfigData(prev => ({ ...prev, fechaFin: response.payload.fechaFin }));
                 }
-                // Compatibilidad: torneos antiguos con estrategia 'UNIFORME' se tratan como 'RAPIDO'
                 if (response.payload.estrategiaDistribucion === 'UNIFORME') {
                     setConfigData(prev => ({ ...prev, estrategiaDistribucion: 'RAPIDO' }));
+                }
+                // Calcular automáticamente el número de equipos por grupo en función
+                // de los inscritos y del número de grupos (distribución equilibrada).
+                const inscritos = (response.payload.inscripciones || []).length;
+                if (inscritos > 0) {
+                    setConfigData(prev => {
+                        const maxPorGrupo = calcularEquiposPorGrupoMax(prev.numGrupos, inscritos);
+                        return maxPorGrupo > 0 ? { ...prev, equiposPorGrupo: maxPorGrupo } : prev;
+                    });
                 }
             } else {
                 setError(response.error || 'Error loading tournament');
@@ -249,7 +285,7 @@ const TournamentDetail = () => {
     const validateConfig = () => {
         const errors = {};
         if (!configData.numGrupos || parseInt(configData.numGrupos) < 1) errors.numGrupos = true;
-        if (!configData.equiposPorGrupo || parseInt(configData.equiposPorGrupo) < 1) errors.equiposPorGrupo = true;
+        if (parseInt(configData.equiposPorGrupo) < 1) errors.equiposPorGrupo = true;
         setConfigErrors(errors);
         return Object.keys(errors).length === 0;
     };
@@ -262,6 +298,7 @@ const TournamentDetail = () => {
         if (!tournament?.fechaInicio) return '';
         const estrategia = tournament.estrategiaDistribucion || 'JORNADAS';
         const diasEntre = tournament.diasEntreJornadas != null ? tournament.diasEntreJornadas : 7;
+        // El número de rondas depende del grupo más grande
         const equiposPorGrupo = parseInt(data.equiposPorGrupo) || 2;
         const tienePlayoff = data.tipoTorneo === 'GRUPOS_PLAYOFF' || data.tipoTorneo === 'ELIMINATORIAS';
         const idaVuelta = data.idaVueltaPlayoff || false;
@@ -301,6 +338,17 @@ const TournamentDetail = () => {
     const handleConfigChange = (field, value) => {
         setConfigData(prev => {
             const newData = { ...prev, [field]: value };
+            const totalInscritos = tournament?.inscripciones?.length || 0;
+            // Al cambiar el número de grupos (o el tipo de torneo) se calcula
+            // automáticamente cuántos equipos irán por grupo de forma equilibrada:
+            // base = floor(total/grupos) y los sobrantes se reparten round-robin,
+            // de modo que la diferencia entre grupos sea como mucho de 1 equipo.
+            if (field === 'numGrupos' || field === 'tipoTorneo') {
+                const maxPorGrupo = calcularEquiposPorGrupoMax(newData.numGrupos, totalInscritos);
+                if (maxPorGrupo > 0) {
+                    newData.equiposPorGrupo = maxPorGrupo;
+                }
+            }
             // Auto-calcular fechaFin cuando cambian parámetros relevantes
             if (field !== 'fechaFin' && tournament) {
                 newData.fechaFin = calcularFinPropuesto(newData, tournament);
@@ -438,6 +486,13 @@ const TournamentDetail = () => {
     );
 
     const isOrg = loggedUser?.id === tournament.organizadorId;
+
+    // Equipos inscritos y distribución equilibrada calculada automáticamente
+    const totalInscritos = (tournament.inscripciones || []).length;
+    const distribucionGrupos = calcularDistribucionGrupos(configData.numGrupos, totalInscritos);
+    const distribucionTexto = distribucionGrupos.length > 0
+        ? distribucionGrupos.map((n, i) => `${String.fromCharCode(65 + i)}: ${n}`).join(' · ')
+        : '—';
 
     const enrolledTeamIds = new Set(
         (tournament.inscripciones || []).map(insc => insc.equipoId)
@@ -673,20 +728,23 @@ const TournamentDetail = () => {
                                         </div>
                                         <div className={`td-config-field td-config-field--num ${configErrors.equiposPorGrupo ? 'error' : ''}`}>
                                             <label>
-                                                <FormattedMessage id="project.tournaments.Create.Step2.equiposPorGrupo" defaultMessage="Equipos x grupo" />
+                                                <FormattedMessage id="project.tournaments.Detail.config.equiposPorGrupoAuto" defaultMessage="Equipos por grupo (auto)" />
                                             </label>
-                                            <input type="number" min={1} max={20} value={configData.equiposPorGrupo}
-                                                onChange={e => handleConfigChange('equiposPorGrupo', e.target.value)} />
-                                            {configErrors.equiposPorGrupo && <span className="td-config-field-error">Válido requerido</span>}
+                                            <div className="td-config-auto-value">
+                                                {configData.equiposPorGrupo > 0 ? configData.equiposPorGrupo : '—'}
+                                            </div>
+                                            <span className="td-config-field-hint">
+                                                <FormattedMessage id="project.tournaments.Detail.config.equiposPorGrupoAutoHint" defaultMessage="Calculado automáticamente según los equipos inscritos." />
+                                            </span>
                                         </div>
                                         <div className="td-config-calc td-config-field--full">
                                             <i className="fa-regular fa-calculator" />
                                             {configData.tipoTorneo === 'LIGA_UNICA' ? (
-                                                <FormattedMessage id="project.tournaments.Detail.config.calc.liga" defaultMessage="Liga única: {n} equipos en 1 grupo" values={{ n: parseInt(configData.equiposPorGrupo) * parseInt(configData.numGrupos) || 0 }} />
+                                                <FormattedMessage id="project.tournaments.Detail.config.calc.liga" defaultMessage="Liga única: {total} equipos en 1 grupo" values={{ total: totalInscritos }} />
                                             ) : configData.tipoTorneo === 'GRUPOS_PLAYOFF' ? (
-                                                <FormattedMessage id="project.tournaments.Detail.config.calc.grupos" defaultMessage="Grupos + Playoff: {total} equipos, {g} grupos de {e}" values={{ total: parseInt(configData.equiposPorGrupo) * parseInt(configData.numGrupos) || 0, g: configData.numGrupos, e: configData.equiposPorGrupo }} />
+                                                <FormattedMessage id="project.tournaments.Detail.config.calc.grupos" defaultMessage="Grupos + Playoff: {total} equipos en {g} grupos: {dist}" values={{ total: totalInscritos, g: configData.numGrupos, dist: distribucionTexto }} />
                                             ) : (
-                                                <FormattedMessage id="project.tournaments.Detail.config.calc.elim" defaultMessage="Eliminatorias: {n} equipos" values={{ n: parseInt(configData.equiposPorGrupo) * parseInt(configData.numGrupos) || 0 }} />
+                                                <FormattedMessage id="project.tournaments.Detail.config.calc.elim" defaultMessage="Eliminatorias: {total} equipos" values={{ total: totalInscritos }} />
                                             )}
                                         </div>
                                         {(configData.tipoTorneo === 'GRUPOS_PLAYOFF' || configData.tipoTorneo === 'ELIMINATORIAS') && (
