@@ -8,6 +8,7 @@ import Spinner from 'react-bootstrap/Spinner';
 import { useSelector } from 'react-redux';
 import { Errors, Success } from '../../common';
 import TeamInfoModal from '../../teams/components/TeamInfoModal';
+import EncuentroModal from './EncuentroModal';
 import users from '../../users';
 import backend from '../../../backend';
 import './TournamentDetail.css';
@@ -40,6 +41,7 @@ const NAV_ITEMS = [
     { key: 'info', icon: 'fa-regular fa-circle-info', labelId: 'project.tournaments.Detail.tabs.info', label: 'Información' },
     { key: 'teams', icon: 'fa-regular fa-users', labelId: 'project.tournaments.Detail.section.teams', label: 'Equipos' },
     { key: 'partidos', icon: 'fa-regular fa-calendar', labelId: 'project.tournaments.Detail.tabs.partidos', label: 'Partidos' },
+    { key: 'playoffs', icon: 'fa-regular fa-sitemap', labelId: 'project.tournaments.Detail.tabs.playoffs', label: 'Playoffs' },
     { key: 'clasificacion', icon: 'fa-regular fa-trophy', labelId: 'project.tournaments.Detail.tabs.clasificacion', label: 'Clasificación' },
 ];
 
@@ -133,6 +135,14 @@ const TournamentDetail = () => {
     const [jornadas, setJornadas] = useState([]);
     const [currentJornadaIdx, setCurrentJornadaIdx] = useState(0);
     const [loadingJornadas, setLoadingJornadas] = useState(false);
+    const [selectedEncuentro, setSelectedEncuentro] = useState(null);
+
+    // IDs de equipos cuyo capitán es el usuario logueado (pueden registrar resultados).
+    const capitanTeamIds = (tournament && tournament.inscripciones
+        ? tournament.inscripciones
+              .filter(insc => insc.creadorId === (loggedUser ? loggedUser.id : null))
+              .map(insc => insc.equipoId)
+        : []);
 
 
     useEffect(() => {
@@ -214,6 +224,20 @@ const TournamentDetail = () => {
             console.error(err);
         } finally {
             setLoadingJornadas(false);
+        }
+    };
+
+    // Tras registrar un resultado se refrescan jornadas (puede haberse generado el playoff)
+    // y también el torneo (para actualizar el estado si pasa a PLAYOFF).
+    const handleRegistered = async () => {
+        await loadJornadas();
+        try {
+            const response = await backend.tournamentService.getTournament(id);
+            if (response.ok && response.payload) {
+                setTournament(response.payload);
+            }
+        } catch (err) {
+            console.error(err);
         }
     };
 
@@ -1278,16 +1302,30 @@ const TournamentDetail = () => {
                                                         const fecha = enc.fechaRealizacion ? new Date(enc.fechaRealizacion) : null;
                                                         const fechaStr = fecha ? fecha.toLocaleDateString('es-ES', { day: 'numeric', month: 'short', year: 'numeric' }) : '';
                                                         const horaStr = fecha ? fecha.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' }) : '';
+                                                        const jugado = enc.estado === 'JUGADO';
                                                         return (
-                                                            <div key={enc.id} className="td-partido-card">
+                                                            <div
+                                                                key={enc.id}
+                                                                className="td-partido-card"
+                                                                onClick={() => setSelectedEncuentro(enc)}
+                                                                role="button"
+                                                                tabIndex={0}
+                                                                onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') setSelectedEncuentro(enc); }}
+                                                            >
                                                                 <div className="td-partido-card-teams">
                                                                     <div className="td-partido-card-team">
                                                                         <i className="fa-regular fa-shield-halved td-partido-card-shield" />
                                                                         <span className="td-partido-card-team-name">{enc.equipoLocalNombre}</span>
+                                                                        {jugado && (
+                                                                            <span className="td-partido-card-score">{enc.resultado ? enc.resultado.split('-')[0] : '—'}</span>
+                                                                        )}
                                                                     </div>
                                                                     <div className="td-partido-card-team">
                                                                         <i className="fa-regular fa-shield-halved td-partido-card-shield" />
                                                                         <span className="td-partido-card-team-name">{enc.equipoVisitanteNombre}</span>
+                                                                        {jugado && (
+                                                                            <span className="td-partido-card-score">{enc.resultado ? enc.resultado.split('-')[1] : '—'}</span>
+                                                                        )}
                                                                     </div>
                                                                 </div>
                                                                 {fecha && (
@@ -1314,16 +1352,30 @@ const TournamentDetail = () => {
                                                         const fecha = enc.fechaRealizacion ? new Date(enc.fechaRealizacion) : null;
                                                         const fechaStr = fecha ? fecha.toLocaleDateString('es-ES', { day: 'numeric', month: 'short', year: 'numeric' }) : '';
                                                         const horaStr = fecha ? fecha.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' }) : '';
+                                                        const jugado = enc.estado === 'JUGADO';
                                                         return (
-                                                            <div key={enc.id} className="td-partido-card">
+                                                            <div
+                                                                key={enc.id}
+                                                                className="td-partido-card"
+                                                                onClick={() => setSelectedEncuentro(enc)}
+                                                                role="button"
+                                                                tabIndex={0}
+                                                                onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') setSelectedEncuentro(enc); }}
+                                                            >
                                                                 <div className="td-partido-card-teams">
                                                                     <div className="td-partido-card-team">
                                                                         <i className="fa-regular fa-shield-halved td-partido-card-shield" />
                                                                         <span className="td-partido-card-team-name">{enc.equipoLocalNombre}</span>
+                                                                        {jugado && (
+                                                                            <span className="td-partido-card-score">{enc.resultado ? enc.resultado.split('-')[0] : '—'}</span>
+                                                                        )}
                                                                     </div>
                                                                     <div className="td-partido-card-team">
                                                                         <i className="fa-regular fa-shield-halved td-partido-card-shield" />
                                                                         <span className="td-partido-card-team-name">{enc.equipoVisitanteNombre}</span>
+                                                                        {jugado && (
+                                                                            <span className="td-partido-card-score">{enc.resultado ? enc.resultado.split('-')[1] : '—'}</span>
+                                                                        )}
                                                                     </div>
                                                                 </div>
                                                                 {fecha && (
@@ -1352,6 +1404,95 @@ const TournamentDetail = () => {
                             </p>
                         </div>
                     )}
+                </div>
+            )}
+
+            {activeTab === 'playoffs' && (
+                <div className="td-fullbleed td-playoffs-section">
+                    <div className="td-partidos-header">
+                        <h5 className="td-partidos-title">
+                            <i className="fa-regular fa-sitemap" />
+                            <FormattedMessage id="project.tournaments.Detail.playoffs.title" defaultMessage="Playoffs" />
+                        </h5>
+                    </div>
+                    {loadingJornadas ? (
+                        <div className="td-empty-state">
+                            <Spinner animation="border" variant="dark" />
+                        </div>
+                    ) : (() => {
+                        const eliminatorias = jornadas.filter(j => j.tipoFase === 'ELIMINATORIA');
+                        if (eliminatorias.length === 0) {
+                            return (
+                                <div className="td-empty-state">
+                                    <div className="td-empty-state-icon">
+                                        <i className="fa-regular fa-sitemap" />
+                                    </div>
+                                    <p className="td-empty-state-text">
+                                        <FormattedMessage id="project.tournaments.Detail.playoffs.empty" defaultMessage="Aún no hay playoffs. Se generarán automáticamente cuando termine la fase de grupos." />
+                                    </p>
+                                </div>
+                            );
+                        }
+                        return (
+                            <>
+                                {eliminatorias.map((j, rondaIdx) => {
+                                    const fecha = j.fechaInicio ? new Date(j.fechaInicio) : null;
+                                    const fechaStr = fecha ? fecha.toLocaleDateString('es-ES', { day: 'numeric', month: 'short', year: 'numeric' }) : '';
+                                    return (
+                                        <div key={j.id} className="td-playoffs-ronda">
+                                            <div className="td-playoffs-ronda-header">
+                                                <span className="td-playoffs-ronda-title">
+                                                    {intl.formatMessage(
+                                                        { id: 'project.tournaments.Detail.playoffs.ronda', defaultMessage: 'Ronda {num}' },
+                                                        { num: rondaIdx + 1 }
+                                                    )}
+                                                </span>
+                                                {fechaStr && <span className="td-playoffs-ronda-date">{fechaStr}</span>}
+                                            </div>
+                                            <div className="td-playoffs-grid">
+                                                {(j.encuentros || []).map(enc => {
+                                                    const fechaEnc = enc.fechaRealizacion ? new Date(enc.fechaRealizacion) : null;
+                                                    const horaStr = fechaEnc ? fechaEnc.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' }) : '';
+                                                    const jugado = enc.estado === 'JUGADO';
+                                                    return (
+                                                        <div
+                                                            key={enc.id}
+                                                            className="td-playoff-card"
+                                                            onClick={() => setSelectedEncuentro(enc)}
+                                                            role="button"
+                                                            tabIndex={0}
+                                                            onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') setSelectedEncuentro(enc); }}
+                                                        >
+                                                            <div className="td-playoff-card-team">
+                                                                <i className="fa-regular fa-shield-halved td-playoff-card-shield" />
+                                                                <span className="td-playoff-card-team-name">{enc.equipoLocalNombre || '—'}</span>
+                                                                {jugado && (
+                                                                    <span className="td-partido-card-score">{enc.resultado ? enc.resultado.split('-')[0] : '—'}</span>
+                                                                )}
+                                                            </div>
+                                                            <div className="td-playoff-card-team">
+                                                                <i className="fa-regular fa-shield-halved td-playoff-card-shield" />
+                                                                <span className="td-playoff-card-team-name">{enc.equipoVisitanteNombre || '—'}</span>
+                                                                {jugado && (
+                                                                    <span className="td-partido-card-score">{enc.resultado ? enc.resultado.split('-')[1] : '—'}</span>
+                                                                )}
+                                                            </div>
+                                                            {horaStr && (
+                                                                <div className="td-playoff-card-time">
+                                                                    <i className="fa-regular fa-clock me-1" />
+                                                                    {horaStr}
+                                                                </div>
+                                                            )}
+                                                        </div>
+                                                    );
+                                                })}
+                                            </div>
+                                        </div>
+                                    );
+                                })}
+                            </>
+                        );
+                    })()}
                 </div>
             )}
 
@@ -1481,6 +1622,15 @@ const TournamentDetail = () => {
                 setShowTeamModal(false);
                 setModalEquipoId(null);
             }}
+        />
+
+        {/* Modal de detalle del encuentro (información + registro de resultado) */}
+        <EncuentroModal
+            show={!!selectedEncuentro}
+            encuentro={selectedEncuentro}
+            capitanTeamIds={capitanTeamIds}
+            onHide={() => setSelectedEncuentro(null)}
+            onRegistered={handleRegistered}
         />
         </>
     );

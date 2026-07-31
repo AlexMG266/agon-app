@@ -6,6 +6,26 @@
     padding: 2rem 1.5rem 3rem;
 }
 
+/* Variante embebida dentro del Dashboard: sin contenedor propio ni paddings de página */
+.mm-container--embedded {
+    max-width: none;
+    margin: 0;
+    padding: 0;
+}
+
+.mm-container--embedded .mm-summary {
+    margin-bottom: 1rem;
+}
+
+.mm-container--embedded .mm-carousel {
+    margin-bottom: 1rem;
+}
+
+.mm-container--embedded .mm-loading,
+.mm-container--embedded .mm-empty {
+    padding: 2.5rem 1rem;
+}
+
 .mm-header {
     display: flex;
     align-items: flex-start;
@@ -353,6 +373,19 @@
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
+}
+
+.mm-partido-card-score {
+    font-size: 0.82rem;
+    font-weight: 800;
+    color: #0071e3;
+    background: #e8f1ff;
+    border-radius: 8px;
+    padding: 0.05rem 0.45rem;
+    margin-left: auto;
+    flex-shrink: 0;
+    min-width: 28px;
+    text-align: center;
 }
 
 .mm-partido-card-datetime {

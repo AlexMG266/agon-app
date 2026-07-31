@@ -104,6 +104,11 @@ export const getMyMatches = async () => {
     return await appFetch('GET', '/encuentros/mis-partidos');
 };
 
+// POST /encuentros/{encuentroId}/resultado: registra el resultado de un encuentro (solo capitanes de los equipos).
+export const registerResult = async (encuentroId, sets) => {
+    return await appFetch('POST', `/encuentros/${encuentroId}/resultado`, { sets });
+};
+
 export default {
     getSolicitud,
     createTournament,
@@ -124,5 +129,6 @@ export default {
     unfollowTournament,
     updateTournament,
     getTournamentJornadas,
-    getMyMatches
+    getMyMatches,
+    registerResult
 };

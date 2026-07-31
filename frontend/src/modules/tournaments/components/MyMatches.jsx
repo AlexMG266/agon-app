@@ -2,7 +2,10 @@
 import { useState, useEffect, useRef } from 'react';
 import { FormattedMessage } from 'react-intl';
 import Spinner from 'react-bootstrap/Spinner';
+import { useSelector } from 'react-redux';
 import backend from '../../../backend';
+import users from '../../users';
+import EncuentroModal from './EncuentroModal';
 import './MyMatches.css';
 
 const ESTADOS = {
@@ -24,12 +27,15 @@ const formatDateShort = (fecha) => {
     return d.toLocaleDateString('es-ES', { day: 'numeric', month: 'short' });
 };
 
-const MyMatches = () => {
+const MyMatches = ({ embedded = false }) => {
     const carouselRef = useRef(null);
+    const loggedUser = useSelector(users.selectors.getUser);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(false);
     const [fechas, setFechas] = useState([]);
     const [currentIdx, setCurrentIdx] = useState(0);
+    const [capitanTeamIds, setCapitanTeamIds] = useState([]);
+    const [selectedEncuentro, setSelectedEncuentro] = useState(null);
 
     useEffect(() => {
         const init = async () => {
@@ -58,6 +64,47 @@ const MyMatches = () => {
         init();
     }, []);
 
+    // Equipos cuyo capitán es el usuario logueado (pueden registrar resultados).
+    useEffect(() => {
+        const loadCapitanTeams = async () => {
+            if (!loggedUser) return;
+            try {
+                const response = await backend.teamService.getMyTeams();
+                if (response.ok) {
+                    const ids = (response.payload || [])
+                        .filter(t => t.creadorId === loggedUser.id)
+                        .map(t => t.id);
+                    setCapitanTeamIds(ids);
+                }
+            } catch (err) {
+                console.error(err);
+            }
+        };
+        loadCapitanTeams();
+    }, [loggedUser]);
+
+    const handleEncuentroClick = (enc) => setSelectedEncuentro(enc);
+
+    const handleRegistered = () => {
+        // Refrescar los encuentros tras registrar un resultado.
+        const init = async () => {
+            try {
+                const response = await backend.tournamentService.getMyMatches();
+                if (response.ok) {
+                    const data = (response.payload || []).slice().sort((a, b) => {
+                        if (!a.fecha) return 1;
+                        if (!b.fecha) return -1;
+                        return new Date(a.fecha) - new Date(b.fecha);
+                    });
+                    setFechas(data);
+                }
+            } catch (err) {
+                console.error(err);
+            }
+        };
+        init();
+    };
+
     const current = fechas[currentIdx];
 
     const totalEncuentros = fechas.reduce((acc, f) => acc + (f.encuentros ? f.encuentros.length : 0), 0);
@@ -67,18 +114,20 @@ const MyMatches = () => {
     );
 
     return (
-        <div className="mm-container">
-            <div className="mm-header">
-                <div>
-                    <h1 className="mm-title">
-                        <i className="fa-regular fa-calendar-days me-2" />
-                        <FormattedMessage id="project.matches.title" defaultMessage="Mis Partidos" />
-                    </h1>
-                    <p className="mm-subtitle">
-                        <FormattedMessage id="project.matches.subtitle" defaultMessage="Tus encuentros organizados por fecha" />
-                    </p>
+        <div className={`mm-container${embedded ? ' mm-container--embedded' : ''}`}>
+            {!embedded && (
+                <div className="mm-header">
+                    <div>
+                        <h1 className="mm-title">
+                            <i className="fa-regular fa-calendar-days me-2" />
+                            <FormattedMessage id="project.matches.title" defaultMessage="Mis Partidos" />
+                        </h1>
+                        <p className="mm-subtitle">
+                            <FormattedMessage id="project.matches.subtitle" defaultMessage="Tus encuentros organizados por fecha" />
+                        </p>
+                    </div>
                 </div>
-            </div>
+            )}
 
             {!loading && !error && fechas.length > 0 && (
                 <div className="mm-summary">
@@ -201,16 +250,30 @@ const MyMatches = () => {
                                         const fechaStr = fecha ? fecha.toLocaleDateString('es-ES', { day: 'numeric', month: 'short', year: 'numeric' }) : '';
                                         const horaStr = fecha ? fecha.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' }) : '';
                                         const estado = ESTADOS[enc.estado] || null;
+                                        const jugado = enc.estado === 'JUGADO';
                                         return (
-                                            <div key={enc.id} className="mm-partido-card">
+                                            <div
+                                                key={enc.id}
+                                                className="mm-partido-card"
+                                                onClick={() => handleEncuentroClick(enc)}
+                                                role="button"
+                                                tabIndex={0}
+                                                onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') handleEncuentroClick(enc); }}
+                                            >
                                                 <div className="mm-partido-card-teams">
                                                     <div className="mm-partido-card-team">
                                                         <i className="fa-regular fa-shield-halved mm-partido-card-shield" />
                                                         <span className="mm-partido-card-team-name">{enc.equipoLocalNombre || '—'}</span>
+                                                        {jugado && (
+                                                            <span className="mm-partido-card-score">{enc.resultado ? enc.resultado.split('-')[0] : '—'}</span>
+                                                        )}
                                                     </div>
                                                     <div className="mm-partido-card-team">
                                                         <i className="fa-regular fa-shield-halved mm-partido-card-shield" />
                                                         <span className="mm-partido-card-team-name">{enc.equipoVisitanteNombre || '—'}</span>
+                                                        {jugado && (
+                                                            <span className="mm-partido-card-score">{enc.resultado ? enc.resultado.split('-')[1] : '—'}</span>
+                                                        )}
                                                     </div>
                                                 </div>
                                                 <div className="mm-partido-card-datetime">
@@ -239,6 +302,15 @@ const MyMatches = () => {
                     )}
                 </>
             )}
+
+            {/* Modal de detalle del encuentro */}
+            <EncuentroModal
+                show={!!selectedEncuentro}
+                encuentro={selectedEncuentro}
+                capitanTeamIds={capitanTeamIds}
+                onHide={() => setSelectedEncuentro(null)}
+                onRegistered={handleRegistered}
+            />
         </div>
     );
 };

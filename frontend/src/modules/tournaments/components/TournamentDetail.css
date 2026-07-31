@@ -1156,6 +1156,114 @@
     white-space: nowrap;
 }
 
+/* Marcador en la card de partido */
+.td-partido-card-score {
+    font-size: 0.82rem;
+    font-weight: 800;
+    color: #0071e3;
+    background: #e8f1ff;
+    border-radius: 8px;
+    padding: 0.05rem 0.45rem;
+    margin-left: auto;
+    flex-shrink: 0;
+    min-width: 28px;
+    text-align: center;
+}
+
+/* ---------- Sección Playoffs (eliminatorias) ---------- */
+
+.td-playoffs-section {
+    padding-top: 0.25rem;
+}
+
+.td-playoffs-ronda {
+    margin-bottom: 1.75rem;
+}
+
+.td-playoffs-ronda:last-child {
+    margin-bottom: 0;
+}
+
+.td-playoffs-ronda-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.5rem;
+    padding-bottom: 0.45rem;
+    margin-bottom: 0.7rem;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+}
+
+.td-playoffs-ronda-title {
+    font-size: 0.82rem;
+    font-weight: 700;
+    color: #1d1d1f;
+    letter-spacing: 0.02em;
+    text-transform: uppercase;
+}
+
+.td-playoffs-ronda-date {
+    font-size: 0.7rem;
+    font-weight: 500;
+    color: #8e8e93;
+    white-space: nowrap;
+}
+
+.td-playoffs-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+    gap: 0.6rem;
+}
+
+.td-playoff-card {
+    display: flex;
+    flex-direction: column;
+    gap: 0.35rem;
+    background: #fff;
+    border: 1px solid #e8e8ed;
+    border-radius: 14px;
+    padding: 0.9rem 1.1rem;
+    cursor: pointer;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.td-playoff-card:hover {
+    border-color: #d2d2d7;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+.td-playoff-card-team {
+    display: flex;
+    align-items: center;
+    gap: 0.45rem;
+    font-size: 0.82rem;
+    font-weight: 500;
+    color: #1d1d1f;
+    min-width: 0;
+}
+
+.td-playoff-card-shield {
+    font-size: 0.7rem;
+    color: #8e8e93;
+    width: 18px;
+    flex-shrink: 0;
+}
+
+.td-playoff-card-team-name {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.td-playoff-card-time {
+    font-size: 0.68rem;
+    font-weight: 500;
+    color: #8e8e93;
+    margin-top: 0.15rem;
+    padding-top: 0.4rem;
+    border-top: 1px dashed #eef0f3;
+}
+
 .td-partidos-empty {
     display: flex;
     align-items: center;

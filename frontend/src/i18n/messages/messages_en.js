@@ -42,7 +42,6 @@ export default {
 
     'project.app.sidebar.competition': 'Competition',
     'project.app.sidebar.dashboard': 'Dashboard',
-    'project.app.sidebar.myMatches': 'My Matches',
     'project.app.sidebar.myTeams': 'Teams',
     'project.app.sidebar.createTeam': 'Create team',
     'project.app.sidebar.myTournaments': 'My Tournaments',
@@ -519,5 +518,26 @@ export default {
     'project.matches.estado.pendiente': 'Pending',
     'project.matches.estado.jugado': 'Played',
     'project.matches.estado.aplazado': 'Postponed',
-    'project.matches.estado.solicitadoAplazamiento': 'Postponement requested'
+    'project.matches.estado.solicitadoAplazamiento': 'Postponement requested',
+
+    'project.encuentro.title': 'Match details',
+    'project.encuentro.set': 'Set',
+    'project.encuentro.setsDetail': 'Sets',
+    'project.encuentro.registerTitle': 'Register result',
+    'project.encuentro.register': 'Register result',
+    'project.encuentro.cancel': 'Cancel',
+    'project.encuentro.close': 'Close',
+    'project.encuentro.success': 'Result registered',
+    'project.encuentro.successDetail': 'The match result has been saved successfully.',
+    'project.encuentro.played': 'This match has already been played.',
+    'project.encuentro.noCaptain': 'Only team captains can register the result.',
+    'project.encuentro.error.registro': 'Could not register the result.',
+    'project.encuentro.error.noSets': 'You must provide at least one set.',
+    'project.encuentro.error.draw': 'A set cannot end in a draw.',
+    'project.encuentro.error.negative': 'Scores cannot be negative.',
+
+    'project.tournaments.Detail.tabs.playoffs': 'Playoffs',
+    'project.tournaments.Detail.playoffs.title': 'Playoffs',
+    'project.tournaments.Detail.playoffs.empty': 'No playoffs yet. They will be generated automatically when the group stage ends.',
+    'project.tournaments.Detail.playoffs.ronda': 'Round {num}'
 }
