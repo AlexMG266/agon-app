@@ -23,6 +23,12 @@ const Profile = () => {
     const [profileImage, setProfileImage] = useState(user.imagenPerfil || '');
     const [email, setEmail] = useState(user.email || '');
     const [fechaNacimiento, setFechaNacimiento] = useState(user.fechaNacimiento || '');
+    const [notificacionesPartidos, setNotificacionesPartidos] = useState(
+        user.notificacionesPartidos !== undefined ? user.notificacionesPartidos : true
+    );
+    const [diasAntelacionPartidos, setDiasAntelacionPartidos] = useState(
+        user.diasAntelacionPartidos || 1
+    );
     const [profileFormValidated, setProfileFormValidated] = useState(false);
     const [profileBackendErrors, setProfileBackendErrors] = useState(null);
     const [profileSuccess, setProfileSuccess] = useState(false);
@@ -64,7 +70,9 @@ const Profile = () => {
                 nombre: user.nombre,
                 email: email.trim(),
                 imagenPerfil: profileImage || null,
-                fechaNacimiento: fechaNacimiento
+                fechaNacimiento: fechaNacimiento,
+                notificacionesPartidos,
+                diasAntelacionPartidos
             };
 
             const response = await backend.userService.updateProfile(updatedUser);
@@ -253,6 +261,49 @@ const Profile = () => {
                                             <Form.Control.Feedback type="invalid" className="small">
                                                 <FormattedMessage id='project.global.validator.required' />
                                             </Form.Control.Feedback>
+                                        </Col>
+                                    </Form.Group>
+
+                                    <Form.Group as={Row} className="profile-form-group" controlId="notificacionesPartidos">
+                                        <Form.Label column md={4} className="profile-form-label pt-2">
+                                            <FormattedMessage id="project.users.Profile.fields.notifications" />
+                                        </Form.Label>
+                                        <Col md={8} className="d-flex align-items-center gap-3 flex-wrap">
+                                            <Form.Check
+                                                type="switch"
+                                                id="notificacionesPartidosSwitch"
+                                                checked={notificacionesPartidos}
+                                                onChange={e => setNotificacionesPartidos(e.target.checked)}
+                                                className="form-switch-apple"
+                                            />
+                                            <Form.Text className="profile-hint mb-0">
+                                                <i className="fa-solid fa-circle-info me-1 opacity-70"></i> <FormattedMessage id="project.users.Profile.fields.notificationsHint" />
+                                            </Form.Text>
+                                        </Col>
+                                    </Form.Group>
+
+                                    <Form.Group as={Row} className="profile-form-group" controlId="diasAntelacionPartidos">
+                                        <Form.Label column md={4} className="profile-form-label pt-2">
+                                            <FormattedMessage id="project.users.Profile.fields.notificationsDays" />
+                                        </Form.Label>
+                                        <Col md={8}>
+                                            <Form.Select
+                                                value={diasAntelacionPartidos}
+                                                onChange={e => setDiasAntelacionPartidos(parseInt(e.target.value))}
+                                                disabled={!notificacionesPartidos}
+                                                className="form-control-apple"
+                                            >
+                                                {[0, 1, 2, 3, 5, 7].map(days => (
+                                                    <option key={days} value={days}>
+                                                        {days === 0
+                                                            ? <FormattedMessage id="project.users.Profile.fields.notificationsSameDay" defaultMessage="Mismo día" />
+                                                            : <FormattedMessage id="project.users.Profile.fields.notificationsDaysValue" defaultMessage="{days} días antes" values={{ days }} />}
+                                                    </option>
+                                                ))}
+                                            </Form.Select>
+                                            <Form.Text className="profile-hint">
+                                                <i className="fa-solid fa-circle-info me-1 opacity-70"></i> <FormattedMessage id="project.users.Profile.fields.notificationsDaysHint" />
+                                            </Form.Text>
                                         </Col>
                                     </Form.Group>
 

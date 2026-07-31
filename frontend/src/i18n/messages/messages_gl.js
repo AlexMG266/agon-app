@@ -42,6 +42,7 @@ export default {
 
     'project.app.sidebar.competition': 'Competición',
     'project.app.sidebar.dashboard': 'Panel Principal',
+    'project.app.sidebar.myMatches': 'Os Meus Partidos',
     'project.app.sidebar.myTeams': 'Equipos',
     'project.app.sidebar.createTeam': 'Crear equipo',
     'project.app.sidebar.myTournaments': 'Os Meus Torneos',
@@ -147,6 +148,12 @@ export default {
     'project.users.Logout.confirm': 'Pechar sesión',
 
     'project.users.Profile.title': 'Meu Perfil',
+    'project.users.Profile.fields.notifications': 'Avisos de partidos',
+    'project.users.Profile.fields.notificationsHint': 'Recibirás un aviso na caixa de notificacións cando se achegue un partido',
+    'project.users.Profile.fields.notificationsDays': 'Avisar antes',
+    'project.users.Profile.fields.notificationsSameDay': 'O mesmo día',
+    'project.users.Profile.fields.notificationsDaysValue': '{days} días antes',
+    'project.users.Profile.fields.notificationsDaysHint': 'Días de antelación cos que se xera o aviso do partido',
     'project.users.Profile.tabs.profileInfo': 'Información do Perfil',
     'project.users.Profile.tabs.changePassword': 'Cambiar Contrasinal',
     'project.users.Profile.fields.profileImage': 'Imaxe de Perfil',
@@ -494,5 +501,21 @@ export default {
     'project.app.Home.dashboard.codePlaceholder': 'Ex. T22-K9M8',
     'project.app.Home.dashboard.codeFound': 'Código: {code}',
     'project.app.Home.dashboard.codeNotFound': 'Non se atopou ningún torneo con ese código',
-    'project.app.Home.dashboard.codeError': 'Erro ao buscar o torneo'
+    'project.app.Home.dashboard.codeError': 'Erro ao buscar o torneo',
+
+    'project.matches.title': 'Os Meus Partidos',
+    'project.matches.summaryTotal': 'Partidos',
+    'project.matches.summaryPending': 'Pendentes',
+    'project.matches.subtitle': 'Os teus encontros organizados por data',
+    'project.matches.loading': 'Cargando partidos…',
+    'project.matches.error': 'Non se puideron cargar os teus partidos. Téntao de novo.',
+    'project.matches.empty': 'Aínda non tes partidos programados.',
+    'project.matches.noEncuentros': 'Non hai encontros nesta data.',
+    'project.matches.today': 'Hoxe',
+    'project.matches.vs': 'vs',
+    'project.matches.count': '{count, plural, one {# partido} other {# partidos}}',
+    'project.matches.estado.pendiente': 'Pendente',
+    'project.matches.estado.jugado': 'Xogado',
+    'project.matches.estado.aplazado': 'Aplazado',
+    'project.matches.estado.solicitadoAplazamiento': 'Aplazamento solicitado'
 }

@@ -42,6 +42,7 @@ export default {
 
     'project.app.sidebar.competition': 'Competition',
     'project.app.sidebar.dashboard': 'Dashboard',
+    'project.app.sidebar.myMatches': 'My Matches',
     'project.app.sidebar.myTeams': 'Teams',
     'project.app.sidebar.createTeam': 'Create team',
     'project.app.sidebar.myTournaments': 'My Tournaments',
@@ -147,6 +148,12 @@ export default {
     'project.users.Logout.confirm': 'Logout',
 
     'project.users.Profile.title': 'My Profile',
+    'project.users.Profile.fields.notifications': 'Match notifications',
+    'project.users.Profile.fields.notificationsHint': 'You will receive a notification in the inbox when a match approaches',
+    'project.users.Profile.fields.notificationsDays': 'Notify before',
+    'project.users.Profile.fields.notificationsSameDay': 'Same day',
+    'project.users.Profile.fields.notificationsDaysValue': '{days} days before',
+    'project.users.Profile.fields.notificationsDaysHint': 'Days in advance to generate the match notification',
     'project.users.Profile.tabs.profileInfo': 'Profile Information',
     'project.users.Profile.tabs.changePassword': 'Change Password',
     'project.users.Profile.fields.profileImage': 'Profile Image',
@@ -496,5 +503,21 @@ export default {
     'project.app.Home.dashboard.codePlaceholder': 'E.g. T22-K9M8',
     'project.app.Home.dashboard.codeFound': 'Code: {code}',
     'project.app.Home.dashboard.codeNotFound': 'No tournament found with that code',
-    'project.app.Home.dashboard.codeError': 'Error searching for tournament'
+    'project.app.Home.dashboard.codeError': 'Error searching for tournament',
+
+    'project.matches.title': 'My Matches',
+    'project.matches.summaryTotal': 'Matches',
+    'project.matches.summaryPending': 'Pending',
+    'project.matches.subtitle': 'Your matches organized by date',
+    'project.matches.loading': 'Loading matches…',
+    'project.matches.error': 'Could not load your matches. Please try again.',
+    'project.matches.empty': 'You do not have any scheduled matches yet.',
+    'project.matches.noEncuentros': 'There are no matches on this date.',
+    'project.matches.today': 'Today',
+    'project.matches.vs': 'vs',
+    'project.matches.count': '{count, plural, one {# match} other {# matches}}',
+    'project.matches.estado.pendiente': 'Pending',
+    'project.matches.estado.jugado': 'Played',
+    'project.matches.estado.aplazado': 'Postponed',
+    'project.matches.estado.solicitadoAplazamiento': 'Postponement requested'
 }
