@@ -99,6 +99,11 @@ export const getTournamentJornadas = async (id) => {
     return await appFetch('GET', `/tournaments/${id}/jornadas`);
 };
 
+// GET /encuentros/mis-partidos: obtiene los encuentros del usuario agrupados por fecha.
+export const getMyMatches = async () => {
+    return await appFetch('GET', '/encuentros/mis-partidos');
+};
+
 export default {
     getSolicitud,
     createTournament,
@@ -118,5 +123,6 @@ export default {
     followTournament,
     unfollowTournament,
     updateTournament,
-    getTournamentJornadas
+    getTournamentJornadas,
+    getMyMatches
 };

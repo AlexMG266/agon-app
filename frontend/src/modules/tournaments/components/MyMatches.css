@@ -1,0 +1,412 @@
+/* src/modules/tournaments/components/MyMatches.css */
+
+.mm-container {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 2rem 1.5rem 3rem;
+}
+
+.mm-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 1rem;
+    margin-bottom: 2rem;
+}
+
+.mm-title {
+    font-size: 1.8rem;
+    font-weight: 700;
+    color: #1d1d1f;
+    letter-spacing: -0.02em;
+    margin: 0;
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+}
+
+.mm-title i {
+    font-size: 1.3rem;
+    color: #0071e3;
+}
+
+.mm-subtitle {
+    margin: 0.3rem 0 0;
+    font-size: 0.88rem;
+    color: #8e8e93;
+}
+
+/* ---------- Summary strip ---------- */
+
+.mm-summary {
+    display: flex;
+    gap: 0.75rem;
+    margin-bottom: 1.75rem;
+    flex-wrap: wrap;
+}
+
+.mm-summary-item {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    background: #fff;
+    border: 1px solid #e8e8ed;
+    border-radius: 14px;
+    padding: 0.65rem 1rem;
+    min-width: 140px;
+}
+
+.mm-summary-value {
+    font-size: 1.15rem;
+    font-weight: 700;
+    color: #1d1d1f;
+    line-height: 1;
+}
+
+.mm-summary-label {
+    font-size: 0.72rem;
+    font-weight: 600;
+    color: #8e8e93;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+}
+
+/* ---------- Loading / empty ---------- */
+
+.mm-loading {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 4rem 1rem;
+}
+
+.mm-empty {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 3.5rem 1rem;
+    color: #8e8e93;
+    font-size: 0.9rem;
+    text-align: center;
+    gap: 0.4rem;
+}
+
+/* ---------- Carousel ---------- */
+
+.mm-carousel {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    margin-bottom: 1.25rem;
+    container-type: inline-size;
+}
+
+.mm-carousel-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    border: 1px solid #d2d2d7;
+    background: #fff;
+    color: #1d1d1f;
+    cursor: pointer;
+    font-size: 0.75rem;
+    flex-shrink: 0;
+    transition: border-color 0.2s ease, background 0.2s ease;
+}
+
+.mm-carousel-btn:hover:not(:disabled) {
+    border-color: #0071e3;
+    background: #f0f7ff;
+}
+
+.mm-carousel-btn:disabled {
+    opacity: 0.25;
+    cursor: default;
+}
+
+.mm-carousel-track {
+    display: flex;
+    gap: 0.4rem;
+    overflow-x: auto;
+    scroll-behavior: smooth;
+    padding: 0.25rem 0;
+    flex: 1;
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+}
+
+.mm-carousel-track::-webkit-scrollbar {
+    display: none;
+}
+
+.mm-carousel-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 0.15rem;
+    padding: 0.45rem 1rem;
+    border-radius: 10px;
+    border: 1px solid #e5e5ea;
+    background: #fff;
+    cursor: pointer;
+    flex-shrink: 0;
+    min-width: 84px;
+    transition: border-color 0.2s ease, background 0.2s ease, box-shadow 0.2s ease;
+    user-select: none;
+}
+
+.mm-carousel-item:hover {
+    border-color: #c7c7cc;
+    background: #f9f9fb;
+}
+
+.mm-carousel-item--active {
+    border-color: #0071e3;
+    background: #0071e3;
+    box-shadow: 0 2px 8px rgba(0, 113, 227, 0.25);
+}
+
+.mm-carousel-item--active:hover {
+    border-color: #0062c4;
+    background: #0062c4;
+}
+
+.mm-carousel-item-day {
+    font-size: 1rem;
+    font-weight: 700;
+    color: #1d1d1f;
+    line-height: 1.1;
+    white-space: nowrap;
+}
+
+.mm-carousel-item--active .mm-carousel-item-day {
+    color: #fff;
+}
+
+.mm-carousel-item-date {
+    font-size: 0.6rem;
+    color: #8e8e93;
+    line-height: 1.2;
+    white-space: nowrap;
+}
+
+.mm-carousel-item--active .mm-carousel-item-date {
+    color: rgba(255, 255, 255, 0.8);
+}
+
+.mm-carousel-item-today {
+    font-size: 0.55rem;
+    font-weight: 700;
+    color: #0071e3;
+    background: rgba(0, 113, 227, 0.1);
+    padding: 0.05rem 0.4rem;
+    border-radius: 50px;
+    line-height: 1.3;
+    white-space: nowrap;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+}
+
+.mm-carousel-item--active .mm-carousel-item-today {
+    color: #fff;
+    background: rgba(255, 255, 255, 0.2);
+}
+
+.mm-carousel-item-count {
+    font-size: 0.55rem;
+    color: #8e8e93;
+    background: rgba(0, 0, 0, 0.04);
+    padding: 0.05rem 0.4rem;
+    border-radius: 50px;
+    line-height: 1.3;
+    white-space: nowrap;
+}
+
+.mm-carousel-item--active .mm-carousel-item-count {
+    color: rgba(255, 255, 255, 0.85);
+    background: rgba(255, 255, 255, 0.15);
+}
+
+.mm-mobile-select-wrapper {
+    display: none;
+    width: 100%;
+}
+
+.mm-mobile-select {
+    width: 100%;
+    padding: 0.55rem 0.85rem;
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: #fff;
+    background: #0071e3;
+    border: none;
+    border-radius: 10px;
+    cursor: pointer;
+    outline: none;
+    appearance: auto;
+    -webkit-appearance: auto;
+    text-align: center;
+    text-align-last: center;
+}
+
+.mm-mobile-select option {
+    color: #1d1d1f;
+    background: #fff;
+    text-align: center;
+}
+
+/* ---------- Day section ---------- */
+
+.mm-day-section {
+    padding-top: 0.25rem;
+}
+
+.mm-day-header {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.75rem 0 0.4rem;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.04);
+    margin-bottom: 0.9rem;
+}
+
+.mm-day-header i {
+    font-size: 0.8rem;
+    color: #0071e3;
+}
+
+.mm-day-title {
+    font-size: 0.95rem;
+    font-weight: 650;
+    color: #1d1d1f;
+    text-transform: capitalize;
+    flex: 1;
+    min-width: 0;
+}
+
+.mm-day-count {
+    font-size: 0.68rem;
+    font-weight: 600;
+    color: #8e8e93;
+    background: rgba(0, 0, 0, 0.04);
+    padding: 0.15rem 0.55rem;
+    border-radius: 50px;
+    white-space: nowrap;
+}
+
+/* ---------- Cards grid (same layout as jornadas page) ---------- */
+
+.mm-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.6rem;
+}
+
+.mm-partido-card {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+    background: #fff;
+    border: 1px solid #e8e8ed;
+    border-radius: 14px;
+    padding: 0.9rem 1.1rem;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.mm-partido-card:hover {
+    border-color: #d2d2d7;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+.mm-partido-card-teams {
+    display: flex;
+    flex-direction: column;
+    gap: 0.35rem;
+    min-width: 0;
+}
+
+.mm-partido-card-team {
+    display: flex;
+    align-items: center;
+    gap: 0.45rem;
+    font-size: 0.82rem;
+    font-weight: 500;
+    color: #1d1d1f;
+    min-width: 0;
+}
+
+.mm-partido-card-shield {
+    font-size: 0.7rem;
+    color: #8e8e93;
+    width: 18px;
+    flex-shrink: 0;
+}
+
+.mm-partido-card-team-name {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.mm-partido-card-datetime {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 0.15rem;
+    flex-shrink: 0;
+}
+
+.mm-partido-card-date {
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: #1d1d1f;
+    white-space: nowrap;
+}
+
+.mm-partido-card-time {
+    font-size: 0.7rem;
+    font-weight: 500;
+    color: #1d1d1f;
+    white-space: nowrap;
+}
+
+.mm-partido-card-badge {
+    font-size: 0.58rem;
+    font-weight: 700;
+    padding: 0.1rem 0.5rem;
+    border-radius: 999px;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+    white-space: nowrap;
+    margin-top: 0.2rem;
+}
+
+.mm-badge--pending { background: #e8f1ff; color: #0071e3; }
+.mm-badge--played { background: #e8f8ee; color: #1a7d36; }
+.mm-badge--postponed { background: #fff3cd; color: #856404; }
+.mm-badge--requested { background: #f0edff; color: #5e5ce6; }
+
+@media (max-width: 768px) {
+    .mm-container {
+        padding: 1.5rem 1rem 2.5rem;
+    }
+    .mm-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+@container (max-width: 520px) {
+    .mm-carousel-track {
+        display: none;
+    }
+    .mm-mobile-select-wrapper {
+        display: block;
+    }
+}
