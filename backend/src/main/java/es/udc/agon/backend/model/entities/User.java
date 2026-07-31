@@ -22,6 +22,8 @@ public class User {
     private String password;
     private LocalDate fechaNacimiento;
     private boolean eloProvisional;
+    private boolean notificacionesPartidos = true;
+    private int diasAntelacionPartidos = 1;
     private String role;
 
     public User() {
@@ -115,6 +117,24 @@ public class User {
 
     public void setEloProvisional(boolean eloProvisional) {
         this.eloProvisional = eloProvisional;
+    }
+
+    @Column(name = "notificacionesPartidos", nullable = false)
+    public boolean isNotificacionesPartidos() {
+        return notificacionesPartidos;
+    }
+
+    public void setNotificacionesPartidos(boolean notificacionesPartidos) {
+        this.notificacionesPartidos = notificacionesPartidos;
+    }
+
+    @Column(name = "diasAntelacionPartidos", nullable = false)
+    public int getDiasAntelacionPartidos() {
+        return diasAntelacionPartidos;
+    }
+
+    public void setDiasAntelacionPartidos(int diasAntelacionPartidos) {
+        this.diasAntelacionPartidos = diasAntelacionPartidos;
     }
 
     @Column(name = "role", nullable = false, length = 20)

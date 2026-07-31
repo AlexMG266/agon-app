@@ -67,11 +67,22 @@ public class UserDto {
     @Schema(description = "Indica si el ELO del jugador es provisional (pocas partidas jugadas)", example = "true", accessMode = Schema.AccessMode.READ_ONLY)
     private boolean eloProvisional;
 
+    @Schema(description = "Indica si el usuario desea recibir avisos de sus partidos", example = "true")
+    private boolean notificacionesPartidos = true;
+
+    @Schema(description = "Número de días de antelación con los que se avisa de un partido", example = "1")
+    private int diasAntelacionPartidos = 1;
+
     public UserDto() {
     }
 
     public UserDto(Long id, int elo, String nombre, String email, String imagenPerfil, LocalDate fechaNacimiento,
                    boolean eloProvisional) {
+        this(id, elo, nombre, email, imagenPerfil, fechaNacimiento, eloProvisional, true, 1);
+    }
+
+    public UserDto(Long id, int elo, String nombre, String email, String imagenPerfil, LocalDate fechaNacimiento,
+                   boolean eloProvisional, boolean notificacionesPartidos, int diasAntelacionPartidos) {
         this.id = id;
         this.elo = elo;
         this.nombre = nombre != null ? nombre.trim() : null;
@@ -79,6 +90,8 @@ public class UserDto {
         this.imagenPerfil = imagenPerfil != null ? imagenPerfil.trim() : null;
         this.fechaNacimiento = fechaNacimiento;
         this.eloProvisional = eloProvisional;
+        this.notificacionesPartidos = notificacionesPartidos;
+        this.diasAntelacionPartidos = diasAntelacionPartidos;
     }
 
     public Long getId() {
@@ -143,5 +156,21 @@ public class UserDto {
 
     public void setEloProvisional(boolean eloProvisional) {
         this.eloProvisional = eloProvisional;
+    }
+
+    public boolean isNotificacionesPartidos() {
+        return notificacionesPartidos;
+    }
+
+    public void setNotificacionesPartidos(boolean notificacionesPartidos) {
+        this.notificacionesPartidos = notificacionesPartidos;
+    }
+
+    public int getDiasAntelacionPartidos() {
+        return diasAntelacionPartidos;
+    }
+
+    public void setDiasAntelacionPartidos(int diasAntelacionPartidos) {
+        this.diasAntelacionPartidos = diasAntelacionPartidos;
     }
 }

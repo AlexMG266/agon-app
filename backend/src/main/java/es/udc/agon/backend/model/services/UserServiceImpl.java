@@ -78,7 +78,8 @@ public class UserServiceImpl implements UserService {
 
 	@Override
 	public User updateProfile(Long id, String nombre, String email, String imagenPerfil,
-			LocalDate fechaNacimiento) throws InstanceNotFoundException {
+			LocalDate fechaNacimiento, boolean notificacionesPartidos, int diasAntelacionPartidos)
+			throws InstanceNotFoundException {
 
 		User user = permissionChecker.checkUser(id);
 
@@ -86,6 +87,8 @@ public class UserServiceImpl implements UserService {
 		user.setEmail(email);
 		user.setImagenPerfil(imagenPerfil);
 		user.setFechaNacimiento(fechaNacimiento);
+		user.setNotificacionesPartidos(notificacionesPartidos);
+		user.setDiasAntelacionPartidos(diasAntelacionPartidos);
 
 		return user;
 

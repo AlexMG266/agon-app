@@ -110,7 +110,7 @@ public class UserServiceTest {
         registeredUser.setFechaNacimiento(registeredUser.getFechaNacimiento().plusDays(1));
 
         userService.updateProfile(registeredUser.getId(), registeredUser.getNombre(), registeredUser.getEmail(),
-                registeredUser.getImagenPerfil(), registeredUser.getFechaNacimiento());
+                registeredUser.getImagenPerfil(), registeredUser.getFechaNacimiento(), true, 1);
 
         User updatedUser = userService.loginFromId(registeredUser.getId());
 
@@ -122,7 +122,7 @@ public class UserServiceTest {
     @Test
     public void testUpdateProfileWithNonExistentId() {
         assertThrows(InstanceNotFoundException.class,
-                () -> userService.updateProfile(NON_EXISTENT_ID, "X", "X", "X", LocalDate.now()));
+                () -> userService.updateProfile(NON_EXISTENT_ID, "X", "X", "X", LocalDate.now(), true, 1));
     }
 
     // CU04 caso exitoso

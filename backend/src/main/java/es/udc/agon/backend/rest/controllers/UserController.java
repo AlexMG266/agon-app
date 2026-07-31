@@ -191,7 +191,8 @@ public class UserController {
         }
 
         return toUserDto(userService.updateProfile(id, userDto.getNombre(), userDto.getEmail(),
-                userDto.getImagenPerfil(), userDto.getFechaNacimiento()));
+                userDto.getImagenPerfil(), userDto.getFechaNacimiento(),
+                userDto.isNotificacionesPartidos(), userDto.getDiasAntelacionPartidos()));
     }
 
     @PostMapping("/{id}/changePassword")

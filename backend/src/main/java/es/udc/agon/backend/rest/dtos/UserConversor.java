@@ -9,13 +9,17 @@ public class UserConversor {
 
 	public final static UserDto toUserDto(User user) {
 		return new UserDto(user.getId(), user.getElo(), user.getNombre(), user.getEmail(), user.getImagenPerfil(),
-				user.getFechaNacimiento(), user.isEloProvisional());
+				user.getFechaNacimiento(), user.isEloProvisional(), user.isNotificacionesPartidos(),
+				user.getDiasAntelacionPartidos());
 	}
 
 	public final static User toUser(UserDto userDto) {
 
-		return new User(userDto.getElo(), userDto.getNombre(), userDto.getEmail(), userDto.getImagenPerfil(),
+		User user = new User(userDto.getElo(), userDto.getNombre(), userDto.getEmail(), userDto.getImagenPerfil(),
 				userDto.getPassword(), userDto.getFechaNacimiento(), userDto.isEloProvisional());
+		user.setNotificacionesPartidos(userDto.isNotificacionesPartidos());
+		user.setDiasAntelacionPartidos(userDto.getDiasAntelacionPartidos());
+		return user;
 	}
 
 	public final static AuthenticatedUserDto toAuthenticatedUserDto(String serviceToken, User user) {

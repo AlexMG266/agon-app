@@ -40,10 +40,13 @@ public interface UserService {
 	 * @param email
 	 * @param imagenPerfil
 	 * @param fechaNacimiento
+	 * @param notificacionesPartidos
+	 * @param diasAntelacionPartidos
 	 * @return
 	 * @throws InstanceNotFoundException
 	 */
-	User updateProfile(Long id, String nombre, String email, String imagenPerfil, LocalDate fechaNacimiento)
+	User updateProfile(Long id, String nombre, String email, String imagenPerfil, LocalDate fechaNacimiento,
+			boolean notificacionesPartidos, int diasAntelacionPartidos)
 		throws InstanceNotFoundException;
 
 	/**
