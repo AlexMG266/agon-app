@@ -21,9 +21,7 @@ recompile
 
         if [ -n "$changed_sources" ] || [ -n "$changed_pom" ]; then
             touch "$MARKER"
-            if [ -n "$changed_pom" ]; then
-                mvn dependency:go-offline -B -q || true
-            fi
+            # `mvn compile` resolves any new dependency automatically if pom.xml changed
             recompile
         fi
     done

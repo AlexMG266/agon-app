@@ -1,14 +1,17 @@
 
-# Use Maven with Eclipse Temurin (JDK 21) as base image for development
-FROM maven:3.9.9-eclipse-temurin-21
+# Use Maven with Eclipse Temurin (JDK 21) on Alpine as base image for development
+# (the Alpine variant downloads ~300 MB less than the full Ubuntu-based image)
+FROM maven:3.9.9-eclipse-temurin-21-alpine
 
 WORKDIR /app
 
 # Copy pom.xml to cache dependencies
 COPY backend/pom.xml /app/
 
-# Pre-download dependencies offline
-RUN mvn dependency:go-offline -B
+# Pre-download ONLY the dependencies declared in pom.xml and the build plugins.
+# Much lighter than `mvn dependency:go-offline`, which downloads the whole
+# Maven plugin universe (hundreds of MB more than the project needs).
+RUN mvn -B -DskipTests dependency:resolve dependency:resolve-plugins
 
 # Copy the source code
 COPY backend/src /app/src

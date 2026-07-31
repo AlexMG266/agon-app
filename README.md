@@ -17,10 +17,11 @@ AgonApp es una aplicación de torneos de futbolín.
 Desde la raíz del proyecto:
 
 ```bash
-docker compose down --rmi all --volumes --remove-orphans
 docker compose up --build -d
 docker compose ps
 ```
+
+> **Importante**: `docker compose down --rmi all --volumes` borra imágenes, red y los volúmenes de caché (Maven, npm y PostgreSQL), por lo que el siguiente `up --build` vuelve a descargar y compilar todo desde cero. **No lo uses en un despliegue normal**; queda reservado como "reset total" (ver más abajo).
 
 ### Desarrollo con recarga en caliente
 
@@ -35,10 +36,18 @@ Para el día a día:
 docker compose up -d
 ```
 
-Solo vuelve a construir si se cambian dependencias o algun dockerfile
+Solo vuelve a construir si se cambian dependencias o algún Dockerfile:
 
 ```bash
 docker compose up --build -d
+```
+
+### Reset total
+
+Borra contenedores, imágenes, red y volúmenes (datos de la BD y cachés). Solo úsalo si quieres empezar desde cero:
+
+```bash
+docker compose down --rmi all --volumes --remove-orphans
 ```
 
 ## Acceso a la aplicación
