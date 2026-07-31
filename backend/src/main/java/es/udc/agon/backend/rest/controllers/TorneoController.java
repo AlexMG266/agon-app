@@ -82,7 +82,8 @@ public class TorneoController {
         if (params.getFechasExcluidas() != null) {
             torneo.setFechasExcluidas(String.join(",", params.getFechasExcluidas()));
         }
-        torneo.setEstrategiaDistribucion(params.getEstrategiaDistribucion());
+        torneo.setEstrategiaDistribucion("UNIFORME".equals(params.getEstrategiaDistribucion())
+                ? "RAPIDO" : params.getEstrategiaDistribucion());
         torneo.setDiasEntreJornadas(params.getDiasEntreJornadas());
 
         Torneo savedTorneo = torneoService.crearTorneo(userId, torneo, params.getPrivado());
@@ -130,7 +131,8 @@ public class TorneoController {
         if (params.getFechasExcluidas() != null) {
             datos.setFechasExcluidas(String.join(",", params.getFechasExcluidas()));
         }
-        datos.setEstrategiaDistribucion(params.getEstrategiaDistribucion());
+        datos.setEstrategiaDistribucion("UNIFORME".equals(params.getEstrategiaDistribucion())
+                ? "RAPIDO" : params.getEstrategiaDistribucion());
         datos.setDiasEntreJornadas(params.getDiasEntreJornadas());
 
         Torneo torneo = torneoService.actualizarTorneo(userId, id, datos);

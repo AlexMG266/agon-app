@@ -378,6 +378,13 @@ public class TorneoServiceImpl implements TorneoService {
         torneo.setEquiposPorGrupo(equiposPorGrupo);
         torneo.setTienePlayoff(tienePlayoff);
         torneo.setIdaVueltaPlayoff(idaVueltaPlayoff);
+        // Compatibilidad: la estrategia 'UNIFORME' fue eliminada, se trata como 'RAPIDO'
+        if ("UNIFORME".equals(estrategiaPlayoff)) {
+            estrategiaPlayoff = "RAPIDO";
+        }
+        if ("UNIFORME".equals(torneo.getEstrategiaDistribucion())) {
+            torneo.setEstrategiaDistribucion("RAPIDO");
+        }
         torneo.setEstrategiaPlayoff(estrategiaPlayoff);
         torneo.setDiasEntrePlayoff(diasEntrePlayoff);
 
@@ -445,7 +452,7 @@ public class TorneoServiceImpl implements TorneoService {
             if ("JORNADAS".equals(estrPlayoff)) {
                 diasEntrePlayoffCalc = torneo.getDiasEntrePlayoff() != null ? torneo.getDiasEntrePlayoff() : 7;
             } else {
-                // RAPIDO, UNIFORME, o null (backwards compatible): dia siguiente
+                // RAPIDO o null (backwards compatible): dia siguiente
                 diasEntrePlayoffCalc = 1;
             }
             // Reservar para: cuartos, semifinal, final (3 rondas) — o 6 si ida/vuelta
@@ -572,7 +579,7 @@ public class TorneoServiceImpl implements TorneoService {
                 int diasEntre = torneo.getDiasEntreJornadas() != null ? torneo.getDiasEntreJornadas() : 7;
                 calFechaInicio = fechaJornada.plusDays(diasEntre);
             } else {
-                // RAPIDO, UNIFORME o cualquier otro: dia siguiente
+                // RAPIDO o cualquier otro: dia siguiente
                 calFechaInicio = fechaJornada.plusDays(1);
             }
         }

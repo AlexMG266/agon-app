@@ -162,7 +162,6 @@ const Step5Summary = ({ data }) => {
                         </td>
                         <td className="py-2">
                             {data.estrategiaDistribucion === 'JORNADAS' && <FormattedMessage id="project.tournaments.CreateTournament.step4.distribution.matchdays" defaultMessage="Jornadas" />}
-                            {data.estrategiaDistribucion === 'UNIFORME' && <FormattedMessage id="project.tournaments.CreateTournament.step4.distribution.uniform" defaultMessage="Uniforme" />}
                             {data.estrategiaDistribucion === 'RAPIDO' && <FormattedMessage id="project.tournaments.CreateTournament.step4.distribution.fast" defaultMessage="Rápido" />}
                             {!data.estrategiaDistribucion && '—'}
                         </td>

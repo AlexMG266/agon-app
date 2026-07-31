@@ -332,7 +332,6 @@ export default {
     'project.tournaments.CreateTournament.step4.removeDate': 'Remove',
     'project.tournaments.CreateTournament.step4.distribution': 'Distribution strategy',
     'project.tournaments.CreateTournament.step4.distribution.matchdays': 'Matchdays',
-    'project.tournaments.CreateTournament.step4.distribution.uniform': 'Uniform',
     'project.tournaments.CreateTournament.step4.distribution.fast': 'Fast',
     'project.tournaments.CreateTournament.step5.short': 'Summary',
     'project.tournaments.CreateTournament.step5.title': 'Summary & Creation',

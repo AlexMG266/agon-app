@@ -332,7 +332,6 @@ export default {
     'project.tournaments.CreateTournament.step4.removeDate': 'Eliminar',
     'project.tournaments.CreateTournament.step4.distribution': 'Estratexia de distribución',
     'project.tournaments.CreateTournament.step4.distribution.matchdays': 'Xornadas',
-    'project.tournaments.CreateTournament.step4.distribution.uniform': 'Uniforme',
     'project.tournaments.CreateTournament.step4.distribution.fast': 'Rápido',
     'project.tournaments.CreateTournament.step5.short': 'Resumo',
     'project.tournaments.CreateTournament.step5.title': 'Resumo e Creación',

@@ -466,7 +466,7 @@ public class TorneoServiceTest {
         }
     }
 
-    // ---- Tests de distribución: RAPIDO, JORNADAS, UNIFORME ----
+    // ---- Tests de distribución: RAPIDO, JORNADAS ----
 
     @Test
     public void testDistribucionJornadas() throws InstanceNotFoundException, PermissionException {
@@ -508,7 +508,9 @@ public class TorneoServiceTest {
     }
 
     @Test
-    public void testDistribucionUniforme() throws InstanceNotFoundException, PermissionException {
+    public void testDistribucionUniformeTratadaComoRapido() throws InstanceNotFoundException, PermissionException {
+        // La estrategia 'UNIFORME' fue eliminada; los torneos existentes con ese valor
+        // se tratan como 'RAPIDO' (días consecutivos) por compatibilidad.
         Torneo torneo = prepararTorneoConEquipos(4, "DIST_UNI");
         torneo.setFechaInicio(LocalDate.of(2026, 5, 4)); // lunes
         torneo.setFechaFin(LocalDate.of(2026, 6, 30));
@@ -518,10 +520,14 @@ public class TorneoServiceTest {
         configurar(torneo, "LIGA_UNICA", 1, 4, false, false);
         List<Jornada> jornadas = jornadaDao.findByTorneoIdOrderByNumeroJornadaAsc(torneo.getId());
         assertEquals(3, jornadas.size());
-        // UNIFORME: también días consecutivos (como RAPIDO)
+        // UNIFORME se normaliza a RAPIDO: días consecutivos
         for (int i = 0; i < jornadas.size(); i++) {
             assertEquals(LocalDate.of(2026, 5, 4).plusDays(i), jornadas.get(i).getFechaInicio());
         }
+        // El valor normalizado debe quedar persistido como RAPIDO
+        Torneo actualizado = torneoDao.findById(torneo.getId()).orElse(null);
+        assertNotNull(actualizado);
+        assertEquals("RAPIDO", actualizado.getEstrategiaDistribucion());
     }
 
     // ---- Tests de calendario con restricciones (días específicos) ----

@@ -32,7 +32,6 @@ const DAYS_OF_WEEK = [
 
 const DISTRIBUCION_OPTS = [
     { value: 'JORNADAS', labelId: 'project.tournaments.Create.Step4.dist.jornadas', label: 'Por jornadas' },
-    { value: 'UNIFORME', labelId: 'project.tournaments.Create.Step4.dist.uniforme', label: 'Uniforme' },
     { value: 'RAPIDO', labelId: 'project.tournaments.Create.Step4.dist.rapido', label: 'Rápido' },
 ];
 
@@ -141,6 +140,10 @@ const TournamentDetail = () => {
                 // Inicializar configData.fechaFin con el valor existente o el calculado
                 if (response.payload.fechaFin) {
                     setConfigData(prev => ({ ...prev, fechaFin: response.payload.fechaFin }));
+                }
+                // Compatibilidad: torneos antiguos con estrategia 'UNIFORME' se tratan como 'RAPIDO'
+                if (response.payload.estrategiaDistribucion === 'UNIFORME') {
+                    setConfigData(prev => ({ ...prev, estrategiaDistribucion: 'RAPIDO' }));
                 }
             } else {
                 setError(response.error || 'Error loading tournament');
@@ -272,7 +275,7 @@ const TournamentDetail = () => {
         if (estrategia === 'JORNADAS') {
             diasLiga = (rondasLiga - 1) * diasEntre;
         } else {
-            // RAPIDO o UNIFORME: consecutivos
+            // RAPIDO: consecutivos
             diasLiga = rondasLiga - 1;
         }
 
@@ -352,7 +355,8 @@ const TournamentDetail = () => {
                 horaInicio: tournament.horaInicio || '',
                 horaFin: tournament.horaFin || '',
                 duracionPartido: tournament.duracionPartido || 0,
-                estrategiaDistribucion: tournament.estrategiaDistribucion || '',
+                // Compatibilidad: 'UNIFORME' eliminada, se normaliza a 'RAPIDO' al editar
+                estrategiaDistribucion: tournament.estrategiaDistribucion === 'UNIFORME' ? 'RAPIDO' : (tournament.estrategiaDistribucion || ''),
                 diasEntreJornadas: tournament.diasEntreJornadas ?? 7,
                 fechasExcluidas: tournament.fechasExcluidas || [],
             });
@@ -704,7 +708,6 @@ const TournamentDetail = () => {
                                                         onChange={e => handleConfigChange('estrategiaPlayoff', e.target.value)}>
                                                         <option value="RAPIDO">Rápido</option>
                                                         <option value="JORNADAS">Jornadas</option>
-                                                        <option value="UNIFORME">Uniforme</option>
                                                     </select>
                                                 </div>
                                                 {configData.estrategiaPlayoff === 'JORNADAS' && (
@@ -1006,7 +1009,11 @@ const TournamentDetail = () => {
                                 </div>
                                 <div className="td-view-field-row">
                                     <span className="td-view-field-label"><FormattedMessage id="project.tournaments.Create.Step4.distribucion" defaultMessage="Distribución" /></span>
-                                    <span className="td-view-field-value">{tournament.estrategiaDistribucion || '—'}</span>
+                                    <span className="td-view-field-value">
+                                        {tournament.estrategiaDistribucion === 'JORNADAS' ? 'Jornadas'
+                                            : (tournament.estrategiaDistribucion === 'RAPIDO' || tournament.estrategiaDistribucion === 'UNIFORME') ? 'Rápido'
+                                            : '—'}
+                                    </span>
                                 </div>
                                 <div className="td-view-field-row">
                                     <span className="td-view-field-label"><FormattedMessage id="project.tournaments.Create.Step4.fechasExcluidas" defaultMessage="Fechas excluidas" /></span>

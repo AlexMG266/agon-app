@@ -18,7 +18,6 @@ const DAYS_OF_WEEK = [
 
 const DISTRIBUCION_OPTS = [
     { value: 'JORNADAS', labelId: 'project.tournaments.CreateTournament.step4.distribution.matchdays', label: 'Jornadas' },
-    { value: 'UNIFORME', labelId: 'project.tournaments.CreateTournament.step4.distribution.uniform', label: 'Uniforme' },
     { value: 'RAPIDO', labelId: 'project.tournaments.CreateTournament.step4.distribution.fast', label: 'Rápido' },
 ];
 

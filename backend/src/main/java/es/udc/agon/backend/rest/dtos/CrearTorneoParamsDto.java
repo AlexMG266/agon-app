@@ -46,7 +46,7 @@ public class CrearTorneoParamsDto {
     @Schema(description = "Fechas excluidas")
     private List<String> fechasExcluidas;
 
-    @Schema(description = "Estrategia de distribución: JORNADAS, UNIFORME, RAPIDO", example = "JORNADAS")
+    @Schema(description = "Estrategia de distribución: JORNADAS, RAPIDO", example = "JORNADAS")
     private String estrategiaDistribucion;
 
     @Schema(description = "Días de separación entre jornadas (solo para estrategia JORNADAS)", example = "7")

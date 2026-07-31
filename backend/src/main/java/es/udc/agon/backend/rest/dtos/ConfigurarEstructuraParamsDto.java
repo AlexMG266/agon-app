@@ -20,7 +20,7 @@ public class ConfigurarEstructuraParamsDto {
     @Schema(description = "Partidos de ida y vuelta en playoffs", example = "false")
     private boolean idaVueltaPlayoff;
 
-    @Schema(description = "Estrategia de distribución para playoffs: RAPIDO, JORNADAS, UNIFORME", example = "RAPIDO")
+    @Schema(description = "Estrategia de distribución para playoffs: RAPIDO, JORNADAS", example = "RAPIDO")
     private String estrategiaPlayoff;
 
     @Schema(description = "Días de separación entre rondas de playoff (solo JORNADAS)", example = "7")
