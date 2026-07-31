@@ -1,5 +1,4 @@
 // src/modules/common/components/ProfileAvatar.jsx
-import React from 'react';
 
 const ProfileAvatar = ({ imageUrl, name, size = 40, className = '' }) => {
     const getInitials = (name) => {

@@ -100,7 +100,7 @@ const SignUp = () => {
         if (!/[A-Z]/.test(password)) return intl.formatMessage({ id: 'project.users.SignUp.error.password.uppercase', defaultMessage: 'Debe incluir al menos una mayúscula.' });
         if (!/[a-z]/.test(password)) return intl.formatMessage({ id: 'project.users.SignUp.error.password.lowercase', defaultMessage: 'Debe incluir al menos una minúscula.' });
         if (!/\d/.test(password)) return intl.formatMessage({ id: 'project.users.SignUp.error.password.number', defaultMessage: 'Debe incluir al menos un número.' });
-        if (!/[@$!%*?&._\-+={\[\]}()^~\/]/.test(password)) return intl.formatMessage({ id: 'project.users.SignUp.error.password.symbol', defaultMessage: 'Debe incluir al menos un símbolo (ej. @, $, !, %).' });
+        if (!/[@$!%*?&._\-+={[\]}()^~/]/.test(password)) return intl.formatMessage({ id: 'project.users.SignUp.error.password.symbol', defaultMessage: 'Debe incluir al menos un símbolo (ej. @, $, !, %).' });
         return intl.formatMessage({ id: 'project.users.SignUp.error.password.invalid', defaultMessage: 'Formato de contraseña inválido.' });
     };
 
