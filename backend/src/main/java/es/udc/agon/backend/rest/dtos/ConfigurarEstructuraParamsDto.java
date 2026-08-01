@@ -5,7 +5,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
 @Schema(description = "Parámetros para configurar la estructura del torneo tras cerrar inscripciones")
 public class ConfigurarEstructuraParamsDto {
 
-    @Schema(description = "Tipo de torneo: LIGA_UNICA, GRUPOS_PLAYOFF, ELIMINATORIAS", example = "GRUPOS_PLAYOFF")
+    @Schema(description = "Tipo de torneo: LIGA_UNICA, GRUPOS_PLAYOFF", example = "GRUPOS_PLAYOFF")
     private String tipoTorneo;
 
     @Schema(description = "Número de grupos", example = "4")

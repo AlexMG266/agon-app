@@ -153,9 +153,17 @@ public class TorneoServiceTest {
         User org = createUser("org_buscar2");
         createTorneo(org, "Campeonato Regional");
         createTorneo(org, "Liga Nacional");
-        assertEquals(1, torneoService.buscarTorneos("Regional", null, 0, 100).getItems().size());
-        assertEquals(1, torneoService.buscarTorneos("Liga", null, 0, 100).getItems().size());
-        assertEquals(0, torneoService.buscarTorneos("Inexistente", null, 0, 100).getItems().size());
+        // Contamos solo los torneos creados por el organizador del test para no
+        // acoplarnos a los nombres de los torneos del seed (p.ej. "Liga + Playoff 2026").
+        long regionales = torneoService.buscarTorneos("Regional", null, 0, 100).getItems().stream()
+                .filter(t -> t.getOrganizador().getId().equals(org.getId())).count();
+        long ligas = torneoService.buscarTorneos("Liga", null, 0, 100).getItems().stream()
+                .filter(t -> t.getOrganizador().getId().equals(org.getId())).count();
+        long inexistentes = torneoService.buscarTorneos("Inexistente", null, 0, 100).getItems().stream()
+                .filter(t -> t.getOrganizador().getId().equals(org.getId())).count();
+        assertEquals(1, regionales);
+        assertEquals(1, ligas);
+        assertEquals(0, inexistentes);
     }
 
     @Test

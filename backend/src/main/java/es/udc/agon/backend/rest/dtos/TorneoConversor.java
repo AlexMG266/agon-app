@@ -28,16 +28,27 @@ public class TorneoConversor {
         List<InscripcionDto> inscripcionDtos = null;
         if (inscripciones != null) {
             inscripcionDtos = inscripciones.stream()
-                    .map(ins -> new InscripcionDto(
-                            ins.getEquipo().getId(),
-                            ins.getEquipo().getNombreEquipo(),
-                            ins.getEquipo().getCreador().getId(),
-                            ins.getEquipo().getMiembros().stream()
-                                    .map(UserConversor::toUserDto)
-                                    .collect(Collectors.toList()),
-                            ins.getGrupo() != null ? ins.getGrupo().getId() : null,
-                            ins.getGrupo() != null ? ins.getGrupo().getNombreGrupo() : null
-                    ))
+                    .map(ins -> {
+                        int pj = ins.getPartidosJugados();
+                        int pts = ins.getPuntosLiga();
+                        // Sistema de puntuación: victoria = 2 puntos, derrota = 1 punto.
+                        // pj = G + P, pts = 2*G + P  =>  G = pts - pj,  P = pj - G.
+                        int pg = Math.max(pts - pj, 0);
+                        int pp = Math.max(pj - pg, 0);
+                        int sg = ins.getSetsGanados();
+                        int sp = ins.getSetsPerdidos();
+                        return new InscripcionDto(
+                                ins.getEquipo().getId(),
+                                ins.getEquipo().getNombreEquipo(),
+                                ins.getEquipo().getCreador().getId(),
+                                ins.getEquipo().getMiembros().stream()
+                                        .map(UserConversor::toUserDto)
+                                        .collect(Collectors.toList()),
+                                ins.getGrupo() != null ? ins.getGrupo().getId() : null,
+                                ins.getGrupo() != null ? ins.getGrupo().getNombreGrupo() : null,
+                                pj, pg, pp, sg, sp, sg - sp, pts
+                        );
+                    })
                     .collect(Collectors.toList());
         }
 

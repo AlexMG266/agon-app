@@ -32,7 +32,7 @@ public class TorneoDto {
     @Schema(description = "Nombre del organizador", example = "admin")
     private String organizadorNombre;
 
-    @Schema(description = "Tipo de torneo: LIGA_UNICA, GRUPOS_PLAYOFF, ELIMINATORIAS", example = "GRUPOS_PLAYOFF")
+    @Schema(description = "Tipo de torneo: LIGA_UNICA, GRUPOS_PLAYOFF", example = "GRUPOS_PLAYOFF")
     private String tipoTorneo;
 
     @Schema(description = "Partidos de ida y vuelta en playoffs", example = "false")

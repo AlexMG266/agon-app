@@ -324,7 +324,7 @@ const TournamentDetail = () => {
         const diasEntre = tournament.diasEntreJornadas != null ? tournament.diasEntreJornadas : 7;
         // El número de rondas depende del grupo más grande
         const equiposPorGrupo = parseInt(data.equiposPorGrupo) || 2;
-        const tienePlayoff = data.tipoTorneo === 'GRUPOS_PLAYOFF' || data.tipoTorneo === 'ELIMINATORIAS';
+        const tienePlayoff = data.tipoTorneo === 'GRUPOS_PLAYOFF';
         const idaVuelta = data.idaVueltaPlayoff || false;
 
         // Calcular el número de rondas de liga necesarias
@@ -732,7 +732,6 @@ const TournamentDetail = () => {
                                                 {[
                                                     { value: 'LIGA_UNICA', label: 'Liga única' },
                                                     { value: 'GRUPOS_PLAYOFF', label: 'Grupos + Playoff' },
-                                                    { value: 'ELIMINATORIAS', label: 'Eliminatorias' },
                                                 ].map(opt => (
                                                     <button key={opt.value} type="button"
                                                         className={`td-config-seg-btn ${configData.tipoTorneo === opt.value ? 'active' : ''}`}
@@ -765,13 +764,11 @@ const TournamentDetail = () => {
                                             <i className="fa-regular fa-calculator" />
                                             {configData.tipoTorneo === 'LIGA_UNICA' ? (
                                                 <FormattedMessage id="project.tournaments.Detail.config.calc.liga" defaultMessage="Liga única: {total} equipos en 1 grupo" values={{ total: totalInscritos }} />
-                                            ) : configData.tipoTorneo === 'GRUPOS_PLAYOFF' ? (
-                                                <FormattedMessage id="project.tournaments.Detail.config.calc.grupos" defaultMessage="Grupos + Playoff: {total} equipos en {g} grupos: {dist}" values={{ total: totalInscritos, g: configData.numGrupos, dist: distribucionTexto }} />
                                             ) : (
-                                                <FormattedMessage id="project.tournaments.Detail.config.calc.elim" defaultMessage="Eliminatorias: {total} equipos" values={{ total: totalInscritos }} />
+                                                <FormattedMessage id="project.tournaments.Detail.config.calc.grupos" defaultMessage="Grupos + Playoff: {total} equipos en {g} grupos: {dist}" values={{ total: totalInscritos, g: configData.numGrupos, dist: distribucionTexto }} />
                                             )}
                                         </div>
-                                        {(configData.tipoTorneo === 'GRUPOS_PLAYOFF' || configData.tipoTorneo === 'ELIMINATORIAS') && (
+                                        {configData.tipoTorneo === 'GRUPOS_PLAYOFF' && (
                                             <>
                                                 <div className="td-config-toggles td-config-field--full">
                                                     <label className="td-config-toggle">
@@ -1544,7 +1541,15 @@ const TournamentDetail = () => {
                             });
                             const gruposList = Object.entries(gruposMap).map(([id, g]) => ({ id: parseInt(id), ...g }));
                             const currentGrupo = gruposList.length > 0 ? (gruposList.find(g => g.id === selectedGrupoIdx) || gruposList[0]) : null;
-                            const equiposGrupo = currentGrupo ? currentGrupo.equipos : tournament.inscripciones || [];
+                            const equiposGrupo = (currentGrupo ? currentGrupo.equipos : tournament.inscripciones || [])
+                                .slice()
+                                .sort((a, b) => {
+                                    const pts = (b.puntosLiga || 0) - (a.puntosLiga || 0);
+                                    if (pts !== 0) return pts;
+                                    const dg = (b.diferenciaSets || 0) - (a.diferenciaSets || 0);
+                                    if (dg !== 0) return dg;
+                                    return (b.setsGanados || 0) - (a.setsGanados || 0);
+                                });
                             return equiposGrupo.length > 0 ? (
                                 <table className="td-clasificacion-table">
                                     <thead>
@@ -1562,6 +1567,7 @@ const TournamentDetail = () => {
                                     <tbody>
                                         {equiposGrupo.map((insc, idx) => {
                                             const pos = idx + 1;
+                                            const dg = (insc.diferenciaSets ?? (insc.setsGanados || 0) - (insc.setsPerdidos || 0));
                                             return (
                                                 <tr key={insc.equipoId}>
                                                     <td>
@@ -1577,12 +1583,12 @@ const TournamentDetail = () => {
                                                             {insc.nombreEquipo}
                                                         </div>
                                                     </td>
-                                                    <td>0</td>
-                                                    <td>0</td>
-                                                    <td>0</td>
-                                                    <td>0</td>
-                                                    <td style={{ color: '#8e8e93' }}>0</td>
-                                                    <td>0</td>
+                                                    <td>{insc.partidosJugados || 0}</td>
+                                                    <td>{insc.partidosGanados || 0}</td>
+                                                    <td>—</td>
+                                                    <td>{insc.partidosPerdidos || 0}</td>
+                                                    <td style={{ color: '#8e8e93' }}>{dg > 0 ? `+${dg}` : dg}</td>
+                                                    <td>{insc.puntosLiga || 0}</td>
                                                 </tr>
                                             );
                                         })}

@@ -1,7 +1,7 @@
 -- ============================================================
 -- SCRIPT DE DATOS DE PRUEBA (Seed Data)
 -- ============================================================
--- 41 usuarios, 20 equipos (2 miembros c/u), 81 torneos
+-- 41 usuarios, 20 equipos (2 miembros c/u), 83 torneos
 --
 -- Organizador: user000 (contraseña: User000!)
 -- 40 competidores: test001 a test040 (contraseña: TestXXX!)
@@ -10,6 +10,7 @@
 --   1 torneo de prueba (user000) con 20 equipos inscritos
 --   40 torneos públicos (1 por test user)
 --   40 torneos privados (1 por test user)
+--   2 ligas comenzadas de user000 (20 equipos, 1 partido por terminar)
 -- ============================================================
 
 -- ============================================================
@@ -241,3 +242,248 @@ VALUES
     (16, 1, NOW() - INTERVAL '3 days'),
     (18, 1, NOW() - INTERVAL '2 days'),
     (20, 1, NOW() - INTERVAL '1 day');
+
+-- ============================================================
+-- 9. TORNEOS ESPECIALES DE user000 (ligas comenzadas)
+-- ============================================================
+
+INSERT INTO Torneo (idOrganizador, nombre, privado, codigoTorneo, numGrupos, equiposPorGrupo, tienePlayoff, tipoTorneo, idaVueltaPlayoff, estado,
+                    fechaInicio, fechaFin, fechaLimiteInscripcion,
+                    puntosVictoria, puntosEmpate, puntosDerrota,
+                    formatoPartidos, criterioDesempate,
+                    diasDisponibles, horaInicio, horaFin, duracionPartido,
+                    fechasExcluidas, estrategiaDistribucion, diasEntreJornadas,
+                    estrategiaPlayoff, diasEntrePlayoff)
+VALUES
+    (1, 'Liga + Playoff 2026', FALSE, 'T82-LIGAPL', 4, 5, TRUE, 'GRUPOS_PLAYOFF', FALSE, 'FASE_GRUPOS',
+     '2026-06-15', '2026-07-31', '2026-06-01',
+     3, 1, 0,
+     '4_SETS', 'PUNTOS',
+     'L,M,X,J,V,S,D', '16:00', '22:00', 45,
+     NULL, 'JORNADAS', 7,
+     'RAPIDO', NULL),
+    (1, 'Liga Única 2026', FALSE, 'T83-LIGAON', 1, 20, FALSE, 'LIGA_UNICA', FALSE, 'FASE_GRUPOS',
+     '2026-03-02', '2026-07-06', '2026-02-20',
+     3, 1, 0,
+     '4_SETS', 'PUNTOS',
+     'L,M,X,J,V,S,D', '16:00', '22:00', 45,
+     NULL, 'JORNADAS', 7,
+     NULL, NULL);
+
+INSERT INTO Grupo (idTorneo, nombreGrupo) VALUES
+    (82, 'Grupo A'), (82, 'Grupo B'), (82, 'Grupo C'), (82, 'Grupo D'),
+    (83, 'Grupo A');
+
+INSERT INTO Inscripcion (idTorneo, idEquipo, idGrupo, partidosJugados, estadoInscripcion, puntosLiga, setsGanados, setsPerdidos) VALUES
+    (82, 1,  1, 0, 'ACTIVA', 0, 0, 0),
+    (82, 2,  1, 0, 'ACTIVA', 0, 0, 0),
+    (82, 3,  1, 0, 'ACTIVA', 0, 0, 0),
+    (82, 4,  1, 0, 'ACTIVA', 0, 0, 0),
+    (82, 5,  1, 0, 'ACTIVA', 0, 0, 0),
+    (82, 6,  2, 0, 'ACTIVA', 0, 0, 0),
+    (82, 7,  2, 0, 'ACTIVA', 0, 0, 0),
+    (82, 8,  2, 0, 'ACTIVA', 0, 0, 0),
+    (82, 9,  2, 0, 'ACTIVA', 0, 0, 0),
+    (82, 10, 2, 0, 'ACTIVA', 0, 0, 0),
+    (82, 11, 3, 0, 'ACTIVA', 0, 0, 0),
+    (82, 12, 3, 0, 'ACTIVA', 0, 0, 0),
+    (82, 13, 3, 0, 'ACTIVA', 0, 0, 0),
+    (82, 14, 3, 0, 'ACTIVA', 0, 0, 0),
+    (82, 15, 3, 0, 'ACTIVA', 0, 0, 0),
+    (82, 16, 4, 0, 'ACTIVA', 0, 0, 0),
+    (82, 17, 4, 0, 'ACTIVA', 0, 0, 0),
+    (82, 18, 4, 0, 'ACTIVA', 0, 0, 0),
+    (82, 19, 4, 0, 'ACTIVA', 0, 0, 0),
+    (82, 20, 4, 0, 'ACTIVA', 0, 0, 0),
+    (83, 1,  5, 0, 'ACTIVA', 0, 0, 0),
+    (83, 2,  5, 0, 'ACTIVA', 0, 0, 0),
+    (83, 3,  5, 0, 'ACTIVA', 0, 0, 0),
+    (83, 4,  5, 0, 'ACTIVA', 0, 0, 0),
+    (83, 5,  5, 0, 'ACTIVA', 0, 0, 0),
+    (83, 6,  5, 0, 'ACTIVA', 0, 0, 0),
+    (83, 7,  5, 0, 'ACTIVA', 0, 0, 0),
+    (83, 8,  5, 0, 'ACTIVA', 0, 0, 0),
+    (83, 9,  5, 0, 'ACTIVA', 0, 0, 0),
+    (83, 10, 5, 0, 'ACTIVA', 0, 0, 0),
+    (83, 11, 5, 0, 'ACTIVA', 0, 0, 0),
+    (83, 12, 5, 0, 'ACTIVA', 0, 0, 0),
+    (83, 13, 5, 0, 'ACTIVA', 0, 0, 0),
+    (83, 14, 5, 0, 'ACTIVA', 0, 0, 0),
+    (83, 15, 5, 0, 'ACTIVA', 0, 0, 0),
+    (83, 16, 5, 0, 'ACTIVA', 0, 0, 0),
+    (83, 17, 5, 0, 'ACTIVA', 0, 0, 0),
+    (83, 18, 5, 0, 'ACTIVA', 0, 0, 0),
+    (83, 19, 5, 0, 'ACTIVA', 0, 0, 0),
+    (83, 20, 5, 0, 'ACTIVA', 0, 0, 0);
+
+-- Torneo 82: 4 grupos de 5, 5 jornadas (método round-robin). Solo queda PENDIENTE el último partido.
+-- Formato: liga a 4 sets (siempre se juegan 4 sets, nunca 3-0) y cada set a mejor de 9 bolas
+-- (el primero que llega a 5 bolas gana el set).
+DO $$
+DECLARE
+    torneo_id BIGINT := 82;
+    fecha_base DATE := '2026-06-15';
+    grupo_id BIGINT;
+    equipos BIGINT[];
+    n INT;
+    idx_l INT;
+    idx_v INT;
+    ronda INT;
+    i INT;
+    jornada_id BIGINT;
+    enc_id BIGINT;
+    enc_num INT := 0;
+    slot INT;
+BEGIN
+    FOR ronda IN 0..4 LOOP
+        INSERT INTO Jornada (idTorneo, numeroJornada, tipoFase, formatoJornada, estado, fechaInicio, fechaFin)
+        VALUES (torneo_id, ronda + 1, 'LIGA_GRUPO', 'LIGA_4_SETS', 'ACTIVA', fecha_base + ronda * 7, fecha_base + ronda * 7)
+        RETURNING id INTO jornada_id;
+
+        slot := 0;
+        FOR grupo_id IN SELECT id FROM Grupo WHERE idTorneo = torneo_id ORDER BY id LOOP
+            SELECT ARRAY(SELECT idEquipo FROM Inscripcion WHERE idTorneo = torneo_id AND idGrupo = grupo_id ORDER BY idEquipo)
+            INTO equipos;
+            n := array_length(equipos, 1);
+
+            FOR i IN 0..2 LOOP
+                idx_l := (ronda + i) % n;
+                idx_v := (n - i + ronda) % n;
+                IF i = 0 THEN
+                    idx_v := n;
+                END IF;
+                IF idx_l >= n OR idx_v >= n THEN
+                    CONTINUE;
+                END IF;
+
+                slot := slot + 1;
+                INSERT INTO Encuentro (idJornada, idEquipoLocal, idEquipoVisitante, estadoEncuentro, fechaRealizacion)
+                VALUES (jornada_id, equipos[idx_l + 1], equipos[idx_v + 1], 'JUGADO',
+                        fecha_base + ronda * 7 + TIME '16:00' + (slot - 1) * INTERVAL '45 minutes')
+                RETURNING id INTO enc_id;
+
+                enc_num := enc_num + 1;
+                -- Liga a 4 sets (nunca 3-0: siempre se juegan 4 sets).
+                -- Cada set a "mejor de 9 bolas": el primero que llega a 5 gana el set.
+                IF enc_num % 3 = 0 THEN
+                    -- Local gana 3-1
+                    INSERT INTO Set_Entity (idEncuentro, numeroSet, golesLocal, golesVisitante) VALUES
+                        (enc_id, 1, 5, 3), (enc_id, 2, 5, 1), (enc_id, 3, 4, 5), (enc_id, 4, 5, 2);
+                ELSIF enc_num % 3 = 1 THEN
+                    -- Local gana 4-0
+                    INSERT INTO Set_Entity (idEncuentro, numeroSet, golesLocal, golesVisitante) VALUES
+                        (enc_id, 1, 5, 0), (enc_id, 2, 5, 4), (enc_id, 3, 5, 2), (enc_id, 4, 5, 3);
+                ELSE
+                    -- Visitante gana 3-1
+                    INSERT INTO Set_Entity (idEncuentro, numeroSet, golesLocal, golesVisitante) VALUES
+                        (enc_id, 1, 2, 5), (enc_id, 2, 5, 3), (enc_id, 3, 1, 5), (enc_id, 4, 4, 5);
+                END IF;
+            END LOOP;
+        END LOOP;
+    END LOOP;
+
+    UPDATE Encuentro SET estadoEncuentro = 'PENDIENTE' WHERE id = enc_id;
+    DELETE FROM Set_Entity WHERE idEncuentro = enc_id;
+END $$;
+
+-- Torneo 83: 1 grupo de 20, 19 jornadas (método round-robin). Solo queda PENDIENTE el último partido.
+-- Formato: liga a 4 sets (siempre se juegan 4 sets, nunca 3-0) y cada set a mejor de 9 bolas
+-- (el primero que llega a 5 bolas gana el set).
+DO $$
+DECLARE
+    torneo_id BIGINT := 83;
+    fecha_base DATE := '2026-03-02';
+    equipos BIGINT[];
+    n INT := 20;
+    idx_l INT;
+    idx_v INT;
+    ronda INT;
+    i INT;
+    jornada_id BIGINT;
+    enc_id BIGINT;
+    enc_num INT := 0;
+    slot INT;
+BEGIN
+    SELECT ARRAY(SELECT idEquipo FROM Inscripcion WHERE idTorneo = torneo_id ORDER BY idEquipo) INTO equipos;
+
+    FOR ronda IN 0..18 LOOP
+        INSERT INTO Jornada (idTorneo, numeroJornada, tipoFase, formatoJornada, estado, fechaInicio, fechaFin)
+        VALUES (torneo_id, ronda + 1, 'LIGA_GRUPO', 'LIGA_4_SETS', 'ACTIVA', fecha_base + ronda * 7, fecha_base + ronda * 7)
+        RETURNING id INTO jornada_id;
+
+        slot := 0;
+        FOR i IN 0..9 LOOP
+            idx_l := (ronda + i) % (n - 1);
+            idx_v := (n - 1 - i + ronda) % (n - 1);
+            IF i = 0 THEN
+                idx_v := n - 1;
+            END IF;
+
+            slot := slot + 1;
+            INSERT INTO Encuentro (idJornada, idEquipoLocal, idEquipoVisitante, estadoEncuentro, fechaRealizacion)
+            VALUES (jornada_id, equipos[idx_l + 1], equipos[idx_v + 1], 'JUGADO',
+                    fecha_base + ronda * 7 + TIME '16:00' + (slot - 1) * INTERVAL '45 minutes')
+            RETURNING id INTO enc_id;
+
+            enc_num := enc_num + 1;
+            -- Liga a 4 sets (nunca 3-0: siempre se juegan 4 sets).
+            -- Cada set a "mejor de 9 bolas": el primero que llega a 5 gana el set.
+            IF enc_num % 3 = 0 THEN
+                -- Local gana 3-1
+                INSERT INTO Set_Entity (idEncuentro, numeroSet, golesLocal, golesVisitante) VALUES
+                    (enc_id, 1, 5, 3), (enc_id, 2, 5, 1), (enc_id, 3, 4, 5), (enc_id, 4, 5, 2);
+            ELSIF enc_num % 3 = 1 THEN
+                -- Local gana 4-0
+                INSERT INTO Set_Entity (idEncuentro, numeroSet, golesLocal, golesVisitante) VALUES
+                    (enc_id, 1, 5, 0), (enc_id, 2, 5, 4), (enc_id, 3, 5, 2), (enc_id, 4, 5, 3);
+            ELSE
+                -- Visitante gana 3-1
+                INSERT INTO Set_Entity (idEncuentro, numeroSet, golesLocal, golesVisitante) VALUES
+                    (enc_id, 1, 2, 5), (enc_id, 2, 5, 3), (enc_id, 3, 1, 5), (enc_id, 4, 4, 5);
+            END IF;
+        END LOOP;
+    END LOOP;
+
+    UPDATE Encuentro SET estadoEncuentro = 'PENDIENTE' WHERE id = enc_id;
+    DELETE FROM Set_Entity WHERE idEncuentro = enc_id;
+END $$;
+
+-- Recalcular estadísticas de inscripciones (misma lógica que actualizarEstadisticas)
+DO $$
+DECLARE
+    enc RECORD;
+    set_row RECORD;
+    sets_l INT;
+    sets_v INT;
+BEGIN
+    FOR enc IN
+        SELECT e.id AS enc_id, e.idEquipoLocal, e.idEquipoVisitante, j.idTorneo
+        FROM Encuentro e
+        JOIN Jornada j ON e.idJornada = j.id
+        WHERE j.idTorneo IN (82, 83) AND e.estadoEncuentro = 'JUGADO'
+    LOOP
+        sets_l := 0;
+        sets_v := 0;
+        FOR set_row IN SELECT golesLocal, golesVisitante FROM Set_Entity WHERE idEncuentro = enc.enc_id LOOP
+            IF set_row.golesLocal > set_row.golesVisitante THEN
+                sets_l := sets_l + 1;
+            ELSE
+                sets_v := sets_v + 1;
+            END IF;
+        END LOOP;
+
+        UPDATE Inscripcion
+        SET partidosJugados = partidosJugados + 1,
+            setsGanados = setsGanados + sets_l,
+            setsPerdidos = setsPerdidos + sets_v,
+            puntosLiga = puntosLiga + CASE WHEN sets_l > sets_v THEN 2 ELSE 1 END
+        WHERE idTorneo = enc.idTorneo AND idEquipo = enc.idEquipoLocal;
+
+        UPDATE Inscripcion
+        SET partidosJugados = partidosJugados + 1,
+            setsGanados = setsGanados + sets_v,
+            setsPerdidos = setsPerdidos + sets_l,
+            puntosLiga = puntosLiga + CASE WHEN sets_v > sets_l THEN 2 ELSE 1 END
+        WHERE idTorneo = enc.idTorneo AND idEquipo = enc.idEquipoVisitante;
+    END LOOP;
+END $$;

@@ -17,6 +17,8 @@ services:
       - ./backend/src/sql/1-PostgreSQLCreateTables.sql:/docker-entrypoint-initdb.d/1-PostgreSQLCreateTables.sql:ro
       - ./backend/src/sql/2-PostgreSQLCreateData-init.sql:/docker-entrypoint-initdb.d/2-PostgreSQLCreateData-init.sql:ro
       - ./backend/src/sql/3-SeedData.sql:/docker-entrypoint-initdb.d/3-SeedData.sql:ro
+      # Crea la BD de TEST independiente (agon_test) para que `mvn test` no borre el seed de desarrollo
+      - ./docker/db/init-test-db.sql:/docker-entrypoint-initdb.d/99-init-test-db.sql:ro
     networks:
       - agon_network
     healthcheck:

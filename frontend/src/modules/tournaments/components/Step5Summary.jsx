@@ -43,7 +43,6 @@ const Step5Summary = ({ data }) => {
                         <td className="py-2">
                             {data.tipoTorneo === 'LIGA_UNICA' && <FormattedMessage id="project.tournaments.CreateTournament.step2.type.league" defaultMessage="Liga única" />}
                             {data.tipoTorneo === 'GRUPOS_PLAYOFF' && <FormattedMessage id="project.tournaments.CreateTournament.step2.type.groupsPlayoff" defaultMessage="Grupos + Playoff" />}
-                            {data.tipoTorneo === 'ELIMINATORIAS' && <FormattedMessage id="project.tournaments.CreateTournament.step2.type.knockout" defaultMessage="Eliminatorias directas" />}
                             {!data.tipoTorneo && '—'}
                         </td>
                     </tr>

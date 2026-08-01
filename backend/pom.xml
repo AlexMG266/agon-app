@@ -55,7 +55,15 @@
                 <!--  Data source properties -->
                 <dataSource.baseUrl>jdbc:postgresql://db/agon</dataSource.baseUrl>
                 <dataSource.url>${dataSource.baseUrl}</dataSource.url>
-                <testDataSource.url>jdbc:postgresql://db/agon</testDataSource.url>
+                <!--
+                    Base de datos de TEST independiente: `mvn test` (sql-maven-plugin en
+                    process-test-classes) ejecuta 1-PostgreSQLCreateTables.sql (DROP de todas
+                    las tablas) y 3-SeedData.sql. Si apuntara a la BD de desarrollo 'agon'
+                    borraría el seed de docker-init (jornadas/encuentros/sets de 82/83).
+                    Al usar 'agon_test' los tests corren sobre una BD limpia y el seed de
+                    desarrollo permanece intacto.
+                -->
+                <testDataSource.url>jdbc:postgresql://db/agon_test</testDataSource.url>
                 <dataSource.createTablesScript>1-PostgreSQLCreateTables.sql</dataSource.createTablesScript>
                 <dataSource.createDataScript>2-PostgreSQLCreateData-init.sql</dataSource.createDataScript>
             </properties>
@@ -204,7 +212,17 @@
                 <executions>
                     <execution>
                         <id>create-tables-for-testing</id>
-                        <phase>process-test-resources</phase>
+                        <!--
+                            Bound to process-test-classes (NOT process-test-resources):
+                            `mvn spring-boot:run` reaches test-compile (which includes
+                            process-test-resources) but NOT process-test-classes, so the
+                            dev server no longer wipes the Docker-init seed. The sql-maven-plugin
+                            splits statements on ';' and cannot parse the DO $$ plpgsql blocks
+                            in 3-SeedData.sql; keeping this execution out of the run lifecycle
+                            lets the psql-applied seed (jornadas/encuentros/sets) survive.
+                            `mvn test` still hits process-test-classes before surefire.
+                        -->
+                        <phase>process-test-classes</phase>
                         <goals>
                             <goal>execute</goal>
                         </goals>

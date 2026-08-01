@@ -7,7 +7,6 @@ import Button from 'react-bootstrap/Button';
 const TORNEO_TIPOS = [
     { value: 'LIGA_UNICA', labelId: 'project.tournaments.CreateTournament.step2.type.league', label: 'Liga única' },
     { value: 'GRUPOS_PLAYOFF', labelId: 'project.tournaments.CreateTournament.step2.type.groupsPlayoff', label: 'Grupos + Playoff' },
-    { value: 'ELIMINATORIAS', labelId: 'project.tournaments.CreateTournament.step2.type.knockout', label: 'Eliminatorias directas' },
 ];
 
 const GRUPO_OPTIONS = [1, 2, 4, 8];
