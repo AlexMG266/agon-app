@@ -39,6 +39,7 @@ public class Torneo {
     private Integer diasEntreJornadas;
     private String estrategiaPlayoff;
     private Integer diasEntrePlayoff;
+    private String rondaInicioPlayoff; // FINAL, SEMIFINALES, CUARTOS, OCTAVOS, DIECISEISAVOS
 
     private List<Grupo> grupos = new ArrayList<>();
     private List<Jornada> jornadas = new ArrayList<>();
@@ -231,6 +232,10 @@ public class Torneo {
     @Column(name = "diasEntrePlayoff")
     public Integer getDiasEntrePlayoff() { return diasEntrePlayoff; }
     public void setDiasEntrePlayoff(Integer diasEntrePlayoff) { this.diasEntrePlayoff = diasEntrePlayoff; }
+
+    @Column(name = "rondaInicioPlayoff", length = 20)
+    public String getRondaInicioPlayoff() { return rondaInicioPlayoff; }
+    public void setRondaInicioPlayoff(String rondaInicioPlayoff) { this.rondaInicioPlayoff = rondaInicioPlayoff; }
 
     @OneToMany(mappedBy = "torneo", cascade = CascadeType.ALL, orphanRemoval = true)
     public List<Grupo> getGrupos() {

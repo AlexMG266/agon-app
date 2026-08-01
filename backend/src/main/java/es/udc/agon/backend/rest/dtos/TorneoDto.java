@@ -68,6 +68,7 @@ public class TorneoDto {
     private Integer diasEntreJornadas;
     private String estrategiaPlayoff;
     private Integer diasEntrePlayoff;
+    private String rondaInicioPlayoff;
 
     public TorneoDto() {
     }
@@ -83,7 +84,7 @@ public class TorneoDto {
                      String horaInicio, String horaFin, Integer duracionPartido,
                      List<String> fechasExcluidas, String estrategiaDistribucion,
                      Integer diasEntreJornadas, String estrategiaPlayoff,
-                     Integer diasEntrePlayoff) {
+                     Integer diasEntrePlayoff, String rondaInicioPlayoff) {
         this.id = id;
         this.nombre = nombre;
         this.numGrupos = numGrupos;
@@ -115,6 +116,7 @@ public class TorneoDto {
         this.diasEntreJornadas = diasEntreJornadas;
         this.estrategiaPlayoff = estrategiaPlayoff;
         this.diasEntrePlayoff = diasEntrePlayoff;
+        this.rondaInicioPlayoff = rondaInicioPlayoff;
     }
 
     // Getters y setters
@@ -211,4 +213,7 @@ public class TorneoDto {
 
     public Integer getDiasEntrePlayoff() { return diasEntrePlayoff; }
     public void setDiasEntrePlayoff(Integer diasEntrePlayoff) { this.diasEntrePlayoff = diasEntrePlayoff; }
+
+    public String getRondaInicioPlayoff() { return rondaInicioPlayoff; }
+    public void setRondaInicioPlayoff(String rondaInicioPlayoff) { this.rondaInicioPlayoff = rondaInicioPlayoff; }
 }

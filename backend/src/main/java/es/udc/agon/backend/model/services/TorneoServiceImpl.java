@@ -354,6 +354,17 @@ public class TorneoServiceImpl implements TorneoService {
                                                           String estrategiaPlayoff, Integer diasEntrePlayoff,
                                                           String fechaFin)
             throws InstanceNotFoundException, IllegalArgumentException {
+        return configurarEstructuraYGenerarCalendario(torneoId, tipoTorneo, numGrupos, equiposPorGrupo,
+                tienePlayoff, idaVueltaPlayoff, estrategiaPlayoff, diasEntrePlayoff, fechaFin, null);
+    }
+
+    @Override
+    public Torneo configurarEstructuraYGenerarCalendario(Long torneoId, String tipoTorneo,
+                                                          int numGrupos, int equiposPorGrupo,
+                                                          boolean tienePlayoff, boolean idaVueltaPlayoff,
+                                                          String estrategiaPlayoff, Integer diasEntrePlayoff,
+                                                          String fechaFin, String rondaInicioPlayoff)
+            throws InstanceNotFoundException, IllegalArgumentException {
 
         Torneo torneo = torneoDao.findById(torneoId)
                 .orElseThrow(() -> new InstanceNotFoundException("project.entities.torneo", torneoId));
@@ -374,6 +385,32 @@ public class TorneoServiceImpl implements TorneoService {
                     + inscripciones.size() + "). Aumenta el número de grupos o equipos por grupo.");
         }
 
+        // Resolver y validar la ronda de inicio del playoff. Para que el cuadro quede calibrado
+        // a eliminatorias (octavos, cuartos, semis, final) sin byes, el número de grupos debe ser
+        // potencia de 2 y los clasificados por grupo (equiposRonda / numGrupos) un entero >= 1
+        // que no supere el tamaño del grupo.
+        if (tienePlayoff && "GRUPOS_PLAYOFF".equals(tipoTorneo)) {
+            int equiposRonda = equiposPorRonda(rondaInicioPlayoff);
+            if (equiposRonda == -1) {
+                // auto: los 2 mejores de cada grupo (la ronda más alta posible)
+                equiposRonda = 2 * numGrupos;
+                rondaInicioPlayoff = nombreRonda(equiposRonda);
+            }
+            if (!esPotenciaDeDos(numGrupos)) {
+                throw new IllegalArgumentException(
+                        "Con " + numGrupos + " grupos no se puede construir un cuadro de eliminatorias calibrado "
+                        + "sin byes. El número de grupos debe ser potencia de 2 (1, 2, 4, 8 o 16).");
+            }
+            if (equiposRonda % numGrupos != 0 || equiposRonda / numGrupos > equiposPorGrupo) {
+                throw new IllegalArgumentException(
+                        "No es posible iniciar el playoff en " + nombreRonda(equiposRonda) + " con "
+                        + numGrupos + " grupos. Prueba con otra ronda o con un número de grupos "
+                        + "que divida exactamente el cuadro de " + equiposRonda + " equipos.");
+            }
+        } else {
+            rondaInicioPlayoff = null;
+        }
+
         // guardar la configuracion estructural en el torneo
         torneo.setTipoTorneo(tipoTorneo);
         torneo.setNumGrupos(numGrupos);
@@ -389,6 +426,7 @@ public class TorneoServiceImpl implements TorneoService {
         }
         torneo.setEstrategiaPlayoff(estrategiaPlayoff);
         torneo.setDiasEntrePlayoff(diasEntrePlayoff);
+        torneo.setRondaInicioPlayoff(rondaInicioPlayoff);
 
         // establecer la fecha de fin si se proporciona (puede ser null, y se calculará automáticamente)
         if (fechaFin != null && !fechaFin.isBlank()) {
@@ -457,8 +495,25 @@ public class TorneoServiceImpl implements TorneoService {
                 // RAPIDO o null (backwards compatible): dia siguiente
                 diasEntrePlayoffCalc = 1;
             }
-            // Reservar para: cuartos, semifinal, final (3 rondas) — o 6 si ida/vuelta
-            int rondasPlayoff = idaVueltaPlayoff ? 6 : 3;
+            // Reservar tantas rondas como tenga la eliminatoria desde la ronda de inicio
+            // (CUARTOS = 3 rondas: cuartos, semifinal y final). Si no hay ronda configurada
+            // (compatibilidad) se reservan 3 rondas, o 6 si es ida/vuelta.
+            int equiposRondaReserva;
+            if (torneo.getRondaInicioPlayoff() != null) {
+                equiposRondaReserva = equiposPorRonda(torneo.getRondaInicioPlayoff());
+            } else {
+                equiposRondaReserva = -1;
+            }
+            int rondasPlayoff;
+            if (equiposRondaReserva > 0) {
+                // log2 del numero de equipos: 32->5, 16->4, 8->3, 4->2, 2->1
+                rondasPlayoff = Integer.numberOfTrailingZeros(equiposRondaReserva);
+            } else {
+                rondasPlayoff = 3;
+            }
+            if (idaVueltaPlayoff) {
+                rondasPlayoff *= 2;
+            }
             int reservaPlayoff = rondasPlayoff * diasEntrePlayoffCalc;
             limiteFaseGrupos = calFechaFin.minusDays(reservaPlayoff);
         }
@@ -837,15 +892,28 @@ public class TorneoServiceImpl implements TorneoService {
             throw new IllegalArgumentException("El torneo ya tiene playoffs generados");
         }
 
-        // obtener los clasificados: los 2 mejores de cada grupo por puntos
+        // Obtener los clasificados. Si el torneo se configuró con una ronda de inicio
+        // (OCTAVOS, CUARTOS, SEMIFINALES, FINAL), de cada grupo pasan exactamente
+        // (equiposRonda / numGrupos) equipos y el total es potencia de 2 (sin byes).
+        // Si la ronda es null (torneos antiguos), se mantiene el comportamiento histórico:
+        // los 2 mejores de cada grupo y el bracket se rellena con byes.
         List<Grupo> grupos = grupoDao.findByTorneoId(torneoId);
+        int numGrupos = grupos.size();
+        int clasificadosPorGrupo;
+        if (torneo.getRondaInicioPlayoff() != null) {
+            int equiposRonda = equiposPorRonda(torneo.getRondaInicioPlayoff());
+            clasificadosPorGrupo = Math.max(1, equiposRonda / Math.max(1, numGrupos));
+        } else {
+            clasificadosPorGrupo = 2; // comportamiento historico
+        }
+
         List<Equipo> clasificados = new ArrayList<>();
         for (Grupo grupo : grupos) {
             List<Inscripcion> inscripcionesGrupo = inscripcionDao.findByGrupoId(grupo.getId());
             inscripcionesGrupo.sort(Comparator.comparingInt(Inscripcion::getPuntosLiga).reversed()
                     .thenComparingInt(Inscripcion::getSetsGanados).reversed()
                     .thenComparingInt(Inscripcion::getSetsPerdidos));
-            for (int i = 0; i < Math.min(2, inscripcionesGrupo.size()); i++) {
+            for (int i = 0; i < Math.min(clasificadosPorGrupo, inscripcionesGrupo.size()); i++) {
                 clasificados.add(inscripcionesGrupo.get(i).getEquipo());
             }
         }
@@ -854,7 +922,9 @@ public class TorneoServiceImpl implements TorneoService {
             throw new IllegalArgumentException("No hay suficientes equipos clasificados para los playoffs");
         }
 
-        // rellenar hasta una potencia de 2 con "byes" (null) para el bracket
+        // Rellenar hasta una potencia de 2 con "byes" (null) por seguridad.
+        // Con la ronda de inicio configurada el total ya es potencia de 2 y este
+        // bucle no añade nada; con torneos antiguos (2 por grupo) sigue aplicando byes.
         int numEquipos = clasificados.size();
         int potencia = 1;
         while (potencia < numEquipos) {
@@ -1013,5 +1083,57 @@ public class TorneoServiceImpl implements TorneoService {
             }
         }
         return null;
+    }
+
+    /**
+     * Devuelve el numero de equipos que participan en una ronda de eliminatorias dada.
+     * FINAL -> 2, SEMIFINALES -> 4, CUARTOS -> 8, OCTAVOS -> 16, DIECISEISAVOS -> 32.
+     * Si la ronda no es reconocida (o es null) devuelve -1 para indicar "no configurada".
+     */
+    private int equiposPorRonda(String ronda) {
+        if (ronda == null) {
+            return -1;
+        }
+        switch (ronda) {
+            case "DIECISEISAVOS":
+                return 32;
+            case "OCTAVOS":
+                return 16;
+            case "CUARTOS":
+                return 8;
+            case "SEMIFINALES":
+                return 4;
+            case "FINAL":
+                return 2;
+            default:
+                return -1;
+        }
+    }
+
+    /**
+     * Devuelve el nombre de la ronda mas alta (la primera ronda de la eliminatoria) que puede
+     * albergar el numero de equipos indicado. Si el numero no coincide con un cuadro estandar
+     * devuelve FINAL (por defecto).
+     */
+    private String nombreRonda(int equipos) {
+        switch (equipos) {
+            case 32:
+                return "DIECISEISAVOS";
+            case 16:
+                return "OCTAVOS";
+            case 8:
+                return "CUARTOS";
+            case 4:
+                return "SEMIFINALES";
+            default:
+                return "FINAL";
+        }
+    }
+
+    /**
+     * Comprueba si un numero es potencia de dos (1, 2, 4, 8, 16, ...).
+     */
+    private boolean esPotenciaDeDos(int n) {
+        return n > 0 && (n & (n - 1)) == 0;
     }
 }

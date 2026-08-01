@@ -98,6 +98,7 @@ CREATE TABLE Torneo (
     diasEntreJornadas INTEGER,
     estrategiaPlayoff VARCHAR(20),
     diasEntrePlayoff INTEGER,
+    rondaInicioPlayoff VARCHAR(20),
     CONSTRAINT TorneoPK PRIMARY KEY (id),
     CONSTRAINT TorneoOrganizadorIdFK FOREIGN KEY (idOrganizador) REFERENCES "User"(id) ON DELETE CASCADE
 );

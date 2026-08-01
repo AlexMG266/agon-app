@@ -170,7 +170,8 @@ public class TorneoController {
                 params.isIdaVueltaPlayoff(),
                 params.getEstrategiaPlayoff(),
                 params.getDiasEntrePlayoff(),
-                params.getFechaFin()
+                params.getFechaFin(),
+                params.getRondaInicioPlayoff()
         );
         return TorneoConversor.toTorneoDto(torneo);
     }

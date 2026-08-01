@@ -136,6 +136,19 @@ public class TorneoServiceTest {
                 tienePlayoff, idaVueltaPlayoff, estrategiaPlayoff, diasEntrePlayoff, null);
     }
 
+    /**
+     * Helper con todos los parámetros incluyendo la ronda de inicio del playoff.
+     */
+    private Torneo configurarConRonda(Torneo torneo, String tipoTorneo,
+                                       int numGrupos, int equiposPorGrupo,
+                                       boolean tienePlayoff, boolean idaVueltaPlayoff,
+                                       String rondaInicioPlayoff)
+            throws InstanceNotFoundException {
+        return torneoService.configurarEstructuraYGenerarCalendario(
+                torneo.getId(), tipoTorneo, numGrupos, equiposPorGrupo,
+                tienePlayoff, idaVueltaPlayoff, null, null, null, rondaInicioPlayoff);
+    }
+
     // ---- Tests de búsqueda ----
 
     @Test
@@ -1039,5 +1052,63 @@ public class TorneoServiceTest {
         Torneo result = configurar(torneo, "GRUPOS_PLAYOFF", 1, 4, true, false);
         assertNull(result.getEstrategiaPlayoff(), "Backwards compatible: null por defecto");
         assertNull(result.getDiasEntrePlayoff(), "Backwards compatible: null por defecto");
+    }
+
+    // ---- Tests de calibración de eliminatorias (rondaInicioPlayoff) ----
+
+    @Test
+    public void testRondaInicioPlayoffPersistida() throws InstanceNotFoundException, PermissionException {
+        Torneo torneo = prepararTorneoConEquipos(8, "RONDA_PERSIST");
+        torneo.setFechaInicio(LocalDate.of(2026, 5, 4));
+        torneo.setFechaFin(LocalDate.of(2026, 7, 30));
+        torneo.setDiasDisponibles("L,M,X,J,V,S,D");
+        torneoDao.save(torneo);
+        // 4 grupos x 2 equipos, eliminatoria desde CUARTOS (8 equipos => 2 por grupo)
+        Torneo result = configurarConRonda(torneo, "GRUPOS_PLAYOFF", 4, 2,
+                true, false, "CUARTOS");
+        assertEquals("CUARTOS", result.getRondaInicioPlayoff());
+    }
+
+    @Test
+    public void testRondaInicioPlayoffRechazaNumGruposNoPotenciaDeDos()
+            throws InstanceNotFoundException, PermissionException {
+        Torneo torneo = prepararTorneoConEquipos(6, "RONDA_3GRUPOS");
+        torneo.setFechaInicio(LocalDate.of(2026, 5, 4));
+        torneo.setFechaFin(LocalDate.of(2026, 7, 30));
+        torneo.setDiasDisponibles("L,M,X,J,V,S,D");
+        torneoDao.save(torneo);
+        // 3 grupos no es potencia de 2 -> debe lanzar IllegalArgumentException
+        assertThrows(IllegalArgumentException.class, () -> configurarConRonda(
+                torneo, "GRUPOS_PLAYOFF", 3, 2, true, false, "OCTAVOS"));
+    }
+
+    @Test
+    public void testRondaInicioPlayoffRechazaDivisionNoExacta()
+            throws InstanceNotFoundException, PermissionException {
+        Torneo torneo = prepararTorneoConEquipos(8, "RONDA_DIV");
+        torneo.setFechaInicio(LocalDate.of(2026, 5, 4));
+        torneo.setFechaFin(LocalDate.of(2026, 7, 30));
+        torneo.setDiasDisponibles("L,M,X,J,V,S,D");
+        torneoDao.save(torneo);
+        // 4 grupos con CUARTOS (8 equipos) => 2 por grupo OK, pero SEMIFINALES (4)
+        // no divide 4 grupos -> 1 equipo por grupo entraría en playoffs (ronda de 4 en 4 grupos)
+        // 4 % 4 == 0 => 1 por grupo, permitido; usar en su lugar 3 grupos no potencia.
+        // Aquí comprobamos OCTAVOS con 4 grupos: 16 % 4 == 0 pero 4 por grupo supera
+        // el tamaño del grupo (2). Debe rechazarse por exceder equiposPorGrupo.
+        assertThrows(IllegalArgumentException.class, () -> configurarConRonda(
+                torneo, "GRUPOS_PLAYOFF", 4, 2, true, false, "OCTAVOS"));
+    }
+
+    @Test
+    public void testRondaInicioPlayoffNullBackwardsCompatible() throws InstanceNotFoundException, PermissionException {
+        Torneo torneo = prepararTorneoConEquipos(8, "RONDA_NULL");
+        torneo.setFechaInicio(LocalDate.of(2026, 5, 4));
+        torneo.setFechaFin(LocalDate.of(2026, 7, 30));
+        torneo.setDiasDisponibles("L,M,X,J,V,S,D");
+        torneoDao.save(torneo);
+        // Sin ronda configurada: comportamiento histórico (2 por grupo) y ronda auto-resuelta.
+        Torneo result = configurar(torneo, "GRUPOS_PLAYOFF", 4, 2, true, false);
+        // 4 grupos x 2 = 8 equipos -> CUARTOS auto-resuelto
+        assertEquals("CUARTOS", result.getRondaInicioPlayoff());
     }
 }

@@ -26,6 +26,9 @@ public class ConfigurarEstructuraParamsDto {
     @Schema(description = "Días de separación entre rondas de playoff (solo JORNADAS)", example = "7")
     private Integer diasEntrePlayoff;
 
+    @Schema(description = "Ronda de inicio del playoff: FINAL, SEMIFINALES, CUARTOS, OCTAVOS, DIECISEISAVOS", example = "CUARTOS")
+    private String rondaInicioPlayoff;
+
     @Schema(description = "Fecha de fin del torneo (yyyy-MM-dd). Si no se proporciona, se calculará automáticamente", example = "2026-05-15", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
     private String fechaFin;
 
@@ -86,6 +89,14 @@ public class ConfigurarEstructuraParamsDto {
 
     public void setDiasEntrePlayoff(Integer diasEntrePlayoff) {
         this.diasEntrePlayoff = diasEntrePlayoff;
+    }
+
+    public String getRondaInicioPlayoff() {
+        return rondaInicioPlayoff;
+    }
+
+    public void setRondaInicioPlayoff(String rondaInicioPlayoff) {
+        this.rondaInicioPlayoff = rondaInicioPlayoff;
     }
 
     public String getFechaFin() {

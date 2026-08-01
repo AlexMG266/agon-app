@@ -255,8 +255,8 @@ INSERT INTO Torneo (idOrganizador, nombre, privado, codigoTorneo, numGrupos, equ
                     fechasExcluidas, estrategiaDistribucion, diasEntreJornadas,
                     estrategiaPlayoff, diasEntrePlayoff)
 VALUES
-    (1, 'Liga + Playoff 2026', FALSE, 'T82-LIGAPL', 4, 5, TRUE, 'GRUPOS_PLAYOFF', FALSE, 'FASE_GRUPOS',
-     '2026-06-15', '2026-07-31', '2026-06-01',
+    (1, 'Liga + Playoff 2026', FALSE, 'T82-LIGAPL', 2, 10, TRUE, 'GRUPOS_PLAYOFF', FALSE, 'FASE_GRUPOS',
+     '2026-06-15', '2026-08-10', '2026-06-01',
      3, 1, 0,
      '4_SETS', 'PUNTOS',
      'L,M,X,J,V,S,D', '16:00', '22:00', 45,
@@ -271,7 +271,7 @@ VALUES
      NULL, NULL);
 
 INSERT INTO Grupo (idTorneo, nombreGrupo) VALUES
-    (82, 'Grupo A'), (82, 'Grupo B'), (82, 'Grupo C'), (82, 'Grupo D'),
+    (82, 'Grupo A'), (82, 'Grupo B'),
     (83, 'Grupo A');
 
 INSERT INTO Inscripcion (idTorneo, idEquipo, idGrupo, partidosJugados, estadoInscripcion, puntosLiga, setsGanados, setsPerdidos) VALUES
@@ -280,43 +280,43 @@ INSERT INTO Inscripcion (idTorneo, idEquipo, idGrupo, partidosJugados, estadoIns
     (82, 3,  1, 0, 'ACTIVA', 0, 0, 0),
     (82, 4,  1, 0, 'ACTIVA', 0, 0, 0),
     (82, 5,  1, 0, 'ACTIVA', 0, 0, 0),
-    (82, 6,  2, 0, 'ACTIVA', 0, 0, 0),
-    (82, 7,  2, 0, 'ACTIVA', 0, 0, 0),
-    (82, 8,  2, 0, 'ACTIVA', 0, 0, 0),
-    (82, 9,  2, 0, 'ACTIVA', 0, 0, 0),
-    (82, 10, 2, 0, 'ACTIVA', 0, 0, 0),
-    (82, 11, 3, 0, 'ACTIVA', 0, 0, 0),
-    (82, 12, 3, 0, 'ACTIVA', 0, 0, 0),
-    (82, 13, 3, 0, 'ACTIVA', 0, 0, 0),
-    (82, 14, 3, 0, 'ACTIVA', 0, 0, 0),
-    (82, 15, 3, 0, 'ACTIVA', 0, 0, 0),
-    (82, 16, 4, 0, 'ACTIVA', 0, 0, 0),
-    (82, 17, 4, 0, 'ACTIVA', 0, 0, 0),
-    (82, 18, 4, 0, 'ACTIVA', 0, 0, 0),
-    (82, 19, 4, 0, 'ACTIVA', 0, 0, 0),
-    (82, 20, 4, 0, 'ACTIVA', 0, 0, 0),
-    (83, 1,  5, 0, 'ACTIVA', 0, 0, 0),
-    (83, 2,  5, 0, 'ACTIVA', 0, 0, 0),
-    (83, 3,  5, 0, 'ACTIVA', 0, 0, 0),
-    (83, 4,  5, 0, 'ACTIVA', 0, 0, 0),
-    (83, 5,  5, 0, 'ACTIVA', 0, 0, 0),
-    (83, 6,  5, 0, 'ACTIVA', 0, 0, 0),
-    (83, 7,  5, 0, 'ACTIVA', 0, 0, 0),
-    (83, 8,  5, 0, 'ACTIVA', 0, 0, 0),
-    (83, 9,  5, 0, 'ACTIVA', 0, 0, 0),
-    (83, 10, 5, 0, 'ACTIVA', 0, 0, 0),
-    (83, 11, 5, 0, 'ACTIVA', 0, 0, 0),
-    (83, 12, 5, 0, 'ACTIVA', 0, 0, 0),
-    (83, 13, 5, 0, 'ACTIVA', 0, 0, 0),
-    (83, 14, 5, 0, 'ACTIVA', 0, 0, 0),
-    (83, 15, 5, 0, 'ACTIVA', 0, 0, 0),
-    (83, 16, 5, 0, 'ACTIVA', 0, 0, 0),
-    (83, 17, 5, 0, 'ACTIVA', 0, 0, 0),
-    (83, 18, 5, 0, 'ACTIVA', 0, 0, 0),
-    (83, 19, 5, 0, 'ACTIVA', 0, 0, 0),
-    (83, 20, 5, 0, 'ACTIVA', 0, 0, 0);
+    (82, 6,  1, 0, 'ACTIVA', 0, 0, 0),
+    (82, 7,  1, 0, 'ACTIVA', 0, 0, 0),
+    (82, 8,  1, 0, 'ACTIVA', 0, 0, 0),
+    (82, 9,  1, 0, 'ACTIVA', 0, 0, 0),
+    (82, 10, 1, 0, 'ACTIVA', 0, 0, 0),
+    (82, 11, 2, 0, 'ACTIVA', 0, 0, 0),
+    (82, 12, 2, 0, 'ACTIVA', 0, 0, 0),
+    (82, 13, 2, 0, 'ACTIVA', 0, 0, 0),
+    (82, 14, 2, 0, 'ACTIVA', 0, 0, 0),
+    (82, 15, 2, 0, 'ACTIVA', 0, 0, 0),
+    (82, 16, 2, 0, 'ACTIVA', 0, 0, 0),
+    (82, 17, 2, 0, 'ACTIVA', 0, 0, 0),
+    (82, 18, 2, 0, 'ACTIVA', 0, 0, 0),
+    (82, 19, 2, 0, 'ACTIVA', 0, 0, 0),
+    (82, 20, 2, 0, 'ACTIVA', 0, 0, 0),
+    (83, 1,  3, 0, 'ACTIVA', 0, 0, 0),
+    (83, 2,  3, 0, 'ACTIVA', 0, 0, 0),
+    (83, 3,  3, 0, 'ACTIVA', 0, 0, 0),
+    (83, 4,  3, 0, 'ACTIVA', 0, 0, 0),
+    (83, 5,  3, 0, 'ACTIVA', 0, 0, 0),
+    (83, 6,  3, 0, 'ACTIVA', 0, 0, 0),
+    (83, 7,  3, 0, 'ACTIVA', 0, 0, 0),
+    (83, 8,  3, 0, 'ACTIVA', 0, 0, 0),
+    (83, 9,  3, 0, 'ACTIVA', 0, 0, 0),
+    (83, 10, 3, 0, 'ACTIVA', 0, 0, 0),
+    (83, 11, 3, 0, 'ACTIVA', 0, 0, 0),
+    (83, 12, 3, 0, 'ACTIVA', 0, 0, 0),
+    (83, 13, 3, 0, 'ACTIVA', 0, 0, 0),
+    (83, 14, 3, 0, 'ACTIVA', 0, 0, 0),
+    (83, 15, 3, 0, 'ACTIVA', 0, 0, 0),
+    (83, 16, 3, 0, 'ACTIVA', 0, 0, 0),
+    (83, 17, 3, 0, 'ACTIVA', 0, 0, 0),
+    (83, 18, 3, 0, 'ACTIVA', 0, 0, 0),
+    (83, 19, 3, 0, 'ACTIVA', 0, 0, 0),
+    (83, 20, 3, 0, 'ACTIVA', 0, 0, 0);
 
--- Torneo 82: 4 grupos de 5, 5 jornadas (método round-robin). Solo queda PENDIENTE el último partido.
+-- Torneo 82: 2 grupos de 10, 9 jornadas (método round-robin). Solo queda PENDIENTE el último partido.
 -- Formato: liga a 4 sets (siempre se juegan 4 sets, nunca 3-0) y cada set a mejor de 9 bolas
 -- (el primero que llega a 5 bolas gana el set).
 DO $$
@@ -335,7 +335,7 @@ DECLARE
     enc_num INT := 0;
     slot INT;
 BEGIN
-    FOR ronda IN 0..4 LOOP
+    FOR ronda IN 0..8 LOOP
         INSERT INTO Jornada (idTorneo, numeroJornada, tipoFase, formatoJornada, estado, fechaInicio, fechaFin)
         VALUES (torneo_id, ronda + 1, 'LIGA_GRUPO', 'LIGA_4_SETS', 'ACTIVA', fecha_base + ronda * 7, fecha_base + ronda * 7)
         RETURNING id INTO jornada_id;
@@ -346,20 +346,17 @@ BEGIN
             INTO equipos;
             n := array_length(equipos, 1);
 
-            FOR i IN 0..2 LOOP
-                idx_l := (ronda + i) % n;
-                idx_v := (n - i + ronda) % n;
+            FOR i IN 0..4 LOOP
+                idx_l := (ronda + i) % (n - 1);
+                idx_v := (n - 1 - i + ronda) % (n - 1);
                 IF i = 0 THEN
-                    idx_v := n;
-                END IF;
-                IF idx_l >= n OR idx_v >= n THEN
-                    CONTINUE;
+                    idx_v := n - 1;
                 END IF;
 
                 slot := slot + 1;
                 INSERT INTO Encuentro (idJornada, idEquipoLocal, idEquipoVisitante, estadoEncuentro, fechaRealizacion)
                 VALUES (jornada_id, equipos[idx_l + 1], equipos[idx_v + 1], 'JUGADO',
-                        fecha_base + ronda * 7 + TIME '16:00' + (slot - 1) * INTERVAL '45 minutes')
+                        fecha_base + ronda * 7 + TIME '16:00' + (slot - 1) * INTERVAL '30 minutes')
                 RETURNING id INTO enc_id;
 
                 enc_num := enc_num + 1;

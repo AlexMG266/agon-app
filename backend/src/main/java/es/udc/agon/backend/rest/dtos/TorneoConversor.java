@@ -93,7 +93,8 @@ public class TorneoConversor {
                 torneo.getEstrategiaDistribucion(),
                 torneo.getDiasEntreJornadas(),
                 torneo.getEstrategiaPlayoff(),
-                torneo.getDiasEntrePlayoff()
+                torneo.getDiasEntrePlayoff(),
+                torneo.getRondaInicioPlayoff()
         );
     }
 

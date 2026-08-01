@@ -43,6 +43,20 @@ public interface TorneoService {
                                                    String fechaFin)
             throws InstanceNotFoundException, IllegalArgumentException;
 
+    /**
+     * Configura la estructura del torneo y genera el calendario. {@code rondaInicioPlayoff}
+     * determina la ronda a la que arrancan las eliminatorias (FINAL, SEMIFINALES, CUARTOS,
+     * OCTAVOS, DIECISEISAVOS). Si es {@code null} o no se indica, se elige automáticamente
+     * la ronda más alta posible según el número de grupos (deben clasificarse un número de
+     * equipos que sea potencia de 2, sin byes).
+     */
+    Torneo configurarEstructuraYGenerarCalendario(Long torneoId, String tipoTorneo,
+                                                   int numGrupos, int equiposPorGrupo,
+                                                   boolean tienePlayoff, boolean idaVueltaPlayoff,
+                                                   String estrategiaPlayoff, Integer diasEntrePlayoff,
+                                                   String fechaFin, String rondaInicioPlayoff)
+            throws InstanceNotFoundException, IllegalArgumentException;
+
     void generarCalendario(Long torneoId) throws InstanceNotFoundException, IllegalArgumentException;
 
     Torneo buscarPorCodigo(String codigoTorneo) throws InstanceNotFoundException;
