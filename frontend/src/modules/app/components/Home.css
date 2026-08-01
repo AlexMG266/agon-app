@@ -1,9 +1,10 @@
-/* src/modules/app/components/Home.css */
 .home-dashboard {
     max-width: 1120px;
     margin: 0 auto;
     padding: 2rem;
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    min-width: 0;
+    overflow-x: hidden;
 }
 
 /* ── Top Bar ── */
@@ -151,6 +152,8 @@
     margin-top: 1.5rem;
     padding-top: 1.75rem;
     border-top: 1px solid #eaecee;
+    min-width: 0;
+    overflow-x: hidden;
 }
 
 .dashboard-matches-section .section-header {

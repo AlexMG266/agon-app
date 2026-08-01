@@ -64,16 +64,14 @@ const MyMatches = ({ embedded = false }) => {
         init();
     }, []);
 
-    // Equipos cuyo capitán es el usuario logueado (pueden registrar resultados).
+    // Equipos donde el usuario es miembro (cualquier miembro puede registrar resultados).
     useEffect(() => {
         const loadCapitanTeams = async () => {
             if (!loggedUser) return;
             try {
                 const response = await backend.teamService.getMyTeams();
                 if (response.ok) {
-                    const ids = (response.payload || [])
-                        .filter(t => t.creadorId === loggedUser.id)
-                        .map(t => t.id);
+                    const ids = (response.payload || []).map(t => t.id);
                     setCapitanTeamIds(ids);
                 }
             } catch (err) {
@@ -82,6 +80,19 @@ const MyMatches = ({ embedded = false }) => {
         };
         loadCapitanTeams();
     }, [loggedUser]);
+
+    // Desplazar la ventana del carrusel para centrar la fecha seleccionada:
+    // las cards de la izquierda salen por la izquierda y entran nuevas por la derecha.
+    useEffect(() => {
+        if (!carouselRef.current) return;
+        const track = carouselRef.current;
+        const active = track.querySelector('.mm-carousel-item--active');
+        if (!active) return;
+        const trackRect = track.getBoundingClientRect();
+        const chipRect = active.getBoundingClientRect();
+        const offset = chipRect.left - trackRect.left - (trackRect.width - chipRect.width) / 2;
+        track.scrollBy({ left: offset, behavior: 'smooth' });
+    }, [currentIdx]);
 
     const handleEncuentroClick = (enc) => setSelectedEncuentro(enc);
 

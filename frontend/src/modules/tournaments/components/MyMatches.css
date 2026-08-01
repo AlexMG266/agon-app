@@ -121,6 +121,8 @@
     gap: 0.4rem;
     margin-bottom: 1.25rem;
     container-type: inline-size;
+    min-width: 0;
+    max-width: 100%;
 }
 
 .mm-carousel-btn {
@@ -149,13 +151,22 @@
     cursor: default;
 }
 
+/* Carrusel de ventana deslizante: una sola fila con scroll horizontal suave.
+   Con min-width: 0 en el track (y en la cadena de contenedores flex) el overflow-x: auto
+   actúa sobre la ventana visible: al navegar entran cards nuevas por la derecha y
+   salen por la izquierda, centrando siempre la fecha seleccionada. */
 .mm-carousel-track {
     display: flex;
+    flex-wrap: nowrap;
     gap: 0.4rem;
     overflow-x: auto;
+    overflow-y: hidden;
     scroll-behavior: smooth;
+    scroll-snap-type: x mandatory;
     padding: 0.25rem 0;
     flex: 1;
+    min-width: 0;
+    max-width: 100%;
     -ms-overflow-style: none;
     scrollbar-width: none;
 }
@@ -177,6 +188,7 @@
     cursor: pointer;
     flex-shrink: 0;
     min-width: 84px;
+    scroll-snap-align: center;
     transition: border-color 0.2s ease, background 0.2s ease, box-shadow 0.2s ease;
     user-select: none;
 }
