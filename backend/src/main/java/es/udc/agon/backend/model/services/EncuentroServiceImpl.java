@@ -101,9 +101,11 @@ public class EncuentroServiceImpl implements IEncuentroService {
         Encuentro encuentro = encuentroDao.findById(encuentroId)
                 .orElseThrow(() -> new InstanceNotFoundException("project.entities.encuentro", encuentroId));
 
-        // verificar que el capitan pertenece a uno de los equipos del encuentro
-        boolean esCapitanLocal = encuentro.getLocal().getCreador().getId().equals(capitanId);
-        boolean esCapitanVisitante = encuentro.getVisitante().getCreador().getId().equals(capitanId);
+        // verificar que el capitan pertenece (como miembro) a uno de los equipos del encuentro
+        boolean esCapitanLocal = encuentro.getLocal().getMiembros().stream()
+                .anyMatch(miembro -> miembro.getId().equals(capitanId));
+        boolean esCapitanVisitante = encuentro.getVisitante().getMiembros().stream()
+                .anyMatch(miembro -> miembro.getId().equals(capitanId));
 
         if (!esCapitanLocal && !esCapitanVisitante) {
             throw new PermissionException();
@@ -216,9 +218,11 @@ public class EncuentroServiceImpl implements IEncuentroService {
         Encuentro encuentro = encuentroDao.findById(encuentroId)
                 .orElseThrow(() -> new InstanceNotFoundException("project.entities.encuentro", encuentroId));
 
-        // verificar que el capitan pertenece a uno de los equipos del encuentro
-        boolean esCapitanLocal = encuentro.getLocal().getCreador().getId().equals(capitanId);
-        boolean esCapitanVisitante = encuentro.getVisitante().getCreador().getId().equals(capitanId);
+        // verificar que el capitan pertenece (como miembro) a uno de los equipos del encuentro
+        boolean esCapitanLocal = encuentro.getLocal().getMiembros().stream()
+                .anyMatch(miembro -> miembro.getId().equals(capitanId));
+        boolean esCapitanVisitante = encuentro.getVisitante().getMiembros().stream()
+                .anyMatch(miembro -> miembro.getId().equals(capitanId));
 
         if (!esCapitanLocal && !esCapitanVisitante) {
             throw new PermissionException();

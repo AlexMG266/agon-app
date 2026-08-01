@@ -321,6 +321,30 @@ public class EncuentroServiceTest {
                 () -> encuentroService.registrarResultado(otroUser.getId(), encuentro.getId(), sets));
     }
 
+    @Test
+    public void testRegistrarResultadoMiembroNoCreador() throws InstanceNotFoundException, PermissionException {
+        User org = createUser("org_miembro");
+        User cap1 = createUser("cap_miembro1");
+        User cap2 = createUser("cap_miembro2");
+        User miembro = createUser("miembro_equipo1");
+
+        Encuentro encuentro = setupEncuentro(org, cap1, cap2);
+
+        // Añadir un segundo miembro (no creador) al equipo local.
+        Solicitud propuesta = equipoService.crearPropuestaDeUnion(
+                cap1.getId(), encuentro.getLocal().getId(), miembro.getId());
+        equipoService.responderSolicitud(miembro.getId(), propuesta.getId(), true);
+
+        List<SetEntity> sets = new ArrayList<>();
+        sets.add(new SetEntity(null, 1, 25, 20));
+        sets.add(new SetEntity(null, 2, 25, 18));
+
+        encuentroService.registrarResultado(miembro.getId(), encuentro.getId(), sets);
+
+        Encuentro persistido = encuentroDao.findById(encuentro.getId()).orElseThrow();
+        assertEquals(EstadoEncuentro.JUGADO, persistido.getEstadoEncuentro());
+    }
+
 
     // tests de solicitarAplazamiento
 

@@ -404,6 +404,9 @@ export default {
     'project.tournaments.Detail.config.cancel': 'Cancelar',
     'project.tournaments.Detail.config.generate': 'Xerar calendario',
     'project.tournaments.Detail.config.generating': 'Xerando...',
+    'project.tournaments.Detail.config.numGruposPotencia': 'Debe ser potencia de 2 (1, 2, 4, 8, 16) para cadrar a eliminatoria.',
+    'project.tournaments.Detail.config.rondaInicio': 'Rolda de inicio da eliminatoria',
+    'project.tournaments.Detail.config.clasificadosPorGrupo': 'Pasan {n} equipos por grupo ({total} en total)',
 
     'project.tournaments.Detail.config.error.numGruposMin': 'Debe haber polo menos 1 grupo',
     'project.tournaments.Detail.config.error.numGruposMax': 'Máximo 32 grupos',
@@ -529,6 +532,8 @@ export default {
     'project.encuentro.error.noSets': 'Debes indicar polo menos un set.',
     'project.encuentro.error.draw': 'Un set non pode terminar en empate.',
     'project.encuentro.error.negative': 'Os puntos non poden ser negativos.',
+    'project.encuentro.addSet': 'Engadir set',
+    'project.encuentro.removeSet': 'Quitar set',
 
     'project.tournaments.Detail.tabs.playoffs': 'Playoffs',
     'project.tournaments.Detail.playoffs.title': 'Playoffs',

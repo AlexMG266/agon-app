@@ -74,6 +74,27 @@ const calcularEquiposPorGrupoMax = (numGrupos, totalEquipos) => {
     return dist.length ? Math.max(...dist) : 0;
 };
 
+// Rondas de inicio de la eliminatoria: valores que entiende el backend (rondaInicioPlayoff).
+const RONDA_OPTS = [
+    { value: 'OCTAVOS', label: 'Octavos de final', equipos: 16 },
+    { value: 'CUARTOS', label: 'Cuartos de final', equipos: 8 },
+    { value: 'SEMIFINALES', label: 'Semifinales', equipos: 4 },
+    { value: 'FINAL', label: 'Final', equipos: 2 },
+];
+
+const esPotenciaDeDos = (n) => n > 0 && (n & (n - 1)) === 0;
+
+/**
+ * Devuelve cuántos equipos pasan por grupo según la ronda de inicio elegida.
+ * equiposEnRonda / numGrupos (entero). Si no es divisible devuelve 0 (config inválida).
+ */
+const clasificadosPorGrupo = (ronda, numGrupos) => {
+    const opt = RONDA_OPTS.find(o => o.value === ronda);
+    if (!opt || !numGrupos) return 0;
+    const g = parseInt(numGrupos) || 0;
+    if (!g || opt.equipos % g !== 0) return 0;
+    return opt.equipos / g;
+};
 
 const TournamentDetail = () => {
     const { id } = useParams();
@@ -105,6 +126,7 @@ const TournamentDetail = () => {
         equiposPorGrupo: 2,
         tienePlayoff: true,
         idaVueltaPlayoff: false,
+        rondaInicioPlayoff: 'CUARTOS',
         fechaFin: '',
     });
     const [configErrors, setConfigErrors] = useState({});
@@ -137,10 +159,10 @@ const TournamentDetail = () => {
     const [loadingJornadas, setLoadingJornadas] = useState(false);
     const [selectedEncuentro, setSelectedEncuentro] = useState(null);
 
-    // IDs de equipos cuyo capitán es el usuario logueado (pueden registrar resultados).
-    const capitanTeamIds = (tournament && tournament.inscripciones
+    // IDs de equipos donde el usuario es miembro (cualquier miembro puede registrar resultados).
+    const capitanTeamIds = (tournament && tournament.inscripciones && loggedUser
         ? tournament.inscripciones
-              .filter(insc => insc.creadorId === (loggedUser ? loggedUser.id : null))
+              .filter(insc => insc.miembros && insc.miembros.some(m => m.id === loggedUser.id))
               .map(insc => insc.equipoId)
         : []);
 
@@ -310,6 +332,18 @@ const TournamentDetail = () => {
         const errors = {};
         if (!configData.numGrupos || parseInt(configData.numGrupos) < 1) errors.numGrupos = true;
         if (parseInt(configData.equiposPorGrupo) < 1) errors.equiposPorGrupo = true;
+        if (configData.tipoTorneo === 'GRUPOS_PLAYOFF') {
+            const numGrupos = parseInt(configData.numGrupos) || 0;
+            // El número de grupos debe ser potencia de 2 para poder calibrar un cuadro
+            // de eliminatorias sin byes (FINAL/SEMIFINALES/CUARTOS/OCTAVOS/...).
+            if (!esPotenciaDeDos(numGrupos)) {
+                errors.numGrupos = true;
+            }
+            // La ronda elegida debe ser divisible por el número de grupos.
+            if (clasificadosPorGrupo(configData.rondaInicioPlayoff, numGrupos) < 1) {
+                errors.rondaInicioPlayoff = true;
+            }
+        }
         setConfigErrors(errors);
         return Object.keys(errors).length === 0;
     };
@@ -346,7 +380,11 @@ const TournamentDetail = () => {
         if (tienePlayoff) {
             const estrPlayoff = data.estrategiaPlayoff || 'RAPIDO';
             const diasEntrePlayoff = (estrPlayoff === 'JORNADAS') ? (data.diasEntrePlayoff || 7) : 1;
-            const rondasPlayoff = idaVuelta ? 6 : 3;
+            // Rondas de la eliminatoria según la ronda de inicio: OCTAVOS=4, CUARTOS=3,
+            // SEMIFINALES=2, FINAL=1 (y se duplican si es ida/vuelta). Compatibilidad: 3.
+            const rondaOpt = RONDA_OPTS.find(o => o.value === data.rondaInicioPlayoff);
+            const rondasEliminatoria = rondaOpt ? Math.log2(rondaOpt.equipos) : 3;
+            const rondasPlayoff = idaVuelta ? rondasEliminatoria * 2 : rondasEliminatoria;
             totalDays += rondasPlayoff * diasEntrePlayoff;
         }
 
@@ -393,6 +431,8 @@ const TournamentDetail = () => {
                 equiposPorGrupo: parseInt(configData.equiposPorGrupo),
                 tienePlayoff: configData.tipoTorneo !== 'LIGA_UNICA',
                 idaVueltaPlayoff: configData.idaVueltaPlayoff,
+                rondaInicioPlayoff: configData.tipoTorneo === 'GRUPOS_PLAYOFF'
+                    ? configData.rondaInicioPlayoff : null,
                 estrategiaPlayoff: configData.estrategiaPlayoff || 'RAPIDO',
                 diasEntrePlayoff: configData.diasEntrePlayoff || null,
                 fechaFin: configData.fechaFin || null,
@@ -745,9 +785,18 @@ const TournamentDetail = () => {
                                             <label>
                                                 <FormattedMessage id="project.tournaments.Create.Step2.numGrupos" defaultMessage="Grupos" />
                                             </label>
-                                            <input type="number" min={1} max={20} value={configData.numGrupos}
+                                            <input type="number" min={1} max={16} step={1} value={configData.numGrupos}
                                                 onChange={e => handleConfigChange('numGrupos', e.target.value)} />
-                                            {configErrors.numGrupos && <span className="td-config-field-error">Válido requerido</span>}
+                                            {configData.tipoTorneo === 'GRUPOS_PLAYOFF' && (
+                                                <span className="td-config-field-hint">
+                                                    <FormattedMessage id="project.tournaments.Detail.config.numGruposPotencia" defaultMessage="Debe ser potencia de 2 (1, 2, 4, 8, 16) para cuadrar la eliminatoria." />
+                                                </span>
+                                            )}
+                                            {configErrors.numGrupos && <span className="td-config-field-error">
+                                                {configData.tipoTorneo === 'GRUPOS_PLAYOFF'
+                                                    ? 'El número de grupos debe ser potencia de 2 para la eliminatoria'
+                                                    : 'Válido requerido'}
+                                            </span>}
                                         </div>
                                         <div className={`td-config-field td-config-field--num ${configErrors.equiposPorGrupo ? 'error' : ''}`}>
                                             <label>
@@ -770,6 +819,25 @@ const TournamentDetail = () => {
                                         </div>
                                         {configData.tipoTorneo === 'GRUPOS_PLAYOFF' && (
                                             <>
+                                                <div className={`td-config-field td-config-field--full ${configErrors.rondaInicioPlayoff ? 'error' : ''}`}>
+                                                    <label className="td-edit-label">
+                                                        <FormattedMessage id="project.tournaments.Detail.config.rondaInicio" defaultMessage="Ronda de inicio de la eliminatoria" />
+                                                    </label>
+                                                    <select className="form-control-apple" value={configData.rondaInicioPlayoff}
+                                                        onChange={e => handleConfigChange('rondaInicioPlayoff', e.target.value)}>
+                                                        {RONDA_OPTS.map(opt => (
+                                                            <option key={opt.value} value={opt.value}>{opt.label}</option>
+                                                        ))}
+                                                    </select>
+                                                    {configErrors.rondaInicioPlayoff && <span className="td-config-field-error">
+                                                        La ronda elegida no divide exactamente el número de grupos
+                                                    </span>}
+                                                    {!configErrors.rondaInicioPlayoff && clasificadosPorGrupo(configData.rondaInicioPlayoff, configData.numGrupos) > 0 && (
+                                                        <span className="td-config-field-hint">
+                                                            <FormattedMessage id="project.tournaments.Detail.config.clasificadosPorGrupo" defaultMessage="Pasan {n} equipos por grupo ({total} en total)" values={{ n: clasificadosPorGrupo(configData.rondaInicioPlayoff, configData.numGrupos), total: parseInt(configData.numGrupos) * clasificadosPorGrupo(configData.rondaInicioPlayoff, configData.numGrupos) }} />
+                                                        </span>
+                                                    )}
+                                                </div>
                                                 <div className="td-config-toggles td-config-field--full">
                                                     <label className="td-config-toggle">
                                                         <span>

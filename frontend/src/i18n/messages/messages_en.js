@@ -404,6 +404,9 @@ export default {
     'project.tournaments.Detail.config.cancel': 'Cancel',
     'project.tournaments.Detail.config.generate': 'Generate calendar',
     'project.tournaments.Detail.config.generating': 'Generating...',
+    'project.tournaments.Detail.config.numGruposPotencia': 'Must be a power of 2 (1, 2, 4, 8, 16) to fit the knockout bracket.',
+    'project.tournaments.Detail.config.rondaInicio': 'Knockout starting round',
+    'project.tournaments.Detail.config.clasificadosPorGrupo': '{n} teams advance per group ({total} in total)',
 
     'project.tournaments.Detail.config.error.numGruposMin': 'At least 1 group is required',
     'project.tournaments.Detail.config.error.numGruposMax': 'Maximum 32 groups',
@@ -531,6 +534,8 @@ export default {
     'project.encuentro.error.noSets': 'You must provide at least one set.',
     'project.encuentro.error.draw': 'A set cannot end in a draw.',
     'project.encuentro.error.negative': 'Scores cannot be negative.',
+    'project.encuentro.addSet': 'Add set',
+    'project.encuentro.removeSet': 'Remove set',
 
     'project.tournaments.Detail.tabs.playoffs': 'Playoffs',
     'project.tournaments.Detail.playoffs.title': 'Playoffs',

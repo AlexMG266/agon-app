@@ -1,7 +1,3 @@
-// src/modules/tournaments/components/EncuentroModal.jsx
-// Modal de detalle de un encuentro. Permite ver la información del partido
-// y, si el usuario logueado es capitán de uno de los dos equipos y el
-// encuentro aún no está jugado, registrar el resultado (sets).
 import { useState, useEffect } from 'react';
 import { FormattedMessage, useIntl } from 'react-intl';
 import Modal from 'react-bootstrap/Modal';
@@ -27,8 +23,8 @@ const EncuentroModal = ({ show, encuentro, capitanTeamIds = [], onHide, onRegist
     // Resetear el formulario cada vez que se abre con un encuentro distinto.
     useEffect(() => {
         if (show && encuentro) {
-            const numSets = (encuentro.sets && encuentro.sets.length) || 3;
-            const rows = Array.from({ length: Math.min(Math.max(numSets, 3), 5) }, (_, i) => {
+            const numSets = (encuentro.sets && encuentro.sets.length) || 4;
+            const rows = Array.from({ length: Math.min(Math.max(numSets, 4), 5) }, (_, i) => {
                 const existing = encuentro.sets && encuentro.sets[i];
                 return {
                     numeroSet: i + 1,
@@ -129,9 +125,11 @@ const EncuentroModal = ({ show, encuentro, capitanTeamIds = [], onHide, onRegist
             contentClassName="border-0 rounded-4 shadow"
             style={{ fontFamily: '-apple-system, BlinkMacSystemFont, "SF Pro Display", sans-serif' }}
         >
-            <Modal.Header closeButton className="border-0 pb-0">
-                <Modal.Title as="h5" className="fw-bold">
-                    <i className="fa-regular fa-volleyball me-2" />
+            <Modal.Header closeButton className="border-0 pb-0" style={{ background: 'linear-gradient(180deg, #f5f7fb 0%, #ffffff 100%)', borderTopLeftRadius: '1rem', borderTopRightRadius: '1rem' }}>
+                <Modal.Title as="h5" className="fw-bold d-flex align-items-center">
+                    <span className="d-inline-flex align-items-center justify-content-center me-2" style={{ width: 30, height: 30, borderRadius: 9, background: '#0071e3', color: '#fff' }}>
+                        <i className="fa-solid fa-volleyball" style={{ fontSize: '0.85rem' }} />
+                    </span>
                     <FormattedMessage id="project.encuentro.title" defaultMessage="Detalle del encuentro" />
                 </Modal.Title>
             </Modal.Header>
@@ -182,9 +180,12 @@ const EncuentroModal = ({ show, encuentro, capitanTeamIds = [], onHide, onRegist
                         </div>
 
                         {/* Enfrentamiento */}
-                        <div className="d-flex align-items-center justify-content-center gap-3 py-2">
+                        <div className="d-flex align-items-center justify-content-center gap-3 py-2 mb-1">
                             <div className="text-center" style={{ flex: 1, minWidth: 0 }}>
-                                <div className="mb-1" style={{ fontSize: '1.6rem', color: '#0071e3' }}>
+                                <div
+                                    className="mx-auto mb-1 d-flex align-items-center justify-content-center"
+                                    style={{ width: 44, height: 44, borderRadius: 12, background: 'rgba(0,113,227,0.1)', color: '#0071e3', fontSize: '1.15rem' }}
+                                >
                                     <i className="fa-solid fa-shield-halved" />
                                 </div>
                                 <div
@@ -195,13 +196,25 @@ const EncuentroModal = ({ show, encuentro, capitanTeamIds = [], onHide, onRegist
                                     {encuentro.equipoLocalNombre || '—'}
                                 </div>
                             </div>
-                            <div className="text-center px-2" style={{ flexShrink: 0 }}>
-                                <span className="fw-bold" style={{ fontSize: '1.5rem', color: '#8e8e93' }}>
-                                    {jugado ? encuentro.resultado : 'vs'}
-                                </span>
+                            <div
+                                className="text-center d-flex align-items-center justify-content-center flex-shrink-0"
+                                style={{
+                                    width: 46,
+                                    height: 46,
+                                    borderRadius: '50%',
+                                    background: jugado ? '#e8f8ee' : '#f2f2f7',
+                                    color: jugado ? '#1a7d36' : '#8e8e93',
+                                    fontSize: '0.95rem',
+                                    fontWeight: 700,
+                                }}
+                            >
+                                {jugado ? encuentro.resultado : 'vs'}
                             </div>
                             <div className="text-center" style={{ flex: 1, minWidth: 0 }}>
-                                <div className="mb-1" style={{ fontSize: '1.6rem', color: '#6e6e73' }}>
+                                <div
+                                    className="mx-auto mb-1 d-flex align-items-center justify-content-center"
+                                    style={{ width: 44, height: 44, borderRadius: 12, background: 'rgba(110,110,115,0.08)', color: '#6e6e73', fontSize: '1.15rem' }}
+                                >
                                     <i className="fa-solid fa-shield-halved" />
                                 </div>
                                 <div
@@ -224,13 +237,19 @@ const EncuentroModal = ({ show, encuentro, capitanTeamIds = [], onHide, onRegist
                                     {encuentro.sets.map((set, idx) => (
                                         <div
                                             key={`${set.numeroSet}-${idx}`}
-                                            className="d-flex justify-content-between align-items-center px-3 py-1 rounded"
+                                            className="d-flex justify-content-between align-items-center px-3 py-2 rounded-3"
                                             style={{ background: '#f9f9fb', border: '1px solid #eef0f3' }}
                                         >
                                             <span className="small text-muted">
                                                 <FormattedMessage id="project.encuentro.set" defaultMessage="Set" /> {set.numeroSet}
                                             </span>
-                                            <span className="small fw-semibold">
+                                            <span
+                                                className="small fw-bold px-2 py-0 rounded-2"
+                                                style={{
+                                                    background: set.golesLocal > set.golesVisitante ? 'rgba(0,113,227,0.1)' : 'rgba(110,110,115,0.08)',
+                                                    color: set.golesLocal > set.golesVisitante ? '#0071e3' : '#6e6e73',
+                                                }}
+                                            >
                                                 {set.golesLocal} - {set.golesVisitante}
                                             </span>
                                         </div>
@@ -243,7 +262,8 @@ const EncuentroModal = ({ show, encuentro, capitanTeamIds = [], onHide, onRegist
                         {puedeRegistrar && (
                             <Form onSubmit={handleSubmit} className="mt-4">
                                 <div className="d-flex justify-content-between align-items-center mb-2">
-                                    <span className="small fw-semibold text-uppercase" style={{ fontSize: '0.68rem', letterSpacing: '0.04em', color: '#8e8e93' }}>
+                                    <span className="small fw-semibold text-uppercase d-flex align-items-center gap-1" style={{ fontSize: '0.68rem', letterSpacing: '0.04em', color: '#8e8e93' }}>
+                                        <i className="fa-regular fa-pen-to-square" />
                                         <FormattedMessage id="project.encuentro.registerTitle" defaultMessage="Registrar resultado" />
                                     </span>
                                     <div className="d-flex gap-2">
@@ -251,10 +271,11 @@ const EncuentroModal = ({ show, encuentro, capitanTeamIds = [], onHide, onRegist
                                             variant="outline-secondary"
                                             size="sm"
                                             className="rounded-pill"
-                                            style={{ fontSize: '0.7rem' }}
+                                            style={{ fontSize: '0.7rem', width: 30, height: 30, padding: 0 }}
                                             onClick={handleRemoveSet}
                                             disabled={sets.length <= 1}
                                             type="button"
+                                            title={intl.formatMessage({ id: 'project.encuentro.removeSet', defaultMessage: 'Quitar set' })}
                                         >
                                             <i className="fa-regular fa-minus" />
                                         </Button>
@@ -262,10 +283,11 @@ const EncuentroModal = ({ show, encuentro, capitanTeamIds = [], onHide, onRegist
                                             variant="outline-secondary"
                                             size="sm"
                                             className="rounded-pill"
-                                            style={{ fontSize: '0.7rem' }}
+                                            style={{ fontSize: '0.7rem', width: 30, height: 30, padding: 0 }}
                                             onClick={handleAddSet}
                                             disabled={sets.length >= 5}
                                             type="button"
+                                            title={intl.formatMessage({ id: 'project.encuentro.addSet', defaultMessage: 'Añadir set' })}
                                         >
                                             <i className="fa-regular fa-plus" />
                                         </Button>
@@ -276,29 +298,39 @@ const EncuentroModal = ({ show, encuentro, capitanTeamIds = [], onHide, onRegist
                                     {sets.map((s, idx) => (
                                         <div
                                             key={idx}
-                                            className="d-flex align-items-center gap-2 px-3 py-2 rounded"
+                                            className="d-flex align-items-center gap-2 px-3 py-2 rounded-3"
                                             style={{ background: '#f9f9fb', border: '1px solid #eef0f3' }}
                                         >
-                                            <span className="small text-muted" style={{ width: 44, flexShrink: 0 }}>
+                                            <span className="small text-muted fw-semibold" style={{ width: 44, flexShrink: 0 }}>
                                                 <FormattedMessage id="project.encuentro.set" defaultMessage="Set" /> {s.numeroSet}
                                             </span>
-                                            <Form.Control
-                                                type="number"
-                                                min={0}
-                                                value={s.golesLocal}
-                                                onChange={e => handleSetChange(idx, 'golesLocal', e.target.value)}
-                                                className="text-center"
-                                                style={{ maxWidth: 80, fontSize: '0.85rem' }}
-                                            />
+                                            <div className="flex-grow-1" style={{ minWidth: 0 }}>
+                                                <Form.Label className="mb-0 small text-muted" style={{ fontSize: '0.6rem' }}>
+                                                    Local
+                                                </Form.Label>
+                                                <Form.Control
+                                                    type="number"
+                                                    min={0}
+                                                    value={s.golesLocal}
+                                                    onChange={e => handleSetChange(idx, 'golesLocal', e.target.value)}
+                                                    className="text-center"
+                                                    style={{ maxWidth: 80, fontSize: '0.85rem' }}
+                                                />
+                                            </div>
                                             <span className="text-muted small">—</span>
-                                            <Form.Control
-                                                type="number"
-                                                min={0}
-                                                value={s.golesVisitante}
-                                                onChange={e => handleSetChange(idx, 'golesVisitante', e.target.value)}
-                                                className="text-center"
-                                                style={{ maxWidth: 80, fontSize: '0.85rem' }}
-                                            />
+                                            <div className="flex-grow-1" style={{ minWidth: 0 }}>
+                                                <Form.Label className="mb-0 small text-muted" style={{ fontSize: '0.6rem' }}>
+                                                    Visitante
+                                                </Form.Label>
+                                                <Form.Control
+                                                    type="number"
+                                                    min={0}
+                                                    value={s.golesVisitante}
+                                                    onChange={e => handleSetChange(idx, 'golesVisitante', e.target.value)}
+                                                    className="text-center"
+                                                    style={{ maxWidth: 80, fontSize: '0.85rem' }}
+                                                />
+                                            </div>
                                         </div>
                                     ))}
                                 </div>
