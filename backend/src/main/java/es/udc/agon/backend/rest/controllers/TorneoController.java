@@ -72,7 +72,7 @@ public class TorneoController {
         torneo.setPuntosEmpate(params.getPuntosEmpate());
         torneo.setPuntosDerrota(params.getPuntosDerrota());
         torneo.setFormatoPartidos(params.getFormatoPartidos());
-        torneo.setCriterioDesempate(params.getCriterioDesempate());
+        torneo.setCriterioDesempate("PUNTOS");
         if (params.getDiasDisponibles() != null) {
             torneo.setDiasDisponibles(String.join(",", params.getDiasDisponibles()));
         }
@@ -121,7 +121,6 @@ public class TorneoController {
         datos.setPuntosEmpate(params.getPuntosEmpate());
         datos.setPuntosDerrota(params.getPuntosDerrota());
         datos.setFormatoPartidos(params.getFormatoPartidos());
-        datos.setCriterioDesempate(params.getCriterioDesempate());
         if (params.getDiasDisponibles() != null) {
             datos.setDiasDisponibles(String.join(",", params.getDiasDisponibles()));
         }

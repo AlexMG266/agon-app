@@ -115,13 +115,6 @@ const Step5Summary = ({ data }) => {
                         </td>
                     </tr>
                     <tr className="border-bottom">
-                        <td className="text-secondary ps-3 py-2">
-                            <FormattedMessage id="project.tournaments.CreateTournament.step3.tiebreaker" defaultMessage="Criterio de desempate" />
-                        </td>
-                        <td className="py-2">{data.criterioDesempate || '—'}</td>
-                    </tr>
-
-                    <tr className="border-bottom">
                         <td colSpan={2} className="fw-bold bg-light py-2 ps-3" style={{ fontSize: '0.85rem', letterSpacing: '0.03em' }}>
                             <FormattedMessage id="project.tournaments.CreateTournament.step5.section.calendar" defaultMessage="Calendario" />
                         </td>

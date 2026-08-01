@@ -3,12 +3,6 @@ import Form from 'react-bootstrap/Form';
 import Row from 'react-bootstrap/Row';
 import Col from 'react-bootstrap/Col';
 
-const DESEMPATE_OPTS = [
-    { value: 'PUNTOS', labelId: 'project.tournaments.CreateTournament.step3.tiebreaker.points', label: 'Puntos' },
-    { value: 'DIFERENCIA_SET', labelId: 'project.tournaments.CreateTournament.step3.tiebreaker.setDiff', label: 'Diferencia de sets' },
-    { value: 'ENFRENTAMIENTO_DIRECTO', labelId: 'project.tournaments.CreateTournament.step3.tiebreaker.headToHead', label: 'Enfrentamiento directo' },
-    { value: 'DIFERENCIA_JUEGOS', labelId: 'project.tournaments.CreateTournament.step3.tiebreaker.gameDiff', label: 'Diferencia de juegos' },
-];
 
 const Step3Rules = ({ data, onChange, errors }) => {
     const handleChange = (field, value) => {
@@ -114,29 +108,6 @@ const Step3Rules = ({ data, onChange, errors }) => {
                 {errors?.formatoPartidos && (
                     <div className="text-danger small mt-1">{errors.formatoPartidos}</div>
                 )}
-            </Form.Group>
-
-            <Form.Group className="mb-3" controlId="criterioDesempate">
-                <Form.Label className="text-secondary small fw-medium mb-2">
-                    <FormattedMessage id="project.tournaments.CreateTournament.step3.tiebreaker" defaultMessage="Criterio de desempate" />
-                    <span className="text-danger ms-1">*</span>
-                </Form.Label>
-                <Form.Select
-                    value={data.criterioDesempate || 'PUNTOS'}
-                    onChange={e => handleChange('criterioDesempate', e.target.value)}
-                    isInvalid={!!errors?.criterioDesempate}
-                    className="form-control-apple"
-                    style={{ maxWidth: '300px' }}
-                >
-                    {DESEMPATE_OPTS.map(opt => (
-                        <option key={opt.value} value={opt.value}>
-                            <FormattedMessage id={opt.labelId} defaultMessage={opt.label} />
-                        </option>
-                    ))}
-                </Form.Select>
-                <Form.Control.Feedback type="invalid">
-                    {errors?.criterioDesempate || <FormattedMessage id="project.global.validator.required" />}
-                </Form.Control.Feedback>
             </Form.Group>
         </div>
     );

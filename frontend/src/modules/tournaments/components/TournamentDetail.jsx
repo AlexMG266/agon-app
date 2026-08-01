@@ -190,7 +190,6 @@ const TournamentDetail = () => {
         puntosEmpate: 0,
         puntosDerrota: 0,
         formatoPartidos: '',
-        criterioDesempate: '',
         diasDisponibles: [],
         horaInicio: '',
         horaFin: '',
@@ -559,7 +558,6 @@ const TournamentDetail = () => {
                 puntosEmpate: tournament.puntosEmpate || 0,
                 puntosDerrota: tournament.puntosDerrota || 0,
                 formatoPartidos: tournament.formatoPartidos || '',
-                criterioDesempate: tournament.criterioDesempate || '',
                 diasDisponibles: tournament.diasDisponibles || [],
                 horaInicio: tournament.horaInicio || '',
                 horaFin: tournament.horaFin || '',
@@ -1107,17 +1105,6 @@ const TournamentDetail = () => {
                                         <option value="BO5">BO5 (Al mejor de 5)</option>
                                     </select>
                                 </div>
-                                <div className="td-edit-row">
-                                    <span className="td-edit-label"><FormattedMessage id="project.tournaments.Create.Step3.criterioDesempate" defaultMessage="Criterio desempate" /></span>
-                                    <select className="td-edit-input" value={editFields.criterioDesempate}
-                                        onChange={e => handleEditFieldChange('criterioDesempate', e.target.value)}>
-                                        <option value="">—</option>
-                                        <option value="DIFERENCIA_GOLES">Diferencia de goles</option>
-                                        <option value="ENFRENTAMIENTO_DIRECTO">Enfrentamiento directo</option>
-                                        <option value="PARTIDOS_GANADOS">Partidos ganados</option>
-                                    </select>
-                                </div>
-
                                 <div className="td-edit-section-divider" />
 
                                 <h6 className="td-edit-section-title">
@@ -1238,10 +1225,6 @@ const TournamentDetail = () => {
                                 <div className="td-view-field-row">
                                     <span className="td-view-field-label"><FormattedMessage id="project.tournaments.Create.Step3.formatoPartidos" defaultMessage="Formato partidos" /></span>
                                     <span className="td-view-field-value">{tournament.formatoPartidos || '—'}</span>
-                                </div>
-                                <div className="td-view-field-row">
-                                    <span className="td-view-field-label"><FormattedMessage id="project.tournaments.Create.Step3.criterioDesempate" defaultMessage="Criterio desempate" /></span>
-                                    <span className="td-view-field-value">{tournament.criterioDesempate || '—'}</span>
                                 </div>
                                 <div className="td-view-field-row">
                                     <span className="td-view-field-label"><FormattedMessage id="project.tournaments.Create.Step4.diasDisponibles" defaultMessage="Días disponibles" /></span>

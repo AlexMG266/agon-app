@@ -33,7 +33,6 @@ const INITIAL_DATA = {
     puntosEmpate: 1,
     puntosDerrota: 0,
     formatoPartidos: '4_SETS',
-    criterioDesempate: 'PUNTOS',
     diasDisponibles: [],
     horaInicio: '16:00',
     horaFin: '22:00',
@@ -80,7 +79,6 @@ const CreateTournament = () => {
                 if (data.puntosEmpate === undefined || data.puntosEmpate < 0) newErrors.puntosEmpate = intl.formatMessage({ id: 'project.global.validator.required' });
                 if (data.puntosDerrota === undefined || data.puntosDerrota < 0) newErrors.puntosDerrota = intl.formatMessage({ id: 'project.global.validator.required' });
                 if (!data.formatoPartidos) newErrors.formatoPartidos = intl.formatMessage({ id: 'project.global.validator.required' });
-                if (!data.criterioDesempate) newErrors.criterioDesempate = intl.formatMessage({ id: 'project.global.validator.required' });
                 break;
             }
             case 3: {

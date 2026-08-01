@@ -818,9 +818,6 @@ public class TorneoServiceImpl implements TorneoService {
         if (datos.getFormatoPartidos() != null) {
             torneo.setFormatoPartidos(datos.getFormatoPartidos());
         }
-        if (datos.getCriterioDesempate() != null) {
-            torneo.setCriterioDesempate(datos.getCriterioDesempate());
-        }
         if (datos.getDiasDisponibles() != null) {
             torneo.setDiasDisponibles(datos.getDiasDisponibles());
         }
