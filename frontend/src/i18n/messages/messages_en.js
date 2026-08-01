@@ -540,5 +540,13 @@ export default {
     'project.tournaments.Detail.tabs.playoffs': 'Playoffs',
     'project.tournaments.Detail.playoffs.title': 'Playoffs',
     'project.tournaments.Detail.playoffs.empty': 'No playoffs yet. They will be generated automatically when the group stage ends.',
-    'project.tournaments.Detail.playoffs.ronda': 'Round {num}'
+    'project.tournaments.Detail.playoffs.ronda': 'Round {num}',
+    'project.tournaments.Detail.playoffs.round.OCTAVOS': 'Round of 16',
+    'project.tournaments.Detail.playoffs.round.CUARTOS': 'Quarter-finals',
+    'project.tournaments.Detail.playoffs.round.SEMIFINALES': 'Semi-finals',
+    'project.tournaments.Detail.playoffs.round.FINAL': 'Final',
+    'project.tournaments.Detail.playoffs.noPartidos': 'No matches yet in this round. They will be generated when the previous round ends.',
+    'project.tournaments.Detail.playoffs.noEncuentros': 'No matches in this round yet. They will appear once the previous rounds have been played.',
+    'project.tournaments.Detail.partidos.ligaFinalizada': 'League finished',
+    'project.tournaments.Detail.partidos.ligaFinalizadaDetail': 'The league stage has ended. You can check the playoffs in the Playoffs section.'
 }

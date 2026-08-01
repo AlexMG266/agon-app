@@ -100,6 +100,10 @@ public class EncuentroServiceTest {
             throws InstanceNotFoundException, PermissionException {
 
         Torneo torneo = new Torneo(org, "Torneo Encuentro Test", false, "T99-XXXX");
+        // Sistema de puntuación estándar: victoria 3, empate 1, derrota 0
+        torneo.setPuntosVictoria(3);
+        torneo.setPuntosEmpate(1);
+        torneo.setPuntosDerrota(0);
         torneo = torneoService.crearTorneo(org.getId(), torneo, false);
 
         Equipo equipo1 = equipoService.crearEquipo(cap1.getId(), "EquipoLocal", "Equipo Local");
@@ -283,17 +287,58 @@ public class EncuentroServiceTest {
         Inscripcion inscVisitante = inscripcionDao
                 .findByEquipoIdAndTorneoId(encuentro.getVisitante().getId(), torneoId).get();
 
-        // Local: 3 sets ganados, 1 perdido. Ganó el partido => 2 puntos
-        // Visitante: 1 set ganado, 3 perdidos. Perdió el partido => 1 punto
+        // Local: 3 sets ganados, 1 perdido. Ganó el partido => 3 puntos (config 3/1/0)
+        // Visitante: 1 set ganado, 3 perdidos. Perdió el partido => 0 puntos (config 3/1/0)
         assertEquals(3, inscLocal.getSetsGanados());
         assertEquals(1, inscLocal.getSetsPerdidos());
-        assertEquals(2, inscLocal.getPuntosLiga()); // Ganó el partido
+        assertEquals(3, inscLocal.getPuntosLiga());
         assertEquals(1, inscLocal.getPartidosJugados());
+        assertEquals(1, inscLocal.getPartidosGanados());
+        assertEquals(0, inscLocal.getPartidosEmpatados());
+        assertEquals(0, inscLocal.getPartidosPerdidos());
 
         assertEquals(1, inscVisitante.getSetsGanados());
         assertEquals(3, inscVisitante.getSetsPerdidos());
-        assertEquals(1, inscVisitante.getPuntosLiga()); // Perdió el partido
+        assertEquals(0, inscVisitante.getPuntosLiga());
         assertEquals(1, inscVisitante.getPartidosJugados());
+        assertEquals(0, inscVisitante.getPartidosGanados());
+        assertEquals(0, inscVisitante.getPartidosEmpatados());
+        assertEquals(1, inscVisitante.getPartidosPerdidos());
+    }
+
+    @Test
+    public void testRegistrarResultadoEmpate() throws InstanceNotFoundException, PermissionException {
+        User org = createUser("org_resultado_empate");
+        User cap1 = createUser("cap_empate1");
+        User cap2 = createUser("cap_empate2");
+
+        Encuentro encuentro = setupEncuentro(org, cap1, cap2);
+
+        // Empate en sets 2-2 (cada equipo gana 2 sets)
+        List<SetEntity> sets = new ArrayList<>();
+        sets.add(new SetEntity(null, 1, 25, 20));
+        sets.add(new SetEntity(null, 2, 25, 18));
+        sets.add(new SetEntity(null, 3, 20, 25));
+        sets.add(new SetEntity(null, 4, 18, 25));
+
+        encuentroService.registrarResultado(cap1.getId(), encuentro.getId(), sets);
+
+        Long torneoId = encuentro.getJornada().getTorneo().getId();
+        Inscripcion inscLocal = inscripcionDao
+                .findByEquipoIdAndTorneoId(encuentro.getLocal().getId(), torneoId).get();
+        Inscripcion inscVisitante = inscripcionDao
+                .findByEquipoIdAndTorneoId(encuentro.getVisitante().getId(), torneoId).get();
+
+        // Empate => ambos suman 1 punto y registran 1 partido empatado
+        assertEquals(1, inscLocal.getPuntosLiga());
+        assertEquals(1, inscLocal.getPartidosEmpatados());
+        assertEquals(0, inscLocal.getPartidosGanados());
+        assertEquals(0, inscLocal.getPartidosPerdidos());
+
+        assertEquals(1, inscVisitante.getPuntosLiga());
+        assertEquals(1, inscVisitante.getPartidosEmpatados());
+        assertEquals(0, inscVisitante.getPartidosGanados());
+        assertEquals(0, inscVisitante.getPartidosPerdidos());
     }
 
     @Test

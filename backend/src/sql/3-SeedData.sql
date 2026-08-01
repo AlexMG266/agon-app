@@ -197,28 +197,28 @@ VALUES
 -- ============================================================
 -- 6. INSCRIPCIONES CONFIRMADAS (20 inscripciones ACTIVAS al torneo principal)
 -- ============================================================
-INSERT INTO Inscripcion (idTorneo, idEquipo, idGrupo, partidosJugados, estadoInscripcion, puntosLiga, setsGanados, setsPerdidos)
+INSERT INTO Inscripcion (idTorneo, idEquipo, idGrupo, partidosJugados, partidosGanados, partidosEmpatados, partidosPerdidos, estadoInscripcion, puntosLiga, setsGanados, setsPerdidos)
 VALUES
-    (1, 1,  NULL, 0, 'ACTIVA', 0, 0, 0),
-    (1, 2,  NULL, 0, 'ACTIVA', 0, 0, 0),
-    (1, 3,  NULL, 0, 'ACTIVA', 0, 0, 0),
-    (1, 4,  NULL, 0, 'ACTIVA', 0, 0, 0),
-    (1, 5,  NULL, 0, 'ACTIVA', 0, 0, 0),
-    (1, 6,  NULL, 0, 'ACTIVA', 0, 0, 0),
-    (1, 7,  NULL, 0, 'ACTIVA', 0, 0, 0),
-    (1, 8,  NULL, 0, 'ACTIVA', 0, 0, 0),
-    (1, 9,  NULL, 0, 'ACTIVA', 0, 0, 0),
-    (1, 10, NULL, 0, 'ACTIVA', 0, 0, 0),
-    (1, 11, NULL, 0, 'ACTIVA', 0, 0, 0),
-    (1, 12, NULL, 0, 'ACTIVA', 0, 0, 0),
-    (1, 13, NULL, 0, 'ACTIVA', 0, 0, 0),
-    (1, 14, NULL, 0, 'ACTIVA', 0, 0, 0),
-    (1, 15, NULL, 0, 'ACTIVA', 0, 0, 0),
-    (1, 16, NULL, 0, 'ACTIVA', 0, 0, 0),
-    (1, 17, NULL, 0, 'ACTIVA', 0, 0, 0),
-    (1, 18, NULL, 0, 'ACTIVA', 0, 0, 0),
-    (1, 19, NULL, 0, 'ACTIVA', 0, 0, 0),
-    (1, 20, NULL, 0, 'ACTIVA', 0, 0, 0);
+    (1, 1,  NULL, 0, 0, 0, 0, 'ACTIVA', 0, 0, 0),
+    (1, 2,  NULL, 0, 0, 0, 0, 'ACTIVA', 0, 0, 0),
+    (1, 3,  NULL, 0, 0, 0, 0, 'ACTIVA', 0, 0, 0),
+    (1, 4,  NULL, 0, 0, 0, 0, 'ACTIVA', 0, 0, 0),
+    (1, 5,  NULL, 0, 0, 0, 0, 'ACTIVA', 0, 0, 0),
+    (1, 6,  NULL, 0, 0, 0, 0, 'ACTIVA', 0, 0, 0),
+    (1, 7,  NULL, 0, 0, 0, 0, 'ACTIVA', 0, 0, 0),
+    (1, 8,  NULL, 0, 0, 0, 0, 'ACTIVA', 0, 0, 0),
+    (1, 9,  NULL, 0, 0, 0, 0, 'ACTIVA', 0, 0, 0),
+    (1, 10, NULL, 0, 0, 0, 0, 'ACTIVA', 0, 0, 0),
+    (1, 11, NULL, 0, 0, 0, 0, 'ACTIVA', 0, 0, 0),
+    (1, 12, NULL, 0, 0, 0, 0, 'ACTIVA', 0, 0, 0),
+    (1, 13, NULL, 0, 0, 0, 0, 'ACTIVA', 0, 0, 0),
+    (1, 14, NULL, 0, 0, 0, 0, 'ACTIVA', 0, 0, 0),
+    (1, 15, NULL, 0, 0, 0, 0, 'ACTIVA', 0, 0, 0),
+    (1, 16, NULL, 0, 0, 0, 0, 'ACTIVA', 0, 0, 0),
+    (1, 17, NULL, 0, 0, 0, 0, 'ACTIVA', 0, 0, 0),
+    (1, 18, NULL, 0, 0, 0, 0, 'ACTIVA', 0, 0, 0),
+    (1, 19, NULL, 0, 0, 0, 0, 'ACTIVA', 0, 0, 0),
+    (1, 20, NULL, 0, 0, 0, 0, 'ACTIVA', 0, 0, 0);
 
 -- ============================================================
 -- 7. NOTIFICACIONES
@@ -253,7 +253,7 @@ INSERT INTO Torneo (idOrganizador, nombre, privado, codigoTorneo, numGrupos, equ
                     formatoPartidos, criterioDesempate,
                     diasDisponibles, horaInicio, horaFin, duracionPartido,
                     fechasExcluidas, estrategiaDistribucion, diasEntreJornadas,
-                    estrategiaPlayoff, diasEntrePlayoff)
+                    estrategiaPlayoff, diasEntrePlayoff, rondaInicioPlayoff)
 VALUES
     (1, 'Liga + Playoff 2026', FALSE, 'T82-LIGAPL', 2, 10, TRUE, 'GRUPOS_PLAYOFF', FALSE, 'FASE_GRUPOS',
      '2026-06-15', '2026-08-10', '2026-06-01',
@@ -261,60 +261,60 @@ VALUES
      '4_SETS', 'PUNTOS',
      'L,M,X,J,V,S,D', '16:00', '22:00', 45,
      NULL, 'JORNADAS', 7,
-     'RAPIDO', NULL),
+     'RAPIDO', NULL, 'CUARTOS'),
     (1, 'Liga Única 2026', FALSE, 'T83-LIGAON', 1, 20, FALSE, 'LIGA_UNICA', FALSE, 'FASE_GRUPOS',
      '2026-03-02', '2026-07-06', '2026-02-20',
      3, 1, 0,
      '4_SETS', 'PUNTOS',
      'L,M,X,J,V,S,D', '16:00', '22:00', 45,
      NULL, 'JORNADAS', 7,
-     NULL, NULL);
+     NULL, NULL, NULL);
 
 INSERT INTO Grupo (idTorneo, nombreGrupo) VALUES
     (82, 'Grupo A'), (82, 'Grupo B'),
     (83, 'Grupo A');
 
-INSERT INTO Inscripcion (idTorneo, idEquipo, idGrupo, partidosJugados, estadoInscripcion, puntosLiga, setsGanados, setsPerdidos) VALUES
-    (82, 1,  1, 0, 'ACTIVA', 0, 0, 0),
-    (82, 2,  1, 0, 'ACTIVA', 0, 0, 0),
-    (82, 3,  1, 0, 'ACTIVA', 0, 0, 0),
-    (82, 4,  1, 0, 'ACTIVA', 0, 0, 0),
-    (82, 5,  1, 0, 'ACTIVA', 0, 0, 0),
-    (82, 6,  1, 0, 'ACTIVA', 0, 0, 0),
-    (82, 7,  1, 0, 'ACTIVA', 0, 0, 0),
-    (82, 8,  1, 0, 'ACTIVA', 0, 0, 0),
-    (82, 9,  1, 0, 'ACTIVA', 0, 0, 0),
-    (82, 10, 1, 0, 'ACTIVA', 0, 0, 0),
-    (82, 11, 2, 0, 'ACTIVA', 0, 0, 0),
-    (82, 12, 2, 0, 'ACTIVA', 0, 0, 0),
-    (82, 13, 2, 0, 'ACTIVA', 0, 0, 0),
-    (82, 14, 2, 0, 'ACTIVA', 0, 0, 0),
-    (82, 15, 2, 0, 'ACTIVA', 0, 0, 0),
-    (82, 16, 2, 0, 'ACTIVA', 0, 0, 0),
-    (82, 17, 2, 0, 'ACTIVA', 0, 0, 0),
-    (82, 18, 2, 0, 'ACTIVA', 0, 0, 0),
-    (82, 19, 2, 0, 'ACTIVA', 0, 0, 0),
-    (82, 20, 2, 0, 'ACTIVA', 0, 0, 0),
-    (83, 1,  3, 0, 'ACTIVA', 0, 0, 0),
-    (83, 2,  3, 0, 'ACTIVA', 0, 0, 0),
-    (83, 3,  3, 0, 'ACTIVA', 0, 0, 0),
-    (83, 4,  3, 0, 'ACTIVA', 0, 0, 0),
-    (83, 5,  3, 0, 'ACTIVA', 0, 0, 0),
-    (83, 6,  3, 0, 'ACTIVA', 0, 0, 0),
-    (83, 7,  3, 0, 'ACTIVA', 0, 0, 0),
-    (83, 8,  3, 0, 'ACTIVA', 0, 0, 0),
-    (83, 9,  3, 0, 'ACTIVA', 0, 0, 0),
-    (83, 10, 3, 0, 'ACTIVA', 0, 0, 0),
-    (83, 11, 3, 0, 'ACTIVA', 0, 0, 0),
-    (83, 12, 3, 0, 'ACTIVA', 0, 0, 0),
-    (83, 13, 3, 0, 'ACTIVA', 0, 0, 0),
-    (83, 14, 3, 0, 'ACTIVA', 0, 0, 0),
-    (83, 15, 3, 0, 'ACTIVA', 0, 0, 0),
-    (83, 16, 3, 0, 'ACTIVA', 0, 0, 0),
-    (83, 17, 3, 0, 'ACTIVA', 0, 0, 0),
-    (83, 18, 3, 0, 'ACTIVA', 0, 0, 0),
-    (83, 19, 3, 0, 'ACTIVA', 0, 0, 0),
-    (83, 20, 3, 0, 'ACTIVA', 0, 0, 0);
+INSERT INTO Inscripcion (idTorneo, idEquipo, idGrupo, partidosJugados, partidosGanados, partidosEmpatados, partidosPerdidos, estadoInscripcion, puntosLiga, setsGanados, setsPerdidos) VALUES
+    (82, 1,  1, 0, 0, 0, 0, 'ACTIVA', 0, 0, 0),
+    (82, 2,  1, 0, 0, 0, 0, 'ACTIVA', 0, 0, 0),
+    (82, 3,  1, 0, 0, 0, 0, 'ACTIVA', 0, 0, 0),
+    (82, 4,  1, 0, 0, 0, 0, 'ACTIVA', 0, 0, 0),
+    (82, 5,  1, 0, 0, 0, 0, 'ACTIVA', 0, 0, 0),
+    (82, 6,  1, 0, 0, 0, 0, 'ACTIVA', 0, 0, 0),
+    (82, 7,  1, 0, 0, 0, 0, 'ACTIVA', 0, 0, 0),
+    (82, 8,  1, 0, 0, 0, 0, 'ACTIVA', 0, 0, 0),
+    (82, 9,  1, 0, 0, 0, 0, 'ACTIVA', 0, 0, 0),
+    (82, 10, 1, 0, 0, 0, 0, 'ACTIVA', 0, 0, 0),
+    (82, 11, 2, 0, 0, 0, 0, 'ACTIVA', 0, 0, 0),
+    (82, 12, 2, 0, 0, 0, 0, 'ACTIVA', 0, 0, 0),
+    (82, 13, 2, 0, 0, 0, 0, 'ACTIVA', 0, 0, 0),
+    (82, 14, 2, 0, 0, 0, 0, 'ACTIVA', 0, 0, 0),
+    (82, 15, 2, 0, 0, 0, 0, 'ACTIVA', 0, 0, 0),
+    (82, 16, 2, 0, 0, 0, 0, 'ACTIVA', 0, 0, 0),
+    (82, 17, 2, 0, 0, 0, 0, 'ACTIVA', 0, 0, 0),
+    (82, 18, 2, 0, 0, 0, 0, 'ACTIVA', 0, 0, 0),
+    (82, 19, 2, 0, 0, 0, 0, 'ACTIVA', 0, 0, 0),
+    (82, 20, 2, 0, 0, 0, 0, 'ACTIVA', 0, 0, 0),
+    (83, 1,  3, 0, 0, 0, 0, 'ACTIVA', 0, 0, 0),
+    (83, 2,  3, 0, 0, 0, 0, 'ACTIVA', 0, 0, 0),
+    (83, 3,  3, 0, 0, 0, 0, 'ACTIVA', 0, 0, 0),
+    (83, 4,  3, 0, 0, 0, 0, 'ACTIVA', 0, 0, 0),
+    (83, 5,  3, 0, 0, 0, 0, 'ACTIVA', 0, 0, 0),
+    (83, 6,  3, 0, 0, 0, 0, 'ACTIVA', 0, 0, 0),
+    (83, 7,  3, 0, 0, 0, 0, 'ACTIVA', 0, 0, 0),
+    (83, 8,  3, 0, 0, 0, 0, 'ACTIVA', 0, 0, 0),
+    (83, 9,  3, 0, 0, 0, 0, 'ACTIVA', 0, 0, 0),
+    (83, 10, 3, 0, 0, 0, 0, 'ACTIVA', 0, 0, 0),
+    (83, 11, 3, 0, 0, 0, 0, 'ACTIVA', 0, 0, 0),
+    (83, 12, 3, 0, 0, 0, 0, 'ACTIVA', 0, 0, 0),
+    (83, 13, 3, 0, 0, 0, 0, 'ACTIVA', 0, 0, 0),
+    (83, 14, 3, 0, 0, 0, 0, 'ACTIVA', 0, 0, 0),
+    (83, 15, 3, 0, 0, 0, 0, 'ACTIVA', 0, 0, 0),
+    (83, 16, 3, 0, 0, 0, 0, 'ACTIVA', 0, 0, 0),
+    (83, 17, 3, 0, 0, 0, 0, 'ACTIVA', 0, 0, 0),
+    (83, 18, 3, 0, 0, 0, 0, 'ACTIVA', 0, 0, 0),
+    (83, 19, 3, 0, 0, 0, 0, 'ACTIVA', 0, 0, 0),
+    (83, 20, 3, 0, 0, 0, 0, 'ACTIVA', 0, 0, 0);
 
 -- Torneo 82: 2 grupos de 10, 9 jornadas (método round-robin). Solo queda PENDIENTE el último partido.
 -- Formato: liga a 4 sets (siempre se juegan 4 sets, nunca 3-0) y cada set a mejor de 9 bolas
@@ -445,7 +445,8 @@ BEGIN
     DELETE FROM Set_Entity WHERE idEncuentro = enc_id;
 END $$;
 
--- Recalcular estadísticas de inscripciones (misma lógica que actualizarEstadisticas)
+-- Recalcular estadísticas de inscripciones (misma lógica que actualizarEstadisticas).
+-- Torneos 82 y 83: victoria = 3 puntos, empate = 1 punto, derrota = 0 puntos.
 DO $$
 DECLARE
     enc RECORD;
@@ -471,16 +472,22 @@ BEGIN
 
         UPDATE Inscripcion
         SET partidosJugados = partidosJugados + 1,
+            partidosGanados = partidosGanados + CASE WHEN sets_l > sets_v THEN 1 ELSE 0 END,
+            partidosEmpatados = partidosEmpatados + CASE WHEN sets_l = sets_v THEN 1 ELSE 0 END,
+            partidosPerdidos = partidosPerdidos + CASE WHEN sets_l < sets_v THEN 1 ELSE 0 END,
             setsGanados = setsGanados + sets_l,
             setsPerdidos = setsPerdidos + sets_v,
-            puntosLiga = puntosLiga + CASE WHEN sets_l > sets_v THEN 2 ELSE 1 END
+            puntosLiga = puntosLiga + CASE WHEN sets_l > sets_v THEN 3 WHEN sets_l = sets_v THEN 1 ELSE 0 END
         WHERE idTorneo = enc.idTorneo AND idEquipo = enc.idEquipoLocal;
 
         UPDATE Inscripcion
         SET partidosJugados = partidosJugados + 1,
+            partidosGanados = partidosGanados + CASE WHEN sets_v > sets_l THEN 1 ELSE 0 END,
+            partidosEmpatados = partidosEmpatados + CASE WHEN sets_v = sets_l THEN 1 ELSE 0 END,
+            partidosPerdidos = partidosPerdidos + CASE WHEN sets_v < sets_l THEN 1 ELSE 0 END,
             setsGanados = setsGanados + sets_v,
             setsPerdidos = setsPerdidos + sets_l,
-            puntosLiga = puntosLiga + CASE WHEN sets_v > sets_l THEN 2 ELSE 1 END
+            puntosLiga = puntosLiga + CASE WHEN sets_v > sets_l THEN 3 WHEN sets_v = sets_l THEN 1 ELSE 0 END
         WHERE idTorneo = enc.idTorneo AND idEquipo = enc.idEquipoVisitante;
     END LOOP;
 END $$;

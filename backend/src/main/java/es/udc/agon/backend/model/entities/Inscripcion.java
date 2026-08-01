@@ -11,6 +11,9 @@ public class Inscripcion {
     private Equipo equipo;
     private Grupo grupo;
     private int partidosJugados;
+    private int partidosGanados;
+    private int partidosEmpatados;
+    private int partidosPerdidos;
     private EstadoInscripcion estadoInscripcion;
     private int puntosLiga;
     private int setsGanados;
@@ -24,6 +27,9 @@ public class Inscripcion {
         this.equipo = equipo;
         this.grupo = grupo;
         this.partidosJugados = 0;
+        this.partidosGanados = 0;
+        this.partidosEmpatados = 0;
+        this.partidosPerdidos = 0;
         this.estadoInscripcion = EstadoInscripcion.ACTIVA;
         this.puntosLiga = 0;
         this.setsGanados = 0;
@@ -35,6 +41,9 @@ public class Inscripcion {
         this.equipo = equipo;
         this.grupo = null;
         this.partidosJugados = 0;
+        this.partidosGanados = 0;
+        this.partidosEmpatados = 0;
+        this.partidosPerdidos = 0;
         this.estadoInscripcion = EstadoInscripcion.ACTIVA;
         this.puntosLiga = 0;
         this.setsGanados = 0;
@@ -90,6 +99,33 @@ public class Inscripcion {
         this.partidosJugados = partidosJugados;
     }
 
+    @Column(name = "partidosGanados")
+    public int getPartidosGanados() {
+        return partidosGanados;
+    }
+
+    public void setPartidosGanados(int partidosGanados) {
+        this.partidosGanados = partidosGanados;
+    }
+
+    @Column(name = "partidosEmpatados")
+    public int getPartidosEmpatados() {
+        return partidosEmpatados;
+    }
+
+    public void setPartidosEmpatados(int partidosEmpatados) {
+        this.partidosEmpatados = partidosEmpatados;
+    }
+
+    @Column(name = "partidosPerdidos")
+    public int getPartidosPerdidos() {
+        return partidosPerdidos;
+    }
+
+    public void setPartidosPerdidos(int partidosPerdidos) {
+        this.partidosPerdidos = partidosPerdidos;
+    }
+
     @Enumerated(EnumType.STRING)
     @Column(name = "estadoInscripcion", nullable = false)
     public EstadoInscripcion getEstadoInscripcion() {
@@ -131,10 +167,25 @@ public class Inscripcion {
         this.setsGanados += setsAFavor;
         this.setsPerdidos += setsEnContra;
         this.partidosJugados++;
+
+        // Puntos configurados en el torneo; si el torneo no los tiene definidos,
+        // se usa el sistema estándar: victoria 3, empate 1, derrota 0.
+        Integer pv = torneo != null ? torneo.getPuntosVictoria() : null;
+        Integer pe = torneo != null ? torneo.getPuntosEmpate() : null;
+        Integer pd = torneo != null ? torneo.getPuntosDerrota() : null;
+        int puntosVictoria = pv != null ? pv : 3;
+        int puntosEmpate = pe != null ? pe : 1;
+        int puntosDerrota = pd != null ? pd : 0;
+
         if (setsAFavor > setsEnContra) {
-            this.puntosLiga += 2;
+            this.partidosGanados++;
+            this.puntosLiga += puntosVictoria;
+        } else if (setsAFavor == setsEnContra) {
+            this.partidosEmpatados++;
+            this.puntosLiga += puntosEmpate;
         } else {
-            this.puntosLiga += 1;
+            this.partidosPerdidos++;
+            this.puntosLiga += puntosDerrota;
         }
     }
 }

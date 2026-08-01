@@ -82,6 +82,55 @@ const RONDA_OPTS = [
     { value: 'FINAL', label: 'Final', equipos: 2 },
 ];
 
+// Secuencia completa de rondas de playoffs (de más a menos equipos).
+const RONDA_SEQUENCE = ['OCTAVOS', 'CUARTOS', 'SEMIFINALES', 'FINAL'];
+
+/**
+ * Devuelve el nombre de la ronda de playoffs (OCTAVOS, CUARTOS, SEMIFINALES o FINAL)
+ * para la jornada de eliminatorias indicada. Se calcula a partir de la ronda de inicio
+ * configurada del torneo y del índice de la ronda; si no se puede determinar, se hace
+ * un fallback contando los equipos distintos que participan en la jornada.
+ * Devuelve null si no se puede determinar el nombre.
+ */
+const getNombreRonda = (tournament, j, rondaIdx) => {
+    const inicioOpt = RONDA_OPTS.find(o => o.value === (tournament && tournament.rondaInicioPlayoff));
+    const equiposInicio = inicioOpt ? inicioOpt.equipos : 0;
+    const equiposRonda = equiposInicio ? equiposInicio / Math.pow(2, rondaIdx) : 0;
+    const opt = RONDA_OPTS.find(o => o.equipos === equiposRonda);
+    if (opt) return opt.value;
+    const equipos = new Set();
+    (j.encuentros || []).forEach(enc => {
+        if (enc.equipoLocalId) equipos.add(enc.equipoLocalId);
+        if (enc.equipoVisitanteId) equipos.add(enc.equipoVisitanteId);
+    });
+    const opt2 = RONDA_OPTS.find(o => o.equipos === equipos.size);
+    return opt2 ? opt2.value : null;
+};
+
+/**
+ * Devuelve el plan completo de rondas de playoffs, desde la ronda de inicio
+ * configurada del torneo hasta la final. Se usan siempre todas las rondas
+ * (aunque aún no tengan encuentros) para mostrar las cards del carrusel.
+ */
+const getRondasPlan = (tournament, eliminatorias) => {
+    const inicio = tournament && tournament.rondaInicioPlayoff;
+    if (inicio && RONDA_SEQUENCE.includes(inicio)) {
+        return RONDA_SEQUENCE.slice(RONDA_SEQUENCE.indexOf(inicio));
+    }
+    // Fallback para torneos antiguos sin rondaInicioPlayoff: deducir la ronda
+    // más alta que ya tiene eliminatorias y completar el plan hasta la final.
+    let minIdx = RONDA_SEQUENCE.length;
+    eliminatorias.forEach((j, rondaIdx) => {
+        const rondaValue = getNombreRonda(tournament, j, rondaIdx);
+        const idx = RONDA_SEQUENCE.indexOf(rondaValue);
+        if (idx >= 0) minIdx = Math.min(minIdx, idx);
+    });
+    if (minIdx < RONDA_SEQUENCE.length) {
+        return RONDA_SEQUENCE.slice(minIdx);
+    }
+    return ['FINAL'];
+};
+
 const esPotenciaDeDos = (n) => n > 0 && (n & (n - 1)) === 0;
 
 /**
@@ -156,9 +205,57 @@ const TournamentDetail = () => {
     const [selectedGrupoIdx, setSelectedGrupoIdx] = useState(0);
     const [jornadas, setJornadas] = useState([]);
     const [currentJornadaIdx, setCurrentJornadaIdx] = useState(0);
+    const [currentRondaIdx, setCurrentRondaIdx] = useState(0);
     const [loadingJornadas, setLoadingJornadas] = useState(false);
     const [selectedEncuentro, setSelectedEncuentro] = useState(null);
 
+    // Jornadas de liga para el carrusel de Partidos (los playoffs se muestran en su sección).
+    const ligaJornadas = jornadas.filter(j => j.tipoFase !== 'ELIMINATORIA');
+    // Jornadas de eliminatorias. En la sección Playoffs se muestran todas las rondas en un carrusel.
+    const eliminatorias = jornadas.filter(j => j.tipoFase === 'ELIMINATORIA');
+    // Plan completo de rondas de playoffs: siempre se muestran todas las rondas
+    // (desde la ronda de inicio hasta la final), tengan o no encuentros.
+    const rondasPlan = eliminatorias.length > 0
+        ? getRondasPlan(tournament, eliminatorias).map((rondaValue, idx) => ({
+            rondaValue,
+            jornada: eliminatorias[idx] || null,
+        }))
+        : [];
+    // La liga finaliza cuando el torneo pasa a PLAYOFF o FINALIZADO.
+    const ligaFinalizada = !!tournament
+        && (tournament.estado === 'PLAYOFF' || tournament.estado === 'FINALIZADO');
+    // Ítems del carrusel: jornadas de liga + un card final que indica el fin de la liga.
+    const carouselJornadas = ligaFinalizada ? [...ligaJornadas, null] : ligaJornadas;
+
+    // Si la liga ha finalizado (se recortan las jornadas de playoff del carrusel),
+    // nos aseguramos de que el índice seleccionado no quede fuera de rango.
+    useEffect(() => {
+        if (currentJornadaIdx >= carouselJornadas.length) {
+            setCurrentJornadaIdx(Math.max(0, carouselJornadas.length - 1));
+        }
+    }, [carouselJornadas.length, currentJornadaIdx]);
+
+    // Si cambia el número de rondas de playoffs, mantenemos el índice dentro de rango.
+    useEffect(() => {
+        if (currentRondaIdx >= rondasPlan.length) {
+            setCurrentRondaIdx(Math.max(0, rondasPlan.length - 1));
+        }
+    }, [rondasPlan.length, currentRondaIdx]);
+
+    // Desplazar la ventana del carrusel para centrar la card de la ronda seleccionada.
+    useEffect(() => {
+        if (!carouselRef.current) return;
+        const track = carouselRef.current;
+        const active = track.querySelector('.td-partidos-carousel-item--active');
+        if (!active) return;
+        const trackRect = track.getBoundingClientRect();
+        const chipRect = active.getBoundingClientRect();
+        const offset = chipRect.left - trackRect.left - (trackRect.width - chipRect.width) / 2;
+        track.scrollBy({ left: offset, behavior: 'smooth' });
+    }, [currentRondaIdx]);
+
+    // Igualmente, si cambia el número de rondas de playoffs (por ejemplo al generarse
+    // el playoff o al registrarse resultados), mantenemos el índice dentro de rango.
     // IDs de equipos donde el usuario es miembro (cualquier miembro puede registrar resultados).
     const capitanTeamIds = (tournament && tournament.inscripciones && loggedUser
         ? tournament.inscripciones
@@ -526,6 +623,14 @@ const TournamentDetail = () => {
     };
 
     const est = tournament ? ESTADOS[tournament.estado] : null;
+
+    // Etiqueta de una ronda de playoffs (OCTAVOS, CUARTOS, SEMIFINALES, FINAL...).
+    const getRondaLabel = (rondaValue, rondaIdx) => {
+        if (rondaValue && RONDA_SEQUENCE.includes(rondaValue)) {
+            return intl.formatMessage({ id: `project.tournaments.Detail.playoffs.round.${rondaValue}`, defaultMessage: rondaValue });
+        }
+        return intl.formatMessage({ id: 'project.tournaments.Detail.playoffs.ronda', defaultMessage: 'Ronda {num}' }, { num: rondaIdx + 1 });
+    };
 
     if (loading) return (
         <Container className="td-loading">
@@ -1263,23 +1368,36 @@ const TournamentDetail = () => {
                                     <i className="fa-regular fa-chevron-left" />
                                 </button>
                                 <div className="td-partidos-carousel-track" ref={carouselRef}>
-                                    {jornadas.map((j, idx) => {
-                                        const fecha = j.fechaInicio ? new Date(j.fechaInicio) : null;
+                                    {carouselJornadas.map((j, idx) => {
+                                        const isFinalCard = j === null;
+                                        const fecha = !isFinalCard && j.fechaInicio ? new Date(j.fechaInicio) : null;
                                         const fechaStr = fecha ? fecha.toLocaleDateString('es-ES', { day: 'numeric', month: 'short' }) : '';
                                         return (
                                             <div
-                                                key={j.id}
+                                                key={isFinalCard ? 'liga-finalizada' : j.id}
                                                 className={`td-partidos-carousel-item${idx === currentJornadaIdx ? ' td-partidos-carousel-item--active' : ''}`}
                                                 onClick={() => setCurrentJornadaIdx(idx)}
                                                 role="button"
                                                 tabIndex={0}
                                                 onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') setCurrentJornadaIdx(idx); }}
                                             >
-                                                <span className="td-partidos-carousel-item-num">
-                                                    {intl.formatMessage({ id: 'project.tournaments.Detail.partidos.jornada', defaultMessage: 'Jornada' })} {j.numeroJornada}
-                                                </span>
-                                                {fechaStr && <span className="td-partidos-carousel-item-date">{fechaStr}</span>}
-                                                {j.tipoFase && <span className="td-partidos-carousel-item-phase">{j.tipoFase}</span>}
+                                                {isFinalCard ? (
+                                                    <>
+                                                        <span className="td-partidos-carousel-item-num">
+                                                            <i className="fa-regular fa-flag me-1" />
+                                                            {intl.formatMessage({ id: 'project.tournaments.Detail.partidos.ligaFinalizada', defaultMessage: 'Liga finalizada' })}
+                                                        </span>
+                                                        <span className="td-partidos-carousel-item-phase">—</span>
+                                                    </>
+                                                ) : (
+                                                    <>
+                                                        <span className="td-partidos-carousel-item-num">
+                                                            {intl.formatMessage({ id: 'project.tournaments.Detail.partidos.jornada', defaultMessage: 'Jornada' })} {j.numeroJornada}
+                                                        </span>
+                                                        {fechaStr && <span className="td-partidos-carousel-item-date">{fechaStr}</span>}
+                                                        {j.tipoFase && j.tipoFase !== 'LIGA_GRUPO' && <span className="td-partidos-carousel-item-phase">{j.tipoFase}</span>}
+                                                    </>
+                                                )}
                                             </div>
                                         );
                                     })}
@@ -1291,12 +1409,15 @@ const TournamentDetail = () => {
                                         onChange={e => setCurrentJornadaIdx(parseInt(e.target.value))}
                                         aria-label="Seleccionar jornada"
                                     >
-                                        {jornadas.map((j, idx) => {
-                                            const fecha = j.fechaInicio ? new Date(j.fechaInicio) : null;
+                                        {carouselJornadas.map((j, idx) => {
+                                            const isFinalCard = j === null;
+                                            const fecha = !isFinalCard && j.fechaInicio ? new Date(j.fechaInicio) : null;
                                             const fechaStr = fecha ? fecha.toLocaleDateString('es-ES', { day: 'numeric', month: 'short' }) : '';
                                             return (
-                                                <option key={j.id} value={idx}>
-                                                    {intl.formatMessage({ id: 'project.tournaments.Detail.partidos.jornada', defaultMessage: 'Jornada' })} {j.numeroJornada}{fechaStr ? ` (${fechaStr})` : ''}
+                                                <option key={isFinalCard ? 'liga-finalizada' : j.id} value={idx}>
+                                                    {isFinalCard
+                                                        ? intl.formatMessage({ id: 'project.tournaments.Detail.partidos.ligaFinalizada', defaultMessage: 'Liga finalizada' })
+                                                        : `${intl.formatMessage({ id: 'project.tournaments.Detail.partidos.jornada', defaultMessage: 'Jornada' })} ${j.numeroJornada}${fechaStr ? ` (${fechaStr})` : ''}`}
                                                 </option>
                                             );
                                         })}
@@ -1304,15 +1425,36 @@ const TournamentDetail = () => {
                                 </div>
                                 <button
                                     className="td-partidos-carousel-btn"
-                                    disabled={currentJornadaIdx >= jornadas.length - 1}
-                                    onClick={() => setCurrentJornadaIdx(prev => Math.min(jornadas.length - 1, prev + 1))}
+                                    disabled={currentJornadaIdx >= carouselJornadas.length - 1}
+                                    onClick={() => setCurrentJornadaIdx(prev => Math.min(carouselJornadas.length - 1, prev + 1))}
                                     aria-label="Jornada siguiente"
                                 >
                                     <i className="fa-regular fa-chevron-right" />
                                 </button>
                             </div>
                             {(() => {
-                                const currentJornada = jornadas[currentJornadaIdx];
+                                const currentJornada = carouselJornadas[currentJornadaIdx];
+                                if (currentJornada === null) {
+                                    return (
+                                        <div className="td-empty-state">
+                                            <div className="td-empty-state-icon">
+                                                <i className="fa-regular fa-flag" />
+                                            </div>
+                                            <p className="td-empty-state-text">
+                                                <FormattedMessage id="project.tournaments.Detail.partidos.ligaFinalizadaDetail" defaultMessage="La fase de liga ha terminado. Puedes ver los playoffs en la sección Playoffs." />
+                                            </p>
+                                        </div>
+                                    );
+                                }
+                                if (!currentJornada) {
+                                    return (
+                                        <div className="td-empty-state">
+                                            <p className="td-empty-state-text">
+                                                <FormattedMessage id="project.tournaments.Detail.partidos.noEncuentros" defaultMessage="No hay encuentros en esta jornada." />
+                                            </p>
+                                        </div>
+                                    );
+                                }
                                 const encuentros = currentJornada.encuentros || [];
 
                                 // Build equipo -> grupo mapping from tournament.inscripciones
@@ -1484,80 +1626,147 @@ const TournamentDetail = () => {
                         <div className="td-empty-state">
                             <Spinner animation="border" variant="dark" />
                         </div>
-                    ) : (() => {
-                        const eliminatorias = jornadas.filter(j => j.tipoFase === 'ELIMINATORIA');
-                        if (eliminatorias.length === 0) {
-                            return (
-                                <div className="td-empty-state">
-                                    <div className="td-empty-state-icon">
-                                        <i className="fa-regular fa-sitemap" />
-                                    </div>
-                                    <p className="td-empty-state-text">
-                                        <FormattedMessage id="project.tournaments.Detail.playoffs.empty" defaultMessage="Aún no hay playoffs. Se generarán automáticamente cuando termine la fase de grupos." />
-                                    </p>
-                                </div>
-                            );
-                        }
-                        return (
-                            <>
-                                {eliminatorias.map((j, rondaIdx) => {
-                                    const fecha = j.fechaInicio ? new Date(j.fechaInicio) : null;
-                                    const fechaStr = fecha ? fecha.toLocaleDateString('es-ES', { day: 'numeric', month: 'short', year: 'numeric' }) : '';
-                                    return (
-                                        <div key={j.id} className="td-playoffs-ronda">
-                                            <div className="td-playoffs-ronda-header">
-                                                <span className="td-playoffs-ronda-title">
-                                                    {intl.formatMessage(
-                                                        { id: 'project.tournaments.Detail.playoffs.ronda', defaultMessage: 'Ronda {num}' },
-                                                        { num: rondaIdx + 1 }
-                                                    )}
-                                                </span>
-                                                {fechaStr && <span className="td-playoffs-ronda-date">{fechaStr}</span>}
+                    ) : eliminatorias.length === 0 ? (
+                        <div className="td-empty-state">
+                            <div className="td-empty-state-icon">
+                                <i className="fa-regular fa-sitemap" />
+                            </div>
+                            <p className="td-empty-state-text">
+                                <FormattedMessage id="project.tournaments.Detail.playoffs.empty" defaultMessage="Aún no hay playoffs. Se generarán automáticamente cuando termine la fase de grupos." />
+                            </p>
+                        </div>
+                    ) : (
+                        <>
+                            {/* Carrusel de rondas: se muestran siempre todas las rondas del cuadro */}
+                            <div className="td-partidos-carousel">
+                                <button
+                                    className="td-partidos-carousel-btn"
+                                    disabled={currentRondaIdx <= 0}
+                                    onClick={() => setCurrentRondaIdx(prev => Math.max(0, prev - 1))}
+                                    aria-label="Ronda anterior"
+                                >
+                                    <i className="fa-regular fa-chevron-left" />
+                                </button>
+                                <div className="td-partidos-carousel-track" ref={carouselRef}>
+                                    {rondasPlan.map((ronda, idx) => {
+                                        const jornada = ronda.jornada;
+                                        const fecha = jornada && jornada.fechaInicio ? new Date(jornada.fechaInicio) : null;
+                                        const fechaStr = fecha ? fecha.toLocaleDateString('es-ES', { day: 'numeric', month: 'short' }) : '';
+                                        const rondaLabel = getRondaLabel(ronda.rondaValue, idx);
+                                        return (
+                                            <div
+                                                key={ronda.rondaValue || idx}
+                                                className={`td-partidos-carousel-item${idx === currentRondaIdx ? ' td-partidos-carousel-item--active' : ''}`}
+                                                onClick={() => setCurrentRondaIdx(idx)}
+                                                role="button"
+                                                tabIndex={0}
+                                                onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') setCurrentRondaIdx(idx); }}
+                                            >
+                                                <span className="td-partidos-carousel-item-num">{rondaLabel}</span>
+                                                {fechaStr && <span className="td-partidos-carousel-item-date">{fechaStr}</span>}
                                             </div>
-                                            <div className="td-playoffs-grid">
-                                                {(j.encuentros || []).map(enc => {
+                                        );
+                                    })}
+                                </div>
+                                <div className="td-partidos-mobile-select-wrapper">
+                                    <select
+                                        className="td-partidos-mobile-select"
+                                        value={currentRondaIdx}
+                                        onChange={e => setCurrentRondaIdx(parseInt(e.target.value))}
+                                        aria-label="Seleccionar ronda"
+                                    >
+                                        {rondasPlan.map((ronda, idx) => {
+                                            const jornada = ronda.jornada;
+                                            const fecha = jornada && jornada.fechaInicio ? new Date(jornada.fechaInicio) : null;
+                                            const fechaStr = fecha ? fecha.toLocaleDateString('es-ES', { day: 'numeric', month: 'short' }) : '';
+                                            const rondaLabel = getRondaLabel(ronda.rondaValue, idx);
+                                            return (
+                                                <option key={ronda.rondaValue || idx} value={idx}>
+                                                    {rondaLabel}{fechaStr ? ` (${fechaStr})` : ''}
+                                                </option>
+                                            );
+                                        })}
+                                    </select>
+                                </div>
+                                <button
+                                    className="td-partidos-carousel-btn"
+                                    disabled={currentRondaIdx >= rondasPlan.length - 1}
+                                    onClick={() => setCurrentRondaIdx(prev => Math.min(rondasPlan.length - 1, prev + 1))}
+                                    aria-label="Ronda siguiente"
+                                >
+                                    <i className="fa-regular fa-chevron-right" />
+                                </button>
+                            </div>
+
+                            {(() => {
+                                const ronda = rondasPlan[currentRondaIdx];
+                                if (!ronda) return null;
+                                const jornada = ronda.jornada;
+                                const encuentros = (jornada && jornada.encuentros) || [];
+                                const rondaLabel = getRondaLabel(ronda.rondaValue, currentRondaIdx);
+                                const fecha = jornada && jornada.fechaInicio ? new Date(jornada.fechaInicio) : null;
+                                const fechaStr = fecha ? fecha.toLocaleDateString('es-ES', { day: 'numeric', month: 'short', year: 'numeric' }) : '';
+                                return (
+                                    <div className="td-playoffs-ronda">
+                                        <div className="td-partidos-jornada-label">
+                                            <i className="fa-regular fa-sitemap me-1" />
+                                            {rondaLabel}
+                                            {fechaStr && <span className="td-partidos-jornada-label-date">{fechaStr}</span>}
+                                        </div>
+                                        {encuentros.length === 0 ? (
+                                            <div className="td-empty-state td-playoffs-ronda-empty">
+                                                <p className="td-empty-state-text">
+                                                    <FormattedMessage id="project.tournaments.Detail.playoffs.noEncuentros" defaultMessage="No hay encuentros en esta ronda todavía. Se mostrarán cuando se hayan jugado las rondas anteriores." />
+                                                </p>
+                                            </div>
+                                        ) : (
+                                            <div className="td-partidos-grid">
+                                                {encuentros.map(enc => {
                                                     const fechaEnc = enc.fechaRealizacion ? new Date(enc.fechaRealizacion) : null;
+                                                    const fechaStrEnc = fechaEnc ? fechaEnc.toLocaleDateString('es-ES', { day: 'numeric', month: 'short', year: 'numeric' }) : '';
                                                     const horaStr = fechaEnc ? fechaEnc.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' }) : '';
                                                     const jugado = enc.estado === 'JUGADO';
                                                     return (
                                                         <div
                                                             key={enc.id}
-                                                            className="td-playoff-card"
+                                                            className="td-partido-card"
                                                             onClick={() => setSelectedEncuentro(enc)}
                                                             role="button"
                                                             tabIndex={0}
                                                             onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') setSelectedEncuentro(enc); }}
                                                         >
-                                                            <div className="td-playoff-card-team">
-                                                                <i className="fa-regular fa-shield-halved td-playoff-card-shield" />
-                                                                <span className="td-playoff-card-team-name">{enc.equipoLocalNombre || '—'}</span>
-                                                                {jugado && (
-                                                                    <span className="td-partido-card-score">{enc.resultado ? enc.resultado.split('-')[0] : '—'}</span>
-                                                                )}
+                                                            <div className="td-partido-card-teams">
+                                                                <div className="td-partido-card-team">
+                                                                    <i className="fa-regular fa-shield-halved td-partido-card-shield" />
+                                                                    <span className="td-partido-card-team-name">{enc.equipoLocalNombre || '—'}</span>
+                                                                    {jugado && (
+                                                                        <span className="td-partido-card-score">{enc.resultado ? enc.resultado.split('-')[0] : '—'}</span>
+                                                                    )}
+                                                                </div>
+                                                                <div className="td-partido-card-team">
+                                                                    <i className="fa-regular fa-shield-halved td-partido-card-shield" />
+                                                                    <span className="td-partido-card-team-name">{enc.equipoVisitanteNombre || '—'}</span>
+                                                                    {jugado && (
+                                                                        <span className="td-partido-card-score">{enc.resultado ? enc.resultado.split('-')[1] : '—'}</span>
+                                                                    )}
+                                                                </div>
                                                             </div>
-                                                            <div className="td-playoff-card-team">
-                                                                <i className="fa-regular fa-shield-halved td-playoff-card-shield" />
-                                                                <span className="td-playoff-card-team-name">{enc.equipoVisitanteNombre || '—'}</span>
-                                                                {jugado && (
-                                                                    <span className="td-partido-card-score">{enc.resultado ? enc.resultado.split('-')[1] : '—'}</span>
-                                                                )}
-                                                            </div>
-                                                            {horaStr && (
-                                                                <div className="td-playoff-card-time">
-                                                                    <i className="fa-regular fa-clock me-1" />
-                                                                    {horaStr}
+                                                            {fechaEnc && (
+                                                                <div className="td-partido-card-datetime">
+                                                                    <span className="td-partido-card-date">{fechaStrEnc}</span>
+                                                                    <span className="td-partido-card-time">{horaStr}</span>
                                                                 </div>
                                                             )}
                                                         </div>
                                                     );
                                                 })}
                                             </div>
-                                        </div>
-                                    );
-                                })}
-                            </>
-                        );
-                    })()}
+                                        )}
+                                    </div>
+                                );
+                            })()}
+                        </>
+                    )}
                 </div>
             )}
 
@@ -1653,7 +1862,7 @@ const TournamentDetail = () => {
                                                     </td>
                                                     <td>{insc.partidosJugados || 0}</td>
                                                     <td>{insc.partidosGanados || 0}</td>
-                                                    <td>—</td>
+                                                    <td>{insc.partidosEmpatados || 0}</td>
                                                     <td>{insc.partidosPerdidos || 0}</td>
                                                     <td style={{ color: '#8e8e93' }}>{dg > 0 ? `+${dg}` : dg}</td>
                                                     <td>{insc.puntosLiga || 0}</td>

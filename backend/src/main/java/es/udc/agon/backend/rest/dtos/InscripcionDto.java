@@ -13,6 +13,7 @@ public class InscripcionDto {
 
     private int partidosJugados;
     private int partidosGanados;
+    private int partidosEmpatados;
     private int partidosPerdidos;
     private int setsGanados;
     private int setsPerdidos;
@@ -34,7 +35,7 @@ public class InscripcionDto {
 
     public InscripcionDto(Long equipoId, String nombreEquipo, Long creadorId, List<UserDto> miembros,
                           Long grupoId, String grupoNombre,
-                          int partidosJugados, int partidosGanados, int partidosPerdidos,
+                          int partidosJugados, int partidosGanados, int partidosEmpatados, int partidosPerdidos,
                           int setsGanados, int setsPerdidos, int diferenciaSets, int puntosLiga) {
         this.equipoId = equipoId;
         this.nombreEquipo = nombreEquipo;
@@ -44,6 +45,7 @@ public class InscripcionDto {
         this.grupoNombre = grupoNombre;
         this.partidosJugados = partidosJugados;
         this.partidosGanados = partidosGanados;
+        this.partidosEmpatados = partidosEmpatados;
         this.partidosPerdidos = partidosPerdidos;
         this.setsGanados = setsGanados;
         this.setsPerdidos = setsPerdidos;
@@ -113,6 +115,14 @@ public class InscripcionDto {
 
     public void setPartidosGanados(int partidosGanados) {
         this.partidosGanados = partidosGanados;
+    }
+
+    public int getPartidosEmpatados() {
+        return partidosEmpatados;
+    }
+
+    public void setPartidosEmpatados(int partidosEmpatados) {
+        this.partidosEmpatados = partidosEmpatados;
     }
 
     public int getPartidosPerdidos() {

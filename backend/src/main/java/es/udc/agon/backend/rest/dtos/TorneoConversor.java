@@ -30,11 +30,9 @@ public class TorneoConversor {
             inscripcionDtos = inscripciones.stream()
                     .map(ins -> {
                         int pj = ins.getPartidosJugados();
-                        int pts = ins.getPuntosLiga();
-                        // Sistema de puntuación: victoria = 2 puntos, derrota = 1 punto.
-                        // pj = G + P, pts = 2*G + P  =>  G = pts - pj,  P = pj - G.
-                        int pg = Math.max(pts - pj, 0);
-                        int pp = Math.max(pj - pg, 0);
+                        int pg = ins.getPartidosGanados();
+                        int pe = ins.getPartidosEmpatados();
+                        int pp = ins.getPartidosPerdidos();
                         int sg = ins.getSetsGanados();
                         int sp = ins.getSetsPerdidos();
                         return new InscripcionDto(
@@ -46,7 +44,7 @@ public class TorneoConversor {
                                         .collect(Collectors.toList()),
                                 ins.getGrupo() != null ? ins.getGrupo().getId() : null,
                                 ins.getGrupo() != null ? ins.getGrupo().getNombreGrupo() : null,
-                                pj, pg, pp, sg, sp, sg - sp, pts
+                                pj, pg, pe, pp, sg, sp, sg - sp, ins.getPuntosLiga()
                         );
                     })
                     .collect(Collectors.toList());

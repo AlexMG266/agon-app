@@ -1,4 +1,3 @@
-// src/modules/tournaments/components/MyMatches.jsx
 import { useState, useEffect, useRef } from 'react';
 import { FormattedMessage } from 'react-intl';
 import Spinner from 'react-bootstrap/Spinner';

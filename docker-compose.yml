@@ -10,13 +10,19 @@ services:
       POSTGRES_USER: agon
       POSTGRES_PASSWORD: agon
       POSTGRES_DB: agon
+      # Flag para inyectar (o no) el seed de datos de prueba en la primera
+      # inicialización del volumen. Uso:
+      #   docker compose up -d --build                 # solo esquema
+      #   AGON_SEED=true docker compose up -d --build  # esquema + seed
+      AGON_SEED: ${AGON_SEED:-false}
     ports:
       - "5433:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
-      - ./backend/src/sql/1-PostgreSQLCreateTables.sql:/docker-entrypoint-initdb.d/1-PostgreSQLCreateTables.sql:ro
-      - ./backend/src/sql/2-PostgreSQLCreateData-init.sql:/docker-entrypoint-initdb.d/2-PostgreSQLCreateData-init.sql:ro
-      - ./backend/src/sql/3-SeedData.sql:/docker-entrypoint-initdb.d/3-SeedData.sql:ro
+      # Wrapper que decide si se inyecta el seed (ver docker/db/init-seed.sh)
+      - ./docker/db/init-seed.sh:/docker-entrypoint-initdb.d/00-init-seed.sh:ro
+      - ./backend/src/sql/1-PostgreSQLCreateTables.sql:/scripts/1-PostgreSQLCreateTables.sql:ro
+      - ./backend/src/sql/3-SeedData.sql:/scripts/3-SeedData.sql:ro
       # Crea la BD de TEST independiente (agon_test) para que `mvn test` no borre el seed de desarrollo
       - ./docker/db/init-test-db.sql:/docker-entrypoint-initdb.d/99-init-test-db.sql:ro
     networks:
@@ -41,9 +47,11 @@ services:
     mem_limit: 1500m
     mem_reservation: 512m
     environment:
-      SPRING_DATASOURCE_URL: jdbc:postgresql://db:5432/agon
-      SPRING_DATASOURCE_USERNAME: agon
-      SPRING_DATASOURCE_PASSWORD: agon
+      # Sin override de SPRING_DATASOURCE_URL: application.yml (filtrado) apunta a
+      # jdbc:postgresql://db/agon para el servidor de desarrollo, y application-test.yml
+      # (perfil "test") apunta a agon_test. Un env var aquí sobrescribiría el perfil de
+      # test y los tests correrían contra la BD de desarrollo (agon), fallando con
+      # "column partidosEmpatados does not exist" tras migraciones del esquema.
       SPRING_DEVTOOLS_RESTART_ENABLED: "true"
       SPRING_DEVTOOLS_RESTART_POLL_INTERVAL: "2s"
       SPRING_DEVTOOLS_RESTART_QUIET_PERIOD: "1s"

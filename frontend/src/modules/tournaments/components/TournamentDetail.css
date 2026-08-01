@@ -1044,6 +1044,18 @@
     margin-bottom: 0.75rem;
 }
 
+.td-partidos-jornada-label-date {
+    display: inline-flex;
+    align-items: center;
+    margin-left: 0.5rem;
+    font-size: 0.68rem;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+    text-transform: none;
+    color: #8e8e93;
+    white-space: nowrap;
+}
+
 .td-partidos-mobile-select-wrapper {
     display: none;
     flex: 1;
@@ -1182,6 +1194,13 @@
 
 .td-playoffs-ronda:last-child {
     margin-bottom: 0;
+}
+
+.td-playoffs-ronda-empty {
+    padding: 1.5rem 1rem;
+    background: rgba(0, 0, 0, 0.02);
+    border-radius: 12px;
+    border: 1px dashed rgba(0, 0, 0, 0.08);
 }
 
 .td-playoffs-ronda-header {

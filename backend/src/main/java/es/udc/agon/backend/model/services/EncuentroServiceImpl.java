@@ -142,9 +142,7 @@ public class EncuentroServiceImpl implements IEncuentroService {
         encuentroDao.save(encuentro);
 
         // actualizar estadisticas de inscripciones
-        Equipo ganador = encuentro.getGanador();
-        Equipo perdedor = ganador.equals(encuentro.getLocal()) ? encuentro.getVisitante() : encuentro.getLocal();
-
+        // (el empate es posible: sets iguales, p.ej. 2-2, no hay ganador)
         // buscar la inscripcion del torneo asociada a cada equipo
         Jornada jornada = encuentro.getJornada();
         if (jornada != null && jornada.getTorneo() != null) {
