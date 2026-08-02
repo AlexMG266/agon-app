@@ -104,6 +104,54 @@ public class NotificationDispatcher {
     }
 
     // -----------------------------------------------------------------------
+    //   Notificaciones de tipo SOLICITUD_APLAZAMIENTO
+    // -----------------------------------------------------------------------
+
+    /**
+     * Notifica al capitan del equipo contrario que se solicita aplazar un encuentro.
+     */
+    public void notificacionAplazamientoSolicitada(User destinatario, String equipoLocal, String equipoVisitante,
+                                                   String fechaPropuesta, Long solicitudId) {
+        String asunto = messageSource.getMessage(
+                "notifications.aplazamiento.solicitada.asunto",
+                new Object[]{equipoLocal, equipoVisitante}, Locale.getDefault());
+        String cuerpo = messageSource.getMessage(
+                "notifications.aplazamiento.solicitada.cuerpo",
+                new Object[]{equipoLocal, equipoVisitante, fechaPropuesta}, Locale.getDefault());
+        notificationDao.save(new Notification(
+                destinatario, asunto, cuerpo, false, true, solicitudId, TipoNotificacion.SOLICITUD_APLAZAMIENTO));
+    }
+
+    /**
+     * Notifica al capitan solicitante que su solicitud de aplazamiento fue aceptada.
+     */
+    public void notificacionAplazamientoAceptada(User destinatario, String equipoLocal, String equipoVisitante,
+                                                 String fechaPropuesta) {
+        String asunto = messageSource.getMessage(
+                "notifications.aplazamiento.aceptada.asunto",
+                new Object[]{equipoLocal, equipoVisitante}, Locale.getDefault());
+        String cuerpo = messageSource.getMessage(
+                "notifications.aplazamiento.aceptada.cuerpo",
+                new Object[]{equipoLocal, equipoVisitante, fechaPropuesta}, Locale.getDefault());
+        notificationDao.save(new Notification(
+                destinatario, asunto, cuerpo, false, false, null, TipoNotificacion.SOLICITUD_APLAZAMIENTO));
+    }
+
+    /**
+     * Notifica al capitan solicitante que su solicitud de aplazamiento fue rechazada.
+     */
+    public void notificacionAplazamientoRechazada(User destinatario, String equipoLocal, String equipoVisitante) {
+        String asunto = messageSource.getMessage(
+                "notifications.aplazamiento.rechazada.asunto",
+                new Object[]{equipoLocal, equipoVisitante}, Locale.getDefault());
+        String cuerpo = messageSource.getMessage(
+                "notifications.aplazamiento.rechazada.cuerpo",
+                new Object[]{equipoLocal, equipoVisitante}, Locale.getDefault());
+        notificationDao.save(new Notification(
+                destinatario, asunto, cuerpo, false, false, null, TipoNotificacion.SOLICITUD_APLAZAMIENTO));
+    }
+
+    // -----------------------------------------------------------------------
     //   Notificaciones de tipo RECORDATORIO_PARTIDO
     // -----------------------------------------------------------------------
 
