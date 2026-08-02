@@ -8,11 +8,17 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Clock;
+import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 
 @Service
@@ -234,16 +240,205 @@ public class EncuentroServiceImpl implements IEncuentroService {
             throw new IllegalArgumentException("El encuentro ya ha sido jugado");
         }
 
+        if (encuentro.getEstadoEncuentro() == EstadoEncuentro.SOLICITADO_APLAZAMIENTO) {
+            throw new IllegalArgumentException("Ya hay una solicitud de aplazamiento pendiente");
+        }
+
         if (fecha == null || fecha.isBefore(LocalDateTime.now(clock))) {
             throw new IllegalArgumentException("La fecha de aplazamiento debe ser futura");
         }
 
+        // validar la fecha propuesta contra el horario del torneo
+        validarFechaAplazamiento(encuentro, fecha);
+
         Equipo equipoSolicitante = esCapitanLocal ? encuentro.getLocal() : encuentro.getVisitante();
+        Equipo equipoContrario = esCapitanLocal ? encuentro.getVisitante() : encuentro.getLocal();
 
         SolicitudAplazamiento solicitud = new SolicitudAplazamiento(encuentro, equipoSolicitante, fecha);
         solicitudAplazamientoDao.save(solicitud);
 
         encuentro.setEstadoEncuentro(EstadoEncuentro.SOLICITADO_APLAZAMIENTO);
         encuentroDao.save(encuentro);
+
+        // notificar al capitan del equipo contrario para que acepte o rechace
+        String fechaStr = fecha.format(DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm"));
+        notificationDispatcher.notificacionAplazamientoSolicitada(
+                equipoContrario.getCreador(),
+                encuentro.getLocal() != null ? encuentro.getLocal().getNombreEquipo() : "?",
+                encuentro.getVisitante() != null ? encuentro.getVisitante().getNombreEquipo() : "?",
+                fechaStr,
+                solicitud.getId());
+    }
+
+    @Override
+    public void responderAplazamiento(Long capitanId, Long solicitudId, boolean aceptar)
+            throws InstanceNotFoundException, PermissionException, IllegalArgumentException {
+
+        permissionChecker.checkUser(capitanId);
+        SolicitudAplazamiento solicitud = solicitudAplazamientoDao.findById(solicitudId)
+                .orElseThrow(() -> new InstanceNotFoundException("project.entities.solicitud", solicitudId));
+
+        if (solicitud.getEstado() != EstadoSolicitud.PENDIENTE) {
+            throw new IllegalArgumentException("La solicitud ya no esta pendiente");
+        }
+
+        Encuentro encuentro = solicitud.getEncuentro();
+        Equipo equipoSolicitante = solicitud.getEquipoSolicitante();
+        Equipo equipoContrario = encuentro.getLocal().getId().equals(equipoSolicitante.getId())
+                ? encuentro.getVisitante() : encuentro.getLocal();
+
+        // solo el capitan del equipo contrario puede responder
+        boolean esCapitanContrario = equipoContrario.getMiembros().stream()
+                .anyMatch(miembro -> miembro.getId().equals(capitanId));
+        if (!esCapitanContrario) {
+            throw new PermissionException();
+        }
+
+        User capitanSolicitante = equipoSolicitante.getCreador();
+
+        if (aceptar) {
+            solicitud.aceptarSolicitud();
+            solicitudAplazamientoDao.save(solicitud);
+
+            encuentro.setFechaRealizacion(solicitud.getFechaSolicitada());
+            encuentro.setEstadoEncuentro(EstadoEncuentro.APLAZADO);
+            recalcularJornada(encuentro);
+            encuentroDao.save(encuentro);
+
+            String fechaStr = solicitud.getFechaSolicitada().format(DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm"));
+            notificationDispatcher.notificacionAplazamientoAceptada(
+                    capitanSolicitante,
+                    encuentro.getLocal() != null ? encuentro.getLocal().getNombreEquipo() : "?",
+                    encuentro.getVisitante() != null ? encuentro.getVisitante().getNombreEquipo() : "?",
+                    fechaStr);
+        } else {
+            solicitud.cancelarSolicitud();
+            solicitudAplazamientoDao.save(solicitud);
+
+            encuentro.setEstadoEncuentro(EstadoEncuentro.PENDIENTE);
+            encuentroDao.save(encuentro);
+
+            notificationDispatcher.notificacionAplazamientoRechazada(
+                    capitanSolicitante,
+                    encuentro.getLocal() != null ? encuentro.getLocal().getNombreEquipo() : "?",
+                    encuentro.getVisitante() != null ? encuentro.getVisitante().getNombreEquipo() : "?");
+        }
+
+        // marcar la notificacion pendiente como procesada
+        notificationDao.findByUsuarioIdAndReferenciaIdAndTipo(
+                capitanId, solicitudId, Notification.TipoNotificacion.SOLICITUD_APLAZAMIENTO)
+                .ifPresent(notification -> {
+                    notification.setLeido(true);
+                    notification.setPendienteDeAccion(false);
+                    notificationDao.save(notification);
+                });
+    }
+
+    // comprueba que la fecha propuesta respeta el horario del torneo y no pisa otro encuentro
+    private void validarFechaAplazamiento(Encuentro encuentro, LocalDateTime fecha) {
+        Jornada jornada = encuentro.getJornada();
+        Torneo torneo = jornada != null ? jornada.getTorneo() : null;
+        if (torneo == null) {
+            return;
+        }
+
+        // rango del torneo
+        if (torneo.getFechaInicio() != null && fecha.toLocalDate().isBefore(torneo.getFechaInicio())) {
+            throw new IllegalArgumentException("La fecha propuesta esta fuera del rango del torneo");
+        }
+        if (torneo.getFechaFin() != null && fecha.toLocalDate().isAfter(torneo.getFechaFin())) {
+            throw new IllegalArgumentException("La fecha propuesta esta fuera del rango del torneo");
+        }
+
+        // dia de la semana disponible
+        Set<String> diasSet = torneo.getDiasDisponibles() != null && !torneo.getDiasDisponibles().isBlank()
+                ? new HashSet<>(Arrays.asList(torneo.getDiasDisponibles().split(",")))
+                : new HashSet<>(Arrays.asList("L", "M", "X", "J", "V", "S", "D"));
+        Map<String, DayOfWeek> dayMap = new HashMap<>();
+        dayMap.put("L", DayOfWeek.MONDAY);
+        dayMap.put("M", DayOfWeek.TUESDAY);
+        dayMap.put("X", DayOfWeek.WEDNESDAY);
+        dayMap.put("J", DayOfWeek.THURSDAY);
+        dayMap.put("V", DayOfWeek.FRIDAY);
+        dayMap.put("S", DayOfWeek.SATURDAY);
+        dayMap.put("D", DayOfWeek.SUNDAY);
+        boolean diaValido = diasSet.stream()
+                .map(dayMap::get)
+                .filter(Objects::nonNull)
+                .anyMatch(dow -> dow == fecha.getDayOfWeek());
+        if (!diaValido) {
+            throw new IllegalArgumentException("La fecha propuesta no es un dia disponible del torneo");
+        }
+
+        // fecha no excluida
+        Set<LocalDate> fechasExcluidas = new HashSet<>();
+        if (torneo.getFechasExcluidas() != null && !torneo.getFechasExcluidas().isEmpty()) {
+            for (String f : torneo.getFechasExcluidas().split(",")) {
+                fechasExcluidas.add(LocalDate.parse(f.trim()));
+            }
+        }
+        if (fechasExcluidas.contains(fecha.toLocalDate())) {
+            throw new IllegalArgumentException("La fecha propuesta esta excluida del torneo");
+        }
+
+        // hora dentro del rango del torneo
+        int horaInicioMinutos = parseHora(torneo.getHoraInicio(), 16 * 60);
+        int horaFinMinutos = parseHora(torneo.getHoraFin(), 22 * 60);
+        int duracionMinutos = torneo.getDuracionPartido() != null ? torneo.getDuracionPartido() : 60;
+        int minutosFecha = fecha.getHour() * 60 + fecha.getMinute();
+        if (minutosFecha < horaInicioMinutos || minutosFecha + duracionMinutos > horaFinMinutos) {
+            throw new IllegalArgumentException("La hora propuesta esta fuera del horario del torneo");
+        }
+
+        // no puede solaparse con otro encuentro ya programado del torneo
+        LocalDateTime inicioNuevo = fecha;
+        LocalDateTime finNuevo = fecha.plusMinutes(duracionMinutos);
+        for (Jornada j : torneoService.obtenerJornadas(torneo.getId())) {
+            for (Encuentro otro : j.getEncuentros()) {
+                if (otro.getId() != null && otro.getId().equals(encuentro.getId())) {
+                    continue;
+                }
+                if (otro.getFechaRealizacion() == null) {
+                    continue;
+                }
+                LocalDateTime inicioOtro = otro.getFechaRealizacion();
+                LocalDateTime finOtro = inicioOtro.plusMinutes(duracionMinutos);
+                if (inicioNuevo.isBefore(finOtro) && finNuevo.isAfter(inicioOtro)) {
+                    throw new IllegalArgumentException("La fecha propuesta coincide con otro encuentro del torneo");
+                }
+            }
+        }
+    }
+
+    // mueve el encuentro a la jornada cuyo rango de fechas contiene la nueva fecha
+    private void recalcularJornada(Encuentro encuentro) {
+        Jornada jornadaActual = encuentro.getJornada();
+        if (jornadaActual == null || jornadaActual.getTorneo() == null
+                || encuentro.getFechaRealizacion() == null) {
+            return;
+        }
+        Long torneoId = jornadaActual.getTorneo().getId();
+        LocalDate fechaNueva = encuentro.getFechaRealizacion().toLocalDate();
+
+        Jornada jornadaDestino = null;
+        for (Jornada j : torneoService.obtenerJornadas(torneoId)) {
+            if (j.getFechaInicio() != null && j.getFechaFin() != null
+                    && !fechaNueva.isBefore(j.getFechaInicio()) && !fechaNueva.isAfter(j.getFechaFin())) {
+                jornadaDestino = j;
+                break;
+            }
+        }
+        // si la fecha no cae en ninguna jornada se mantiene la actual
+        if (jornadaDestino != null && !jornadaDestino.getId().equals(jornadaActual.getId())) {
+            encuentro.setJornada(jornadaDestino);
+        }
+    }
+
+    private int parseHora(String hora, int porDefecto) {
+        if (hora == null || hora.isBlank()) {
+            return porDefecto;
+        }
+        String[] partes = hora.split(":");
+        return Integer.parseInt(partes[0].trim()) * 60 + Integer.parseInt(partes[1].trim());
     }
 }

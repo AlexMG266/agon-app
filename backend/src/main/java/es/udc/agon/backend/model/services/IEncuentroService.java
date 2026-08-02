@@ -53,4 +53,18 @@ public interface IEncuentroService {
      */
     void solicitarAplazamiento(Long capitanId, Long encuentroId, LocalDateTime fecha, String motivo)
             throws InstanceNotFoundException, PermissionException, IllegalArgumentException;
+
+    /**
+     * acepta o rechaza una solicitud de aplazamiento.
+     * Solo el capitan del equipo contrario al solicitante puede responder.
+     *
+     * @param capitanId   id del capitan que responde.
+     * @param solicitudId id de la solicitud de aplazamiento.
+     * @param aceptar     true para aceptar el aplazamiento, false para rechazarlo.
+     * @throws InstanceNotFoundException si el capitan o la solicitud no existen.
+     * @throws PermissionException       si el capitanId no es capitan del equipo contrario.
+     * @throws IllegalArgumentException  si la solicitud ya no esta pendiente.
+     */
+    void responderAplazamiento(Long capitanId, Long solicitudId, boolean aceptar)
+            throws InstanceNotFoundException, PermissionException, IllegalArgumentException;
 }

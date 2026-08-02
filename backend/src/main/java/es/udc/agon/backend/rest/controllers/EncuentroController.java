@@ -30,7 +30,9 @@ import es.udc.agon.backend.model.exceptions.PermissionException;
 import es.udc.agon.backend.model.services.IEncuentroService;
 import es.udc.agon.backend.rest.dtos.FechaEncuentrosDto;
 import es.udc.agon.backend.rest.dtos.RegistrarResultadoParamsDto;
+import es.udc.agon.backend.rest.dtos.ResponderSolicitudParamsDto;
 import es.udc.agon.backend.rest.dtos.SetDto;
+import es.udc.agon.backend.rest.dtos.SolicitarAplazamientoParamsDto;
 import es.udc.agon.backend.rest.dtos.TorneoConversor;
 
 @RestController
@@ -97,5 +99,60 @@ public class EncuentroController {
         }
 
         encuentroService.registrarResultado(userId, encuentroId, sets);
+    }
+
+    @PostMapping("/{encuentroId}/aplazar")
+    @Operation(
+            summary = "Solicitar el aplazamiento de un encuentro",
+            description = "El capitán de uno de los dos equipos solicita mover el encuentro a una " +
+                    "nueva fecha. El capitán del otro equipo recibirá una notificación para aceptar o rechazar."
+    )
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "204", description = "Solicitud de aplazamiento creada correctamente",
+                    content = @Content),
+            @ApiResponse(responseCode = "401", description = "No autorizado (Token JWT faltante o inválido)",
+                    content = @Content),
+            @ApiResponse(responseCode = "403", description = "El usuario no es capitán de ninguno de los dos equipos",
+                    content = @Content),
+            @ApiResponse(responseCode = "404", description = "Encuentro no encontrado", content = @Content),
+            @ApiResponse(responseCode = "400", description = "Fecha inválida o encuentro ya jugado",
+                    content = @Content)
+    })
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void solicitarAplazamiento(
+            @Parameter(description = "Identificador del encuentro") @PathVariable Long encuentroId,
+            @Parameter(description = "Nueva fecha propuesta y motivo") @RequestBody SolicitarAplazamientoParamsDto params,
+            @Parameter(hidden = true) @RequestAttribute Long userId)
+            throws InstanceNotFoundException, PermissionException, IllegalArgumentException {
+
+        encuentroService.solicitarAplazamiento(userId, encuentroId, params.getFecha(), params.getMotivo());
+    }
+
+    @PostMapping("/solicitudes-aplazamiento/{solicitudId}/responder")
+    @Operation(
+            summary = "Aceptar o rechazar una solicitud de aplazamiento",
+            description = "El capitán del equipo contrario al solicitante acepta o rechaza el " +
+                    "aplazamiento propuesto."
+    )
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "204", description = "Solicitud procesada correctamente",
+                    content = @Content),
+            @ApiResponse(responseCode = "401", description = "No autorizado (Token JWT faltante o inválido)",
+                    content = @Content),
+            @ApiResponse(responseCode = "403", description = "El usuario no es capitán del equipo contrario",
+                    content = @Content),
+            @ApiResponse(responseCode = "404", description = "Solicitud no encontrada", content = @Content),
+            @ApiResponse(responseCode = "400", description = "La solicitud ya no está pendiente",
+                    content = @Content)
+    })
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void responderAplazamiento(
+            @Parameter(description = "Identificador de la solicitud de aplazamiento") @PathVariable Long solicitudId,
+            @Parameter(description = "Aceptar (true) o rechazar (false) el aplazamiento")
+            @RequestBody ResponderSolicitudParamsDto params,
+            @Parameter(hidden = true) @RequestAttribute Long userId)
+            throws InstanceNotFoundException, PermissionException, IllegalArgumentException {
+
+        encuentroService.responderAplazamiento(userId, solicitudId, params.getAceptar());
     }
 }
