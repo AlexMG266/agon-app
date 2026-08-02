@@ -15,6 +15,7 @@ import MyMatches from '../../tournaments/components/MyMatches';
 import Table from '../../common/components/Table';
 import JoinTeamModal from './JoinTeamModal';
 import CodeSearchModal from './CodeSearchModal';
+import CreateTeamModal from '../../teams/components/CreateTeam';
 import './Home.css';
 
 const LandingPage = () => {
@@ -63,6 +64,7 @@ const Dashboard = () => {
 
     const [showJoinModal, setShowJoinModal] = useState(false);
     const [showCodeModal, setShowCodeModal] = useState(false);
+    const [showCreateTeamModal, setShowCreateTeamModal] = useState(false);
     const [teamPage, setTeamPage] = useState(1);
     const [tournamentPage, setTournamentPage] = useState(1);
 
@@ -114,10 +116,10 @@ const Dashboard = () => {
 
             {/* ── Quick Actions ── */}
             <div className="dashboard-actions-row">
-                <Link to="/teams/create" className="action-link">
+                <button className="action-link action-link-btn" onClick={() => setShowCreateTeamModal(true)}>
                     <span className="action-link-icon">+</span>
                     <FormattedMessage id="project.app.Home.dashboard.createTeam" defaultMessage="Crear equipo" />
-                </Link>
+                </button>
                 <span className="action-separator"></span>
                 <Link to="/tournaments/create" className="action-link">
                     <span className="action-link-icon">+</span>
@@ -146,9 +148,9 @@ const Dashboard = () => {
                         <h5>
                             <FormattedMessage id="project.app.Home.dashboard.myTeams" defaultMessage="Mis Equipos" />
                         </h5>
-                        <Link to="/teams/create" className="section-action">
+                        <button className="section-action section-action-btn" onClick={() => setShowCreateTeamModal(true)}>
                             <FormattedMessage id="project.app.Home.dashboard.createTeam" defaultMessage="Crear equipo" />
-                        </Link>
+                        </button>
                     </div>
 
                     <div className="dashboard-section-body">
@@ -203,9 +205,9 @@ const Dashboard = () => {
                                 <div className="empty-state-help">
                                     <FormattedMessage id="project.app.Home.dashboard.noTeamsHelp" defaultMessage="Crea tu primer equipo para empezar a competir" />
                                 </div>
-                                <Link to="/teams/create" className="empty-state-action">
+                                <button className="empty-state-action empty-state-action-btn" onClick={() => setShowCreateTeamModal(true)}>
                                     <FormattedMessage id="project.app.Home.dashboard.createTeamAction" defaultMessage="Crear equipo →" />
-                                </Link>
+                                </button>
                             </div>
                         )}
                     </div>
@@ -294,6 +296,11 @@ const Dashboard = () => {
             {/* ── Modals ── */}
             <JoinTeamModal show={showJoinModal} onHide={() => setShowJoinModal(false)} />
             <CodeSearchModal show={showCodeModal} onHide={() => setShowCodeModal(false)} />
+            <CreateTeamModal
+                show={showCreateTeamModal}
+                onHide={() => setShowCreateTeamModal(false)}
+                onCreated={() => dispatch(teams.actions.getMyTeams())}
+            />
         </div>
     );
 };

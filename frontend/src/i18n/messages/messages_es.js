@@ -190,6 +190,10 @@ export default {
     'project.teams.CreateTeam.confirm.title': '¿Confirmar creación de equipo?',
     'project.teams.CreateTeam.confirm.description': 'Estás a punto de fundar tu equipo en Agón. Asegúrate de que el nombre y el lema representen vuestro legado antes de continuar.',
     'project.teams.CreateTeam.confirm.button': 'Crear Equipo',
+    'project.teams.CreateTeam.success.title': '¡Equipo creado con éxito!',
+    'project.teams.CreateTeam.success.description': 'Tu equipo está listo para competir. Comparte este código con tu compañero para que se una:',
+    'project.teams.CreateTeam.success.codeLabel': 'Código de invitación',
+    'project.teams.CreateTeam.success.view': 'Ver equipo',
 
     'project.teams.Detail.loading': 'Cargando equipo...',
     'project.teams.Detail.notFound': 'No se pudo cargar el equipo',

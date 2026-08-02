@@ -202,6 +202,15 @@
     color: #1d1d1f;
 }
 
+.section-action-btn {
+    background: none;
+    border: none;
+    padding: 0;
+    font-family: inherit;
+    cursor: pointer;
+    line-height: inherit;
+}
+
 /* ── List Items ── */
 .section-list {
     display: flex;
@@ -388,6 +397,15 @@
 
 .empty-state-action:hover {
     color: #111;
+}
+
+.empty-state-action-btn {
+    background: none;
+    border: none;
+    padding: 0;
+    font-family: inherit;
+    cursor: pointer;
+    line-height: inherit;
 }
 
 /* ── Responsive ── */

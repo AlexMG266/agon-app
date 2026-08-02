@@ -191,6 +191,18 @@
     color: #ff453a;
 }
 
+/* Sidebar links rendered as buttons (e.g. Crear equipo) */
+.sidebar-link-btn {
+    width: 100%;
+    background: none;
+    border: none;
+    font-family: inherit;
+    font-size: 0.92rem;
+    text-align: left;
+    cursor: pointer;
+    margin: 0;
+}
+
 /* ─── Utilities ─── */
 .app-content-area.no-padding {
     padding: 0 !important;

@@ -1,9 +1,10 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { Link } from 'react-router';
 import { FormattedMessage } from 'react-intl';
 import Spinner from 'react-bootstrap/Spinner';
 import teams from '../../teams';
+import CreateTeamModal from './CreateTeam';
 import './MyTeams.css';
 
 const formatDate = (ts) => {
@@ -15,6 +16,8 @@ const MyTeams = () => {
     const dispatch = useDispatch();
     const userTeams = useSelector(state => state.teams?.userTeams || []);
     const isLoading = useSelector(state => state.teams?.loading || false);
+
+    const [showCreateModal, setShowCreateModal] = useState(false);
 
     useEffect(() => {
         dispatch(teams.actions.getMyTeams());
@@ -31,9 +34,9 @@ const MyTeams = () => {
                         <FormattedMessage id="project.teams.MyTeams.subtitle" defaultMessage="Equipos que has creado" />
                     </p>
                 </div>
-                <Link to="/teams/create" className="mt-create-btn">
+                <button className="mt-create-btn" onClick={() => setShowCreateModal(true)}>
                     <FormattedMessage id="project.teams.MyTeams.create" defaultMessage="+ Crear equipo" />
-                </Link>
+                </button>
             </div>
 
             {isLoading ? (
@@ -77,11 +80,17 @@ const MyTeams = () => {
                     <p className="mt-empty-desc">
                         <FormattedMessage id="project.teams.MyTeams.noTeamsHelp" defaultMessage="Crea tu primer equipo para empezar a competir" />
                     </p>
-                    <Link to="/teams/create" className="mt-create-btn mt-create-btn--empty">
+                    <button className="mt-create-btn mt-create-btn--empty" onClick={() => setShowCreateModal(true)}>
                         <FormattedMessage id="project.teams.MyTeams.createAction" defaultMessage="Crear equipo →" />
-                    </Link>
+                    </button>
                 </div>
             )}
+
+            <CreateTeamModal
+                show={showCreateModal}
+                onHide={() => setShowCreateModal(false)}
+                onCreated={() => dispatch(teams.actions.getMyTeams())}
+            />
         </div>
     );
 };

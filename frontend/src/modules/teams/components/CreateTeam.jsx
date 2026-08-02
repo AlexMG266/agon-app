@@ -2,19 +2,17 @@ import { useState, useRef } from 'react';
 import { useDispatch } from 'react-redux';
 import { useNavigate } from 'react-router';
 import { FormattedMessage } from 'react-intl';
+import Modal from 'react-bootstrap/Modal';
 import Button from 'react-bootstrap/Button';
 import Form from 'react-bootstrap/Form';
-import Row from 'react-bootstrap/Row';
-import Col from 'react-bootstrap/Col';
-import Container from 'react-bootstrap/Container';
-import Card from 'react-bootstrap/Card';
 import Spinner from 'react-bootstrap/Spinner';
 
 import { Errors } from '../../common';
 import ConfirmationModal from '../../common/components/ConfirmationModal';
 import * as actions from '../actions';
+import './CreateTeam.css';
 
-const CreateTeam = () => {
+const CreateTeamModal = ({ show, onHide, onCreated }) => {
     const dispatch = useDispatch();
     const navigate = useNavigate();
 
@@ -26,6 +24,24 @@ const CreateTeam = () => {
     const [backendErrors, setBackendErrors] = useState(null);
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [showConfirmModal, setShowConfirmModal] = useState(false);
+    const [createdTeam, setCreatedTeam] = useState(null);
+
+    const resetForm = () => {
+        setNombre('');
+        setDescripcion('');
+        setFormValidated(false);
+        setBackendErrors(null);
+        setIsSubmitting(false);
+        setShowConfirmModal(false);
+        setCreatedTeam(null);
+    };
+
+    const handleHide = () => {
+        if (!isSubmitting) {
+            resetForm();
+            onHide();
+        }
+    };
 
     const handleSubmit = (event) => {
         event.preventDefault();
@@ -48,7 +64,10 @@ const CreateTeam = () => {
                 (team) => {
                     setIsSubmitting(false);
                     setShowConfirmModal(false);
-                    navigate(`/teams/view/${team.id}`);
+                    setCreatedTeam(team);
+                    if (onCreated) {
+                        onCreated(team);
+                    }
                 },
                 (errors) => {
                     setBackendErrors(errors);
@@ -59,164 +78,167 @@ const CreateTeam = () => {
         );
     };
 
+    const handleViewTeam = () => {
+        if (createdTeam) {
+            resetForm();
+            onHide();
+            navigate(`/teams/view/${createdTeam.id}`);
+        }
+    };
+
+    const codigoEquipo =
+        createdTeam?.codigoEquipo || createdTeam?.codigoInvitacion || createdTeam?.codigo;
+
     return (
-        <div className="profile-container">
-            <Container className="mt-5 py-2" style={{ maxWidth: '1100px' }}>
-                <Row className="g-5 align-items-center">
-
-                    <Col lg={5} className="d-none d-lg-block">
-                        <div className="pe-4">
-                            <span
-                                className="badge rounded-pill bg-light text-dark border px-3 py-1 mb-3 fw-semibold text-uppercase"
-                                style={{ letterSpacing: '0.05em', fontSize: '0.7rem' }}
-                            >
-                                <FormattedMessage id="project.teams.CreateTeam.badge" defaultMessage="Creación de equipo" />
-                            </span>
-                            <h2 className="display-6 font-weight-bold text-dark mb-3" style={{ fontWeight: '700', letterSpacing: '-0.03em' }}>
-                                <FormattedMessage id="project.teams.CreateTeam.sideTitle" defaultMessage="Tu equipo en Agón" />
-                            </h2>
-                            <p className="text-secondary mb-4" style={{ lineHeight: '1.6', fontSize: '0.95rem' }}>
-                                <FormattedMessage id="project.teams.CreateTeam.sideDescription" defaultMessage="Para empezar a competir necesitas consolidar tu pareja de juego. Este proceso consta de tres pasos sencillos:" />
-                            </p>
-
-                            <div className="d-flex flex-column gap-3">
-                                <div className="d-flex gap-3 align-items-start">
-                                    <div className="bg-light rounded-circle d-flex align-items-center justify-content-center border" style={{ width: '32px', height: '32px', flexShrink: 0, fontWeight: '600', fontSize: '0.9rem' }}>
-                                        1
-                                    </div>
-                                    <div>
-                                        <h6 className="mb-1 fw-bold text-dark" style={{ fontSize: '0.9rem' }}><FormattedMessage id="project.teams.CreateTeam.step1.title" defaultMessage="Elige la identidad" /></h6>
-                                        <p className="small text-muted mb-0"><FormattedMessage id="project.teams.CreateTeam.step1.desc" defaultMessage="Define el nombre y el lema que os representará en los torneos." /></p>
-                                    </div>
+        <>
+            <Modal
+                show={show}
+                onHide={handleHide}
+                centered
+                size="md"
+                backdrop="static"
+                backdropClassName="ct-modal-backdrop"
+                dialogClassName="ct-modal-dialog"
+                contentClassName="ct-modal-content"
+            >
+                <Modal.Header closeButton onHide={handleHide} className="ct-modal-header">
+                    <Modal.Title as="h6" className="fw-bold">
+                        <span className="ct-modal-title-icon">
+                            <i className="fa-solid fa-shield-halved"></i>
+                        </span>
+                        <FormattedMessage id="project.teams.CreateTeam.title" defaultMessage="Crear un nuevo equipo" />
+                    </Modal.Title>
+                </Modal.Header>
+                <Modal.Body className="ct-modal-body">
+                    {createdTeam ? (
+                        <div className="ct-success">
+                            <div className="ct-success-icon">
+                                <i className="fa-regular fa-circle-check"></i>
+                            </div>
+                            <div className="ct-success-text">
+                                <FormattedMessage id="project.teams.CreateTeam.success.title" defaultMessage="¡Equipo creado con éxito!" />
+                            </div>
+                            <div className="ct-success-desc">
+                                <FormattedMessage id="project.teams.CreateTeam.success.description" defaultMessage="Tu equipo está listo para competir. Comparte este código con tu compañero para que se una:" />
+                            </div>
+                            {codigoEquipo && (
+                                <div className="ct-success-code">
+                                    <span className="ct-success-code-label">
+                                        <FormattedMessage id="project.teams.CreateTeam.success.codeLabel" defaultMessage="Código de invitación" />
+                                    </span>
+                                    <code>{codigoEquipo}</code>
                                 </div>
-
-                                <div className="d-flex gap-3 align-items-start">
-                                    <div className="bg-light rounded-circle d-flex align-items-center justify-content-center border" style={{ width: '32px', height: '32px', flexShrink: 0, fontWeight: '600', fontSize: '0.9rem' }}>
-                                        2
-                                    </div>
-                                    <div>
-                                        <h6 className="mb-1 fw-bold text-dark" style={{ fontSize: '0.9rem' }}><FormattedMessage id="project.teams.CreateTeam.step2.title" defaultMessage="Obtén tu código" /></h6>
-                                        <p className="small text-muted mb-0"><FormattedMessage id="project.teams.CreateTeam.step2.desc" defaultMessage="Al crear el equipo, el sistema generará un código único de invitación para tu equipo." /></p>
-                                    </div>
-                                </div>
-
-                                <div className="d-flex gap-3 align-items-start">
-                                    <div className="bg-light rounded-circle d-flex align-items-center justify-content-center border" style={{ width: '32px', height: '32px', flexShrink: 0, fontWeight: '600', fontSize: '0.9rem' }}>
-                                        3
-                                    </div>
-                                    <div>
-                                        <h6 className="mb-1 fw-bold text-dark" style={{ fontSize: '0.9rem' }}><FormattedMessage id="project.teams.CreateTeam.step3.title" defaultMessage="Suma a tu compañero" /></h6>
-                                        <p className="small text-muted mb-0"><FormattedMessage id="project.teams.CreateTeam.step3.desc" defaultMessage="Comparte el código con tu pareja para completar el equipo." /></p>
-                                    </div>
-                                </div>
+                            )}
+                            <div className="ct-success-actions">
+                                <Button
+                                    variant="light"
+                                    className="ct-success-btn ct-success-btn-close"
+                                    onClick={handleHide}
+                                >
+                                    <FormattedMessage id="project.global.buttons.close" defaultMessage="Cerrar" />
+                                </Button>
+                                <Button
+                                    variant="dark"
+                                    className="ct-success-btn ct-success-btn-view"
+                                    onClick={handleViewTeam}
+                                >
+                                    <i className="fa-solid fa-shield-halved me-2"></i>
+                                    <FormattedMessage id="project.teams.CreateTeam.success.view" defaultMessage="Ver equipo" />
+                                </Button>
                             </div>
                         </div>
-                    </Col>
+                    ) : (
+                        <>
+                            <p className="text-muted small mb-3">
+                                <FormattedMessage id="project.teams.CreateTeam.subtitle" defaultMessage="Comienza tu camino competitivo. Crea un equipo, obtén tu código único de invitación y recluta a tu compañero de juego." />
+                            </p>
 
-                    <Col lg={7} md={12}>
-                        <Card className="border rounded-4 shadow-sm" style={{ borderColor: '#d2d2d7', backgroundColor: '#ffffff' }}>
-                            <Card.Body className="p-4 p-md-5">
-                                <h3
-                                    className="pb-2 font-weight-bold text-dark mb-2"
-                                    style={{ fontSize: '1.3rem', letterSpacing: '-0.02em', fontWeight: '700' }}
-                                >
-                                    <FormattedMessage id="project.teams.CreateTeam.title" defaultMessage="Crear un nuevo equipo" />
-                                </h3>
+                            <Errors errors={backendErrors} onClose={() => setBackendErrors(null)} />
 
-                                <p className="text-muted small mb-4" style={{ lineHeight: '1.5' }}>
-                                    <FormattedMessage
-                                        id="project.teams.CreateTeam.subtitle"
-                                        defaultMessage="Comienza tu camino competitivo. Crea un equipo, obtén tu código único de invitación y recluta a tu compañero de juego."
+                            <Form
+                                ref={formRef}
+                                noValidate
+                                validated={formValidated}
+                                onSubmit={handleSubmit}
+                            >
+                                <Form.Group className="mb-3" controlId="teamName">
+                                    <Form.Label className="text-secondary small fw-medium mb-2">
+                                        <FormattedMessage id="project.teams.fields.name" defaultMessage="Nombre del Equipo" />
+                                    </Form.Label>
+                                    <Form.Control
+                                        type="text"
+                                        value={nombre}
+                                        onChange={e => setNombre(e.target.value)}
+                                        required
+                                        maxLength={30}
+                                        placeholder="Ej. Los Reyes de la Mesa"
+                                        className="form-control-apple"
+                                        disabled={isSubmitting}
                                     />
-                                </p>
+                                    <Form.Control.Feedback type="invalid" className="small">
+                                        <FormattedMessage id='project.global.validator.required' defaultMessage="Este campo es obligatorio." />
+                                    </Form.Control.Feedback>
+                                </Form.Group>
 
-                                <Errors errors={backendErrors} onClose={() => setBackendErrors(null)} />
+                                <Form.Group className="mb-3" controlId="teamDescription">
+                                    <Form.Label className="text-secondary small fw-medium mb-2">
+                                        <FormattedMessage id="project.teams.fields.description" defaultMessage="Descripción o Lema" />
+                                    </Form.Label>
+                                    <Form.Control
+                                        as="textarea"
+                                        rows={3}
+                                        value={descripcion}
+                                        onChange={e => setDescripcion(e.target.value)}
+                                        required
+                                        maxLength={150}
+                                        placeholder="Escribe una breve presentación del equipo..."
+                                        className="form-control-apple"
+                                        style={{ resize: 'none' }}
+                                        disabled={isSubmitting}
+                                    />
+                                    <Form.Control.Feedback type="invalid" className="small">
+                                        <FormattedMessage id='project.global.validator.required' defaultMessage="Este campo es obligatorio." />
+                                    </Form.Control.Feedback>
+                                </Form.Group>
 
-                                <Form
-                                    ref={formRef}
-                                    noValidate
-                                    validated={formValidated}
-                                    onSubmit={handleSubmit}
-                                >
-                                    <Form.Group className="mb-4" controlId="teamName">
-                                        <Form.Label className="text-secondary small fw-medium mb-2">
-                                            <FormattedMessage id="project.teams.fields.name" defaultMessage="Nombre del Equipo" />
-                                        </Form.Label>
-                                        <Form.Control
-                                            type="text"
-                                            value={nombre}
-                                            onChange={e => setNombre(e.target.value)}
-                                            required
-                                            maxLength={30}
-                                            placeholder="Ej. Los Reyes de la Mesa"
-                                            className="form-control-apple"
-                                            disabled={isSubmitting}
-                                        />
-                                        <Form.Control.Feedback type="invalid" className="small">
-                                            <FormattedMessage id='project.global.validator.required' defaultMessage="Este campo es obligatorio." />
-                                        </Form.Control.Feedback>
-                                    </Form.Group>
+                                <div className="d-flex gap-3 justify-content-end pt-3 border-top mt-3">
+                                    <Button
+                                        variant="light"
+                                        onClick={handleHide}
+                                        className="rounded-pill border px-4 text-dark bg-white py-2"
+                                        style={{ fontSize: '0.9rem', fontWeight: '500' }}
+                                        disabled={isSubmitting}
+                                    >
+                                        <FormattedMessage id="project.global.buttons.cancel" defaultMessage="Cancelar" />
+                                    </Button>
 
-                                    <Form.Group className="mb-4" controlId="teamDescription">
-                                        <Form.Label className="text-secondary small fw-medium mb-2">
-                                            <FormattedMessage id="project.teams.fields.description" defaultMessage="Descripción o Lema" />
-                                        </Form.Label>
-                                        <Form.Control
-                                            as="textarea"
-                                            rows={3}
-                                            value={descripcion}
-                                            onChange={e => setDescripcion(e.target.value)}
-                                            required
-                                            maxLength={150}
-                                            placeholder="Escribe una breve presentación del equipo..."
-                                            className="form-control-apple"
-                                            style={{ resize: 'none' }}
-                                            disabled={isSubmitting}
-                                        />
-                                        <Form.Control.Feedback type="invalid" className="small">
-                                            <FormattedMessage id='project.global.validator.required' defaultMessage="Este campo es obligatorio." />
-                                        </Form.Control.Feedback>
-                                    </Form.Group>
-
-                                    <div className="d-flex gap-3 justify-content-end pt-3 border-top mt-4">
-                                        <Button
-                                            variant="light"
-                                            onClick={() => navigate(-1)}
-                                            className="rounded-pill border px-4 text-dark bg-white py-2"
-                                            style={{ fontSize: '0.9rem', fontWeight: '500' }}
-                                            disabled={isSubmitting}
-                                        >
-                                            <FormattedMessage id="project.global.buttons.cancel" defaultMessage="Cancelar" />
-                                        </Button>
-
-                                        <Button
-                                            type="submit"
-                                            className="btn-apple-dark rounded-pill px-4 py-2 d-flex align-items-center justify-content-center gap-2"
-                                            style={{ minWidth: '140px', fontWeight: '500' }}
-                                            disabled={isSubmitting}
-                                        >
-                                            {isSubmitting ? (
-                                                <>
-                                                    <Spinner
-                                                        as="span"
-                                                        animation="border"
-                                                        size="sm"
-                                                        role="status"
-                                                        aria-hidden="true"
-                                                    />
-                                                    <span><FormattedMessage id="project.teams.CreateTeam.saving" defaultMessage="Guardando..." /></span>
-                                                </>
-                                            ) : (
-                                                <FormattedMessage id="project.teams.buttons.create" defaultMessage="Crear equipo" />
-                                            )}
-                                        </Button>
-                                    </div>
-                                </Form>
-                            </Card.Body>
-                        </Card>
-                    </Col>
-                </Row>
-            </Container>
+                                    <Button
+                                        type="submit"
+                                        className="btn-apple-dark rounded-pill px-4 py-2 d-flex align-items-center justify-content-center gap-2"
+                                        style={{ minWidth: '140px', fontWeight: '500' }}
+                                        disabled={isSubmitting}
+                                    >
+                                        {isSubmitting ? (
+                                            <>
+                                                <Spinner
+                                                    as="span"
+                                                    animation="border"
+                                                    size="sm"
+                                                    role="status"
+                                                    aria-hidden="true"
+                                                />
+                                                <span><FormattedMessage id="project.teams.CreateTeam.saving" defaultMessage="Guardando..." /></span>
+                                            </>
+                                        ) : (
+                                            <FormattedMessage id="project.teams.buttons.create" defaultMessage="Crear equipo" />
+                                        )}
+                                    </Button>
+                                </div>
+                            </Form>
+                        </>
+                    )}
+                </Modal.Body>
+            </Modal>
 
             <ConfirmationModal
                 show={showConfirmModal}
@@ -243,8 +265,8 @@ const CreateTeam = () => {
                 isSubmitting={isSubmitting}
                 variant="primary"
             />
-        </div>
+        </>
     );
 };
 
-export default CreateTeam;
+export default CreateTeamModal;

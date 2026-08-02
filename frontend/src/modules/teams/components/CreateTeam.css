@@ -1,73 +1,185 @@
-.ct-container {
-    max-width: 800px;
+/* CreateTeam.css — Modal de creación de equipo */
+
+/* ─── Fondo difuminado tipo hoja de macOS (como EncuentroModal) ─── */
+.ct-modal-backdrop {
+    background-color: rgba(15, 15, 22, 0.42);
+    backdrop-filter: blur(10px) saturate(140%);
+    -webkit-backdrop-filter: blur(10px) saturate(140%);
 }
 
-.ct-form-panel {
-    background-color: rgba(255, 255, 255, 0.82);
-    backdrop-filter: blur(24px);
-    -webkit-backdrop-filter: blur(24px);
-    border: 1px solid rgba(210, 210, 215, 0.6);
-    border-radius: 18px;
-    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.04);
-    padding: 2rem 2.25rem;
-    transition: box-shadow 0.2s ease;
+/* ─── Tarjeta del modal ─── */
+.ct-modal-content {
+    border: 1px solid rgba(0, 0, 0, 0.07);
+    border-radius: 22px;
+    background: linear-gradient(180deg, #ffffff 0%, #fbfbfd 100%);
+    box-shadow:
+        0 40px 80px -20px rgba(0, 0, 0, 0.3),
+        0 12px 32px -12px rgba(0, 0, 0, 0.12),
+        inset 0 1px 0 rgba(255, 255, 255, 0.9);
+    overflow: hidden;
+    font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
 }
 
-.ct-form-title {
-    font-size: 1.3rem;
-    font-weight: 700;
-    letter-spacing: -0.02em;
-    color: #1d1d1f;
-    margin-bottom: 0.25rem;
+.ct-modal-dialog {
+    max-width: 480px;
 }
 
-.ct-form-subtitle {
-    font-size: 0.88rem;
-    color: #86868b;
-    line-height: 1.5;
-    margin-bottom: 1.5rem;
+/* ─── Cabecera ─── */
+.ct-modal-header {
+    border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+    padding: 20px 24px 14px;
+    background: linear-gradient(180deg, #ffffff 0%, #f7f7fa 100%);
 }
 
-.ct-btn-cancel {
-    font-size: 0.9rem;
-    font-weight: 500;
-    border-radius: 999px;
-    border: 1px solid #d2d2d7;
-    padding: 0.5rem 1.25rem;
-    background: #ffffff;
-    color: #1d1d1f;
-    transition: background 0.15s ease;
+.ct-modal-header .btn-close {
+    opacity: 0.55;
 }
 
-.ct-btn-cancel:hover {
-    background: #f5f5f7;
+.ct-modal-header .btn-close:hover {
+    opacity: 0.9;
 }
 
-.ct-btn-create {
-    font-size: 0.9rem;
-    font-weight: 500;
-    border-radius: 999px;
-    padding: 0.5rem 1.5rem;
-    background: #1d1d1f;
+.ct-modal-title-icon {
+    width: 32px;
+    height: 32px;
+    border-radius: 9px;
+    background: linear-gradient(135deg, #0071e3 0%, #0a84ff 100%);
     color: #ffffff;
-    border: none;
-    min-width: 140px;
-    transition: background 0.15s ease, transform 0.15s ease;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.85rem;
+    margin-right: 10px;
+    box-shadow: 0 2px 10px rgba(10, 132, 255, 0.35);
 }
 
-.ct-btn-create:hover {
+/* ─── Cuerpo ─── */
+.ct-modal-body {
+    padding: 20px 24px 24px;
+}
+
+/* ─── Pantalla de éxito (tarjeta centrada como los demás modales) ─── */
+.ct-success {
+    text-align: center;
+    padding: 26px 0 10px;
+}
+
+.ct-success-icon {
+    width: 72px;
+    height: 72px;
+    margin: 0 auto 16px;
+    border-radius: 50%;
+    background: rgba(52, 199, 89, 0.12);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 2.4rem;
+    color: #34c759;
+}
+
+.ct-success-text {
+    font-weight: 700;
+    color: #1d1d1f;
+    font-size: 1.05rem;
+    letter-spacing: -0.02em;
+    margin-bottom: 6px;
+}
+
+.ct-success-desc {
+    color: #86868b;
+    font-size: 0.82rem;
+    line-height: 1.5;
+    margin-bottom: 20px;
+    max-width: 320px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.ct-success-code {
+    display: inline-block;
+    background: #f5f5f7;
+    border: 1px solid #e5e5ea;
+    border-radius: 12px;
+    padding: 12px 24px;
+    margin-bottom: 24px;
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.04);
+}
+
+.ct-success-code-label {
+    display: block;
+    font-size: 0.62rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: #86868b;
+    margin-bottom: 4px;
+}
+
+.ct-success-code code {
+    font-size: 1.15rem;
+    font-weight: 700;
+    letter-spacing: 0.14em;
+    color: #1d1d1f;
+    background: none;
+    padding: 0;
+}
+
+.ct-success-actions {
+    display: flex;
+    gap: 10px;
+    justify-content: center;
+    border-top: 1px solid rgba(0, 0, 0, 0.06);
+    padding-top: 20px;
+}
+
+.ct-success-btn {
+    border-radius: 999px;
+    font-size: 0.85rem;
+    font-weight: 500;
+    padding: 0.5rem 1.4rem;
+    transition: all 0.15s ease;
+}
+
+.ct-success-btn-close {
+    background: #ffffff;
+    border: 1px solid #d2d2d7;
+    color: #1d1d1f;
+}
+
+.ct-success-btn-close:hover {
+    background: #f5f5f7;
+    color: #1d1d1f;
+}
+
+.ct-success-btn-view {
+    background: #1d1d1f;
+    border: 1px solid #1d1d1f;
+    color: #ffffff;
+}
+
+.ct-success-btn-view:hover {
     background: #2d2d2f;
+    border-color: #2d2d2f;
+    color: #ffffff;
     transform: scale(1.02);
 }
 
-.ct-btn-create:disabled {
-    opacity: 0.5;
-    cursor: not-allowed;
-    transform: none;
+/* ─── Formulario ─── */
+.ct-modal-body .text-muted.small {
+    color: #86868b;
 }
 
 @media (max-width: 768px) {
-    .ct-form-panel {
-        padding: 1.5rem;
+    .ct-modal-dialog {
+        max-width: 100%;
+    }
+
+    .ct-success-actions {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .ct-success-btn {
+        width: 100%;
     }
 }

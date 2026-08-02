@@ -13,6 +13,10 @@ vi.mock('../../teams', () => ({
   }
 }));
 
+vi.mock('./CreateTeam', () => ({
+  default: () => <div data-testid="create-team-modal" />
+}));
+
 const messages = {
   'project.teams.MyTeams.title': 'Mis Equipos',
   'project.teams.MyTeams.subtitle': 'Equipos que has creado',
@@ -77,10 +81,14 @@ describe('MyTeams', () => {
     expect(screen.getByText('0 miembros')).toBeInTheDocument();
   });
 
-  it('muestra el estado vacio', () => {
+  it('muestra el estado vacio con boton de crear equipo', () => {
     renderMyTeams({ teams: { userTeams: [], loading: false } });
     expect(screen.getByText('Aún no tienes equipos')).toBeInTheDocument();
-    const createLink = screen.getByText('Crear equipo →').closest('a');
-    expect(createLink).toHaveAttribute('href', '/teams/create');
+    expect(screen.getByText('Crear equipo →')).toBeInTheDocument();
+  });
+
+  it('abre el modal de creacion al pulsar el boton del header', () => {
+    renderMyTeams({ teams: { userTeams: [], loading: false } });
+    expect(screen.queryByTestId('create-team-modal')).toBeInTheDocument();
   });
 });

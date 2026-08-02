@@ -2,7 +2,7 @@ import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { IntlProvider } from 'react-intl';
 import { Provider } from 'react-redux';
 import { MemoryRouter, Routes, Route } from 'react-router';
-import CreateTeam from './CreateTeam';
+import CreateTeamModal from './CreateTeam';
 import * as actions from '../actions';
 
 vi.mock('../actions', () => ({
@@ -12,15 +12,6 @@ vi.mock('../actions', () => ({
 const messages = {
   'project.teams.CreateTeam.title': 'Crear un nuevo equipo',
   'project.teams.CreateTeam.subtitle': 'Comienza tu camino competitivo.',
-  'project.teams.CreateTeam.badge': 'Creación de equipo',
-  'project.teams.CreateTeam.sideTitle': 'Tu equipo en Agón',
-  'project.teams.CreateTeam.sideDescription': 'Para empezar a competir necesitas consolidar tu pareja de juego.',
-  'project.teams.CreateTeam.step1.title': 'Elige la identidad',
-  'project.teams.CreateTeam.step1.desc': 'Define el nombre y el lema.',
-  'project.teams.CreateTeam.step2.title': 'Obtén tu código',
-  'project.teams.CreateTeam.step2.desc': 'El sistema generará un código único de invitación.',
-  'project.teams.CreateTeam.step3.title': 'Suma a tu compañero',
-  'project.teams.CreateTeam.step3.desc': 'Comparte el código con tu pareja.',
   'project.teams.fields.name': 'Nombre del Equipo',
   'project.teams.fields.description': 'Descripción o Lema',
   'project.teams.buttons.create': 'Crear equipo',
@@ -28,11 +19,15 @@ const messages = {
   'project.teams.CreateTeam.confirm.title': '¿Confirmar creación de equipo?',
   'project.teams.CreateTeam.confirm.description': 'Estás a punto de fundar tu equipo en Agón.',
   'project.teams.CreateTeam.confirm.button': 'Crear Equipo',
+  'project.teams.CreateTeam.success.title': '¡Equipo creado con éxito!',
+  'project.teams.CreateTeam.success.description': 'Tu equipo está listo para competir.',
+  'project.teams.CreateTeam.success.codeLabel': 'Código de invitación',
+  'project.teams.CreateTeam.success.view': 'Ver equipo',
   'project.common.ConfirmationModal.cancel': 'Cancelar',
   'project.common.ConfirmationModal.processing': 'Procesando...',
   'project.global.buttons.cancel': 'Cancelar',
-  'project.global.validator.required': 'Este campo es obligatorio.',
-  'project.global.fields.nombre': 'Nombre'
+  'project.global.buttons.close': 'Cerrar',
+  'project.global.validator.required': 'Este campo es obligatorio.'
 };
 
 const storeMock = {
@@ -41,35 +36,37 @@ const storeMock = {
   subscribe: () => () => {}
 };
 
-const renderCreateTeam = () => render(
+const renderCreateTeam = (onHide = vi.fn(), onCreated = vi.fn()) => render(
   <IntlProvider locale="es" messages={messages}>
     <Provider store={storeMock}>
-      <MemoryRouter initialEntries={['/home', '/create-team']} initialIndex={1}>
+      <MemoryRouter initialEntries={['/teams/view/7']}>
         <Routes>
-          <Route path="/create-team" element={<CreateTeam />} />
-          <Route path="/home" element={<div>HOME_PAGINA</div>} />
-          <Route path="/teams/view/:id" element={<div>EQUIPO_CREADO</div>} />
+          <Route path="/teams/view/:id" element={
+            <CreateTeamModal show onHide={onHide} onCreated={onCreated} />
+          } />
         </Routes>
       </MemoryRouter>
     </Provider>
   </IntlProvider>
 );
 
-const rellenarFormulario = (container, nombre = 'Los Reyes', descripcion = 'Lema de prueba') => {
-  fireEvent.change(container.querySelector('#teamName'), { target: { value: nombre } });
-  fireEvent.change(container.querySelector('#teamDescription'), { target: { value: descripcion } });
+// El contenido del Modal se renderiza en un portal (document.body),
+// por lo que se consulta con document en lugar de container.
+const rellenarFormulario = (nombre = 'Los Reyes', descripcion = 'Lema de prueba') => {
+  fireEvent.change(document.querySelector('#teamName'), { target: { value: nombre } });
+  fireEvent.change(document.querySelector('#teamDescription'), { target: { value: descripcion } });
 };
 
-describe('CreateTeam', () => {
+describe('CreateTeamModal', () => {
   beforeEach(() => {
     actions.createTeam.mockReset();
   });
 
   it('muestra el formulario de creacion', () => {
-    const { container } = renderCreateTeam();
+    renderCreateTeam();
     expect(screen.getByText('Crear un nuevo equipo')).toBeInTheDocument();
-    expect(container.querySelector('#teamName')).toBeInTheDocument();
-    expect(container.querySelector('#teamDescription')).toBeInTheDocument();
+    expect(document.querySelector('#teamName')).toBeInTheDocument();
+    expect(document.querySelector('#teamDescription')).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Crear equipo' })).toBeInTheDocument();
     expect(screen.getByText('Nombre del Equipo')).toBeInTheDocument();
   });
@@ -82,39 +79,43 @@ describe('CreateTeam', () => {
   });
 
   it('abre el modal de confirmacion con datos validos', () => {
-    const { container } = renderCreateTeam();
-    rellenarFormulario(container);
+    renderCreateTeam();
+    rellenarFormulario();
     fireEvent.click(screen.getByRole('button', { name: 'Crear equipo' }));
     expect(screen.getByText('¿Confirmar creación de equipo?')).toBeInTheDocument();
   });
 
-  it('confirma la creacion y navega al detalle del equipo', () => {
+  it('muestra la pantalla de exito al confirmar y llama a onCreated', () => {
     actions.createTeam.mockImplementation((nombre, descripcion, onSuccess) => {
-      onSuccess({ id: 7 });
+      onSuccess({ id: 7, codigoEquipo: 'ABC12345' });
     });
-    const { container } = renderCreateTeam();
-    rellenarFormulario(container, '  Mi Equipo  ', '  Lema  ');
+    const onCreated = vi.fn();
+    renderCreateTeam(vi.fn(), onCreated);
+    rellenarFormulario('  Mi Equipo  ', '  Lema  ');
     fireEvent.click(screen.getByRole('button', { name: 'Crear equipo' }));
     fireEvent.click(screen.getByRole('button', { name: 'Crear Equipo' }));
-    expect(screen.getByText('EQUIPO_CREADO')).toBeInTheDocument();
+    expect(screen.getByText('¡Equipo creado con éxito!')).toBeInTheDocument();
+    expect(screen.getByText('ABC12345')).toBeInTheDocument();
     expect(actions.createTeam).toHaveBeenCalledWith('Mi Equipo', 'Lema', expect.any(Function), expect.any(Function));
+    expect(onCreated).toHaveBeenCalledWith({ id: 7, codigoEquipo: 'ABC12345' });
   });
 
-  it('muestra los errores del backend y cierra el modal', async () => {
+  it('muestra los errores del backend y cierra la confirmacion', async () => {
     actions.createTeam.mockImplementation((nombre, descripcion, onSuccess, onError) => {
       onError({ globalError: 'Error del servidor' });
     });
-    const { container } = renderCreateTeam();
-    rellenarFormulario(container);
+    renderCreateTeam();
+    rellenarFormulario();
     fireEvent.click(screen.getByRole('button', { name: 'Crear equipo' }));
     fireEvent.click(screen.getByRole('button', { name: 'Crear Equipo' }));
     expect(screen.getByText('Error del servidor')).toBeInTheDocument();
     await waitFor(() => expect(screen.queryByText('¿Confirmar creación de equipo?')).not.toBeInTheDocument());
   });
 
-  it('cancela y navega hacia atras', () => {
-    renderCreateTeam();
+  it('cierra el modal al pulsar Cancelar y llama a onHide', () => {
+    const onHide = vi.fn();
+    renderCreateTeam(onHide);
     fireEvent.click(screen.getByRole('button', { name: 'Cancelar' }));
-    expect(screen.getByText('HOME_PAGINA')).toBeInTheDocument();
+    expect(onHide).toHaveBeenCalled();
   });
 });

@@ -1,4 +1,4 @@
-import CreateTeam from './components/CreateTeam';
+import CreateTeamModal from './components/CreateTeam';
 import TeamDetail from './components/TeamDetail';
 import TeamInfo from './components/TeamInfo';
 import TeamInfoModal from './components/TeamInfoModal';
@@ -10,4 +10,4 @@ import reducer from './reducer';
 import * as selectors from './selectors';
 
 export default { actions, actionTypes, reducer, selectors };
-export { CreateTeam, TeamDetail, TeamInfo, TeamInfoModal, JoinTeam, MyTeams };
+export { CreateTeamModal, TeamDetail, TeamInfo, TeamInfoModal, JoinTeam, MyTeams };

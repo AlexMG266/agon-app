@@ -5,7 +5,7 @@ import { FormattedMessage } from 'react-intl';
 import AppGlobalComponents from './AppGlobalComponents';
 import Home from './Home';
 import { Login, SignUp, Profile, Logout, Notifications } from '../../users';
-import { CreateTeam, TeamDetail, TeamInfo, JoinTeam } from '../../teams';
+import { CreateTeamModal, TeamDetail, TeamInfo, JoinTeam } from '../../teams';
 import { CreateTournament, TournamentDetail, BrowseTournaments } from '../../tournaments';
 import MyTournaments from '../../tournaments/components/MyTournaments';
 import MyTeams from '../../teams/components/MyTeams';
@@ -24,6 +24,7 @@ const Body = () => {
         const saved = localStorage.getItem(SIDEBAR_STORAGE_KEY);
         return saved === 'true';
     });
+    const [showCreateTeamModal, setShowCreateTeamModal] = useState(false);
 
     const toggleSidebar = useCallback(() => {
         setCollapsed(prev => {
@@ -55,10 +56,14 @@ const Body = () => {
                             <i className="fa-solid fa-users"></i>
                             <span className="sidebar-label"><FormattedMessage id="project.app.sidebar.myTeams" defaultMessage="Equipos" /></span>
                         </NavLink>
-                        <NavLink to="/teams/create" className={({ isActive }) => `sidebar-link ${isActive ? 'active' : ''}`}>
+                        <button
+                            type="button"
+                            className="sidebar-link sidebar-link-btn"
+                            onClick={() => setShowCreateTeamModal(true)}
+                        >
                             <i className="fa-solid fa-plus"></i>
                             <span className="sidebar-label"><FormattedMessage id="project.app.sidebar.createTeam" defaultMessage="Crear equipo" /></span>
-                        </NavLink>
+                        </button>
                     </div>
 
                     <div className="sidebar-group">
@@ -121,7 +126,6 @@ const Body = () => {
                     {loggedIn && <Route path="/users/notifications" element={<Notifications />} />}
                     {loggedIn && <Route path="/users/logout" element={<Logout />} />}
                     {loggedIn && <Route path="/teams/my" element={<MyTeams />} />}
-                    {loggedIn && <Route path="/teams/create" element={<CreateTeam />} />}
                     {loggedIn && <Route path="/teams/view/:id" element={<TeamDetail />} />}
                     {loggedIn && <Route path="/teams/info/:id" element={<TeamInfo />} />}
                     {loggedIn && <Route path="/teams/join" element={<JoinTeam />} />}
@@ -135,6 +139,13 @@ const Body = () => {
                     {!loggedIn && <Route path="/users/signup" element={<SignUp />} />}
                 </Routes>
             </main>
+
+            {loggedIn && (
+                <CreateTeamModal
+                    show={showCreateTeamModal}
+                    onHide={() => setShowCreateTeamModal(false)}
+                />
+            )}
         </div>
     );
 };
