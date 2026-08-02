@@ -139,7 +139,7 @@ const Profile = () => {
 
     return (
         <div className="profile-container">
-            <Container className="mt-4 py-2" style={{ maxWidth: '1000px' }}>
+            <Container className="pb-2" style={{ maxWidth: '1000px' }}>
                 <Row className="g-4">
                     <Col lg={4} className="text-center d-flex flex-column align-items-center">
                         <div className="profile-image-container">
