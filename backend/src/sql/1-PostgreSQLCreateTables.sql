@@ -150,7 +150,10 @@ CREATE TABLE Inscripcion (
     CONSTRAINT InscripcionPK PRIMARY KEY (id),
     CONSTRAINT InscripcionTorneoIdFK FOREIGN KEY (idTorneo) REFERENCES Torneo(id) ON DELETE CASCADE,
     CONSTRAINT InscripcionEquipoIdFK FOREIGN KEY (idEquipo) REFERENCES Equipo(id) ON DELETE CASCADE,
-    CONSTRAINT InscripcionGrupoIdFK FOREIGN KEY (idGrupo) REFERENCES Grupo(id) ON DELETE SET NULL
+    CONSTRAINT InscripcionGrupoIdFK FOREIGN KEY (idGrupo) REFERENCES Grupo(id) ON DELETE SET NULL,
+    -- Red de seguridad a nivel de BD: un equipo solo puede inscribirse una vez
+    -- en un mismo torneo, aunque el check del servicio falle por concurrencia.
+    CONSTRAINT InscripcionTorneoEquipoUnique UNIQUE (idTorneo, idEquipo)
 );
 
 CREATE INDEX InscripcionIndexByTorneo ON Inscripcion (idTorneo);

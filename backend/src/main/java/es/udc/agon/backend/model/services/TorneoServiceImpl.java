@@ -155,7 +155,9 @@ public class TorneoServiceImpl implements TorneoService {
     public Solicitud solicitarInscripcion(Long capitanId, Long torneoId, Long equipoId, String codigoTorneo)
             throws InstanceNotFoundException, PermissionException, IllegalArgumentException {
 
-        Torneo torneo = torneoDao.findById(torneoId)
+        // Bloqueo pesimista: serializa el check-then-act del cupo de equipos entre
+        // solicitudes concurrentes (SELECT ... FOR UPDATE sobre la fila del torneo).
+        Torneo torneo = torneoDao.findByIdWithLock(torneoId)
                 .orElseThrow(() -> new InstanceNotFoundException("project.entities.torneo", torneoId));
 
         if (torneo.getEstado() != EstadoTorneo.RECLUTANDO) {
@@ -227,7 +229,11 @@ public class TorneoServiceImpl implements TorneoService {
             throw new IllegalArgumentException("La solicitud no es de tipo inscripción");
         }
 
-        Torneo torneo = solicitud.getTorneo();
+        // Re-cargar el torneo con bloqueo pesimista para serializar el check-then-act
+        // del cupo entre aprobaciones concurrentes (SELECT ... FOR UPDATE).
+        Torneo torneo = torneoDao.findByIdWithLock(solicitud.getTorneo().getId())
+                .orElseThrow(() -> new InstanceNotFoundException("project.entities.torneo", solicitud.getTorneo().getId()));
+
         if (!torneo.getOrganizador().getId().equals(organizadorId)) {
             throw new PermissionException();
         }

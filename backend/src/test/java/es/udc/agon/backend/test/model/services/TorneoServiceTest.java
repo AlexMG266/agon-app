@@ -1279,6 +1279,27 @@ public class TorneoServiceTest {
                 () -> torneoService.aprobarInscripcion(org.getId(), solicitud.getId()));
     }
 
+    /**
+     * Verifica la red de seguridad a nivel de BD (solución C): el constraint UNIQUE
+     * (idTorneo, idEquipo) impide que un mismo equipo quede inscrito dos veces en el
+     * mismo torneo incluso si el check del servicio fallase por concurrencia.
+     */
+    @Test
+    public void testConstraintUnicoEquipoTorneo() throws InstanceNotFoundException, PermissionException {
+        User org = createUser("org_uniq");
+        User cap = createUser("cap_uniq");
+        Torneo torneo = createTorneo(org, "Torneo Unique");
+        Equipo equipo = equipoService.crearEquipo(cap.getId(), "EquipoUnique", "Desc");
+        inscribirEquipo(cap, torneo, equipo);
+
+        // Insertar directamente una segunda inscripcion del mismo equipo/torneo.
+        Inscripcion duplicada = new Inscripcion(torneo, equipo);
+        assertThrows(org.springframework.dao.DataIntegrityViolationException.class, () -> {
+            inscripcionDao.save(duplicada);
+            entityManager.flush();
+        });
+    }
+
     @Test
     public void testRechazarInscripcionSolicitudNoPendiente() throws InstanceNotFoundException, PermissionException {
         User org = createUser("org_rech_no_pend");

@@ -1,8 +1,10 @@
 package es.udc.agon.backend.model.entities;
 
+import jakarta.persistence.LockModeType;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Lock;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
@@ -28,4 +30,14 @@ public interface TorneoDao extends JpaRepository<Torneo, Long> {
     List<Torneo> findByOrganizadorId(Long organizadorId);
 
     Optional<Torneo> findByCodigoTorneo(String codigoTorneo);
+
+    /**
+     * Obtiene el torneo con un bloqueo pesimista de escritura (SELECT ... FOR UPDATE).
+     * Se usa en los flujos de inscripción para serializar el check-then-act del cupo
+     * de equipos: mientras una transacción valida e inserta, las demás esperan y luego
+     * releen el contador de inscripciones ya actualizado.
+     */
+    @Lock(LockModeType.PESSIMISTIC_WRITE)
+    @Query("SELECT t FROM Torneo t WHERE t.id = :id")
+    Optional<Torneo> findByIdWithLock(@Param("id") Long id);
 }
