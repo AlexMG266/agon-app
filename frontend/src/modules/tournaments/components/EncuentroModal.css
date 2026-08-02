@@ -1,0 +1,516 @@
+/* EncuentroModal.css */
+
+/* fondo difuminado tipo hoja de macOS */
+.enm-backdrop {
+  background-color: rgba(15, 15, 22, 0.42);
+  backdrop-filter: blur(10px) saturate(140%);
+  -webkit-backdrop-filter: blur(10px) saturate(140%);
+}
+
+.enm-content {
+  border: 1px solid rgba(0, 0, 0, 0.07);
+  border-radius: 22px;
+  background: linear-gradient(180deg, #ffffff 0%, #fbfbfd 100%);
+  box-shadow:
+    0 40px 80px -20px rgba(0, 0, 0, 0.3),
+    0 12px 32px -12px rgba(0, 0, 0, 0.12),
+    inset 0 1px 0 rgba(255, 255, 255, 0.9);
+  overflow: hidden;
+  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+}
+
+/* dialogo mas estrecho para el modal de aplazamiento */
+.enm-dialog-sm {
+  max-width: 440px;
+}
+
+.enm-aplazar-sub {
+  background: #f5f5f7;
+  border: 1px solid rgba(0, 0, 0, 0.05);
+  border-radius: 12px;
+  padding: 10px 14px;
+  margin-bottom: 14px;
+  font-size: 0.78rem;
+  line-height: 1.5;
+  color: #6e6e73;
+}
+
+/* cabecera */
+.enm-header {
+  border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+  padding: 20px 24px 14px;
+  background: linear-gradient(180deg, #ffffff 0%, #f7f7fa 100%);
+}
+
+.enm-title {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 1.05rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  color: #1d1d1f;
+}
+
+.enm-title-icon {
+  width: 32px;
+  height: 32px;
+  border-radius: 9px;
+  background: linear-gradient(135deg, #0071e3 0%, #0a84ff 100%);
+  color: #fff;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.85rem;
+  box-shadow: 0 2px 10px rgba(10, 132, 255, 0.35);
+}
+
+.enm-header .btn-close {
+  opacity: 0.55;
+}
+.enm-header .btn-close:hover {
+  opacity: 0.9;
+}
+
+/* cuerpo */
+.enm-body {
+  padding: 20px 24px 24px;
+}
+
+/* fila meta: fecha + estado */
+.enm-meta {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 14px;
+}
+
+.enm-date {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.74rem;
+  color: #86868b;
+  text-transform: capitalize;
+}
+
+.enm-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 4px 10px;
+  border-radius: 999px;
+  font-size: 0.6rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  background: #e8f1ff;
+  color: #0071e3;
+  white-space: nowrap;
+}
+
+.enm-badge-played {
+  background: #e8f8ee;
+  color: #1a7d36;
+}
+
+/* marcador central */
+.enm-scoreboard {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  padding: 18px 16px;
+  background: linear-gradient(180deg, #f5f5f7 0%, #ececf1 100%);
+  border: 1px solid rgba(0, 0, 0, 0.06);
+  border-radius: 18px;
+  margin-bottom: 18px;
+}
+
+.enm-team {
+  flex: 1;
+  min-width: 0;
+  text-align: center;
+}
+
+.enm-team-icon {
+  width: 46px;
+  height: 46px;
+  margin: 0 auto 8px;
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.92);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.1rem;
+  border: 1px solid rgba(0, 0, 0, 0.05);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+.enm-team-icon-local { color: #0071e3; }
+.enm-team-icon-visitor { color: #6e6e73; }
+
+.enm-team-name {
+  font-weight: 600;
+  font-size: 0.92rem;
+  color: #1d1d1f;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.enm-vs {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background: #1d1d1f;
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 0.85rem;
+  letter-spacing: 0.02em;
+  flex-shrink: 0;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.2);
+}
+
+.enm-vs-played {
+  background: #34c759;
+  font-size: 0.78rem;
+}
+
+/* etiquetas de seccion */
+.enm-section-label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.66rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: #86868b;
+  margin-bottom: 8px;
+}
+
+/* detalle de sets ya jugados */
+.enm-sets-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-bottom: 4px;
+}
+
+.enm-set-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 9px 14px;
+  background: #f9f9fb;
+  border: 1px solid rgba(0, 0, 0, 0.05);
+  border-radius: 12px;
+}
+
+.enm-set-num {
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: #6e6e73;
+}
+
+.enm-set-score {
+  display: inline-flex;
+  padding: 2px 10px;
+  border-radius: 999px;
+  background: rgba(110, 110, 115, 0.08);
+  color: #6e6e73;
+  font-size: 0.78rem;
+  font-weight: 700;
+}
+
+.enm-set-score-win {
+  background: rgba(0, 113, 227, 0.1);
+  color: #0071e3;
+}
+
+/* tarjeta de registro de resultado */
+.enm-card {
+  margin-top: 18px;
+  padding: 16px;
+  background: #ffffff;
+  border: 1px solid rgba(0, 0, 0, 0.07);
+  border-radius: 16px;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.05);
+}
+
+.enm-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.enm-section-label-inline { margin-bottom: 0; }
+
+.enm-row-tools {
+  display: flex;
+  gap: 6px;
+}
+
+.enm-tool-btn {
+  width: 30px !important;
+  height: 30px !important;
+  padding: 0 !important;
+  font-size: 0.7rem !important;
+  border-radius: 999px !important;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: #6e6e73 !important;
+  border-color: rgba(0, 0, 0, 0.12) !important;
+}
+
+.enm-tool-btn:hover {
+  background: rgba(0, 0, 0, 0.05) !important;
+}
+
+.enm-set-inputs {
+  display: flex;
+  flex-direction: column;
+}
+
+.enm-set-input-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  background: #f9f9fb;
+  border: 1px solid rgba(0, 0, 0, 0.05);
+  border-radius: 12px;
+  margin-bottom: 8px;
+}
+
+.enm-set-input-row:last-child { margin-bottom: 0; }
+
+.enm-set-tag {
+  width: 42px;
+  flex-shrink: 0;
+  font-size: 0.74rem;
+  font-weight: 700;
+  color: #6e6e73;
+}
+
+.enm-score-side {
+  flex: 1;
+  min-width: 0;
+  text-align: center;
+}
+
+.enm-score-label {
+  display: block;
+  font-size: 0.58rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: #8e8e93;
+  margin-bottom: 2px;
+  font-weight: 600;
+}
+
+.enm-score-input {
+  max-width: 78px;
+  margin: 0 auto;
+  text-align: center;
+  font-size: 0.88rem !important;
+  padding: 6px 8px !important;
+  border-radius: 10px !important;
+}
+
+.enm-divider {
+  color: #c7c7cc;
+  font-size: 0.85rem;
+  flex-shrink: 0;
+}
+
+/* alertas */
+.enm-alert {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  margin-top: 12px;
+  padding: 9px 12px;
+  background: rgba(255, 59, 48, 0.07);
+  border: 1px solid rgba(255, 59, 48, 0.18);
+  border-radius: 12px;
+  color: #d70015;
+  font-size: 0.78rem;
+}
+
+/* acciones */
+.enm-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  margin-top: 14px;
+}
+
+.enm-btn {
+  border-radius: 999px !important;
+  padding: 8px 18px !important;
+  font-size: 0.82rem !important;
+  font-weight: 600 !important;
+  transition: all 0.2s ease !important;
+}
+
+.enm-btn-primary {
+  background: #1d1d1f !important;
+  border-color: #1d1d1f !important;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.enm-btn-primary:hover {
+  background: #000 !important;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.18);
+}
+
+.enm-btn-cancel {
+  background: #f5f5f7 !important;
+  border-color: rgba(0, 0, 0, 0.08) !important;
+  color: #1d1d1f !important;
+}
+
+.enm-btn-cancel:hover {
+  background: #ebebef !important;
+}
+
+/* notas informativas */
+.enm-note {
+  margin-top: 14px;
+  text-align: center;
+  font-size: 0.76rem;
+  color: #86868b;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+}
+
+/* seccion de aplazamiento */
+.enm-aplazar {
+  margin-top: 16px;
+  padding: 16px;
+  background: rgba(0, 113, 227, 0.045);
+  border: 1px dashed rgba(0, 113, 227, 0.35);
+  border-radius: 16px;
+}
+
+.enm-btn-aplazar {
+  width: 100%;
+  background: #1d1d1f !important;
+  border-color: #1d1d1f !important;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 10px 18px !important;
+}
+
+.enm-btn-aplazar:hover {
+  background: #000 !important;
+  transform: translateY(-1px);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.18);
+}
+
+.enm-section-label-aplazar { color: #0071e3; }
+
+.enm-field { margin-bottom: 10px; }
+
+.enm-field-label {
+  font-size: 0.68rem;
+  font-weight: 600;
+  color: #86868b;
+  margin-bottom: 4px;
+}
+
+.enm-datetime {
+  font-size: 0.86rem !important;
+  border-radius: 12px !important;
+  padding: 8px 12px !important;
+}
+
+.enm-textarea {
+  font-size: 0.86rem !important;
+  border-radius: 12px !important;
+  padding: 8px 12px !important;
+  resize: none;
+}
+
+/* estado enviado */
+.enm-aplazar-sent {
+  text-align: center;
+  padding: 6px 0;
+}
+
+.enm-aplazar-sent-icon {
+  font-size: 1.9rem;
+  color: #34c759;
+  margin-bottom: 8px;
+}
+
+.enm-aplazar-sent-title {
+  font-weight: 700;
+  font-size: 0.88rem;
+  color: #1d1d1f;
+  margin-bottom: 3px;
+}
+
+.enm-aplazar-sent-detail {
+  font-size: 0.76rem;
+  color: #86868b;
+  margin: 0;
+}
+
+/* aviso de solicitud pendiente */
+.enm-pending {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  margin-top: 14px;
+  padding: 12px 14px;
+  background: #f9f9fb;
+  border: 1px solid rgba(0, 0, 0, 0.05);
+  border-radius: 12px;
+  color: #6e6e73;
+  font-size: 0.78rem;
+  text-align: center;
+}
+
+.enm-pending i { color: #0071e3; }
+
+/* pantalla de exito */
+.enm-success {
+  text-align: center;
+  padding: 30px 0 12px;
+}
+
+.enm-success-icon {
+  font-size: 2.6rem;
+  color: #34c759;
+  margin-bottom: 12px;
+  display: block;
+}
+
+.enm-success-title {
+  font-weight: 700;
+  font-size: 1rem;
+  color: #1d1d1f;
+  margin-bottom: 4px;
+}
+
+.enm-success-detail {
+  font-size: 0.8rem;
+  color: #86868b;
+  margin-bottom: 18px;
+}
