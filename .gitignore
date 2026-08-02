@@ -19,6 +19,7 @@ Thumbs.db
 /frontend/dist/
 /frontend/.vite/
 /frontend/.eslintcache
+/frontend/coverage/
 
 # Environment files
 .env
