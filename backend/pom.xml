@@ -26,8 +26,8 @@
         <testDataSource.password>${dataSource.password}</testDataSource.password>
     
     	<!--  Compiler options -->
-   		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-		<project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
+    	<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+  <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
         <java.version>21</java.version>
         
         <!-- Package versions -->
@@ -36,37 +36,73 @@
         <!-- Plugin versions -->
         <surefireMavenPlugin.version>3.5.2</surefireMavenPlugin.version>
         <sqlPlugin.version>3.0.0</sqlPlugin.version>
+
+        <!-- JDBC driver properties -->
+        <jdbcDriver.groupId>org.postgresql</jdbcDriver.groupId>
+        <jdbcDriver.artifactId>postgresql</jdbcDriver.artifactId>
+        <jdbcDriver.version>42.7.2</jdbcDriver.version>
+        <jdbcDriver.className>org.postgresql.Driver</jdbcDriver.className>
+
+        <!--  Data source properties -->
+        <dataSource.baseUrl>jdbc:postgresql://db/agon</dataSource.baseUrl>
+        <dataSource.url>${dataSource.baseUrl}</dataSource.url>
+        <!--
+            Base de datos de TEST independiente: `mvn test` (sql-maven-plugin en
+            process-test-classes) ejecuta 1-PostgreSQLCreateTables.sql (DROP de todas
+            las tablas) y 3-SeedData.sql. Si apuntara a la BD de desarrollo 'agon'
+            borraría el seed de docker-init (jornadas/encuentros/sets de 82/83).
+            Al usar 'agon_test' los tests corren sobre una BD limpia y el seed de
+            desarrollo permanece intacto.
+        -->
+        <testDataSource.url>jdbc:postgresql://db/agon_test</testDataSource.url>
+        <dataSource.createTablesScript>1-PostgreSQLCreateTables.sql</dataSource.createTablesScript>
+        <dataSource.createDataScript>2-PostgreSQLCreateData-init.sql</dataSource.createDataScript>
         
     </properties>
     
     <profiles>
-        <profile>
-            <id>postgresql</id>
-            <activation>
-                <activeByDefault>true</activeByDefault>
-            </activation>
-            <properties>
-                <!-- JDBC driver properties -->
-                <jdbcDriver.groupId>org.postgresql</jdbcDriver.groupId>
-                <jdbcDriver.artifactId>postgresql</jdbcDriver.artifactId>
-                <jdbcDriver.version>42.7.2</jdbcDriver.version>
-                <jdbcDriver.className>org.postgresql.Driver</jdbcDriver.className>
 
-                <!--  Data source properties -->
-                <dataSource.baseUrl>jdbc:postgresql://db/agon</dataSource.baseUrl>
-                <dataSource.url>${dataSource.baseUrl}</dataSource.url>
-                <!--
-                    Base de datos de TEST independiente: `mvn test` (sql-maven-plugin en
-                    process-test-classes) ejecuta 1-PostgreSQLCreateTables.sql (DROP de todas
-                    las tablas) y 3-SeedData.sql. Si apuntara a la BD de desarrollo 'agon'
-                    borraría el seed de docker-init (jornadas/encuentros/sets de 82/83).
-                    Al usar 'agon_test' los tests corren sobre una BD limpia y el seed de
-                    desarrollo permanece intacto.
-                -->
-                <testDataSource.url>jdbc:postgresql://db/agon_test</testDataSource.url>
-                <dataSource.createTablesScript>1-PostgreSQLCreateTables.sql</dataSource.createTablesScript>
-                <dataSource.createDataScript>2-PostgreSQLCreateData-init.sql</dataSource.createDataScript>
-            </properties>
+        <!--
+            Perfil para medir cobertura con JaCoCo dentro del contenedor.
+            `mvn test -Pcoverage` genera backend/target/site/jacoco/index.html
+            (visible en el host por el volumen ./backend:/app) y jacoco.xml.
+            forkCount=1 es obligatorio: con forkCount=0 los tests corren en el
+            mismo JVM de maven y el agente de JaCoCo no puede adjuntarse.
+        -->
+        <profile>
+            <id>coverage</id>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.jacoco</groupId>
+                        <artifactId>jacoco-maven-plugin</artifactId>
+                        <version>0.8.12</version>
+                        <executions>
+                            <execution>
+                                <id>prepare-agent</id>
+                                <goals>
+                                    <goal>prepare-agent</goal>
+                                </goals>
+                            </execution>
+                            <execution>
+                                <id>report</id>
+                                <phase>test</phase>
+                                <goals>
+                                    <goal>report</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                    </plugin>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-surefire-plugin</artifactId>
+                        <configuration>
+                            <forkCount>1</forkCount>
+                            <reuseForks>true</reuseForks>
+                        </configuration>
+                    </plugin>
+                </plugins>
+            </build>
         </profile>
     </profiles>
 
@@ -216,11 +252,11 @@
                             Bound to process-test-classes (NOT process-test-resources):
                             `mvn spring-boot:run` reaches test-compile (which includes
                             process-test-resources) but NOT process-test-classes, so the
-                            dev server no longer wipes the Docker-init seed. The sql-maven-plugin
-                            splits statements on ';' and cannot parse the DO $$ plpgsql blocks
-                            in 3-SeedData.sql; keeping this execution out of the run lifecycle
-                            lets the psql-applied seed (jornadas/encuentros/sets) survive.
-                            `mvn test` still hits process-test-classes before surefire.
+                            dev server no longer wipes the Docker-init seed.
+                            Solo se ejecuta 1-PostgreSQLCreateTables.sql: los tests crean
+                            sus propios datos y el 3-SeedData.sql (DO $$ plpgsql) no se
+                            puede parsear con el splitter de ';' del plugin, lo que
+                            generaba un muro de errores al arrancar la suite.
                         -->
                         <phase>process-test-classes</phase>
                         <goals>
@@ -238,9 +274,6 @@
                                 <includes>
                                     <include>
                                         src/sql/${dataSource.createTablesScript}
-                                    </include>
-                                    <include>
-                                        src/sql/3-SeedData.sql
                                     </include>
                                 </includes>
                             </fileset>
