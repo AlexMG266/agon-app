@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { Link, useParams, useNavigate } from 'react-router';
-import { FormattedMessage, useIntl } from 'react-intl';
+import { FormattedMessage } from 'react-intl';
 import { Errors } from '../../common';
 import ConfirmationModal from '../../common/components/ConfirmationModal';
 import ProfileAvatar from '../../common/components/ProfileAvatar';
@@ -13,16 +13,11 @@ const TeamDetail = () => {
     const { id } = useParams();
     const navigate = useNavigate();
     const dispatch = useDispatch();
-    const intl = useIntl();
     const user = useSelector(state => state.users?.user);
     const [team, setTeam] = useState(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
-    const [isEditing, setIsEditing] = useState(false);
-    const [editName, setEditName] = useState('');
-    const [editDescripcion, setEditDescripcion] = useState('');
     const [backendErrors, setBackendErrors] = useState(null);
-    const [success, setSuccess] = useState(false);
     const [copied, setCopied] = useState(false);
     const [showDeleteModal, setShowDeleteModal] = useState(false);
     const [showLeaveModal, setShowLeaveModal] = useState(false);
@@ -41,8 +36,6 @@ const TeamDetail = () => {
             const response = await backend.teamService.getTeam(id);
             if (response.ok && response.payload) {
                 setTeam(response.payload);
-                setEditName(response.payload.nombreEquipo || response.payload.nombre);
-                setEditDescripcion(response.payload.descripcion || '');
             } else {
                 setError(response.error || 'No se pudo cargar el equipo');
                 setTeam(null);
@@ -53,29 +46,6 @@ const TeamDetail = () => {
             setTeam(null);
         } finally {
             setLoading(false);
-        }
-    };
-
-    const handleUpdateTeam = async (e) => {
-        e.preventDefault();
-        if (!editName.trim()) return;
-        try {
-            const response = await backend.teamService.updateTeam(id, {
-                nombreEquipo: editName.trim(),
-                descripcion: editDescripcion.trim()
-            });
-            if (response.ok && response.payload) {
-                setTeam(response.payload);
-                setSuccess(true);
-                setTimeout(() => setSuccess(false), 3000);
-                setIsEditing(false);
-                setBackendErrors(null);
-                dispatch(actions.updateTeamSuccess(response.payload));
-            } else {
-                setBackendErrors(response.payload);
-            }
-        } catch (error) {
-            console.error('Error actualizando equipo:', error);
         }
     };
 
@@ -213,13 +183,6 @@ const TeamDetail = () => {
                 </Link>
             </div>
 
-            {success && (
-                <div className="td-success-toast">
-                    <i className="fa-regular fa-circle-check" />
-                    <FormattedMessage id="project.teams.Detail.updateSuccess" defaultMessage="Equipo actualizado correctamente" />
-                </div>
-            )}
-
             <Errors errors={backendErrors} onClose={() => setBackendErrors(null)} />
 
             <div className="td-hero">
@@ -289,72 +252,13 @@ const TeamDetail = () => {
                     <span className="td-section-title">
                         <FormattedMessage id="project.teams.Detail.descriptionSection" defaultMessage="Descripción" />
                     </span>
-                    {isCaptain && !isEditing && (
-                        <button
-                            type="button"
-                            className="td-edit-btn"
-                            onClick={() => setIsEditing(true)}
-                        >
-                            <i className="fa-solid fa-pen" />
-                        </button>
-                    )}
                 </div>
                 <div className="td-section-body">
-                    {isEditing ? (
-                        <form onSubmit={handleUpdateTeam} className="td-edit-form">
-                            <div className="td-edit-field">
-                                <label className="td-edit-label">
-                                    <FormattedMessage id="project.teams.Detail.editForm.nameLabel" defaultMessage="Nombre del equipo" />
-                                </label>
-                                <input
-                                    type="text"
-                                    value={editName}
-                                    onChange={(e) => setEditName(e.target.value)}
-                                    className="td-edit-input"
-                                    autoFocus
-                                    required
-                                />
-                            </div>
-                            <div className="td-edit-field">
-                                <label className="td-edit-label">
-                                    <FormattedMessage id="project.teams.Detail.editForm.descriptionLabel" defaultMessage="Descripción o lema" />
-                                </label>
-                                <textarea
-                                    rows={2}
-                                    value={editDescripcion}
-                                    onChange={(e) => setEditDescripcion(e.target.value)}
-                                    className="td-edit-input td-edit-textarea"
-                                    placeholder={intl.formatMessage({
-                                        id: 'project.teams.Detail.editForm.descriptionPlaceholder',
-                                        defaultMessage: 'Escribe el lema de tu equipo...'
-                                    })}
-                                />
-                            </div>
-                            <div className="td-edit-actions">
-                                <button type="submit" className="td-save-btn">
-                                    <i className="fa-regular fa-floppy-disk" />
-                                    <FormattedMessage id="project.teams.Detail.editForm.save" defaultMessage="Guardar" />
-                                </button>
-                                <button
-                                    type="button"
-                                    className="td-cancel-btn"
-                                    onClick={() => {
-                                        setIsEditing(false);
-                                        setEditName(team.nombreEquipo || team.nombre);
-                                        setEditDescripcion(team.descripcion || '');
-                                    }}
-                                >
-                                    <FormattedMessage id="project.teams.Detail.editForm.cancel" defaultMessage="Cancelar" />
-                                </button>
-                            </div>
-                        </form>
-                    ) : (
-                        <p className={`td-desc ${!team.descripcion ? 'td-desc--empty' : ''}`}>
-                            {team.descripcion || (
-                                <FormattedMessage id="project.teams.Detail.noDescription" defaultMessage="Sin descripción" />
-                            )}
-                        </p>
-                    )}
+                    <p className={`td-desc ${!team.descripcion ? 'td-desc--empty' : ''}`}>
+                        {team.descripcion || (
+                            <FormattedMessage id="project.teams.Detail.noDescription" defaultMessage="Sin descripción" />
+                        )}
+                    </p>
                 </div>
             </div>
 

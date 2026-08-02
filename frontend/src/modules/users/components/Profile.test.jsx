@@ -10,6 +10,12 @@ vi.mock('../../../backend', () => ({
     userService: {
       updateProfile: vi.fn(),
       changePassword: vi.fn()
+    },
+    teamService: {
+      getMyTeams: vi.fn()
+    },
+    tournamentService: {
+      getMyMatches: vi.fn()
     }
   }
 }));
@@ -98,9 +104,27 @@ describe('Profile', () => {
     store = createStore(user);
     backend.userService.updateProfile.mockReset();
     backend.userService.changePassword.mockReset();
+    backend.teamService.getMyTeams.mockReset();
+    backend.tournamentService.getMyMatches.mockReset();
+    backend.teamService.getMyTeams.mockResolvedValue({ ok: true, payload: [] });
+    backend.tournamentService.getMyMatches.mockResolvedValue({ ok: true, payload: [] });
   });
 
-  it('muestra las estadisticas y los datos del usuario', () => {
+  it('muestra las estadisticas y los datos del usuario', async () => {
+    backend.teamService.getMyTeams.mockResolvedValue({ ok: true, payload: [{ id: 1 }, { id: 2 }] });
+    backend.tournamentService.getMyMatches.mockResolvedValue({
+      ok: true,
+      payload: [
+        {
+          fecha: '2026-01-10',
+          encuentros: [
+            { estado: 'JUGADO', ganadorId: 1 },
+            { estado: 'JUGADO', ganadorId: 2 },
+            { estado: 'JUGADO', ganadorId: 1 }
+          ]
+        }
+      ]
+    });
     renderProfile(user, store);
     expect(screen.getByRole('heading', { level: 2, name: 'ana' })).toBeInTheDocument();
     expect(screen.getByText('ana@test.com')).toBeInTheDocument();
@@ -108,14 +132,15 @@ describe('Profile', () => {
     expect(screen.getByText('1200')).toBeInTheDocument();
     expect(screen.getByText('Equipos')).toBeInTheDocument();
     expect(screen.getByText('Victorias')).toBeInTheDocument();
-    expect(screen.getByText('3')).toBeInTheDocument();
+    expect(await screen.findByText('3')).toBeInTheDocument();
+    expect(await screen.findByText('2')).toBeInTheDocument();
     expect(screen.getByText('2 días antes')).toBeInTheDocument();
   });
 
-  it('muestra valores por defecto si el usuario no tiene datos', () => {
+  it('muestra valores por defecto si el usuario no tiene datos', async () => {
     renderProfile({ id: 1, nombre: 'ana', email: 'ana@test.com' });
     expect(screen.getByText('800')).toBeInTheDocument();
-    expect(screen.getAllByText('0').length).toBeGreaterThan(0);
+    expect((await screen.findAllByText('0')).length).toBeGreaterThan(0);
   });
 
   it('muestra el subindice provisional si el ELO es provisional', () => {

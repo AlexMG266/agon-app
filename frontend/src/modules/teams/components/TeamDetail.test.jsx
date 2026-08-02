@@ -10,7 +10,6 @@ vi.mock('../../../backend', () => ({
   default: {
     teamService: {
       getTeam: vi.fn(),
-      updateTeam: vi.fn(),
       deleteTeam: vi.fn(),
       leaveTeam: vi.fn(),
       kickMember: vi.fn()
@@ -22,18 +21,12 @@ const messages = {
   'project.teams.Detail.notFound': 'No se pudo cargar el equipo',
   'project.teams.Detail.backToDashboard': 'Volver al dashboard',
   'project.teams.Detail.back': 'Volver',
-  'project.teams.Detail.updateSuccess': 'Equipo actualizado correctamente',
   'project.teams.Detail.memberCount': '{count} {count, plural, one {miembro} other {miembros}}',
   'project.teams.Detail.teamId': 'ID {id}',
   'project.teams.Detail.members': 'Miembros',
   'project.teams.Detail.partidas': 'Partidas',
   'project.teams.Detail.created': 'Creado',
   'project.teams.Detail.descriptionSection': 'Descripción',
-  'project.teams.Detail.editForm.nameLabel': 'Nombre del equipo',
-  'project.teams.Detail.editForm.descriptionLabel': 'Descripción o lema',
-  'project.teams.Detail.editForm.descriptionPlaceholder': 'Escribe el lema de tu equipo...',
-  'project.teams.Detail.editForm.save': 'Guardar',
-  'project.teams.Detail.editForm.cancel': 'Cancelar',
   'project.teams.Detail.noDescription': 'Sin descripción',
   'project.teams.Detail.codeLabel': 'Código de invitación',
   'project.teams.Detail.codeCopied': '¡Copiado!',
@@ -136,31 +129,13 @@ describe('TeamDetail', () => {
     expect(container.querySelectorAll('.td-member').length).toBe(2);
   });
 
-  it('edita el equipo como capitan', async () => {
-    const actualizado = equipoBase({ nombreEquipo: 'Nuevo Nombre', descripcion: 'Nuevo lema' });
+  it('no permite editar el nombre ni la descripcion del equipo', async () => {
     backend.teamService.getTeam.mockResolvedValue({ ok: true, payload: equipoBase() });
-    backend.teamService.updateTeam.mockResolvedValue({ ok: true, payload: actualizado });
-    const { container, store } = renderDetail();
-    await screen.findByText('Los Reyes');
-    fireEvent.click(container.querySelector('.td-edit-btn'));
-    fireEvent.change(container.querySelectorAll('.td-edit-input')[0], { target: { value: 'Nuevo Nombre' } });
-    fireEvent.change(container.querySelector('.td-edit-textarea'), { target: { value: 'Nuevo lema' } });
-    fireEvent.click(screen.getByRole('button', { name: 'Guardar' }));
-    expect(await screen.findByText('Equipo actualizado correctamente')).toBeInTheDocument();
-    expect(backend.teamService.updateTeam).toHaveBeenCalledWith('5', { nombreEquipo: 'Nuevo Nombre', descripcion: 'Nuevo lema' });
-    expect(store.dispatch).toHaveBeenCalledWith(actions.updateTeamSuccess(actualizado));
-    expect(screen.getByText('Nuevo Nombre')).toBeInTheDocument();
-  });
-
-  it('muestra los errores del backend al actualizar', async () => {
-    backend.teamService.getTeam.mockResolvedValue({ ok: true, payload: equipoBase() });
-    backend.teamService.updateTeam.mockResolvedValue({ ok: false, payload: { globalError: 'Error del servidor' } });
     const { container } = renderDetail();
     await screen.findByText('Los Reyes');
-    fireEvent.click(container.querySelector('.td-edit-btn'));
-    fireEvent.click(screen.getByRole('button', { name: 'Guardar' }));
-    expect(await screen.findByText('Error del servidor')).toBeInTheDocument();
-    expect(container.querySelector('.td-edit-form')).toBeInTheDocument();
+    expect(container.querySelector('.td-edit-btn')).not.toBeInTheDocument();
+    expect(container.querySelector('.td-edit-form')).not.toBeInTheDocument();
+    expect(container.querySelector('.td-edit-input')).not.toBeInTheDocument();
   });
 
   it('copia el codigo de invitacion', async () => {

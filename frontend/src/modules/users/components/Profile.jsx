@@ -1,5 +1,5 @@
 // src/modules/users/components/Profile.jsx
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { FormattedMessage } from 'react-intl';
 import Button from 'react-bootstrap/Button';
@@ -19,6 +19,48 @@ const Profile = () => {
 
     const user = useSelector(selectors.getUser);
     const dispatch = useDispatch();
+
+    // Estadísticas del usuario (equipos y victorias) obtenidas de los servicios reales
+    const [stats, setStats] = useState({ equipos: 0, victorias: 0, loading: true });
+
+    useEffect(() => {
+        let cancelled = false;
+
+        const loadStats = async () => {
+            try {
+                const [teamsRes, matchesRes] = await Promise.all([
+                    backend.teamService.getMyTeams(),
+                    backend.tournamentService.getMyMatches()
+                ]);
+
+                const equipos = teamsRes.ok ? (teamsRes.payload || []) : [];
+                const ids = new Set(equipos.map(t => t.id));
+
+                let victorias = 0;
+                if (matchesRes.ok) {
+                    (matchesRes.payload || []).forEach(fecha => {
+                        (fecha.encuentros || []).forEach(enc => {
+                            if (enc.estado === 'JUGADO' && enc.ganadorId && ids.has(enc.ganadorId)) {
+                                victorias++;
+                            }
+                        });
+                    });
+                }
+
+                if (!cancelled) {
+                    setStats({ equipos: equipos.length, victorias, loading: false });
+                }
+            } catch {
+                if (!cancelled) {
+                    setStats({ equipos: 0, victorias: 0, loading: false });
+                }
+            }
+        };
+
+        loadStats();
+
+        return () => { cancelled = true; };
+    }, []);
 
     const [profileImage, setProfileImage] = useState(user.imagenPerfil || '');
     const [email, setEmail] = useState(user.email || '');
@@ -169,7 +211,7 @@ const Profile = () => {
                                 <span className="profile-stat-icon">👥</span>
                                 <div>
                                     <div className="profile-stat-label"><FormattedMessage id="project.users.Profile.teams" defaultMessage="Equipos" /></div>
-                                    <div className="profile-stat-value">{user.equipos?.length || 0}</div>
+                                    <div className="profile-stat-value">{stats.loading ? '—' : stats.equipos}</div>
                                     <div className="profile-stat-sub"><FormattedMessage id="project.users.Profile.active" defaultMessage="Activos" /></div>
                                 </div>
                             </div>
@@ -177,7 +219,7 @@ const Profile = () => {
                                 <span className="profile-stat-icon">🏆</span>
                                 <div>
                                     <div className="profile-stat-label"><FormattedMessage id="project.users.Profile.wins" defaultMessage="Victorias" /></div>
-                                    <div className="profile-stat-value">{user.victorias || 0}</div>
+                                    <div className="profile-stat-value">{stats.loading ? '—' : stats.victorias}</div>
                                     <div className="profile-stat-sub"><FormattedMessage id="project.users.Profile.season" defaultMessage="Esta temporada" /></div>
                                 </div>
                             </div>
