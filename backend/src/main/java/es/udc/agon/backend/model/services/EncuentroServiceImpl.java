@@ -7,6 +7,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.Clock;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -17,6 +18,9 @@ import java.util.Set;
 @Service
 @Transactional
 public class EncuentroServiceImpl implements IEncuentroService {
+
+    @Autowired
+    private Clock clock;
 
     @Autowired
     private EncuentroDao encuentroDao;
@@ -63,7 +67,7 @@ public class EncuentroServiceImpl implements IEncuentroService {
 
         int diasAntelacion = Math.max(0, user.getDiasAntelacionPartidos());
 
-        LocalDate hoy = LocalDate.now();
+        LocalDate hoy = LocalDate.now(clock);
         LocalDate fechaRecordatorio = hoy.plusDays(diasAntelacion);
 
         // solo recordatorios para partidos aún no jugados
@@ -230,7 +234,7 @@ public class EncuentroServiceImpl implements IEncuentroService {
             throw new IllegalArgumentException("El encuentro ya ha sido jugado");
         }
 
-        if (fecha == null || fecha.isBefore(LocalDateTime.now())) {
+        if (fecha == null || fecha.isBefore(LocalDateTime.now(clock))) {
             throw new IllegalArgumentException("La fecha de aplazamiento debe ser futura");
         }
 

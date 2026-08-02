@@ -1,5 +1,7 @@
 package es.udc.agon.backend;
 
+import java.time.Clock;
+
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.MessageSource;
@@ -40,6 +42,11 @@ public class Application {
         
         return bean;
         
+    }
+
+    @Bean
+    public Clock clock() {
+        return Clock.systemDefaultZone();
     }
 
 }

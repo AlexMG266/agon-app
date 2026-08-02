@@ -10,6 +10,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.security.SecureRandom;
+import java.time.Clock;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.DayOfWeek;
@@ -32,6 +33,9 @@ public class TorneoServiceImpl implements TorneoService {
     private static final String QR_CHARS = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
     private static final String CODIGO_CHARS = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
     private static final SecureRandom RANDOM = new SecureRandom();
+
+    @Autowired
+    private Clock clock;
 
     @Autowired
     private TorneoDao torneoDao;
@@ -480,7 +484,7 @@ public class TorneoServiceImpl implements TorneoService {
 
         // Leer configuracion de calendario del torneo
         LocalDate calFechaInicio = torneo.getFechaInicio() != null
-                ? torneo.getFechaInicio() : LocalDate.now().plusDays(7);
+                ? torneo.getFechaInicio() : LocalDate.now(clock).plusDays(7);
         LocalDate calFechaFin = torneo.getFechaFin();
 
         // Si hay playoff, reservar espacio al final del rango para las eliminatorias
@@ -677,7 +681,7 @@ public class TorneoServiceImpl implements TorneoService {
         }
 
         List<Grupo> grupos = grupoDao.findByTorneoId(torneoId);
-        LocalDate fechaInicio = LocalDate.now().plusDays(7);
+        LocalDate fechaInicio = LocalDate.now(clock).plusDays(7);
         int numeroJornada = 1;
 
         for (Grupo grupo : grupos) {
@@ -943,7 +947,7 @@ public class TorneoServiceImpl implements TorneoService {
                 .max().orElse(0) + 1;
 
         // fecha de inicio: siguiente dia disponible segun la configuracion del torneo
-        LocalDate fechaBase = LocalDate.now();
+        LocalDate fechaBase = LocalDate.now(clock);
         if (torneo.getFechaFin() != null) {
             // si hay fechaFin, partir del ultimo encuentro de fase de grupos
             Jornada ultimaLiga = null;
