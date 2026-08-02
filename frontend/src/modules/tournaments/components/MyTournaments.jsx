@@ -1,10 +1,13 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { Link } from 'react-router';
 import { FormattedMessage } from 'react-intl';
 import Spinner from 'react-bootstrap/Spinner';
+import Pager from '../../common/components/Pager';
 import tournaments from '../../tournaments';
 import './MyTournaments.css';
+
+const PAGE_SIZE = 5;
 
 const SECTIONS = [
     {
@@ -49,11 +52,17 @@ const MyTournaments = () => {
     }));
     const loggedUserId = JSON.parse(localStorage.getItem('user') || '{}')?.id;
 
+    const [pages, setPages] = useState({ created: 0, followed: 0, enrolled: 0 });
+
     useEffect(() => {
         dispatch(tournaments.actions.getMyTournaments());
         dispatch(tournaments.actions.getFollowedTournaments());
         dispatch(tournaments.actions.getEnrolledTournaments());
     }, [dispatch]);
+
+    const goToPage = (sectionKey, page) => {
+        setPages(prev => ({ ...prev, [sectionKey]: page }));
+    };
 
     return (
         <div className="my-t-dashboard">
@@ -83,6 +92,11 @@ const MyTournaments = () => {
                 <div className="my-t-grid">
                     {SECTIONS.map(section => {
                         const items = lists[section.dataKey];
+                        const totalPages = Math.max(1, Math.ceil(items.length / PAGE_SIZE));
+                        const currentPage = Math.min(pages[section.key] || 0, totalPages - 1);
+                        const visibleItems = items.slice(currentPage * PAGE_SIZE, (currentPage + 1) * PAGE_SIZE);
+                        const showPager = items.length > PAGE_SIZE;
+
                         return (
                             <div key={section.key} className={`my-t-column my-t-column--${section.key}`}>
                                 <div className="my-t-column-header">
@@ -98,8 +112,8 @@ const MyTournaments = () => {
                                 </div>
 
                                 <div className="my-t-list">
-                                    {items.length > 0 ? (
-                                        items.map(t => (
+                                    {visibleItems.length > 0 ? (
+                                        visibleItems.map(t => (
                                             <TournamentRow key={t.id} tournament={t} loggedUserId={loggedUserId} />
                                         ))
                                     ) : (
@@ -111,6 +125,15 @@ const MyTournaments = () => {
                                         </div>
                                     )}
                                 </div>
+
+                                {showPager && (
+                                    <div className="my-t-pager">
+                                        <Pager
+                                            back={{ enabled: currentPage > 0, onClick: () => goToPage(section.key, currentPage - 1) }}
+                                            next={{ enabled: currentPage < totalPages - 1, onClick: () => goToPage(section.key, currentPage + 1) }}
+                                        />
+                                    </div>
+                                )}
                             </div>
                         );
                     })}

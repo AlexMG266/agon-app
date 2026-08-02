@@ -1,4 +1,4 @@
-import { render, screen } from '@testing-library/react';
+import { render, screen, fireEvent } from '@testing-library/react';
 import { IntlProvider } from 'react-intl';
 import { Provider } from 'react-redux';
 import { MemoryRouter } from 'react-router';
@@ -28,7 +28,9 @@ const messages = {
   'project.tournaments.MyTournaments.section.enrolled': 'Inscrito',
   'project.tournaments.MyTournaments.section.enrolled.desc': 'Torneos en los que participas con tu equipo',
   'project.tournaments.MyTournaments.section.enrolled.empty': 'No estás inscrito en ningún torneo',
-  'project.tournaments.MyTournaments.organizer': 'Organizador'
+  'project.tournaments.MyTournaments.organizer': 'Organizador',
+  'project.global.buttons.back': 'Atrás',
+  'project.global.buttons.next': 'Siguiente'
 };
 
 const createMockStore = (state) => ({
@@ -131,5 +133,99 @@ describe('MyTournaments', () => {
     };
     const { container } = renderMyTournaments(state);
     expect(container.querySelector('.my-t-row-lock')).not.toBeNull();
+  });
+
+  it('pagina las listas de 5 en 5 cuando hay más de 5 elementos', () => {
+    const torneos = Array.from({ length: 7 }, (_, i) => ({ id: i + 1, nombre: `torneo ${i + 1}` }));
+    const state = {
+      tournaments: {
+        loading: false,
+        userTournaments: torneos,
+        followedTournaments: [],
+        enrolledTournaments: []
+      }
+    };
+    const { container } = renderMyTournaments(state);
+    const rows = container.querySelectorAll('.my-t-row');
+    expect(rows).toHaveLength(5);
+    expect(screen.getByText('torneo 1')).toBeInTheDocument();
+    expect(screen.getByText('torneo 5')).toBeInTheDocument();
+    expect(screen.queryByText('torneo 6')).not.toBeInTheDocument();
+    expect(container.querySelector('.my-t-pager')).not.toBeNull();
+  });
+
+  it('no muestra el pager cuando hay 5 o menos elementos', () => {
+    const state = {
+      tournaments: {
+        loading: false,
+        userTournaments: Array.from({ length: 5 }, (_, i) => ({ id: i + 1, nombre: `torneo ${i + 1}` })),
+        followedTournaments: [],
+        enrolledTournaments: []
+      }
+    };
+    const { container } = renderMyTournaments(state);
+    expect(container.querySelectorAll('.my-t-row')).toHaveLength(5);
+    expect(container.querySelector('.my-t-pager')).toBeNull();
+  });
+
+  it('navega entre páginas con los botones Siguiente y Atrás', () => {
+    const torneos = Array.from({ length: 12 }, (_, i) => ({ id: i + 1, nombre: `torneo ${i + 1}` }));
+    const state = {
+      tournaments: {
+        loading: false,
+        userTournaments: torneos,
+        followedTournaments: [],
+        enrolledTournaments: []
+      }
+    };
+    const { container } = renderMyTournaments(state);
+
+    // Primera página: torneos 1-5
+    expect(screen.getByText('torneo 1')).toBeInTheDocument();
+    expect(screen.queryByText('torneo 6')).not.toBeInTheDocument();
+
+    // Siguiente → torneos 6-10
+    fireEvent.click(screen.getByText('Siguiente'));
+    expect(screen.getByText('torneo 6')).toBeInTheDocument();
+    expect(screen.getByText('torneo 10')).toBeInTheDocument();
+    expect(screen.queryByText('torneo 1')).not.toBeInTheDocument();
+    expect(screen.queryByText('torneo 11')).not.toBeInTheDocument();
+
+    // Siguiente → torneos 11-12
+    fireEvent.click(screen.getByText('Siguiente'));
+    expect(screen.getByText('torneo 11')).toBeInTheDocument();
+    expect(screen.getByText('torneo 12')).toBeInTheDocument();
+
+    // Atrás → torneos 6-10 de nuevo
+    fireEvent.click(screen.getByText('Atrás'));
+    expect(screen.getByText('torneo 6')).toBeInTheDocument();
+    expect(screen.queryByText('torneo 12')).not.toBeInTheDocument();
+    expect(container.querySelectorAll('.my-t-row')).toHaveLength(5);
+  });
+
+  it('mantiene paginación independiente por sección', () => {
+    const torneosCreados = Array.from({ length: 6 }, (_, i) => ({ id: i + 1, nombre: `creado ${i + 1}` }));
+    const torneosSeguidos = Array.from({ length: 6 }, (_, i) => ({ id: i + 100, nombre: `seguido ${i + 1}` }));
+    const state = {
+      tournaments: {
+        loading: false,
+        userTournaments: torneosCreados,
+        followedTournaments: torneosSeguidos,
+        enrolledTournaments: []
+      }
+    };
+    const { container } = renderMyTournaments(state);
+
+    expect(container.querySelectorAll('.my-t-row')).toHaveLength(10);
+    expect(screen.getByText('creado 1')).toBeInTheDocument();
+    expect(screen.getByText('seguido 1')).toBeInTheDocument();
+
+    // Pasar página solo en "Creados"
+    fireEvent.click(screen.getAllByText('Siguiente')[0]);
+    expect(screen.getByText('creado 6')).toBeInTheDocument();
+    expect(screen.queryByText('creado 1')).not.toBeInTheDocument();
+    // "Siguiendo" sigue en su primera página
+    expect(screen.getByText('seguido 1')).toBeInTheDocument();
+    expect(screen.queryByText('seguido 6')).not.toBeInTheDocument();
   });
 });
