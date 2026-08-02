@@ -362,14 +362,18 @@ BEGIN
                 enc_num := enc_num + 1;
                 -- Liga a 4 sets (nunca 3-0: siempre se juegan 4 sets).
                 -- Cada set a "mejor de 9 bolas": el primero que llega a 5 gana el set.
-                IF enc_num % 3 = 0 THEN
+                IF enc_num % 4 = 0 THEN
                     -- Local gana 3-1
                     INSERT INTO Set_Entity (idEncuentro, numeroSet, golesLocal, golesVisitante) VALUES
                         (enc_id, 1, 5, 3), (enc_id, 2, 5, 1), (enc_id, 3, 4, 5), (enc_id, 4, 5, 2);
-                ELSIF enc_num % 3 = 1 THEN
+                ELSIF enc_num % 4 = 1 THEN
                     -- Local gana 4-0
                     INSERT INTO Set_Entity (idEncuentro, numeroSet, golesLocal, golesVisitante) VALUES
                         (enc_id, 1, 5, 0), (enc_id, 2, 5, 4), (enc_id, 3, 5, 2), (enc_id, 4, 5, 3);
+                ELSIF enc_num % 4 = 2 THEN
+                    -- Empate 2-2
+                    INSERT INTO Set_Entity (idEncuentro, numeroSet, golesLocal, golesVisitante) VALUES
+                        (enc_id, 1, 5, 4), (enc_id, 2, 3, 5), (enc_id, 3, 5, 2), (enc_id, 4, 4, 5);
                 ELSE
                     -- Visitante gana 3-1
                     INSERT INTO Set_Entity (idEncuentro, numeroSet, golesLocal, golesVisitante) VALUES
@@ -425,14 +429,18 @@ BEGIN
             enc_num := enc_num + 1;
             -- Liga a 4 sets (nunca 3-0: siempre se juegan 4 sets).
             -- Cada set a "mejor de 9 bolas": el primero que llega a 5 gana el set.
-            IF enc_num % 3 = 0 THEN
+            IF enc_num % 4 = 0 THEN
                 -- Local gana 3-1
                 INSERT INTO Set_Entity (idEncuentro, numeroSet, golesLocal, golesVisitante) VALUES
                     (enc_id, 1, 5, 3), (enc_id, 2, 5, 1), (enc_id, 3, 4, 5), (enc_id, 4, 5, 2);
-            ELSIF enc_num % 3 = 1 THEN
+            ELSIF enc_num % 4 = 1 THEN
                 -- Local gana 4-0
                 INSERT INTO Set_Entity (idEncuentro, numeroSet, golesLocal, golesVisitante) VALUES
                     (enc_id, 1, 5, 0), (enc_id, 2, 5, 4), (enc_id, 3, 5, 2), (enc_id, 4, 5, 3);
+            ELSIF enc_num % 4 = 2 THEN
+                -- Empate 2-2
+                INSERT INTO Set_Entity (idEncuentro, numeroSet, golesLocal, golesVisitante) VALUES
+                    (enc_id, 1, 5, 4), (enc_id, 2, 3, 5), (enc_id, 3, 5, 2), (enc_id, 4, 4, 5);
             ELSE
                 -- Visitante gana 3-1
                 INSERT INTO Set_Entity (idEncuentro, numeroSet, golesLocal, golesVisitante) VALUES

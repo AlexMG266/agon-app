@@ -253,6 +253,18 @@ const TournamentDetail = () => {
         track.scrollBy({ left: offset, behavior: 'smooth' });
     }, [currentRondaIdx]);
 
+    // Desplazar la ventana del carrusel para centrar la card de la jornada seleccionada.
+    useEffect(() => {
+        if (!carouselRef.current) return;
+        const track = carouselRef.current;
+        const active = track.querySelector('.td-partidos-carousel-item--active');
+        if (!active) return;
+        const trackRect = track.getBoundingClientRect();
+        const chipRect = active.getBoundingClientRect();
+        const offset = chipRect.left - trackRect.left - (trackRect.width - chipRect.width) / 2;
+        track.scrollBy({ left: offset, behavior: 'smooth' });
+    }, [currentJornadaIdx]);
+
     // Igualmente, si cambia el número de rondas de playoffs (por ejemplo al generarse
     // el playoff o al registrarse resultados), mantenemos el índice dentro de rango.
     // IDs de equipos donde el usuario es miembro (cualquier miembro puede registrar resultados).
@@ -1810,6 +1822,10 @@ const TournamentDetail = () => {
                                     if (dg !== 0) return dg;
                                     return (b.setsGanados || 0) - (a.setsGanados || 0);
                                 });
+                            // Equipos que pasan a playoffs por grupo (solo en torneos con playoff).
+                            const clasificanPlayoff = tournament.tipoTorneo === 'GRUPOS_PLAYOFF' && tournament.tienePlayoff
+                                ? clasificadosPorGrupo(tournament.rondaInicioPlayoff, tournament.numGrupos)
+                                : 0;
                             return equiposGrupo.length > 0 ? (
                                 <table className="td-clasificacion-table">
                                     <thead>
@@ -1831,7 +1847,7 @@ const TournamentDetail = () => {
                                             return (
                                                 <tr key={insc.equipoId}>
                                                     <td>
-                                                        <span className={`td-clasificacion-pos ${pos <= 3 ? `td-clasificacion-pos--${pos}` : ''}`}>
+                                                        <span className={`td-clasificacion-pos ${clasificanPlayoff > 0 && pos <= clasificanPlayoff ? 'td-clasificacion-pos--playoff' : ''}`}>
                                                             {pos}
                                                         </span>
                                                     </td>

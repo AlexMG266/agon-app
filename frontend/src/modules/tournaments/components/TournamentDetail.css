@@ -1439,19 +1439,9 @@
     font-weight: 700;
 }
 
-.td-clasificacion-pos--1 {
-    background: #fff3cd;
-    color: #856404;
-}
-
-.td-clasificacion-pos--2 {
-    background: #e8f5e9;
-    color: #2e7d32;
-}
-
-.td-clasificacion-pos--3 {
-    background: #fff8e1;
-    color: #bf8f00;
+.td-clasificacion-pos--playoff {
+    background: #d4edda;
+    color: #155724;
 }
 
 .td-empty-state {
