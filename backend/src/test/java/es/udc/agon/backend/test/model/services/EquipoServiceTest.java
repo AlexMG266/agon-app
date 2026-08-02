@@ -16,6 +16,7 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.transaction.annotation.Transactional;
 
 import es.udc.agon.backend.model.entities.Equipo;
+import es.udc.agon.backend.model.entities.EquipoDao;
 import es.udc.agon.backend.model.entities.EstadoEquipo;
 import es.udc.agon.backend.model.entities.EstadoSolicitud;
 import es.udc.agon.backend.model.entities.NotificationDao;
@@ -40,6 +41,9 @@ public class EquipoServiceTest {
 
     @Autowired
     private NotificationDao notificationDao;
+
+    @Autowired
+    private EquipoDao equipoDao;
 
     private User createUser(String nombre) {
         User user = new User(1500, nombre, nombre + "@mail.com", "img.png", "password",
@@ -299,5 +303,157 @@ public class EquipoServiceTest {
         Equipo equipo = equipoService.crearEquipo(creador.getId(), "Equipo Exp Self", "Desc");
         assertThrows(IllegalArgumentException.class,
                 () -> equipoService.expulsarMiembro(creador.getId(), equipo.getId(), creador.getId()));
+    }
+
+    // ---- Tests de casos de error no cubiertos (ampliacion de cobertura) ----
+
+    @Test
+    public void testCrearPropuestaDeUnionEquipoCompleto() throws InstanceNotFoundException, PermissionException {
+        User creador = createUser("creador_completo");
+        User m1 = createUser("m1_completo");
+        User m2 = createUser("m2_completo");
+        Equipo equipo = equipoService.crearEquipo(creador.getId(), "Equipo Completo", "Desc");
+        Solicitud s1 = equipoService.crearPropuestaDeUnion(creador.getId(), equipo.getId(), m1.getId());
+        equipoService.responderSolicitud(m1.getId(), s1.getId(), true);
+        assertThrows(IllegalArgumentException.class,
+                () -> equipoService.crearPropuestaDeUnion(creador.getId(), equipo.getId(), m2.getId()));
+    }
+
+    @Test
+    public void testCrearPropuestaDeUnionJugadorYaEsMiembro() throws InstanceNotFoundException, PermissionException {
+        User creador = createUser("creador_ya_miembro");
+        Equipo equipo = equipoService.crearEquipo(creador.getId(), "Equipo Miembro", "Desc");
+        assertThrows(IllegalArgumentException.class,
+                () -> equipoService.crearPropuestaDeUnion(creador.getId(), equipo.getId(), creador.getId()));
+    }
+
+    @Test
+    public void testCrearPropuestaDeUnionSolicitudPendiente() throws InstanceNotFoundException, PermissionException {
+        User creador = createUser("creador_pendiente");
+        User jugador = createUser("jugador_pendiente");
+        Equipo equipo = equipoService.crearEquipo(creador.getId(), "Equipo Pendiente", "Desc");
+        equipoService.crearPropuestaDeUnion(creador.getId(), equipo.getId(), jugador.getId());
+        assertThrows(IllegalArgumentException.class,
+                () -> equipoService.crearPropuestaDeUnion(creador.getId(), equipo.getId(), jugador.getId()));
+    }
+
+    @Test
+    public void testCrearPropuestaDeUnionEquipoDisuelto() throws InstanceNotFoundException, PermissionException {
+        User creador = createUser("creador_disuelto");
+        User jugador = createUser("jugador_disuelto");
+        Equipo equipo = equipoService.crearEquipo(creador.getId(), "Equipo Disuelto", "Desc");
+        equipo.setEstado(EstadoEquipo.DISUELTO);
+        equipoDao.save(equipo);
+        assertThrows(IllegalArgumentException.class,
+                () -> equipoService.crearPropuestaDeUnion(creador.getId(), equipo.getId(), jugador.getId()));
+    }
+
+    @Test
+    public void testCrearPeticionDeUnionEquipoCompleto() throws InstanceNotFoundException, PermissionException {
+        User creador = createUser("creador_pet_completo");
+        User m1 = createUser("m1_pet_completo");
+        User jugador = createUser("jugador_pet_completo");
+        Equipo equipo = equipoService.crearEquipo(creador.getId(), "Equipo Pet Completo", "Desc");
+        Solicitud s1 = equipoService.crearPropuestaDeUnion(creador.getId(), equipo.getId(), m1.getId());
+        equipoService.responderSolicitud(m1.getId(), s1.getId(), true);
+        assertThrows(IllegalArgumentException.class,
+                () -> equipoService.crearPeticionDeUnion(jugador.getId(), equipo.getCodigoEquipo()));
+    }
+
+    @Test
+    public void testCrearPeticionDeUnionJugadorYaEsMiembro() throws InstanceNotFoundException {
+        User creador = createUser("creador_pet_miembro");
+        Equipo equipo = equipoService.crearEquipo(creador.getId(), "Equipo Pet Miembro", "Desc");
+        assertThrows(IllegalArgumentException.class,
+                () -> equipoService.crearPeticionDeUnion(creador.getId(), equipo.getCodigoEquipo()));
+    }
+
+    @Test
+    public void testCrearPeticionDeUnionSolicitudPendiente() throws InstanceNotFoundException {
+        User creador = createUser("creador_pet_pendiente");
+        User jugador = createUser("jugador_pet_pendiente");
+        Equipo equipo = equipoService.crearEquipo(creador.getId(), "Equipo Pet Pendiente", "Desc");
+        equipoService.crearPeticionDeUnion(jugador.getId(), equipo.getCodigoEquipo());
+        assertThrows(IllegalArgumentException.class,
+                () -> equipoService.crearPeticionDeUnion(jugador.getId(), equipo.getCodigoEquipo()));
+    }
+
+    @Test
+    public void testCrearPeticionDeUnionEquipoDisuelto() throws InstanceNotFoundException {
+        User creador = createUser("creador_pet_disuelto");
+        User jugador = createUser("jugador_pet_disuelto");
+        Equipo equipo = equipoService.crearEquipo(creador.getId(), "Equipo Pet Disuelto", "Desc");
+        equipo.setEstado(EstadoEquipo.DISUELTO);
+        equipoDao.save(equipo);
+        assertThrows(IllegalArgumentException.class,
+                () -> equipoService.crearPeticionDeUnion(jugador.getId(), equipo.getCodigoEquipo()));
+    }
+
+    @Test
+    public void testResponderSolicitudYaRespondida() throws InstanceNotFoundException, PermissionException {
+        User creador = createUser("creador_respondida");
+        User jugador = createUser("jugador_respondida");
+        Equipo equipo = equipoService.crearEquipo(creador.getId(), "Equipo Respondida", "Desc");
+        Solicitud solicitud = equipoService.crearPropuestaDeUnion(creador.getId(), equipo.getId(), jugador.getId());
+        equipoService.responderSolicitud(jugador.getId(), solicitud.getId(), true);
+        assertThrows(IllegalArgumentException.class,
+                () -> equipoService.responderSolicitud(jugador.getId(), solicitud.getId(), false));
+    }
+
+    @Test
+    public void testResponderSolicitudAceptarEquipoCompleto() throws InstanceNotFoundException, PermissionException {
+        User creador = createUser("creador_aceptar_completo");
+        User jugador = createUser("jugador_aceptar_completo");
+        User otroMiembro = createUser("otro_aceptar_completo");
+        Equipo equipo = equipoService.crearEquipo(creador.getId(), "Equipo Aceptar Completo", "Desc");
+        Solicitud solicitud = equipoService.crearPropuestaDeUnion(creador.getId(), equipo.getId(), jugador.getId());
+        // otro miembro completa el equipo antes de que el jugador responda
+        equipo.addMiembro(otroMiembro);
+        equipoDao.save(equipo);
+        assertThrows(IllegalArgumentException.class,
+                () -> equipoService.responderSolicitud(jugador.getId(), solicitud.getId(), true));
+    }
+
+    @Test
+    public void testResponderSolicitudAceptarEquipoDisuelto() throws InstanceNotFoundException, PermissionException {
+        User creador = createUser("creador_aceptar_disuelto");
+        User jugador = createUser("jugador_aceptar_disuelto");
+        Equipo equipo = equipoService.crearEquipo(creador.getId(), "Equipo Aceptar Disuelto", "Desc");
+        Solicitud solicitud = equipoService.crearPropuestaDeUnion(creador.getId(), equipo.getId(), jugador.getId());
+        equipo.setEstado(EstadoEquipo.DISUELTO);
+        equipoDao.save(equipo);
+        assertThrows(IllegalArgumentException.class,
+                () -> equipoService.responderSolicitud(jugador.getId(), solicitud.getId(), true));
+    }
+
+    @Test
+    public void testAbandonarEquipoDisuelto() throws InstanceNotFoundException {
+        User creador = createUser("creador_abandono_disuelto");
+        Equipo equipo = equipoService.crearEquipo(creador.getId(), "Equipo Abandono Disuelto", "Desc");
+        equipo.setEstado(EstadoEquipo.DISUELTO);
+        equipoDao.save(equipo);
+        assertThrows(IllegalArgumentException.class,
+                () -> equipoService.abandonarEquipo(creador.getId(), equipo.getId()));
+    }
+
+    @Test
+    public void testExpulsarMiembroEquipoDisuelto() throws InstanceNotFoundException {
+        User creador = createUser("creador_exp_disuelto");
+        User miembro = createUser("miembro_exp_disuelto");
+        Equipo equipo = equipoService.crearEquipo(creador.getId(), "Equipo Exp Disuelto", "Desc");
+        equipo.setEstado(EstadoEquipo.DISUELTO);
+        equipoDao.save(equipo);
+        assertThrows(IllegalArgumentException.class,
+                () -> equipoService.expulsarMiembro(creador.getId(), equipo.getId(), miembro.getId()));
+    }
+
+    @Test
+    public void testBuscarEquipoPorCodigoDisuelto() throws InstanceNotFoundException {
+        User creador = createUser("creador_buscar_disuelto");
+        Equipo equipo = equipoService.crearEquipo(creador.getId(), "Equipo Buscar Disuelto", "Desc");
+        equipo.setEstado(EstadoEquipo.DISUELTO);
+        equipoDao.save(equipo);
+        assertThrows(IllegalArgumentException.class,
+                () -> equipoService.buscarEquipoPorCodigo(equipo.getCodigoEquipo()));
     }
 }

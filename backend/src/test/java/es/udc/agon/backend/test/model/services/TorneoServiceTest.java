@@ -18,6 +18,9 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.transaction.annotation.Transactional;
 
+import jakarta.persistence.EntityManager;
+
+import es.udc.agon.backend.model.entities.Encuentro;
 import es.udc.agon.backend.model.entities.Equipo;
 import es.udc.agon.backend.model.entities.EstadoInscripcion;
 import es.udc.agon.backend.model.entities.EstadoJornada;
@@ -31,7 +34,9 @@ import es.udc.agon.backend.model.entities.Jornada;
 import es.udc.agon.backend.model.entities.JornadaDao;
 import es.udc.agon.backend.model.entities.SeguimientoTorneoDao;
 import es.udc.agon.backend.model.entities.Solicitud;
+import es.udc.agon.backend.model.entities.SolicitudDao;
 import es.udc.agon.backend.model.entities.TipoFase;
+import es.udc.agon.backend.model.entities.TipoSolicitud;
 import es.udc.agon.backend.model.entities.TipoJornada;
 import es.udc.agon.backend.model.entities.Torneo;
 import es.udc.agon.backend.model.entities.TorneoDao;
@@ -71,6 +76,12 @@ public class TorneoServiceTest {
 
     @Autowired
     private SeguimientoTorneoDao seguimientoTorneoDao;
+
+    @Autowired
+    private SolicitudDao solicitudDao;
+
+    @Autowired
+    private EntityManager entityManager;
 
     // ---- Helper methods ----
 
@@ -1110,5 +1121,439 @@ public class TorneoServiceTest {
         Torneo result = configurar(torneo, "GRUPOS_PLAYOFF", 4, 2, true, false);
         // 4 grupos x 2 = 8 equipos -> CUARTOS auto-resuelto
         assertEquals("CUARTOS", result.getRondaInicioPlayoff());
+    }
+
+    // ---- Tests de casos de error no cubiertos (ampliacion de cobertura) ----
+
+    @Test
+    public void testBuscarTorneosEstadoFINALIZADO() throws InstanceNotFoundException {
+        User org = createUser("org_buscar_fin");
+        Torneo torneo = createTorneo(org, "Torneo Finalizado");
+        torneo.setEstado(EstadoTorneo.FINALIZADO);
+        torneoDao.save(torneo);
+        Block<Torneo> finalizados = torneoService.buscarTorneos(null, "FINALIZADO", 0, 100);
+        assertTrue(finalizados.getItems().stream()
+                .filter(t -> t.getOrganizador().getId().equals(org.getId()))
+                .anyMatch(t -> t.getId().equals(torneo.getId())));
+    }
+
+    @Test
+    public void testBuscarTorneosConFiltroYEstado() throws InstanceNotFoundException {
+        User org = createUser("org_buscar_filtro_estado");
+        Torneo torneo = createTorneo(org, "Torneo Especial Regional");
+        Block<Torneo> resultados = torneoService.buscarTorneos("Especial", "RECLUTANDO", 0, 100);
+        assertTrue(resultados.getItems().stream()
+                .filter(t -> t.getOrganizador().getId().equals(org.getId()))
+                .anyMatch(t -> t.getId().equals(torneo.getId())));
+    }
+
+    @Test
+    public void testConsultarTorneoConInscripciones() throws InstanceNotFoundException, PermissionException {
+        User org = createUser("org_consultar_ins");
+        User cap = createUser("cap_consultar_ins");
+        Torneo torneo = createTorneo(org, "Torneo Con Inscritos");
+        Equipo equipo = equipoService.crearEquipo(cap.getId(), "EquipoConsultar", "Desc");
+        inscribirEquipo(cap, torneo, equipo);
+        // limpia el contexto para que consultarTorneo recargue el torneo y fuerce
+        // la inicializacion lazy de inscripciones y miembros
+        entityManager.clear();
+        Torneo encontrado = torneoService.consultarTorneo(torneo.getId());
+        assertEquals(1, encontrado.getInscripciones().size());
+    }
+
+    @Test
+    public void testSolicitarInscripcionEquipoYaInscrito() throws InstanceNotFoundException, PermissionException {
+        User org = createUser("org_ya_inscrito");
+        User cap = createUser("cap_ya_inscrito");
+        Torneo torneo = createTorneo(org, "Torneo Ya Inscrito");
+        Equipo equipo = equipoService.crearEquipo(cap.getId(), "EquipoYaInscrito", "Desc");
+        inscribirEquipo(cap, torneo, equipo);
+        assertThrows(IllegalArgumentException.class,
+                () -> torneoService.solicitarInscripcion(cap.getId(), torneo.getId(), equipo.getId(), null));
+    }
+
+    @Test
+    public void testSolicitarInscripcionUsuarioYaTieneEquipo() throws InstanceNotFoundException, PermissionException {
+        User org = createUser("org_otro_equipo");
+        User cap = createUser("cap_otro_equipo");
+        Torneo torneo = createTorneo(org, "Torneo Un Equipo Por User");
+        Equipo e1 = equipoService.crearEquipo(cap.getId(), "Equipo1Cap", "Desc");
+        inscribirEquipo(cap, torneo, e1);
+        Equipo e2 = equipoService.crearEquipo(cap.getId(), "Equipo2Cap", "Desc");
+        assertThrows(IllegalArgumentException.class,
+                () -> torneoService.solicitarInscripcion(cap.getId(), torneo.getId(), e2.getId(), null));
+    }
+
+    @Test
+    public void testSolicitarInscripcionMaxEquipos() throws InstanceNotFoundException, PermissionException {
+        User org = createUser("org_max_eq");
+        User cap1 = createUser("cap_max1");
+        User cap2 = createUser("cap_max2");
+        Torneo torneo = createTorneo(org, "Torneo Capacidad 1");
+        torneo.setNumGrupos(1);
+        torneo.setEquiposPorGrupo(1);
+        torneoDao.save(torneo);
+        Equipo e1 = equipoService.crearEquipo(cap1.getId(), "EquipoMax1", "Desc");
+        inscribirEquipo(cap1, torneo, e1);
+        Equipo e2 = equipoService.crearEquipo(cap2.getId(), "EquipoMax2", "Desc");
+        assertThrows(IllegalArgumentException.class,
+                () -> torneoService.solicitarInscripcion(cap2.getId(), torneo.getId(), e2.getId(), null));
+    }
+
+    @Test
+    public void testAprobarInscripcionSolicitudNoPendiente() throws InstanceNotFoundException, PermissionException {
+        User org = createUser("org_aprob_no_pend");
+        User cap = createUser("cap_aprob_no_pend");
+        Torneo torneo = createTorneo(org, "Torneo No Pendiente");
+        Equipo equipo = equipoService.crearEquipo(cap.getId(), "EquipoNoPend", "Desc");
+        Solicitud solicitud = torneoService.solicitarInscripcion(cap.getId(), torneo.getId(), equipo.getId(), null);
+        torneoService.rechazarInscripcion(org.getId(), solicitud.getId());
+        assertThrows(IllegalArgumentException.class,
+                () -> torneoService.aprobarInscripcion(org.getId(), solicitud.getId()));
+    }
+
+    @Test
+    public void testAprobarInscripcionTipoIncorrecto() throws InstanceNotFoundException, PermissionException {
+        User creador = createUser("org_tipo_inc");
+        User jugador = createUser("jug_tipo_inc");
+        Equipo equipo = equipoService.crearEquipo(creador.getId(), "EquipoTipoInc", "Desc");
+        Solicitud propuesta = equipoService.crearPropuestaDeUnion(creador.getId(), equipo.getId(), jugador.getId());
+        assertThrows(IllegalArgumentException.class,
+                () -> torneoService.aprobarInscripcion(creador.getId(), propuesta.getId()));
+    }
+
+    @Test
+    public void testAprobarInscripcionPermissionException() throws InstanceNotFoundException, PermissionException {
+        User org = createUser("org_aprob_permiso");
+        User cap = createUser("cap_aprob_permiso");
+        User otro = createUser("otro_aprob_permiso");
+        Torneo torneo = createTorneo(org, "Torneo Aprob Permiso");
+        Equipo equipo = equipoService.crearEquipo(cap.getId(), "EquipoAprobPerm", "Desc");
+        Solicitud solicitud = torneoService.solicitarInscripcion(cap.getId(), torneo.getId(), equipo.getId(), null);
+        assertThrows(PermissionException.class,
+                () -> torneoService.aprobarInscripcion(otro.getId(), solicitud.getId()));
+    }
+
+    @Test
+    public void testAprobarInscripcionTorneoNoReclutando() throws InstanceNotFoundException, PermissionException {
+        User org = createUser("org_aprob_cerrado");
+        User cap = createUser("cap_aprob_cerrado");
+        Torneo torneo = createTorneo(org, "Torneo Aprob Cerrado");
+        Equipo equipo = equipoService.crearEquipo(cap.getId(), "EquipoAprobCer", "Desc");
+        Solicitud solicitud = torneoService.solicitarInscripcion(cap.getId(), torneo.getId(), equipo.getId(), null);
+        torneo.setEstado(EstadoTorneo.INSCRIPCION_CERRADA);
+        torneoDao.save(torneo);
+        assertThrows(IllegalArgumentException.class,
+                () -> torneoService.aprobarInscripcion(org.getId(), solicitud.getId()));
+    }
+
+    @Test
+    public void testAprobarInscripcionEquipoYaInscrito() throws InstanceNotFoundException, PermissionException {
+        User org = createUser("org_aprob_dup");
+        User cap = createUser("cap_aprob_dup");
+        Torneo torneo = createTorneo(org, "Torneo Aprob Duplicado");
+        Equipo equipo = equipoService.crearEquipo(cap.getId(), "EquipoAprobDup", "Desc");
+        inscribirEquipo(cap, torneo, equipo);
+        Solicitud solicitud = new Solicitud(cap, org, equipo, torneo, TipoSolicitud.SOLICITUD_INSCRIPCION);
+        solicitudDao.save(solicitud);
+        assertThrows(IllegalArgumentException.class,
+                () -> torneoService.aprobarInscripcion(org.getId(), solicitud.getId()));
+        assertEquals(EstadoSolicitud.RECHAZADO, solicitud.getEstado());
+    }
+
+    @Test
+    public void testAprobarInscripcionMaxEquipos() throws InstanceNotFoundException, PermissionException {
+        User org = createUser("org_aprob_max");
+        User cap1 = createUser("cap_aprob_max1");
+        User cap2 = createUser("cap_aprob_max2");
+        Torneo torneo = createTorneo(org, "Torneo Aprob Max");
+        torneo.setNumGrupos(1);
+        torneo.setEquiposPorGrupo(1);
+        torneoDao.save(torneo);
+        Equipo e1 = equipoService.crearEquipo(cap1.getId(), "EquipoAMax1", "Desc");
+        inscribirEquipo(cap1, torneo, e1);
+        Equipo e2 = equipoService.crearEquipo(cap2.getId(), "EquipoAMax2", "Desc");
+        Solicitud solicitud = new Solicitud(cap2, org, e2, torneo, TipoSolicitud.SOLICITUD_INSCRIPCION);
+        solicitudDao.save(solicitud);
+        assertThrows(IllegalArgumentException.class,
+                () -> torneoService.aprobarInscripcion(org.getId(), solicitud.getId()));
+    }
+
+    @Test
+    public void testRechazarInscripcionSolicitudNoPendiente() throws InstanceNotFoundException, PermissionException {
+        User org = createUser("org_rech_no_pend");
+        User cap = createUser("cap_rech_no_pend");
+        Torneo torneo = createTorneo(org, "Torneo Rech No Pend");
+        Equipo equipo = equipoService.crearEquipo(cap.getId(), "EquipoRechNoPend", "Desc");
+        Solicitud solicitud = torneoService.solicitarInscripcion(cap.getId(), torneo.getId(), equipo.getId(), null);
+        torneoService.rechazarInscripcion(org.getId(), solicitud.getId());
+        assertThrows(IllegalArgumentException.class,
+                () -> torneoService.rechazarInscripcion(org.getId(), solicitud.getId()));
+    }
+
+    @Test
+    public void testRechazarInscripcionTipoIncorrecto() throws InstanceNotFoundException, PermissionException {
+        User creador = createUser("org_rech_tipo");
+        User jugador = createUser("jug_rech_tipo");
+        Equipo equipo = equipoService.crearEquipo(creador.getId(), "EquipoRechTipo", "Desc");
+        Solicitud propuesta = equipoService.crearPropuestaDeUnion(creador.getId(), equipo.getId(), jugador.getId());
+        assertThrows(IllegalArgumentException.class,
+                () -> torneoService.rechazarInscripcion(creador.getId(), propuesta.getId()));
+    }
+
+    @Test
+    public void testRechazarInscripcionPermissionException() throws InstanceNotFoundException, PermissionException {
+        User org = createUser("org_rech_perm");
+        User cap = createUser("cap_rech_perm");
+        User otro = createUser("otro_rech_perm");
+        Torneo torneo = createTorneo(org, "Torneo Rech Perm");
+        Equipo equipo = equipoService.crearEquipo(cap.getId(), "EquipoRechPerm", "Desc");
+        Solicitud solicitud = torneoService.solicitarInscripcion(cap.getId(), torneo.getId(), equipo.getId(), null);
+        assertThrows(PermissionException.class,
+                () -> torneoService.rechazarInscripcion(otro.getId(), solicitud.getId()));
+    }
+
+    @Test
+    public void testConfigurarEstructuraSinInscripciones() throws InstanceNotFoundException {
+        User org = createUser("org_sin_insc");
+        Torneo torneo = createTorneo(org, "Torneo Sin Inscripciones");
+        torneo.setEstado(EstadoTorneo.INSCRIPCION_CERRADA);
+        torneoDao.save(torneo);
+        assertThrows(IllegalArgumentException.class,
+                () -> configurar(torneo, "LIGA_UNICA", 1, 2, false, false));
+    }
+
+    @Test
+    public void testConfigurarEstructuraFechaFin() throws InstanceNotFoundException, PermissionException {
+        Torneo torneo = prepararTorneoConEquipos(2, "FECHAFIN");
+        torneoService.configurarEstructuraYGenerarCalendario(
+                torneo.getId(), "LIGA_UNICA", 1, 2, false, false, null, null, "2026-08-15");
+        Torneo actualizado = torneoDao.findById(torneo.getId()).get();
+        assertEquals(LocalDate.of(2026, 8, 15), actualizado.getFechaFin());
+    }
+
+    @Test
+    public void testConfigurarEstructuraEstrategiaPlayoffUniformeComoRapido()
+            throws InstanceNotFoundException, PermissionException {
+        Torneo torneo = prepararTorneoConEquipos(4, "PO_UNIFORME");
+        torneo.setFechaInicio(LocalDate.of(2026, 5, 4));
+        torneo.setFechaFin(LocalDate.of(2026, 7, 30));
+        torneo.setDiasDisponibles("L,M,X,J,V,S,D");
+        torneoDao.save(torneo);
+        Torneo result = configurarConPlayoffStrategy(torneo, "GRUPOS_PLAYOFF", 1, 4,
+                true, false, "UNIFORME", null);
+        assertEquals("RAPIDO", result.getEstrategiaPlayoff());
+    }
+
+    @Test
+    public void testConfigurarConHorasYDuracion() throws InstanceNotFoundException, PermissionException {
+        Torneo torneo = prepararTorneoConEquipos(4, "HORAS");
+        torneo.setFechaInicio(LocalDate.of(2026, 5, 4));
+        torneo.setFechaFin(LocalDate.of(2026, 6, 30));
+        torneo.setEstrategiaDistribucion("RAPIDO");
+        torneo.setDiasDisponibles("L,M,X,J,V,S,D");
+        torneo.setHoraInicio("10:00");
+        torneo.setHoraFin("22:00");
+        torneo.setDuracionPartido(60);
+        torneoDao.save(torneo);
+        configurar(torneo, "LIGA_UNICA", 1, 4, false, false);
+        List<Jornada> jornadas = jornadaDao.findByTorneoIdOrderByNumeroJornadaAsc(torneo.getId());
+        Encuentro primero = jornadas.get(0).getEncuentros().get(0);
+        Encuentro segundo = jornadas.get(0).getEncuentros().get(1);
+        assertEquals(10, primero.getFechaRealizacion().getHour());
+        assertEquals(11, segundo.getFechaRealizacion().getHour());
+    }
+
+    @Test
+    public void testConfigurarMinutosReinicianCuandoNoCaben() throws InstanceNotFoundException, PermissionException {
+        Torneo torneo = prepararTorneoConEquipos(4, "HORAS_RESET");
+        torneo.setFechaInicio(LocalDate.of(2026, 5, 4));
+        torneo.setFechaFin(LocalDate.of(2026, 6, 30));
+        torneo.setEstrategiaDistribucion("RAPIDO");
+        torneo.setDiasDisponibles("L,M,X,J,V,S,D");
+        torneo.setHoraInicio("10:00");
+        torneo.setHoraFin("10:30");
+        torneo.setDuracionPartido(60);
+        torneoDao.save(torneo);
+        configurar(torneo, "LIGA_UNICA", 1, 4, false, false);
+        List<Jornada> jornadas = jornadaDao.findByTorneoIdOrderByNumeroJornadaAsc(torneo.getId());
+        for (Encuentro enc : jornadas.get(0).getEncuentros()) {
+            assertEquals(10, enc.getFechaRealizacion().getHour());
+        }
+    }
+
+    @Test
+    public void testConfigurarGruposDeDistintoTamano() throws InstanceNotFoundException, PermissionException {
+        // 5 equipos en 2 grupos: A=3 (3 rondas), B=2 (1 ronda). Las rondas 1 y 2 de B se saltan.
+        Torneo torneo = prepararTorneoConEquipos(5, "GRUPOS_DESIGUALES");
+        torneo.setFechaInicio(LocalDate.of(2026, 5, 4));
+        torneo.setFechaFin(LocalDate.of(2026, 6, 30));
+        torneo.setEstrategiaDistribucion("RAPIDO");
+        torneo.setDiasDisponibles("L,M,X,J,V,S,D");
+        torneoDao.save(torneo);
+        configurar(torneo, "GRUPOS_PLAYOFF", 2, 3, false, false);
+        List<Jornada> jornadas = jornadaDao.findByTorneoIdOrderByNumeroJornadaAsc(torneo.getId());
+        assertEquals(3, jornadas.size());
+        assertEquals(2, jornadas.get(0).getEncuentros().size());
+        assertEquals(1, jornadas.get(1).getEncuentros().size());
+        assertEquals(1, jornadas.get(2).getEncuentros().size());
+    }
+
+    @Test
+    public void testGenerarCalendarioEstadoIncorrecto() throws InstanceNotFoundException {
+        User org = createUser("org_gen_estado");
+        Torneo torneo = createTorneo(org, "Torneo Gen Estado");
+        assertThrows(IllegalArgumentException.class,
+                () -> torneoService.generarCalendario(torneo.getId()));
+    }
+
+    @Test
+    public void testGenerarCalendarioYaTieneCalendario() throws InstanceNotFoundException, PermissionException {
+        Torneo torneo = prepararTorneoConEquipos(2, "GEN_YA");
+        configurar(torneo, "LIGA_UNICA", 1, 2, false, false);
+        assertThrows(IllegalArgumentException.class,
+                () -> torneoService.generarCalendario(torneo.getId()));
+    }
+
+    @Test
+    public void testActualizarTorneoTodosLosCampos() throws InstanceNotFoundException, PermissionException {
+        User org = createUser("org_act_campos");
+        Torneo torneo = createTorneo(org, "Torneo Campos");
+        Torneo datos = new Torneo(org, "Torneo Campos Actualizado", false, "T99-XXXX");
+        datos.setFechaInicio(LocalDate.of(2026, 6, 1));
+        datos.setFechaFin(LocalDate.of(2026, 7, 1));
+        datos.setFechaLimiteInscripcion(LocalDate.of(2026, 5, 15));
+        datos.setPuntosVictoria(3);
+        datos.setPuntosEmpate(1);
+        datos.setPuntosDerrota(0);
+        datos.setFormatoPartidos("MEJOR_DE_5");
+        datos.setDiasDisponibles("L,X,V");
+        datos.setHoraInicio("17:00");
+        datos.setHoraFin("21:00");
+        datos.setDuracionPartido(75);
+        datos.setFechasExcluidas("2026-06-10");
+        datos.setEstrategiaDistribucion("JORNADAS");
+        Torneo actualizado = torneoService.actualizarTorneo(org.getId(), torneo.getId(), datos);
+        assertEquals("Torneo Campos Actualizado", actualizado.getNombre());
+        assertEquals(LocalDate.of(2026, 6, 1), actualizado.getFechaInicio());
+        assertEquals(LocalDate.of(2026, 7, 1), actualizado.getFechaFin());
+        assertEquals(LocalDate.of(2026, 5, 15), actualizado.getFechaLimiteInscripcion());
+        assertEquals(Integer.valueOf(3), actualizado.getPuntosVictoria());
+        assertEquals(Integer.valueOf(1), actualizado.getPuntosEmpate());
+        assertEquals(Integer.valueOf(0), actualizado.getPuntosDerrota());
+        assertEquals("MEJOR_DE_5", actualizado.getFormatoPartidos());
+        assertEquals("L,X,V", actualizado.getDiasDisponibles());
+        assertEquals("17:00", actualizado.getHoraInicio());
+        assertEquals("21:00", actualizado.getHoraFin());
+        assertEquals(Integer.valueOf(75), actualizado.getDuracionPartido());
+        assertEquals("2026-06-10", actualizado.getFechasExcluidas());
+        assertEquals("JORNADAS", actualizado.getEstrategiaDistribucion());
+    }
+
+    @Test
+    public void testConfigurarRondaDieciseisavos() throws InstanceNotFoundException, PermissionException {
+        // 16 grupos x 2 = 32 equipos: la ronda mas alta es DIECISEISAVOS
+        Torneo torneo = prepararTorneoConEquipos(4, "DIECISEISAVOS");
+        torneo.setFechaInicio(LocalDate.of(2026, 5, 4));
+        torneo.setFechaFin(LocalDate.of(2026, 7, 30));
+        torneo.setDiasDisponibles("L,M,X,J,V,S,D");
+        torneoDao.save(torneo);
+        Torneo result = configurarConRonda(torneo, "GRUPOS_PLAYOFF", 16, 2,
+                true, false, "DIECISEISAVOS");
+        assertEquals("DIECISEISAVOS", result.getRondaInicioPlayoff());
+    }
+
+    @Test
+    public void testConfigurarRondaAutoResuelveDieciseisavos() throws InstanceNotFoundException, PermissionException {
+        // ronda null con 16 grupos -> auto: 2*16=32 -> nombreRonda(32)=DIECISEISAVOS
+        Torneo torneo = prepararTorneoConEquipos(4, "AUTO_16G");
+        torneo.setFechaInicio(LocalDate.of(2026, 5, 4));
+        torneo.setFechaFin(LocalDate.of(2026, 7, 30));
+        torneo.setDiasDisponibles("L,M,X,J,V,S,D");
+        torneoDao.save(torneo);
+        Torneo result = configurar(torneo, "GRUPOS_PLAYOFF", 16, 2, true, false);
+        assertEquals("DIECISEISAVOS", result.getRondaInicioPlayoff());
+    }
+
+    @Test
+    public void testConfigurarRondaNoReconocidaSeAutoResuelve() throws InstanceNotFoundException, PermissionException {
+        Torneo torneo = prepararTorneoConEquipos(4, "RONDA_DESC");
+        torneo.setFechaInicio(LocalDate.of(2026, 5, 4));
+        torneo.setFechaFin(LocalDate.of(2026, 7, 30));
+        torneo.setDiasDisponibles("L,M,X,J,V,S,D");
+        torneoDao.save(torneo);
+        Torneo result = configurarConRonda(torneo, "GRUPOS_PLAYOFF", 2, 2,
+                true, false, "DESCONOCIDA");
+        // equiposPorRonda devuelve -1 -> auto -> 2*2=4 -> SEMIFINALES
+        assertEquals("SEMIFINALES", result.getRondaInicioPlayoff());
+    }
+
+    @Test
+    public void testGenerarPlayoffsSinEquiposClasificados() throws InstanceNotFoundException, PermissionException {
+        // torneo con playoff pero sin grupos creados (configuracion manual incompleta)
+        Torneo torneo = prepararTorneoConEquipos(2, "PO_SIN_CLAS");
+        torneo.setTipoTorneo("GRUPOS_PLAYOFF");
+        torneo.setTienePlayoff(true);
+        torneo.setIdaVueltaPlayoff(false);
+        torneo.setEstado(EstadoTorneo.FASE_GRUPOS);
+        torneoDao.save(torneo);
+        assertThrows(IllegalArgumentException.class,
+                () -> torneoService.generarPlayoffs(torneo.getId()));
+    }
+
+    @Test
+    public void testGenerarPlayoffsConByes() throws InstanceNotFoundException, PermissionException {
+        // 6 equipos en 2 grupos (3 c/u) con ronda CUARTOS (8): solo 6 clasificados -> byes hasta 8
+        Torneo torneo = prepararTorneoConEquipos(6, "PO_BYES");
+        torneo.setFechaInicio(LocalDate.of(2026, 5, 4));
+        torneo.setFechaFin(LocalDate.of(2026, 7, 30));
+        torneo.setDiasDisponibles("L,M,X,J,V,S,D");
+        torneoDao.save(torneo);
+        configurarConRonda(torneo, "GRUPOS_PLAYOFF", 2, 4, true, false, "CUARTOS");
+        for (Grupo grupo : grupoDao.findByTorneoId(torneo.getId())) {
+            List<Inscripcion> insc = inscripcionDao.findByGrupoId(grupo.getId());
+            for (int i = 0; i < insc.size(); i++) {
+                insc.get(i).setPuntosLiga(10 - i * 2);
+                inscripcionDao.save(insc.get(i));
+            }
+        }
+        List<Jornada> jornadas = torneoService.generarPlayoffs(torneo.getId());
+        List<Jornada> eliminatorias = jornadas.stream()
+                .filter(j -> j.getTipoFase() == TipoFase.ELIMINATORIA)
+                .collect(Collectors.toList());
+        assertEquals(1, eliminatorias.size());
+        assertEquals(3, eliminatorias.get(0).getEncuentros().size(),
+                "3 partidos en cuartos con 6 clasificados y 2 byes");
+    }
+
+    @Test
+    public void testGenerarPlayoffsConFechaFinYHoras() throws InstanceNotFoundException, PermissionException {
+        Torneo torneo = prepararTorneoConEquipos(4, "PO_FECHAFIN");
+        torneo.setFechaInicio(LocalDate.of(2026, 5, 4));
+        torneo.setFechaFin(LocalDate.of(2026, 7, 30));
+        torneo.setDiasDisponibles("L,M,X,J,V,S,D");
+        torneo.setHoraInicio("09:00");
+        torneo.setHoraFin("14:00");
+        torneoDao.save(torneo);
+        torneoService.configurarEstructuraYGenerarCalendario(
+                torneo.getId(), "GRUPOS_PLAYOFF", 1, 4, true, false, "JORNADAS", 7, "2026-08-01");
+        for (Grupo grupo : grupoDao.findByTorneoId(torneo.getId())) {
+            List<Inscripcion> insc = inscripcionDao.findByGrupoId(grupo.getId());
+            for (int i = 0; i < insc.size(); i++) {
+                insc.get(i).setPuntosLiga(10 - i * 2);
+                inscripcionDao.save(insc.get(i));
+            }
+        }
+        List<Jornada> jornadas = torneoService.generarPlayoffs(torneo.getId());
+        Jornada eliminatoria = jornadas.stream()
+                .filter(j -> j.getTipoFase() == TipoFase.ELIMINATORIA)
+                .findFirst().get();
+        // fechaBase = fechaFin de la ultima jornada de liga
+        List<Jornada> liga = jornadas.stream()
+                .filter(j -> j.getTipoFase() == TipoFase.LIGA_GRUPO)
+                .collect(Collectors.toList());
+        LocalDate fechaEsperada = liga.get(liga.size() - 1).getFechaFin();
+        assertEquals(fechaEsperada, eliminatoria.getFechaInicio());
+        assertEquals(9, eliminatoria.getEncuentros().get(0).getFechaRealizacion().getHour());
     }
 }
