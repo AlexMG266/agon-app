@@ -170,6 +170,11 @@ const Notifications = () => {
         return typeUpper.includes('SOLICITUD_INSCRIPCION');
     };
 
+    const isTipoAplazamiento = (tipo) => {
+        const typeUpper = tipo?.toUpperCase() || '';
+        return typeUpper.includes('SOLICITUD_APLAZAMIENTO');
+    };
+
     const handleResponderInscripcion = async (solicitudId, aceptar) => {
         setRespondiendoId(solicitudId);
         setActionFeedback(null);
@@ -241,6 +246,55 @@ const Notifications = () => {
         }
     };
 
+    const handleResponderAplazamiento = async (solicitudId, aceptar) => {
+        setRespondiendoId(solicitudId);
+        setActionFeedback(null);
+        try {
+            const response = await backend.tournamentService.responderAplazamiento(solicitudId, aceptar);
+
+            if (response.ok) {
+                setActionFeedback({
+                    type: 'success',
+                    message: aceptar
+                        ? intl.formatMessage({ id: 'project.notifications.feedback.aplazamientoAccepted', defaultMessage: 'Aplazamiento aceptado correctamente' })
+                        : intl.formatMessage({ id: 'project.notifications.feedback.aplazamientoRejected', defaultMessage: 'Aplazamiento rechazado correctamente' })
+                });
+
+                // Marcar la notificación como sin acción pendiente localmente
+                setSelectedNotification(prev => prev ? { ...prev, pendienteDeAccion: false } : prev);
+
+                // Recargar notificaciones para reflejar el cambio
+                const notifResponse = await backend.notificationService.getNotifications();
+                if (notifResponse.ok) {
+                    setNotifications(notifResponse.payload);
+                    const updatedNotif = notifResponse.payload.find(n => n.id === selectedNotification?.id);
+                    if (updatedNotif) {
+                        setSelectedNotification(prev => ({ ...prev, ...updatedNotif, pendienteDeAccion: false }));
+                    } else {
+                        setSelectedNotification(null);
+                    }
+                }
+            } else {
+                const errorMsg = response.payload?.message || response.payload?.error ||
+                    (aceptar
+                        ? intl.formatMessage({ id: 'project.notifications.feedback.acceptError', defaultMessage: 'No se pudo aceptar la solicitud' })
+                        : intl.formatMessage({ id: 'project.notifications.feedback.rejectError', defaultMessage: 'No se pudo rechazar la solicitud' }));
+                setActionFeedback({
+                    type: 'error',
+                    message: errorMsg
+                });
+            }
+        } catch (error) {
+            console.error('Error respondiendo solicitud de aplazamiento:', error);
+            setActionFeedback({
+                type: 'error',
+                message: intl.formatMessage({ id: 'project.notifications.feedback.connectionError', defaultMessage: 'Error de conexión al responder la solicitud' })
+            });
+        } finally {
+            setRespondiendoId(null);
+        }
+    };
+
     const handleVerEquipo = async (solicitudId) => {
         try {
             const solicitudResp = await backend.tournamentService.getSolicitud(solicitudId);
@@ -283,6 +337,8 @@ const Notifications = () => {
             handleResponderSolicitud(solicitudId, aceptar);
         } else if (type === 'inscripcion') {
             handleResponderInscripcion(solicitudId, aceptar);
+        } else if (type === 'aplazamiento') {
+            handleResponderAplazamiento(solicitudId, aceptar);
         }
     };
 
@@ -316,6 +372,19 @@ const Notifications = () => {
                     : intl.formatMessage({ id: 'project.notifications.confirm.reject', defaultMessage: 'Rechazar' }),
                 variant: aceptar ? 'primary' : 'danger'
             };
+        } else if (type === 'aplazamiento') {
+            return {
+                title: aceptar
+                    ? intl.formatMessage({ id: 'project.notifications.confirm.acceptAplazamientoTitle', defaultMessage: '¿Aceptar el aplazamiento?' })
+                    : intl.formatMessage({ id: 'project.notifications.confirm.rejectAplazamientoTitle', defaultMessage: '¿Rechazar el aplazamiento?' }),
+                description: aceptar
+                    ? intl.formatMessage({ id: 'project.notifications.confirm.acceptAplazamientoDesc', defaultMessage: 'Vas a aceptar el aplazamiento del encuentro. ¿Estás seguro?' })
+                    : intl.formatMessage({ id: 'project.notifications.confirm.rejectAplazamientoDesc', defaultMessage: 'Vas a rechazar el aplazamiento del encuentro. ¿Estás seguro?' }),
+                confirmText: aceptar
+                    ? intl.formatMessage({ id: 'project.notifications.confirm.accept', defaultMessage: 'Aceptar' })
+                    : intl.formatMessage({ id: 'project.notifications.confirm.reject', defaultMessage: 'Rechazar' }),
+                variant: aceptar ? 'primary' : 'danger'
+            };
         }
         return { title: '', description: '', confirmText: '', variant: 'primary' };
     };
@@ -327,6 +396,7 @@ const Notifications = () => {
         if (typeUpper.includes('SISTEMA') || typeUpper.includes('SYSTEM')) return intl.formatMessage({ id: 'project.notifications.types.system', defaultMessage: 'Sistema' });
         if (typeUpper.includes('INVITACION') || typeUpper.includes('INVITATION') || typeUpper.includes('TEAM')) return intl.formatMessage({ id: 'project.notifications.types.invitation', defaultMessage: 'Invitación' });
         if (typeUpper.includes('SOLICITUD_INSCRIPCION')) return intl.formatMessage({ id: 'project.notifications.types.inscripcion', defaultMessage: 'Inscripción' });
+        if (typeUpper.includes('SOLICITUD_APLAZAMIENTO')) return intl.formatMessage({ id: 'project.notifications.types.aplazamiento', defaultMessage: 'Aplazamiento' });
         if (typeUpper.includes('PARTIDO') || typeUpper.includes('MATCH')) return intl.formatMessage({ id: 'project.notifications.types.match', defaultMessage: 'Partido' });
         if (typeUpper.includes('TORNEO') || typeUpper.includes('TOURNAMENT')) return intl.formatMessage({ id: 'project.notifications.types.tournament', defaultMessage: 'Torneo' });
         return intl.formatMessage({ id: 'project.notifications.types.generic', defaultMessage: 'Notificación' });
@@ -335,6 +405,7 @@ const Notifications = () => {
     const getActionLabel = (tipo) => {
         const typeUpper = tipo?.toUpperCase() || '';
         if (typeUpper.includes('INVITACION')) return intl.formatMessage({ id: 'project.notifications.actions.respondInvitation', defaultMessage: 'Responder invitación' });
+        if (typeUpper.includes('SOLICITUD_APLAZAMIENTO')) return intl.formatMessage({ id: 'project.notifications.actions.respondAplazamiento', defaultMessage: 'Responder aplazamiento' });
         if (typeUpper.includes('PARTIDO')) return intl.formatMessage({ id: 'project.notifications.actions.viewMatch', defaultMessage: 'Ver partido' });
         if (typeUpper.includes('TORNEO')) return intl.formatMessage({ id: 'project.notifications.actions.viewTournament', defaultMessage: 'Ver torneo' });
         return intl.formatMessage({ id: 'project.notifications.actions.viewDetails', defaultMessage: 'Ver detalles' });
@@ -578,8 +649,43 @@ const Notifications = () => {
                             </div>
                         )}
 
+                        {/* Botones de acción para solicitudes de aplazamiento */}
+                        {selectedNotification.pendienteDeAccion && isTipoAplazamiento(selectedNotification.tipo) && (
+                            <div className="detail-actions-buttons">
+                                <Button
+                                    onClick={() => handleShowConfirm(selectedNotification.referenciaId, true, 'aplazamiento')}
+                                    className="btn-action-accept"
+                                    disabled={respondiendoId !== null}
+                                >
+                                    {respondiendoId === selectedNotification.referenciaId ? (
+                                        <Spinner as="span" animation="border" size="sm" role="status" />
+                                    ) : (
+                                        <>
+                                            <i className="fa-solid fa-check me-2"></i>
+                                            <FormattedMessage id="project.notifications.detail.accept" defaultMessage="Aceptar" />
+                                        </>
+                                    )}
+                                </Button>
+                                <Button
+                                    onClick={() => handleShowConfirm(selectedNotification.referenciaId, false, 'aplazamiento')}
+                                    variant="outline-danger"
+                                    className="btn-action-reject"
+                                    disabled={respondiendoId !== null}
+                                >
+                                    {respondiendoId === selectedNotification.referenciaId ? (
+                                        <Spinner as="span" animation="border" size="sm" role="status" />
+                                    ) : (
+                                        <>
+                                            <i className="fa-solid fa-xmark me-2"></i>
+                                            <FormattedMessage id="project.notifications.detail.reject" defaultMessage="Rechazar" />
+                                        </>
+                                    )}
+                                </Button>
+                            </div>
+                        )}
+
                         {/* Botón de acción genérico para otros tipos */}
-                        {selectedNotification.pendienteDeAccion && !isTipoInvitacion(selectedNotification.tipo) && !isTipoInscripcion(selectedNotification.tipo) && (
+                        {selectedNotification.pendienteDeAccion && !isTipoInvitacion(selectedNotification.tipo) && !isTipoInscripcion(selectedNotification.tipo) && !isTipoAplazamiento(selectedNotification.tipo) && (
                             <div className="detail-actions">
                                 <Button
                                     className="btn-action-primary"

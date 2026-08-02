@@ -7,7 +7,7 @@ vi.mock('../../../backend', () => ({
   default: {
     notificationService: { getNotifications: vi.fn(), getNotification: vi.fn(), markAsRead: vi.fn() },
     teamService: { respondToRequest: vi.fn(), getTeam: vi.fn() },
-    tournamentService: { getSolicitud: vi.fn(), approveEnrollment: vi.fn(), rejectEnrollment: vi.fn() }
+    tournamentService: { getSolicitud: vi.fn(), approveEnrollment: vi.fn(), rejectEnrollment: vi.fn(), responderAplazamiento: vi.fn() }
   }
 }));
 
@@ -47,6 +47,17 @@ const messages = {
   'project.notifications.feedback.rejected': 'Solicitud rechazada correctamente',
   'project.notifications.feedback.inscripcionAccepted': 'Inscripción aceptada correctamente',
   'project.notifications.feedback.inscripcionRejected': 'Inscripción rechazada correctamente',
+  'project.notifications.feedback.aplazamientoAccepted': 'Aplazamiento aceptado correctamente',
+  'project.notifications.feedback.aplazamientoRejected': 'Aplazamiento rechazado correctamente',
+  'project.notifications.feedback.acceptError': 'No se pudo aceptar la solicitud',
+  'project.notifications.feedback.rejectError': 'No se pudo rechazar la solicitud',
+  'project.notifications.feedback.connectionError': 'Error de conexión al responder la solicitud',
+  'project.notifications.types.aplazamiento': 'Aplazamiento',
+  'project.notifications.actions.respondAplazamiento': 'Responder aplazamiento',
+  'project.notifications.confirm.acceptAplazamientoTitle': '¿Aceptar el aplazamiento?',
+  'project.notifications.confirm.rejectAplazamientoTitle': '¿Rechazar el aplazamiento?',
+  'project.notifications.confirm.acceptAplazamientoDesc': 'Vas a aceptar el aplazamiento del encuentro. ¿Estás seguro?',
+  'project.notifications.confirm.rejectAplazamientoDesc': 'Vas a rechazar el aplazamiento del encuentro. ¿Estás seguro?',
   'project.common.ConfirmationModal.cancel': 'Cancelar'
 };
 
@@ -78,6 +89,7 @@ describe('Notifications', () => {
     backend.tournamentService.getSolicitud.mockReset();
     backend.tournamentService.approveEnrollment.mockReset();
     backend.tournamentService.rejectEnrollment.mockReset();
+    backend.tournamentService.responderAplazamiento.mockReset();
   });
 
   it('muestra el spinner mientras carga', () => {
@@ -249,5 +261,61 @@ describe('Notifications', () => {
     renderNotifications();
     await screen.findAllByText('Partido mañana');
     expect(screen.getByRole('button', { name: 'Ver partido' })).toBeInTheDocument();
+  });
+
+  it('muestra la etiqueta de tipo aplazamiento', async () => {
+    const notif = notificacion({ id: 1, tipo: 'SOLICITUD_APLAZAMIENTO', leido: true, pendienteDeAccion: true, referenciaId: 30, asunto: 'Solicitud de aplazamiento' });
+    backend.notificationService.getNotifications.mockResolvedValue({ ok: true, payload: [notif] });
+    backend.notificationService.getNotification.mockResolvedValue({ ok: true, payload: notif });
+    renderNotifications();
+    await screen.findAllByText('Solicitud de aplazamiento');
+    expect(screen.getAllByText('Aplazamiento').length).toBeGreaterThan(0);
+  });
+
+  it('muestra botones aceptar y rechazar para una solicitud de aplazamiento', async () => {
+    const notif = notificacion({ id: 1, tipo: 'SOLICITUD_APLAZAMIENTO', leido: true, pendienteDeAccion: true, referenciaId: 30, asunto: 'Solicitud de aplazamiento' });
+    backend.notificationService.getNotifications.mockResolvedValue({ ok: true, payload: [notif] });
+    backend.notificationService.getNotification.mockResolvedValue({ ok: true, payload: notif });
+    renderNotifications();
+    await screen.findAllByText('Solicitud de aplazamiento');
+    const detail = document.querySelector('.notifications-detail-panel');
+    await waitFor(() => {
+      expect(within(detail).getByRole('button', { name: 'Aceptar' })).toBeInTheDocument();
+      expect(within(detail).getByRole('button', { name: 'Rechazar' })).toBeInTheDocument();
+    });
+  });
+
+  it('acepta una solicitud de aplazamiento con el modal de confirmacion', async () => {
+    const notif = notificacion({ id: 1, tipo: 'SOLICITUD_APLAZAMIENTO', leido: true, pendienteDeAccion: true, referenciaId: 30, asunto: 'Solicitud de aplazamiento' });
+    backend.notificationService.getNotifications.mockResolvedValue({ ok: true, payload: [notif] });
+    backend.notificationService.getNotification.mockResolvedValue({ ok: true, payload: notif });
+    backend.tournamentService.responderAplazamiento.mockResolvedValue({ ok: true });
+    renderNotifications();
+    expect(await screen.findByText('Notificaciones')).toBeInTheDocument();
+    const detail = document.querySelector('.notifications-detail-panel');
+    await waitFor(() => expect(within(detail).getByRole('button', { name: 'Aceptar' })).toBeInTheDocument());
+    fireEvent.click(within(detail).getByRole('button', { name: 'Aceptar' }));
+    expect(await screen.findByText('¿Aceptar el aplazamiento?')).toBeInTheDocument();
+    const modal = document.querySelector('.modal-content');
+    fireEvent.click(within(modal).getByRole('button', { name: 'Aceptar' }));
+    await waitFor(() => expect(backend.tournamentService.responderAplazamiento).toHaveBeenCalledWith(30, true));
+    expect(await screen.findByText('Aplazamiento aceptado correctamente')).toBeInTheDocument();
+  });
+
+  it('rechaza una solicitud de aplazamiento con el modal de confirmacion', async () => {
+    const notif = notificacion({ id: 1, tipo: 'SOLICITUD_APLAZAMIENTO', leido: true, pendienteDeAccion: true, referenciaId: 30, asunto: 'Solicitud de aplazamiento' });
+    backend.notificationService.getNotifications.mockResolvedValue({ ok: true, payload: [notif] });
+    backend.notificationService.getNotification.mockResolvedValue({ ok: true, payload: notif });
+    backend.tournamentService.responderAplazamiento.mockResolvedValue({ ok: true });
+    renderNotifications();
+    expect(await screen.findByText('Notificaciones')).toBeInTheDocument();
+    const detail = document.querySelector('.notifications-detail-panel');
+    await waitFor(() => expect(within(detail).getByRole('button', { name: 'Rechazar' })).toBeInTheDocument());
+    fireEvent.click(within(detail).getByRole('button', { name: 'Rechazar' }));
+    expect(await screen.findByText('¿Rechazar el aplazamiento?')).toBeInTheDocument();
+    const modal = document.querySelector('.modal-content');
+    fireEvent.click(within(modal).getByRole('button', { name: 'Rechazar' }));
+    await waitFor(() => expect(backend.tournamentService.responderAplazamiento).toHaveBeenCalledWith(30, false));
+    expect(await screen.findByText('Aplazamiento rechazado correctamente')).toBeInTheDocument();
   });
 });
