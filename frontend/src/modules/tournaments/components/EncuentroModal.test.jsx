@@ -1,11 +1,12 @@
-import { render, screen, fireEvent, act } from '@testing-library/react';
+import { useState } from 'react';
+import { render, screen, fireEvent, act, waitFor } from '@testing-library/react';
 import { IntlProvider } from 'react-intl';
 import EncuentroModal from './EncuentroModal';
 import backend from '../../../backend';
 
 vi.mock('../../../backend', () => ({
   default: {
-    tournamentService: { registerResult: vi.fn() }
+    tournamentService: { registerResult: vi.fn(), solicitarAplazamiento: vi.fn() }
   }
 }));
 
@@ -30,7 +31,18 @@ const messages = {
   'project.encuentro.error.draw': 'Un set no puede terminar en empate.',
   'project.encuentro.error.negative': 'Los puntos no pueden ser negativos.',
   'project.encuentro.addSet': 'Añadir set',
-  'project.encuentro.removeSet': 'Quitar set'
+  'project.encuentro.removeSet': 'Quitar set',
+  'project.encuentro.aplazarButton': 'Solicitar aplazamiento',
+  'project.encuentro.aplazarTitle': 'Solicitar aplazamiento',
+  'project.encuentro.aplazarSubtitle': 'Indica la nueva fecha y hora para el encuentro. El otro capitán deberá aceptarla para que el aplazamiento se haga efectivo.',
+  'project.encuentro.aplazarFecha': 'Nueva fecha',
+  'project.encuentro.aplazarMotivo': 'Motivo (opcional)',
+  'project.encuentro.aplazarSubmit': 'Solicitar aplazamiento',
+  'project.encuentro.aplazarEnviado': 'Solicitud enviada',
+  'project.encuentro.aplazarEnviadoDetail': 'El otro capitán recibirá una notificación para aceptar o rechazar el aplazamiento.',
+  'project.encuentro.aplazarPendiente': 'Hay una solicitud de aplazamiento pendiente de confirmar por el otro capitán.',
+  'project.encuentro.error.aplazar': 'No se pudo solicitar el aplazamiento.',
+  'project.encuentro.error.aplazarFecha': 'Debes indicar una nueva fecha.'
 };
 
 const encuentroBase = (overrides = {}) => ({
@@ -78,6 +90,7 @@ const rellenarSetsValidos = () => {
 
 beforeEach(() => {
   backend.tournamentService.registerResult.mockReset();
+  backend.tournamentService.solicitarAplazamiento.mockReset();
 });
 
 describe('EncuentroModal', () => {
@@ -283,5 +296,126 @@ describe('EncuentroModal', () => {
     rellenarSetsValidos();
     fireEvent.click(screen.getByRole('button', { name: 'Registrar resultado' }));
     expect(await screen.findByText('Resultado registrado')).toBeInTheDocument();
+  });
+
+  it('muestra el boton de solicitar aplazamiento solo al capitan', () => {
+    renderEncuentro({ capitanTeamIds: [1] });
+    expect(screen.getByRole('button', { name: 'Solicitar aplazamiento' })).toBeInTheDocument();
+  });
+
+  it('no muestra el boton de aplazamiento si no es capitan', () => {
+    renderEncuentro();
+    expect(screen.queryByRole('button', { name: 'Solicitar aplazamiento' })).not.toBeInTheDocument();
+  });
+
+  it('no muestra el boton de aplazamiento si el encuentro esta jugado', () => {
+    renderEncuentro({ capitanTeamIds: [1], encuentro: encuentroBase({ estado: 'JUGADO', resultado: '2-1' }) });
+    expect(screen.queryByRole('button', { name: 'Solicitar aplazamiento' })).not.toBeInTheDocument();
+  });
+
+  it('muestra el aviso de solicitud pendiente y no permite pedir otra', () => {
+    renderEncuentro({
+      capitanTeamIds: [1],
+      encuentro: encuentroBase({ estado: 'SOLICITADO_APLAZAMIENTO' })
+    });
+    expect(screen.getByText('Hay una solicitud de aplazamiento pendiente de confirmar por el otro capitán.')).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Solicitar aplazamiento' })).not.toBeInTheDocument();
+  });
+
+  it('pide la fecha si se envia el formulario de aplazamiento vacio', () => {
+    renderEncuentro({ capitanTeamIds: [1] });
+    // abre el modal de aplazamiento
+    fireEvent.click(screen.getByRole('button', { name: 'Solicitar aplazamiento' }));
+    // el modal del encuentro desaparece y queda solo el submit del formulario
+    fireEvent.click(screen.getByRole('button', { name: 'Solicitar aplazamiento' }));
+    expect(screen.getByText('Debes indicar una nueva fecha.')).toBeInTheDocument();
+    expect(backend.tournamentService.solicitarAplazamiento).not.toHaveBeenCalled();
+  });
+
+  it('envia la solicitud de aplazamiento y muestra la confirmacion', async () => {
+    backend.tournamentService.solicitarAplazamiento.mockResolvedValue({ ok: true });
+    const { onRegistered } = renderEncuentro({ capitanTeamIds: [1] });
+    fireEvent.click(screen.getByRole('button', { name: 'Solicitar aplazamiento' }));
+    fireEvent.change(document.querySelector('input[type="datetime-local"]'), { target: { value: '2026-09-10T19:00' } });
+    fireEvent.change(document.querySelector('textarea'), { target: { value: 'no podemos jugar' } });
+    fireEvent.click(screen.getByRole('button', { name: 'Solicitar aplazamiento' }));
+    expect(backend.tournamentService.solicitarAplazamiento).toHaveBeenCalledWith(7, '2026-09-10T19:00', 'no podemos jugar');
+    // se muestra la pantalla de confirmacion dentro del mismo modal y avisa al padre
+    expect(await screen.findByText('Solicitud enviada')).toBeInTheDocument();
+    expect(screen.getByText('El otro capitán recibirá una notificación para aceptar o rechazar el aplazamiento.')).toBeInTheDocument();
+    expect(onRegistered).toHaveBeenCalledWith(7);
+    expect(screen.getAllByRole('dialog')).toHaveLength(1);
+  });
+
+  it('al cerrar la confirmacion de la solicitud se cierran todos los modales', async () => {
+    backend.tournamentService.solicitarAplazamiento.mockResolvedValue({ ok: true });
+    const onHide = vi.fn();
+    const onRegistered = vi.fn();
+    const App = () => {
+      const [show, setShow] = useState(true);
+      return (
+        <IntlProvider locale="es" messages={messages}>
+          <EncuentroModal
+            show={show}
+            encuentro={encuentroBase()}
+            capitanTeamIds={[1]}
+            onHide={() => { onHide(); setShow(false); }}
+            onRegistered={onRegistered}
+          />
+        </IntlProvider>
+      );
+    };
+    render(<App />);
+    fireEvent.click(screen.getByRole('button', { name: 'Solicitar aplazamiento' }));
+    fireEvent.change(document.querySelector('input[type="datetime-local"]'), { target: { value: '2026-09-10T19:00' } });
+    fireEvent.click(screen.getByRole('button', { name: 'Solicitar aplazamiento' }));
+    expect(await screen.findByText('Solicitud enviada')).toBeInTheDocument();
+    expect(onRegistered).toHaveBeenCalledWith(7);
+    // al cerrar la confirmacion se cierran el modal de aplazamiento y el del encuentro
+    fireEvent.click(screen.getByRole('button', { name: 'Cerrar' }));
+    await waitFor(() => {
+      expect(onHide).toHaveBeenCalled();
+      expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+      expect(screen.queryByText('Detalle del encuentro')).not.toBeInTheDocument();
+    });
+  });
+
+  it('muestra el error del backend si falla la solicitud de aplazamiento', async () => {
+    backend.tournamentService.solicitarAplazamiento.mockResolvedValue({
+      ok: false,
+      payload: { message: 'La fecha no esta disponible.' }
+    });
+    renderEncuentro({ capitanTeamIds: [1] });
+    fireEvent.click(screen.getByRole('button', { name: 'Solicitar aplazamiento' }));
+    fireEvent.change(document.querySelector('input[type="datetime-local"]'), { target: { value: '2026-09-10T19:00' } });
+    fireEvent.click(screen.getByRole('button', { name: 'Solicitar aplazamiento' }));
+    expect(await screen.findByText('La fecha no esta disponible.')).toBeInTheDocument();
+  });
+
+  it('muestra el globalError del backend si falla la solicitud de aplazamiento', async () => {
+    backend.tournamentService.solicitarAplazamiento.mockResolvedValue({
+      ok: false,
+      payload: { globalError: 'La fecha de aplazamiento debe ser futura.' }
+    });
+    renderEncuentro({ capitanTeamIds: [1] });
+    fireEvent.click(screen.getByRole('button', { name: 'Solicitar aplazamiento' }));
+    fireEvent.change(document.querySelector('input[type="datetime-local"]'), { target: { value: '2026-09-10T19:00' } });
+    fireEvent.click(screen.getByRole('button', { name: 'Solicitar aplazamiento' }));
+    expect(await screen.findByText('La fecha de aplazamiento debe ser futura.')).toBeInTheDocument();
+  });
+
+  it('oculta el modal del encuentro al abrir el de aplazamiento y lo vuelve a mostrar al cancelar', async () => {
+    renderEncuentro({ capitanTeamIds: [1] });
+    expect(screen.getByText('Detalle del encuentro')).toBeInTheDocument();
+    // abre el modal de aplazamiento
+    fireEvent.click(screen.getByRole('button', { name: 'Solicitar aplazamiento' }));
+    // el modal del encuentro desaparece y solo queda el de aplazamiento
+    expect(screen.getByText('Nueva fecha')).toBeInTheDocument();
+    expect(screen.queryByText('Detalle del encuentro')).not.toBeInTheDocument();
+    // al cancelar se cierra el de aplazamiento y vuelve el del encuentro
+    fireEvent.click(screen.getByRole('button', { name: 'Cancelar' }));
+    await waitFor(() => {
+      expect(screen.getByText('Detalle del encuentro')).toBeInTheDocument();
+    });
   });
 });

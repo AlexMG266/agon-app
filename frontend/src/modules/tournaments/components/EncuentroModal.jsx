@@ -5,6 +5,8 @@ import Button from 'react-bootstrap/Button';
 import Form from 'react-bootstrap/Form';
 import Spinner from 'react-bootstrap/Spinner';
 import backend from '../../../backend';
+import AplazarEncuentroModal from './AplazarEncuentroModal';
+import './EncuentroModal.css';
 
 const ESTADOS = {
     PENDIENTE: { labelId: 'project.matches.estado.pendiente', label: 'Pendiente' },
@@ -19,8 +21,8 @@ const EncuentroModal = ({ show, encuentro, capitanTeamIds = [], onHide, onRegist
     const [saving, setSaving] = useState(false);
     const [error, setError] = useState(null);
     const [success, setSuccess] = useState(false);
+    const [aplazarModal, setAplazarModal] = useState(false);
 
-    // Resetear el formulario cada vez que se abre con un encuentro distinto.
     useEffect(() => {
         if (show && encuentro) {
             const numSets = (encuentro.sets && encuentro.sets.length) || 4;
@@ -35,6 +37,7 @@ const EncuentroModal = ({ show, encuentro, capitanTeamIds = [], onHide, onRegist
             setSets(rows);
             setError(null);
             setSuccess(false);
+            setAplazarModal(false);
         }
     }, [show, encuentro]);
 
@@ -115,6 +118,25 @@ const EncuentroModal = ({ show, encuentro, capitanTeamIds = [], onHide, onRegist
         }
     };
 
+    const handleAplazarEnviado = (encuentroId) => {
+        if (onRegistered) onRegistered(encuentroId);
+    };
+
+    if (aplazarModal) {
+        return (
+            <AplazarEncuentroModal
+                show
+                encuentro={encuentro}
+                onHide={() => setAplazarModal(false)}
+                onEnviado={handleAplazarEnviado}
+                onSuccessClose={() => {
+                    setAplazarModal(false);
+                    onHide();
+                }}
+            />
+        );
+    }
+
     return (
         <Modal
             show={show}
@@ -122,106 +144,67 @@ const EncuentroModal = ({ show, encuentro, capitanTeamIds = [], onHide, onRegist
             centered
             backdrop="static"
             keyboard={false}
-            contentClassName="border-0 rounded-4 shadow"
-            style={{ fontFamily: '-apple-system, BlinkMacSystemFont, "SF Pro Display", sans-serif' }}
+            backdropClassName="enm-backdrop"
+            dialogClassName="enm-dialog"
+            contentClassName="enm-content"
         >
-            <Modal.Header closeButton className="border-0 pb-0" style={{ background: 'linear-gradient(180deg, #f5f7fb 0%, #ffffff 100%)', borderTopLeftRadius: '1rem', borderTopRightRadius: '1rem' }}>
-                <Modal.Title as="h5" className="fw-bold d-flex align-items-center">
-                    <span className="d-inline-flex align-items-center justify-content-center me-2" style={{ width: 30, height: 30, borderRadius: 9, background: '#0071e3', color: '#fff' }}>
-                        <i className="fa-solid fa-volleyball" style={{ fontSize: '0.85rem' }} />
+            <Modal.Header closeButton className="enm-header">
+                <Modal.Title className="enm-title">
+                    <span className="enm-title-icon">
+                        <i className="fa-solid fa-volleyball" />
                     </span>
                     <FormattedMessage id="project.encuentro.title" defaultMessage="Detalle del encuentro" />
                 </Modal.Title>
             </Modal.Header>
-            <Modal.Body className="p-4 pt-2">
+            <Modal.Body className="enm-body">
                 {success ? (
-                    <div className="text-center py-4">
-                        <i className="fa-solid fa-circle-check text-success mb-2" style={{ fontSize: '2.5rem' }} />
-                        <p className="fw-semibold mb-1">
+                    <div className="enm-success">
+                        <i className="fa-solid fa-circle-check enm-success-icon" />
+                        <p className="enm-success-title">
                             <FormattedMessage id="project.encuentro.success" defaultMessage="Resultado registrado" />
                         </p>
-                        <p className="small text-muted m-0">
+                        <p className="enm-success-detail">
                             <FormattedMessage id="project.encuentro.successDetail" defaultMessage="El resultado del encuentro se ha guardado correctamente." />
                         </p>
-                        <Button
-                            variant="outline-dark"
-                            size="sm"
-                            className="rounded-pill mt-3"
-                            onClick={onHide}
-                        >
+                        <Button variant="outline-dark" size="sm" className="enm-btn enm-btn-cancel" onClick={onHide}>
                             <FormattedMessage id="project.encuentro.close" defaultMessage="Cerrar" />
                         </Button>
                     </div>
                 ) : (
                     <>
                         {/* Cabecera: fecha / estado */}
-                        <div className="d-flex justify-content-between align-items-center mb-3">
+                        <div className="enm-meta">
                             {fecha && (
-                                <span className="small text-muted text-capitalize">
-                                    <i className="fa-regular fa-calendar me-1" />
+                                <span className="enm-date">
+                                    <i className="fa-regular fa-calendar" />
                                     {fechaStr} · {horaStr}
                                 </span>
                             )}
                             {estado && (
-                                <span
-                                    className="badge rounded-pill text-uppercase"
-                                    style={{
-                                        fontSize: '0.6rem',
-                                        fontWeight: 700,
-                                        letterSpacing: '0.04em',
-                                        background: encuentro.estado === 'JUGADO' ? '#e8f8ee' : '#e8f1ff',
-                                        color: encuentro.estado === 'JUGADO' ? '#1a7d36' : '#0071e3',
-                                        padding: '0.25rem 0.6rem',
-                                    }}
-                                >
+                                <span className={`enm-badge ${encuentro.estado === 'JUGADO' ? 'enm-badge-played' : ''}`}>
                                     <FormattedMessage id={estado.labelId} defaultMessage={estado.label} />
                                 </span>
                             )}
                         </div>
 
                         {/* Enfrentamiento */}
-                        <div className="d-flex align-items-center justify-content-center gap-3 py-2 mb-1">
-                            <div className="text-center" style={{ flex: 1, minWidth: 0 }}>
-                                <div
-                                    className="mx-auto mb-1 d-flex align-items-center justify-content-center"
-                                    style={{ width: 44, height: 44, borderRadius: 12, background: 'rgba(0,113,227,0.1)', color: '#0071e3', fontSize: '1.15rem' }}
-                                >
+                        <div className="enm-scoreboard">
+                            <div className="enm-team">
+                                <div className="enm-team-icon enm-team-icon-local">
                                     <i className="fa-solid fa-shield-halved" />
                                 </div>
-                                <div
-                                    className="fw-semibold text-truncate"
-                                    style={{ fontSize: '0.95rem', color: '#1d1d1f' }}
-                                    title={encuentro.equipoLocalNombre || ''}
-                                >
+                                <div className="enm-team-name" title={encuentro.equipoLocalNombre || ''}>
                                     {encuentro.equipoLocalNombre || '—'}
                                 </div>
                             </div>
-                            <div
-                                className="text-center d-flex align-items-center justify-content-center flex-shrink-0"
-                                style={{
-                                    width: 46,
-                                    height: 46,
-                                    borderRadius: '50%',
-                                    background: jugado ? '#e8f8ee' : '#f2f2f7',
-                                    color: jugado ? '#1a7d36' : '#8e8e93',
-                                    fontSize: '0.95rem',
-                                    fontWeight: 700,
-                                }}
-                            >
+                            <div className={`enm-vs ${jugado ? 'enm-vs-played' : ''}`}>
                                 {jugado ? encuentro.resultado : 'vs'}
                             </div>
-                            <div className="text-center" style={{ flex: 1, minWidth: 0 }}>
-                                <div
-                                    className="mx-auto mb-1 d-flex align-items-center justify-content-center"
-                                    style={{ width: 44, height: 44, borderRadius: 12, background: 'rgba(110,110,115,0.08)', color: '#6e6e73', fontSize: '1.15rem' }}
-                                >
+                            <div className="enm-team">
+                                <div className="enm-team-icon enm-team-icon-visitor">
                                     <i className="fa-solid fa-shield-halved" />
                                 </div>
-                                <div
-                                    className="fw-semibold text-truncate"
-                                    style={{ fontSize: '0.95rem', color: '#1d1d1f' }}
-                                    title={encuentro.equipoVisitanteNombre || ''}
-                                >
+                                <div className="enm-team-name" title={encuentro.equipoVisitanteNombre || ''}>
                                     {encuentro.equipoVisitanteNombre || '—'}
                                 </div>
                             </div>
@@ -229,27 +212,18 @@ const EncuentroModal = ({ show, encuentro, capitanTeamIds = [], onHide, onRegist
 
                         {/* Detalle de sets ya registrados */}
                         {jugado && encuentro.sets && encuentro.sets.length > 0 && (
-                            <div className="mt-3">
-                                <div className="small fw-semibold text-muted text-uppercase mb-1" style={{ fontSize: '0.68rem', letterSpacing: '0.04em' }}>
+                            <div>
+                                <div className="enm-section-label">
+                                    <i className="fa-solid fa-list-ol" />
                                     <FormattedMessage id="project.encuentro.setsDetail" defaultMessage="Sets" />
                                 </div>
-                                <div className="d-flex flex-column gap-1">
+                                <div className="enm-sets-list">
                                     {encuentro.sets.map((set, idx) => (
-                                        <div
-                                            key={`${set.numeroSet}-${idx}`}
-                                            className="d-flex justify-content-between align-items-center px-3 py-2 rounded-3"
-                                            style={{ background: '#f9f9fb', border: '1px solid #eef0f3' }}
-                                        >
-                                            <span className="small text-muted">
+                                        <div key={`${set.numeroSet}-${idx}`} className="enm-set-row">
+                                            <span className="enm-set-num">
                                                 <FormattedMessage id="project.encuentro.set" defaultMessage="Set" /> {set.numeroSet}
                                             </span>
-                                            <span
-                                                className="small fw-bold px-2 py-0 rounded-2"
-                                                style={{
-                                                    background: set.golesLocal > set.golesVisitante ? 'rgba(0,113,227,0.1)' : 'rgba(110,110,115,0.08)',
-                                                    color: set.golesLocal > set.golesVisitante ? '#0071e3' : '#6e6e73',
-                                                }}
-                                            >
+                                            <span className={`enm-set-score ${set.golesLocal > set.golesVisitante ? 'enm-set-score-win' : ''}`}>
                                                 {set.golesLocal} - {set.golesVisitante}
                                             </span>
                                         </div>
@@ -260,18 +234,17 @@ const EncuentroModal = ({ show, encuentro, capitanTeamIds = [], onHide, onRegist
 
                         {/* Formulario de registro (solo capitanes y encuentro no jugado) */}
                         {puedeRegistrar && (
-                            <Form onSubmit={handleSubmit} className="mt-4">
-                                <div className="d-flex justify-content-between align-items-center mb-2">
-                                    <span className="small fw-semibold text-uppercase d-flex align-items-center gap-1" style={{ fontSize: '0.68rem', letterSpacing: '0.04em', color: '#8e8e93' }}>
+                            <Form onSubmit={handleSubmit} className="enm-card">
+                                <div className="enm-card-header">
+                                    <span className="enm-section-label enm-section-label-inline">
                                         <i className="fa-regular fa-pen-to-square" />
                                         <FormattedMessage id="project.encuentro.registerTitle" defaultMessage="Registrar resultado" />
                                     </span>
-                                    <div className="d-flex gap-2">
+                                    <div className="enm-row-tools">
                                         <Button
                                             variant="outline-secondary"
                                             size="sm"
-                                            className="rounded-pill"
-                                            style={{ fontSize: '0.7rem', width: 30, height: 30, padding: 0 }}
+                                            className="enm-tool-btn"
                                             onClick={handleRemoveSet}
                                             disabled={sets.length <= 1}
                                             type="button"
@@ -282,8 +255,7 @@ const EncuentroModal = ({ show, encuentro, capitanTeamIds = [], onHide, onRegist
                                         <Button
                                             variant="outline-secondary"
                                             size="sm"
-                                            className="rounded-pill"
-                                            style={{ fontSize: '0.7rem', width: 30, height: 30, padding: 0 }}
+                                            className="enm-tool-btn"
                                             onClick={handleAddSet}
                                             disabled={sets.length >= 5}
                                             type="button"
@@ -294,41 +266,31 @@ const EncuentroModal = ({ show, encuentro, capitanTeamIds = [], onHide, onRegist
                                     </div>
                                 </div>
 
-                                <div className="d-flex flex-column gap-2">
+                                <div>
                                     {sets.map((s, idx) => (
-                                        <div
-                                            key={idx}
-                                            className="d-flex align-items-center gap-2 px-3 py-2 rounded-3"
-                                            style={{ background: '#f9f9fb', border: '1px solid #eef0f3' }}
-                                        >
-                                            <span className="small text-muted fw-semibold" style={{ width: 44, flexShrink: 0 }}>
+                                        <div key={idx} className="enm-set-input-row">
+                                            <span className="enm-set-tag">
                                                 <FormattedMessage id="project.encuentro.set" defaultMessage="Set" /> {s.numeroSet}
                                             </span>
-                                            <div className="flex-grow-1" style={{ minWidth: 0 }}>
-                                                <Form.Label className="mb-0 small text-muted" style={{ fontSize: '0.6rem' }}>
-                                                    Local
-                                                </Form.Label>
+                                            <div className="enm-score-side">
+                                                <span className="enm-score-label">Local</span>
                                                 <Form.Control
                                                     type="number"
                                                     min={0}
                                                     value={s.golesLocal}
                                                     onChange={e => handleSetChange(idx, 'golesLocal', e.target.value)}
-                                                    className="text-center"
-                                                    style={{ maxWidth: 80, fontSize: '0.85rem' }}
+                                                    className="enm-score-input"
                                                 />
                                             </div>
-                                            <span className="text-muted small">—</span>
-                                            <div className="flex-grow-1" style={{ minWidth: 0 }}>
-                                                <Form.Label className="mb-0 small text-muted" style={{ fontSize: '0.6rem' }}>
-                                                    Visitante
-                                                </Form.Label>
+                                            <span className="enm-divider">—</span>
+                                            <div className="enm-score-side">
+                                                <span className="enm-score-label">Visitante</span>
                                                 <Form.Control
                                                     type="number"
                                                     min={0}
                                                     value={s.golesVisitante}
                                                     onChange={e => handleSetChange(idx, 'golesVisitante', e.target.value)}
-                                                    className="text-center"
-                                                    style={{ maxWidth: 80, fontSize: '0.85rem' }}
+                                                    className="enm-score-input"
                                                 />
                                             </div>
                                         </div>
@@ -336,22 +298,22 @@ const EncuentroModal = ({ show, encuentro, capitanTeamIds = [], onHide, onRegist
                                 </div>
 
                                 {error && (
-                                    <div className="alert alert-danger py-2 px-3 mt-3 mb-0" style={{ fontSize: '0.78rem' }}>
-                                        <i className="fa-regular fa-triangle-exclamation me-1" />
+                                    <div className="enm-alert" role="alert">
+                                        <i className="fa-regular fa-triangle-exclamation" />
                                         {error}
                                     </div>
                                 )}
 
-                                <div className="d-flex justify-content-end gap-2 mt-3">
-                                    <Button variant="light" className="rounded-pill" onClick={onHide} disabled={saving}>
+                                <div className="enm-actions">
+                                    <Button variant="light" className="enm-btn enm-btn-cancel" onClick={onHide} disabled={saving}>
                                         <FormattedMessage id="project.encuentro.cancel" defaultMessage="Cancelar" />
                                     </Button>
-                                    <Button type="submit" variant="dark" className="rounded-pill px-4" disabled={saving}>
+                                    <Button type="submit" variant="dark" className="enm-btn enm-btn-primary" disabled={saving}>
                                         {saving ? (
                                             <Spinner animation="border" size="sm" />
                                         ) : (
                                             <>
-                                                <i className="fa-regular fa-check me-1" />
+                                                <i className="fa-regular fa-check" />
                                                 <FormattedMessage id="project.encuentro.register" defaultMessage="Registrar resultado" />
                                             </>
                                         )}
@@ -362,14 +324,38 @@ const EncuentroModal = ({ show, encuentro, capitanTeamIds = [], onHide, onRegist
 
                         {/* Mensaje si está jugado y no puede registrarse */}
                         {jugado && (
-                            <div className="text-center small text-muted mt-3">
+                            <div className="enm-note">
+                                <i className="fa-regular fa-circle-check" />
                                 <FormattedMessage id="project.encuentro.played" defaultMessage="Este encuentro ya se ha disputado." />
                             </div>
                         )}
 
                         {!jugado && !esCapitan && (
-                            <div className="text-center small text-muted mt-3">
+                            <div className="enm-note">
+                                <i className="fa-regular fa-user" />
                                 <FormattedMessage id="project.encuentro.noCaptain" defaultMessage="Solo los capitanes de los equipos pueden registrar el resultado." />
+                            </div>
+                        )}
+
+                        {/* solicitud de aplazamiento (solo capitanes y encuentro no jugado) */}
+                        {!jugado && esCapitan && encuentro.estado !== 'SOLICITADO_APLAZAMIENTO' && (
+                            <div className="enm-aplazar">
+                                <Button
+                                    variant="outline-secondary"
+                                    className="enm-btn enm-btn-aplazar"
+                                    onClick={() => setAplazarModal(true)}
+                                >
+                                    <i className="fa-regular fa-calendar-plus" />
+                                    <FormattedMessage id="project.encuentro.aplazarButton" defaultMessage="Solicitar aplazamiento" />
+                                </Button>
+                            </div>
+                        )}
+
+                        {/* estado de solicitud pendiente */}
+                        {!jugado && esCapitan && encuentro.estado === 'SOLICITADO_APLAZAMIENTO' && (
+                            <div className="enm-pending">
+                                <i className="fa-regular fa-hourglass-half" />
+                                <FormattedMessage id="project.encuentro.aplazarPendiente" defaultMessage="Hay una solicitud de aplazamiento pendiente de confirmar por el otro capitán." />
                             </div>
                         )}
                     </>
