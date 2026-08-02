@@ -120,6 +120,14 @@
     gap: 0.15rem;
 }
 
+.notifications-loading-more {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    padding: 0.75rem;
+}
+
 .master-list::-webkit-scrollbar {
     width: 4px;
 }

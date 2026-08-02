@@ -296,6 +296,7 @@ export default {
     'project.notifications.empty.select': 'Selecciona una notificación',
     'project.notifications.empty.selectHelp': 'para leer su contenido',
     'project.notifications.loading': 'Cargando notificaciones…',
+    'project.notifications.loadingMore': 'Cargando más notificaciones…',
     'project.notifications.error.loading': 'Error cargando notificaciones:',
 
     'project.tournaments.CreateTournament.badge': 'Creación de torneo',

@@ -1,9 +1,10 @@
 package es.udc.agon.backend.model.services;
 
-import java.util.List;
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -37,11 +38,22 @@ public class NotificationServiceImpl implements NotificationService {
 
     @Override
     @Transactional(readOnly = true)
-    public List<Notification> getNotifications(Long userId) throws InstanceNotFoundException {
+    public Block<Notification> getNotifications(Long userId, int page, int size) throws InstanceNotFoundException {
 
         permissionChecker.checkUser(userId);
 
-        return notificationDao.findByUsuarioId(userId);
+        Page<Notification> notificationPage = notificationDao.findByUsuarioId(userId, PageRequest.of(page, size));
+
+        return new Block<>(notificationPage.getContent(), notificationPage.hasNext());
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public long getUnreadCount(Long userId) throws InstanceNotFoundException {
+
+        permissionChecker.checkUser(userId);
+
+        return notificationDao.countUnreadByUsuarioId(userId);
     }
 
     @Override

@@ -5,8 +5,11 @@ export const NOTIFICATIONS_UPDATED_EVENT = 'notifications-updated';
 const notifyNotificationsUpdated = () =>
     window.dispatchEvent(new Event(NOTIFICATIONS_UPDATED_EVENT));
 
-export const getNotifications = async () =>
-    await appFetch('GET', '/notifications');
+export const getNotifications = async (page = 0, size = 10) =>
+    await appFetch('GET', `/notifications?page=${page}&size=${size}`);
+
+export const getUnreadCount = async () =>
+    await appFetch('GET', '/notifications/unread-count');
 
 export const getNotification = async (notificationId) =>
     await appFetch('GET', `/notifications/${notificationId}`);

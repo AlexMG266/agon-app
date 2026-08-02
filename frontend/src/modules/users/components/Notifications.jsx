@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useMemo } from 'react';
+import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import { FormattedMessage, useIntl } from 'react-intl';
 import Spinner from 'react-bootstrap/Spinner';
 import Button from 'react-bootstrap/Button';
@@ -43,6 +43,8 @@ const getNotificationIcon = (tipo) => {
     return <i className="fa-solid fa-bell" style={{ color: '#8e8e93' }}></i>;
 };
 
+const PAGE_SIZE = 10;
+
 const Notifications = () => {
     const intl = useIntl();
     const [notifications, setNotifications] = useState([]);
@@ -57,16 +59,53 @@ const Notifications = () => {
     const [pendingConfirmAction, setPendingConfirmAction] = useState(null);
     const [showTeamModal, setShowTeamModal] = useState(false);
     const [modalEquipoId, setModalEquipoId] = useState(null);
+    const [unreadCount, setUnreadCount] = useState(0);
+    const [loadingMore, setLoadingMore] = useState(false);
+    const listRef = useRef(null);
+    const pageRef = useRef(0);
+    const existMoreRef = useRef(false);
+    const loadingMoreRef = useRef(false);
+
+    const loadMore = useCallback(async () => {
+        if (loadingMoreRef.current || !existMoreRef.current) return;
+        loadingMoreRef.current = true;
+        setLoadingMore(true);
+        try {
+            const nextPage = pageRef.current + 1;
+            const response = await backend.notificationService.getNotifications(nextPage, PAGE_SIZE);
+            if (response.ok && response.payload) {
+                const items = response.payload.items || [];
+                setNotifications(prev => {
+                    const ids = new Set(prev.map(n => n.id));
+                    return [...prev, ...items.filter(n => !ids.has(n.id))];
+                });
+                pageRef.current = nextPage;
+                existMoreRef.current = response.payload.existMoreItems;
+            }
+        } catch (error) {
+            console.error('Error cargando más notificaciones:', error);
+        } finally {
+            loadingMoreRef.current = false;
+            setLoadingMore(false);
+        }
+    }, []);
 
     useEffect(() => {
         const initNotifications = async () => {
             setLoadingList(true);
             try {
-                const response = await backend.notificationService.getNotifications();
+                const countResponse = await backend.notificationService.getUnreadCount();
+                if (countResponse.ok && typeof countResponse.payload === 'number') {
+                    setUnreadCount(countResponse.payload);
+                }
+                const response = await backend.notificationService.getNotifications(0, PAGE_SIZE);
                 if (response.ok && response.payload) {
-                    setNotifications(response.payload);
-                    if (response.payload.length > 0) {
-                        await handleSelectNotification(response.payload[0].id, response.payload);
+                    const items = response.payload.items || [];
+                    setNotifications(items);
+                    pageRef.current = 0;
+                    existMoreRef.current = response.payload.existMoreItems;
+                    if (items.length > 0) {
+                        await handleSelectNotification(items[0].id);
                     }
                 }
             } catch (error) {
@@ -110,6 +149,22 @@ const Notifications = () => {
         }
     }, [notifications]);
 
+    const reloadNotifications = useCallback(async () => {
+        const notifResponse = await backend.notificationService.getNotifications(0, PAGE_SIZE);
+        if (notifResponse.ok && notifResponse.payload) {
+            const items = notifResponse.payload.items || [];
+            setNotifications(items);
+            pageRef.current = 0;
+            existMoreRef.current = notifResponse.payload.existMoreItems;
+            const updatedNotif = items.find(n => n.id === selectedNotification?.id);
+            if (updatedNotif) {
+                setSelectedNotification(prev => ({ ...prev, ...updatedNotif, pendienteDeAccion: false }));
+            } else {
+                setSelectedNotification(null);
+            }
+        }
+    }, [selectedNotification]);
+
     const handleResponderSolicitud = async (solicitudId, aceptar) => {
         setRespondiendoId(solicitudId);
         setActionFeedback(null);
@@ -127,18 +182,8 @@ const Notifications = () => {
                 // Marcar la notificación como sin acción pendiente localmente
                 setSelectedNotification(prev => prev ? { ...prev, pendienteDeAccion: false } : prev);
 
-                // Recargar notificaciones para reflejar el cambio
-                const notifResponse = await backend.notificationService.getNotifications();
-                if (notifResponse.ok) {
-                    setNotifications(notifResponse.payload);
-                    // Actualizar la notificación seleccionada si sigue visible
-                    const updatedNotif = notifResponse.payload.find(n => n.id === selectedNotification?.id);
-                    if (updatedNotif) {
-                        setSelectedNotification(prev => ({ ...prev, ...updatedNotif, pendienteDeAccion: false }));
-                    } else {
-                        setSelectedNotification(null);
-                    }
-                }
+                // recarga la primera pagina para reflejar el cambio
+                await reloadNotifications();
             } else {
                 const errorMsg = response.payload?.message || response.payload?.error ||
                     (aceptar
@@ -214,17 +259,8 @@ const Notifications = () => {
                 // Marcar la notificación como sin acción pendiente localmente
                 setSelectedNotification(prev => prev ? { ...prev, pendienteDeAccion: false } : prev);
 
-                // Recargar notificaciones
-                const notifResponse = await backend.notificationService.getNotifications();
-                if (notifResponse.ok) {
-                    setNotifications(notifResponse.payload);
-                    const updatedNotif = notifResponse.payload.find(n => n.id === selectedNotification?.id);
-                    if (updatedNotif) {
-                        setSelectedNotification(prev => ({ ...prev, ...updatedNotif, pendienteDeAccion: false }));
-                    } else {
-                        setSelectedNotification(null);
-                    }
-                }
+                // recarga la primera pagina para reflejar el cambio
+                await reloadNotifications();
             } else {
                 const errorMsg = response.payload?.message || response.payload?.error ||
                     (aceptar
@@ -263,17 +299,8 @@ const Notifications = () => {
                 // Marcar la notificación como sin acción pendiente localmente
                 setSelectedNotification(prev => prev ? { ...prev, pendienteDeAccion: false } : prev);
 
-                // Recargar notificaciones para reflejar el cambio
-                const notifResponse = await backend.notificationService.getNotifications();
-                if (notifResponse.ok) {
-                    setNotifications(notifResponse.payload);
-                    const updatedNotif = notifResponse.payload.find(n => n.id === selectedNotification?.id);
-                    if (updatedNotif) {
-                        setSelectedNotification(prev => ({ ...prev, ...updatedNotif, pendienteDeAccion: false }));
-                    } else {
-                        setSelectedNotification(null);
-                    }
-                }
+                // recarga la primera pagina para reflejar el cambio
+                await reloadNotifications();
             } else {
                 const errorMsg = response.payload?.message || response.payload?.error ||
                     (aceptar
@@ -428,11 +455,19 @@ const Notifications = () => {
         });
     }, [notifications, filter]);
 
-    const counts = useMemo(() => ({
-        total: notifications.length,
-        unread: notifications.filter(n => !n.leido).length,
-        read: notifications.filter(n => n.leido).length
-    }), [notifications]);
+    useEffect(() => {
+        const el = listRef.current;
+        if (!el) return;
+        const onScroll = () => {
+            if (el.scrollTop + el.clientHeight >= el.scrollHeight - 120) {
+                loadMore();
+            }
+        };
+        el.addEventListener('scroll', onScroll);
+        // rellena el contenedor si la lista no ocupa todo el alto
+        if (el.scrollHeight <= el.clientHeight) loadMore();
+        return () => el.removeEventListener('scroll', onScroll);
+    }, [loadMore, loadingList, notifications.length, filteredNotifications.length]);
 
     if (loadingList) {
         return (
@@ -451,8 +486,8 @@ const Notifications = () => {
                 <header className="master-header">
                     <div className="master-header-top">
                         <h2 className="master-title"><FormattedMessage id="project.notifications.listTitle" defaultMessage="Notificaciones" /></h2>
-                        {counts.unread > 0 && (
-                            <span className="unread-count-badge">{counts.unread}</span>
+                        {unreadCount > 0 && (
+                            <span className="unread-count-badge">{unreadCount}</span>
                         )}
                     </div>
 
@@ -464,15 +499,15 @@ const Notifications = () => {
                                 onClick={() => setFilter(key)}
                             >
                                 {getFilterLabel(key)}
-                                {key === 'UNREAD' && counts.unread > 0 && (
-                                    <span className="filter-count">{counts.unread}</span>
+                                {key === 'UNREAD' && unreadCount > 0 && (
+                                    <span className="filter-count">{unreadCount}</span>
                                 )}
                             </button>
                         ))}
                     </div>
                 </header>
 
-                <div className="master-list">
+                <div className="master-list" ref={listRef}>
                     {filteredNotifications.length === 0 ? (
                         <div className="empty-state-master">
                             <i className="fa-regular fa-bell-slash mb-3"></i>
@@ -488,37 +523,47 @@ const Notifications = () => {
                             </small>
                         </div>
                     ) : (
-                        filteredNotifications.map(n => {
-                            const isSelected = selectedNotification?.id === n.id;
-                            return (
-                                <div
-                                    key={n.id}
-                                    onClick={() => handleSelectNotification(n.id)}
-                                    className={`notification-card ${isSelected ? 'selected' : ''} ${!n.leido ? 'unread' : ''}`}
-                                >
-                                    <div className="notification-card-icon">
-                                        {getNotificationIcon(n.tipo)}
-                                    </div>
-
-                                    <div className="notification-card-content">
-                                        <div className="notification-card-header">
-                                            <span className="notification-card-type">
-                                                {getTipoLabel(n.tipo)}
-                                            </span>
-                                            <span className="notification-card-time">
-                                                {formatTimestamp(n.fechaCreacion)}
-                                            </span>
+                        <>
+                            {filteredNotifications.map(n => {
+                                const isSelected = selectedNotification?.id === n.id;
+                                return (
+                                    <div
+                                        key={n.id}
+                                        onClick={() => handleSelectNotification(n.id)}
+                                        className={`notification-card ${isSelected ? 'selected' : ''} ${!n.leido ? 'unread' : ''}`}
+                                    >
+                                        <div className="notification-card-icon">
+                                            {getNotificationIcon(n.tipo)}
                                         </div>
-                                        <div className="notification-card-subject">{n.asunto}</div>
-                                        <div className="notification-card-body">
-                                            {truncateMessage(n.cuerpo)}
-                                        </div>
-                                    </div>
 
-                                    {!n.leido && <span className="unread-dot" />}
+                                        <div className="notification-card-content">
+                                            <div className="notification-card-header">
+                                                <span className="notification-card-type">
+                                                    {getTipoLabel(n.tipo)}
+                                                </span>
+                                                <span className="notification-card-time">
+                                                    {formatTimestamp(n.fechaCreacion)}
+                                                </span>
+                                            </div>
+                                            <div className="notification-card-subject">{n.asunto}</div>
+                                            <div className="notification-card-body">
+                                                {truncateMessage(n.cuerpo)}
+                                            </div>
+                                        </div>
+
+                                        {!n.leido && <span className="unread-dot" />}
+                                    </div>
+                                );
+                            })}
+                            {loadingMore && (
+                                <div className="notifications-loading-more">
+                                    <Spinner animation="border" size="sm" variant="secondary" className="me-2" />
+                                    <small className="text-muted">
+                                        <FormattedMessage id="project.notifications.loadingMore" defaultMessage="Cargando más notificaciones…" />
+                                    </small>
                                 </div>
-                            );
-                        })
+                            )}
+                        </>
                     )}
                 </div>
             </div>

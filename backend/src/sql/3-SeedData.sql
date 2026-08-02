@@ -12,6 +12,8 @@
 --   40 torneos privados (1 por test user)
 --   2 ligas comenzadas de user000 (20 equipos, 1 partido por terminar)
 --   1 liga + playoff a mitad de competición (84): jornadas 1-2 jugadas, 3-5 pendientes
+-- pagesUser (contraseña: pagesUser123!): 100 notificaciones, 20 equipos,
+--   10 torneos creados, 10 torneos seguidos y su equipo 21 inscrito en 10 torneos públicos
 -- ============================================================
 
 -- ============================================================
@@ -672,4 +674,90 @@ BEGIN
         WHERE idTorneo = enc.idTorneo AND idEquipo = enc.idEquipoVisitante;
     END LOOP;
 END $$;
+
+-- ============================================================
+-- 11. USUARIO pagesUser: para probar todas las paginaciones
+--     password: pagesUser123! (bcrypt)
+--     - 100 notificaciones en el buzon (mezcla leidas/no leidas y tipos)
+--     - 20 equipos creados (ids 21-40)
+--     - 10 torneos creados (ids 85-94)
+--     - 10 torneos seguidos (publicos de test001-test010)
+--     - equipo 21 (pagesUser + test001) inscrito en 10 torneos publicos
+-- ============================================================
+
+-- 11.1 Usuario pagesUser (id 42)
+INSERT INTO "User" (elo, nombre, email, imagenPerfil, password, fechaNacimiento, eloProvisional, role)
+VALUES (1500, 'pagesUser', 'pagesUser@email.com', NULL, '$2a$10$RlIGiRvr.ctt1EDUZcBL2.YTRlnjyJloKLGMchqEQgaF.e0EfIDba', '1995-06-15', FALSE, 'USER');
+
+-- 11.2 20 equipos creados por pagesUser (ids 21-40)
+INSERT INTO Equipo (nombreEquipo, descripcion, estado, creador_id, codigo_equipo)
+SELECT
+    'Equipo_Pages_' || LPAD(i::TEXT, 2, '0'),
+    'Equipo ' || i || ' creado por pagesUser para probar paginacion',
+    'ACTIVO',
+    42,
+    UPPER(SUBSTR(MD5(RANDOM()::TEXT || CLOCK_TIMESTAMP()::TEXT), 1, 8))
+FROM generate_series(1, 20) AS i;
+
+-- 11.3 miembros: el creador es miembro de sus 20 equipos
+INSERT INTO Equipo_Miembros (equipo_id, usuario_id)
+SELECT id, 42 FROM Equipo WHERE creador_id = 42;
+
+-- el equipo 21 se usa para las inscripciones: pagesUser + test001 (id 2)
+INSERT INTO Equipo_Miembros (equipo_id, usuario_id)
+VALUES (21, 2);
+
+-- 11.4 10 torneos creados por pagesUser (ids 85-94)
+INSERT INTO Torneo (idOrganizador, nombre, privado, codigoTorneo, estado)
+SELECT
+    42,
+    'Torneo_Pages_' || LPAD(i::TEXT, 2, '0'),
+    FALSE,
+    'T' || LPAD(FLOOR(RANDOM() * 100)::INT::TEXT, 2, '0') || '-' || UPPER(SUBSTR(MD5(RANDOM()::TEXT || CLOCK_TIMESTAMP()::TEXT), 1, 4)),
+    'RECLUTANDO'
+FROM generate_series(1, 10) AS i;
+
+-- 11.5 10 torneos seguidos (publicos organizados por test001-test010)
+INSERT INTO SeguimientoTorneo (usuarioId, torneoId, fechaCreacion)
+SELECT 42, t.id, NOW() - (t.id || ' days')::INTERVAL
+FROM Torneo t
+WHERE t.idOrganizador BETWEEN 2 AND 11 AND t.privado = FALSE;
+
+-- 11.6 equipo 21 inscrito en los 10 torneos publicos de test001-test010
+INSERT INTO Solicitud (candidato_id, decisor_id, equipo_id, torneo_id, estado, tipo_solicitud, fecha_creacion)
+SELECT 42, t.idOrganizador, 21, t.id, 'ACEPTADA', 'SOLICITUD_INSCRIPCION', NOW() - INTERVAL '5 days'
+FROM Torneo t
+WHERE t.idOrganizador BETWEEN 2 AND 11 AND t.privado = FALSE;
+
+INSERT INTO Inscripcion (idTorneo, idEquipo, idGrupo, partidosJugados, partidosGanados, partidosEmpatados, partidosPerdidos, estadoInscripcion, puntosLiga, setsGanados, setsPerdidos)
+SELECT t.id, 21, NULL, 0, 0, 0, 0, 'ACTIVA', 0, 0, 0
+FROM Torneo t
+WHERE t.idOrganizador BETWEEN 2 AND 11 AND t.privado = FALSE;
+
+-- 11.7 100 notificaciones para pagesUser (fechaCreacion DESC: la 1 es la mas reciente)
+INSERT INTO Notification (usuarioId, asunto, cuerpo, leido, pendienteDeAccion, referenciaId, tipo, fechaCreacion)
+SELECT
+    42,
+    CASE i % 6
+        WHEN 0 THEN 'Mensaje del sistema ' || i
+        WHEN 1 THEN 'Recordatorio de partido ' || i
+        WHEN 2 THEN 'Resultado de partido ' || i
+        WHEN 3 THEN 'Solicitud de inscripcion ' || i
+        WHEN 4 THEN 'Invitacion a equipo ' || i
+        ELSE 'Solicitud de aplazamiento ' || i
+    END,
+    'Notificacion de prueba numero ' || i || ' para comprobar el scroll infinito del buzon de notificaciones.',
+    (i % 3 = 0),
+    FALSE,
+    NULL,
+    CASE i % 6
+        WHEN 0 THEN 'SYSTEM'
+        WHEN 1 THEN 'RECORDATORIO_PARTIDO'
+        WHEN 2 THEN 'RESULTADO_PARTIDO'
+        WHEN 3 THEN 'SOLICITUD_INSCRIPCION'
+        WHEN 4 THEN 'INVITACION'
+        ELSE 'SOLICITUD_APLAZAMIENTO'
+    END,
+    NOW() - (i || ' minutes')::INTERVAL
+FROM generate_series(1, 100) AS i;
 

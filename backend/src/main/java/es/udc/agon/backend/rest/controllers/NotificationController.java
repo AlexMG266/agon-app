@@ -1,7 +1,5 @@
 package es.udc.agon.backend.rest.controllers;
 
-import java.util.List;
-
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.ArraySchema;
@@ -18,11 +16,15 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestAttribute;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import es.udc.agon.backend.model.entities.Notification;
 import es.udc.agon.backend.model.exceptions.InstanceNotFoundException;
 import es.udc.agon.backend.model.exceptions.PermissionException;
+import es.udc.agon.backend.model.services.Block;
 import es.udc.agon.backend.model.services.NotificationService;
+import es.udc.agon.backend.rest.dtos.BlockDto;
 import es.udc.agon.backend.rest.dtos.NotificationConversor;
 import es.udc.agon.backend.rest.dtos.NotificationDto;
 
@@ -37,20 +39,43 @@ public class NotificationController {
 
     @GetMapping
     @Operation(
-            summary = "Obtener todas las notificaciones del usuario",
-            description = "Recupera la lista completa de notificaciones asociadas al usuario autenticado."
+            summary = "Obtener las notificaciones del usuario (paginado)",
+            description = "Recupera un bloque paginado de notificaciones asociadas al usuario autenticado, ordenadas por fecha descendente."
     )
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Lista de notificaciones obtenida con éxito",
-                    content = @Content(array = @ArraySchema(schema = @Schema(implementation = NotificationDto.class)))),
+            @ApiResponse(responseCode = "200", description = "Bloque de notificaciones obtenido con éxito",
+                    content = @Content(schema = @Schema(implementation = BlockDto.class))),
             @ApiResponse(responseCode = "401", description = "No autorizado (Token JWT faltante o inválido)",
                     content = @Content),
             @ApiResponse(responseCode = "404", description = "Usuario autenticado no encontrado en el sistema",
                     content = @Content)
     })
-    public List<NotificationDto> getNotifications(
+    public BlockDto<NotificationDto> getNotifications(
+            @Parameter(hidden = true) @RequestAttribute Long userId,
+            @Parameter(description = "Número de página (0-based)", example = "0")
+            @RequestParam(defaultValue = "0") int page,
+            @Parameter(description = "Tamaño de página", example = "10")
+            @RequestParam(defaultValue = "10") int size) throws InstanceNotFoundException {
+        Block<Notification> block = notificationService.getNotifications(userId, page, size);
+        return NotificationConversor.toBlockNotificationDtos(block);
+    }
+
+    @GetMapping("/unread-count")
+    @Operation(
+            summary = "Obtener el número de notificaciones no leídas del usuario",
+            description = "Recupera el contador de notificaciones no leídas asociadas al usuario autenticado."
+    )
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Contador de no leídas obtenido con éxito",
+                    content = @Content(schema = @Schema(example = "3"))),
+            @ApiResponse(responseCode = "401", description = "No autorizado",
+                    content = @Content),
+            @ApiResponse(responseCode = "404", description = "Usuario autenticado no encontrado en el sistema",
+                    content = @Content)
+    })
+    public long getUnreadCount(
             @Parameter(hidden = true) @RequestAttribute Long userId) throws InstanceNotFoundException {
-        return NotificationConversor.toNotificationDtos(notificationService.getNotifications(userId));
+        return notificationService.getUnreadCount(userId);
     }
 
     @GetMapping("/{notificationId}")

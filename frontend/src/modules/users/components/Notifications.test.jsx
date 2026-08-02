@@ -5,7 +5,7 @@ import backend from '../../../backend';
 
 vi.mock('../../../backend', () => ({
   default: {
-    notificationService: { getNotifications: vi.fn(), getNotification: vi.fn(), markAsRead: vi.fn() },
+    notificationService: { getNotifications: vi.fn(), getUnreadCount: vi.fn(), getNotification: vi.fn(), markAsRead: vi.fn() },
     teamService: { respondToRequest: vi.fn(), getTeam: vi.fn() },
     tournamentService: { getSolicitud: vi.fn(), approveEnrollment: vi.fn(), rejectEnrollment: vi.fn(), responderAplazamiento: vi.fn() }
   }
@@ -13,6 +13,7 @@ vi.mock('../../../backend', () => ({
 
 const messages = {
   'project.notifications.loading': 'Cargando notificaciones…',
+  'project.notifications.loadingMore': 'Cargando más notificaciones…',
   'project.notifications.listTitle': 'Notificaciones',
   'project.notifications.filter.all': 'Todas',
   'project.notifications.filter.unread': 'No leídas',
@@ -79,9 +80,13 @@ const notificacion = (overrides = {}) => ({
   ...overrides
 });
 
+// devuelve el bloque paginado que espera el componente
+const block = (items = [], existMoreItems = false) => ({ ok: true, payload: { items, existMoreItems } });
+
 describe('Notifications', () => {
   beforeEach(() => {
     backend.notificationService.getNotifications.mockReset();
+    backend.notificationService.getUnreadCount.mockReset();
     backend.notificationService.getNotification.mockReset();
     backend.notificationService.markAsRead.mockReset();
     backend.teamService.respondToRequest.mockReset();
@@ -93,13 +98,15 @@ describe('Notifications', () => {
   });
 
   it('muestra el spinner mientras carga', () => {
+    backend.notificationService.getUnreadCount.mockReturnValue(new Promise(() => {}));
     backend.notificationService.getNotifications.mockReturnValue(new Promise(() => {}));
     renderNotifications();
     expect(screen.getByText('Cargando notificaciones…')).toBeInTheDocument();
   });
 
   it('muestra el vacio cuando no hay notificaciones', async () => {
-    backend.notificationService.getNotifications.mockResolvedValue({ ok: true, payload: [] });
+    backend.notificationService.getUnreadCount.mockResolvedValue({ ok: true, payload: 0 });
+    backend.notificationService.getNotifications.mockResolvedValue(block());
     renderNotifications();
     expect(await screen.findByText('Todavía no has recibido ninguna notificación')).toBeInTheDocument();
     expect(screen.getByText('Selecciona una notificación')).toBeInTheDocument();
@@ -107,7 +114,8 @@ describe('Notifications', () => {
 
   it('carga la lista y selecciona la primera notificacion', async () => {
     const notif = notificacion({ id: 1, tipo: 'SISTEMA', leido: true, pendienteDeAccion: false, asunto: 'Bienvenido a Agón' });
-    backend.notificationService.getNotifications.mockResolvedValue({ ok: true, payload: [notif] });
+    backend.notificationService.getUnreadCount.mockResolvedValue({ ok: true, payload: 0 });
+    backend.notificationService.getNotifications.mockResolvedValue(block([notif]));
     backend.notificationService.getNotification.mockResolvedValue({ ok: true, payload: notif });
     renderNotifications();
     expect(await screen.findByText('Notificaciones')).toBeInTheDocument();
@@ -122,7 +130,8 @@ describe('Notifications', () => {
 
   it('marca como leida la notificacion al seleccionarla', async () => {
     const notif = notificacion({ id: 1, tipo: 'INVITACION', leido: false, asunto: 'Invitación a Los Reyes' });
-    backend.notificationService.getNotifications.mockResolvedValue({ ok: true, payload: [notif] });
+    backend.notificationService.getUnreadCount.mockResolvedValue({ ok: true, payload: 1 });
+    backend.notificationService.getNotifications.mockResolvedValue(block([notif]));
     backend.notificationService.getNotification.mockResolvedValue({ ok: true, payload: notif });
     backend.notificationService.markAsRead.mockResolvedValue({ ok: true, payload: { ...notif, leido: true } });
     renderNotifications();
@@ -133,7 +142,8 @@ describe('Notifications', () => {
   it('filtra la lista por estado de lectura', async () => {
     const leida = notificacion({ id: 1, tipo: 'SISTEMA', leido: true, pendienteDeAccion: false, asunto: 'Bienvenida' });
     const noLeida = notificacion({ id: 2, tipo: 'PARTIDO', leido: false, pendienteDeAccion: false, asunto: 'Partido mañana' });
-    backend.notificationService.getNotifications.mockResolvedValue({ ok: true, payload: [leida, noLeida] });
+    backend.notificationService.getUnreadCount.mockResolvedValue({ ok: true, payload: 1 });
+    backend.notificationService.getNotifications.mockResolvedValue(block([leida, noLeida]));
     backend.notificationService.getNotification.mockImplementation((id) =>
       Promise.resolve({ ok: true, payload: id === 1 ? leida : noLeida })
     );
@@ -158,7 +168,8 @@ describe('Notifications', () => {
 
   it('muestra el vacio del filtro no leidas', async () => {
     const leida = notificacion({ id: 1, tipo: 'SISTEMA', leido: true, pendienteDeAccion: false, asunto: 'Bienvenida' });
-    backend.notificationService.getNotifications.mockResolvedValue({ ok: true, payload: [leida] });
+    backend.notificationService.getUnreadCount.mockResolvedValue({ ok: true, payload: 0 });
+    backend.notificationService.getNotifications.mockResolvedValue(block([leida]));
     backend.notificationService.getNotification.mockResolvedValue({ ok: true, payload: leida });
     renderNotifications();
     await screen.findAllByText('Bienvenida');
@@ -168,7 +179,8 @@ describe('Notifications', () => {
 
   it('acepta una invitacion con el modal de confirmacion', async () => {
     const notif = notificacion({ id: 1, tipo: 'INVITACION', leido: true, pendienteDeAccion: true, referenciaId: 10, asunto: 'Invitación a Los Reyes' });
-    backend.notificationService.getNotifications.mockResolvedValue({ ok: true, payload: [notif] });
+    backend.notificationService.getUnreadCount.mockResolvedValue({ ok: true, payload: 0 });
+    backend.notificationService.getNotifications.mockResolvedValue(block([notif]));
     backend.notificationService.getNotification.mockResolvedValue({ ok: true, payload: notif });
     backend.teamService.respondToRequest.mockResolvedValue({ ok: true });
     renderNotifications();
@@ -185,7 +197,8 @@ describe('Notifications', () => {
 
   it('rechaza una invitacion con el modal de confirmacion', async () => {
     const notif = notificacion({ id: 1, tipo: 'INVITACION', leido: true, pendienteDeAccion: true, referenciaId: 10, asunto: 'Invitación a Los Reyes' });
-    backend.notificationService.getNotifications.mockResolvedValue({ ok: true, payload: [notif] });
+    backend.notificationService.getUnreadCount.mockResolvedValue({ ok: true, payload: 0 });
+    backend.notificationService.getNotifications.mockResolvedValue(block([notif]));
     backend.notificationService.getNotification.mockResolvedValue({ ok: true, payload: notif });
     backend.teamService.respondToRequest.mockResolvedValue({ ok: true });
     renderNotifications();
@@ -202,7 +215,8 @@ describe('Notifications', () => {
 
   it('acepta una inscripcion con el modal de confirmacion', async () => {
     const notif = notificacion({ id: 1, tipo: 'SOLICITUD_INSCRIPCION', leido: true, pendienteDeAccion: true, referenciaId: 10, asunto: 'Nueva inscripción' });
-    backend.notificationService.getNotifications.mockResolvedValue({ ok: true, payload: [notif] });
+    backend.notificationService.getUnreadCount.mockResolvedValue({ ok: true, payload: 0 });
+    backend.notificationService.getNotifications.mockResolvedValue(block([notif]));
     backend.notificationService.getNotification.mockResolvedValue({ ok: true, payload: notif });
     backend.tournamentService.getSolicitud.mockResolvedValue({ ok: true, payload: { torneoId: 3, equipoId: 5 } });
     backend.tournamentService.approveEnrollment.mockResolvedValue({ ok: true });
@@ -220,7 +234,8 @@ describe('Notifications', () => {
 
   it('rechaza una inscripcion con el modal de confirmacion', async () => {
     const notif = notificacion({ id: 1, tipo: 'SOLICITUD_INSCRIPCION', leido: true, pendienteDeAccion: true, referenciaId: 10, asunto: 'Nueva inscripción' });
-    backend.notificationService.getNotifications.mockResolvedValue({ ok: true, payload: [notif] });
+    backend.notificationService.getUnreadCount.mockResolvedValue({ ok: true, payload: 0 });
+    backend.notificationService.getNotifications.mockResolvedValue(block([notif]));
     backend.notificationService.getNotification.mockResolvedValue({ ok: true, payload: notif });
     backend.tournamentService.getSolicitud.mockResolvedValue({ ok: true, payload: { torneoId: 3, equipoId: 5 } });
     backend.tournamentService.rejectEnrollment.mockResolvedValue({ ok: true });
@@ -238,7 +253,8 @@ describe('Notifications', () => {
 
   it('abre el modal del equipo desde una inscripcion', async () => {
     const notif = notificacion({ id: 1, tipo: 'SOLICITUD_INSCRIPCION', leido: true, pendienteDeAccion: true, referenciaId: 10, asunto: 'Nueva inscripción' });
-    backend.notificationService.getNotifications.mockResolvedValue({ ok: true, payload: [notif] });
+    backend.notificationService.getUnreadCount.mockResolvedValue({ ok: true, payload: 0 });
+    backend.notificationService.getNotifications.mockResolvedValue(block([notif]));
     backend.notificationService.getNotification.mockResolvedValue({ ok: true, payload: notif });
     backend.tournamentService.getSolicitud.mockResolvedValue({ ok: true, payload: { torneoId: 3, equipoId: 5 } });
     backend.teamService.getTeam.mockResolvedValue({
@@ -256,7 +272,8 @@ describe('Notifications', () => {
 
   it('muestra la accion generica para notificaciones sin accion especifica', async () => {
     const notif = notificacion({ id: 1, tipo: 'PARTIDO', leido: true, pendienteDeAccion: true, referenciaId: 20, asunto: 'Partido mañana' });
-    backend.notificationService.getNotifications.mockResolvedValue({ ok: true, payload: [notif] });
+    backend.notificationService.getUnreadCount.mockResolvedValue({ ok: true, payload: 0 });
+    backend.notificationService.getNotifications.mockResolvedValue(block([notif]));
     backend.notificationService.getNotification.mockResolvedValue({ ok: true, payload: notif });
     renderNotifications();
     await screen.findAllByText('Partido mañana');
@@ -265,7 +282,8 @@ describe('Notifications', () => {
 
   it('muestra la etiqueta de tipo aplazamiento', async () => {
     const notif = notificacion({ id: 1, tipo: 'SOLICITUD_APLAZAMIENTO', leido: true, pendienteDeAccion: true, referenciaId: 30, asunto: 'Solicitud de aplazamiento' });
-    backend.notificationService.getNotifications.mockResolvedValue({ ok: true, payload: [notif] });
+    backend.notificationService.getUnreadCount.mockResolvedValue({ ok: true, payload: 0 });
+    backend.notificationService.getNotifications.mockResolvedValue(block([notif]));
     backend.notificationService.getNotification.mockResolvedValue({ ok: true, payload: notif });
     renderNotifications();
     await screen.findAllByText('Solicitud de aplazamiento');
@@ -274,7 +292,8 @@ describe('Notifications', () => {
 
   it('muestra botones aceptar y rechazar para una solicitud de aplazamiento', async () => {
     const notif = notificacion({ id: 1, tipo: 'SOLICITUD_APLAZAMIENTO', leido: true, pendienteDeAccion: true, referenciaId: 30, asunto: 'Solicitud de aplazamiento' });
-    backend.notificationService.getNotifications.mockResolvedValue({ ok: true, payload: [notif] });
+    backend.notificationService.getUnreadCount.mockResolvedValue({ ok: true, payload: 0 });
+    backend.notificationService.getNotifications.mockResolvedValue(block([notif]));
     backend.notificationService.getNotification.mockResolvedValue({ ok: true, payload: notif });
     renderNotifications();
     await screen.findAllByText('Solicitud de aplazamiento');
@@ -287,7 +306,8 @@ describe('Notifications', () => {
 
   it('acepta una solicitud de aplazamiento con el modal de confirmacion', async () => {
     const notif = notificacion({ id: 1, tipo: 'SOLICITUD_APLAZAMIENTO', leido: true, pendienteDeAccion: true, referenciaId: 30, asunto: 'Solicitud de aplazamiento' });
-    backend.notificationService.getNotifications.mockResolvedValue({ ok: true, payload: [notif] });
+    backend.notificationService.getUnreadCount.mockResolvedValue({ ok: true, payload: 0 });
+    backend.notificationService.getNotifications.mockResolvedValue(block([notif]));
     backend.notificationService.getNotification.mockResolvedValue({ ok: true, payload: notif });
     backend.tournamentService.responderAplazamiento.mockResolvedValue({ ok: true });
     renderNotifications();
@@ -304,7 +324,8 @@ describe('Notifications', () => {
 
   it('rechaza una solicitud de aplazamiento con el modal de confirmacion', async () => {
     const notif = notificacion({ id: 1, tipo: 'SOLICITUD_APLAZAMIENTO', leido: true, pendienteDeAccion: true, referenciaId: 30, asunto: 'Solicitud de aplazamiento' });
-    backend.notificationService.getNotifications.mockResolvedValue({ ok: true, payload: [notif] });
+    backend.notificationService.getUnreadCount.mockResolvedValue({ ok: true, payload: 0 });
+    backend.notificationService.getNotifications.mockResolvedValue(block([notif]));
     backend.notificationService.getNotification.mockResolvedValue({ ok: true, payload: notif });
     backend.tournamentService.responderAplazamiento.mockResolvedValue({ ok: true });
     renderNotifications();
@@ -317,5 +338,26 @@ describe('Notifications', () => {
     fireEvent.click(within(modal).getByRole('button', { name: 'Rechazar' }));
     await waitFor(() => expect(backend.tournamentService.responderAplazamiento).toHaveBeenCalledWith(30, false));
     expect(await screen.findByText('Aplazamiento rechazado correctamente')).toBeInTheDocument();
+  });
+
+  it('carga mas notificaciones al llegar al final (scroll infinito)', async () => {
+    const p1 = Array.from({ length: 10 }, (_, i) => notificacion({ id: i + 1, leido: false, asunto: `Notificación ${i + 1}` }));
+    const p2 = Array.from({ length: 5 }, (_, i) => notificacion({ id: i + 11, leido: false, asunto: `Notificación ${i + 11}` }));
+    backend.notificationService.getUnreadCount.mockResolvedValue({ ok: true, payload: 15 });
+    backend.notificationService.getNotifications
+      .mockResolvedValueOnce(block(p1, true))
+      .mockResolvedValueOnce(block(p2, false));
+    backend.notificationService.getNotification.mockResolvedValue({ ok: true, payload: p1[0] });
+    backend.notificationService.markAsRead.mockResolvedValue({ ok: true, payload: { ...p1[0], leido: true } });
+    renderNotifications();
+    await screen.findByText('Notificaciones');
+    const master = document.querySelector('.master-list');
+    await within(master).findByText('Notificación 1');
+    // el relleno del contenedor (o el scroll) dispara la segunda pagina
+    await waitFor(() => expect(within(master).getByText('Notificación 11')).toBeInTheDocument());
+    expect(backend.notificationService.getNotifications).toHaveBeenCalledTimes(2);
+    // sin mas paginas, no vuelve a pedir aunque se haga scroll
+    fireEvent.scroll(master, { target: { scrollTop: 10000 } });
+    await waitFor(() => expect(backend.notificationService.getNotifications).toHaveBeenCalledTimes(2));
   });
 });

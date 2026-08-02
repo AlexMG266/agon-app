@@ -3,6 +3,7 @@ import { useSelector, useDispatch } from 'react-redux';
 import { Link } from 'react-router';
 import { FormattedMessage } from 'react-intl';
 import Spinner from 'react-bootstrap/Spinner';
+import Pager from '../../common/components/Pager';
 import teams from '../../teams';
 import CreateTeamModal from './CreateTeam';
 import './MyTeams.css';
@@ -12,16 +13,28 @@ const formatDate = (ts) => {
     return new Date(ts).toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' });
 };
 
+const PAGE_SIZE = 5;
+
 const MyTeams = () => {
     const dispatch = useDispatch();
     const userTeams = useSelector(state => state.teams?.userTeams || []);
     const isLoading = useSelector(state => state.teams?.loading || false);
 
     const [showCreateModal, setShowCreateModal] = useState(false);
+    const [page, setPage] = useState(0);
 
     useEffect(() => {
         dispatch(teams.actions.getMyTeams());
     }, [dispatch]);
+
+    const totalPages = Math.max(1, Math.ceil(userTeams.length / PAGE_SIZE));
+    const currentPage = Math.min(page, totalPages - 1);
+    const visibleTeams = userTeams.slice(currentPage * PAGE_SIZE, (currentPage + 1) * PAGE_SIZE);
+    const showPager = userTeams.length > PAGE_SIZE;
+
+    const goToPage = (newPage) => {
+        setPage(newPage);
+    };
 
     return (
         <div className="mt-container">
@@ -45,7 +58,7 @@ const MyTeams = () => {
                 </div>
             ) : userTeams.length > 0 ? (
                 <div className="mt-list">
-                    {userTeams.map((team, index) => (
+                    {visibleTeams.map((team, index) => (
                         <Link key={team.id || index} to={`/teams/view/${team.id}`} className="mt-row">
                             <div className="mt-row-left">
                                 <div className="mt-row-shield">
@@ -70,6 +83,14 @@ const MyTeams = () => {
                             <i className="fa-solid fa-chevron-right mt-chevron" />
                         </Link>
                     ))}
+                    {showPager && (
+                        <div className="mt-pager">
+                            <Pager
+                                back={{ enabled: currentPage > 0, onClick: () => goToPage(currentPage - 1) }}
+                                next={{ enabled: currentPage < totalPages - 1, onClick: () => goToPage(currentPage + 1) }}
+                            />
+                        </div>
+                    )}
                 </div>
             ) : (
                 <div className="mt-empty">

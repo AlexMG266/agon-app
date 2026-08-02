@@ -6,7 +6,6 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.time.LocalDate;
-import java.util.List;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,6 +20,7 @@ import es.udc.agon.backend.model.entities.User;
 import es.udc.agon.backend.model.exceptions.DuplicateInstanceException;
 import es.udc.agon.backend.model.exceptions.InstanceNotFoundException;
 import es.udc.agon.backend.model.exceptions.PermissionException;
+import es.udc.agon.backend.model.services.Block;
 import es.udc.agon.backend.model.services.NotificationService;
 import es.udc.agon.backend.model.services.UserService;
 
@@ -57,14 +57,36 @@ public class NotificationServiceTest {
         notificationDao.save(n1);
         notificationDao.save(n2);
 
-        List<Notification> notifications = notificationService.getNotifications(user.getId());
+        // la bienvenida mas n1 y n2 = 3 notificaciones
+        Block<Notification> block = notificationService.getNotifications(user.getId(), 0, 10);
 
-        assertEquals(3, notifications.size());
+        assertEquals(3, block.getItems().size());
+        assertFalse(block.getExistMoreItems());
+    }
+
+    @Test
+    public void testGetNotificationsPaginado() throws DuplicateInstanceException, InstanceNotFoundException {
+        User user = createUser("userPaginado");
+        userService.signUp(user);
+
+        for (int i = 0; i < 5; i++) {
+            notificationDao.save(new Notification(user, "Asunto " + i, "Cuerpo " + i, TipoNotificacion.SYSTEM));
+        }
+
+        // la bienvenida + 5 = 6 notificaciones, pagina de 2 -> 3 paginas
+        Block<Notification> primera = notificationService.getNotifications(user.getId(), 0, 2);
+        assertEquals(2, primera.getItems().size());
+        assertTrue(primera.getExistMoreItems());
+
+        Block<Notification> ultima = notificationService.getNotifications(user.getId(), 2, 2);
+        assertEquals(2, ultima.getItems().size());
+        assertFalse(ultima.getExistMoreItems());
     }
 
     @Test
     public void testGetNotificationsWithNonExistentId() {
-        assertThrows(InstanceNotFoundException.class, () -> notificationService.getNotifications(NON_EXISTENT_ID));
+        assertThrows(InstanceNotFoundException.class,
+                () -> notificationService.getNotifications(NON_EXISTENT_ID, 0, 10));
     }
 
     @Test

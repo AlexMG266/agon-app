@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import es.udc.agon.backend.model.entities.Notification;
+import es.udc.agon.backend.model.services.Block;
 
 public class NotificationConversor {
 
@@ -25,6 +26,13 @@ public class NotificationConversor {
 
     public final static List<NotificationDto> toNotificationDtos(List<Notification> notifications) {
         return notifications.stream().map(NotificationConversor::toNotificationDto).collect(Collectors.toList());
+    }
+
+    public final static BlockDto<NotificationDto> toBlockNotificationDtos(Block<Notification> block) {
+        List<NotificationDto> dtos = block.getItems().stream()
+                .map(NotificationConversor::toNotificationDto)
+                .collect(Collectors.toList());
+        return new BlockDto<>(dtos, block.getExistMoreItems());
     }
 
 }

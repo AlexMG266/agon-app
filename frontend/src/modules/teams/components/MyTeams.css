@@ -67,6 +67,39 @@
     gap: 0.75rem;
 }
 
+.mt-pager {
+    margin-top: 0.75rem;
+    padding-top: 0.6rem;
+    border-top: 1px solid #f1f3f5;
+}
+
+.mt-pager .pagination {
+    margin: 0;
+    gap: 0.25rem;
+}
+
+.mt-pager .page-link {
+    font-size: 0.75rem;
+    padding: 0.3rem 0.7rem;
+    border-radius: 6px;
+    color: #1d1d1f;
+    border-color: #e8e8ed;
+    background: #ffffff;
+}
+
+.mt-pager .page-link:hover {
+    background: #f5f5f7;
+    border-color: #d2d2d7;
+    color: #1d1d1f;
+}
+
+.mt-pager .disabled .page-link {
+    color: #aeaeb2;
+    background: #fafafa;
+    border-color: #e8e8ed;
+    pointer-events: none;
+}
+
 .mt-row {
     display: flex;
     justify-content: space-between;

@@ -1,4 +1,4 @@
-import { getNotifications, getNotification, markAsRead, NOTIFICATIONS_UPDATED_EVENT } from './notificationService';
+import { getNotifications, getUnreadCount, getNotification, markAsRead, NOTIFICATIONS_UPDATED_EVENT } from './notificationService';
 
 const BACKEND = 'http://backend.test';
 
@@ -23,11 +23,24 @@ describe('notificationService', () => {
     vi.restoreAllMocks();
   });
 
-  it('getNotifications pide GET /notifications', async () => {
-    fetch.mockResolvedValue(jsonResponse([notificacion]));
-    const response = await getNotifications();
-    expect(fetch).toHaveBeenCalledWith(`${BACKEND}/notifications`, expect.anything());
-    expect(response.payload).toEqual([notificacion]);
+  it('getNotifications pide GET /notifications con paginacion', async () => {
+    fetch.mockResolvedValue(jsonResponse({ items: [notificacion], existMoreItems: false }));
+    const response = await getNotifications(2, 10);
+    expect(fetch).toHaveBeenCalledWith(`${BACKEND}/notifications?page=2&size=10`, expect.anything());
+    expect(response.payload).toEqual({ items: [notificacion], existMoreItems: false });
+  });
+
+  it('getNotifications usa pagina y tamaño por defecto', async () => {
+    fetch.mockResolvedValue(jsonResponse({ items: [], existMoreItems: false }));
+    await getNotifications();
+    expect(fetch).toHaveBeenCalledWith(`${BACKEND}/notifications?page=0&size=10`, expect.anything());
+  });
+
+  it('getUnreadCount pide GET /notifications/unread-count', async () => {
+    fetch.mockResolvedValue(jsonResponse(3));
+    const response = await getUnreadCount();
+    expect(fetch).toHaveBeenCalledWith(`${BACKEND}/notifications/unread-count`, expect.anything());
+    expect(response.payload).toBe(3);
   });
 
   it('getNotification pide GET /notifications/{id}', async () => {

@@ -18,6 +18,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Primary;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -172,7 +173,8 @@ public class RecordatorioPartidoTest {
         encuentroService.generarRecordatoriosPartidos(cap1.getId());
         encuentroService.generarRecordatoriosPartidos(cap1.getId());
 
-        List<Notification> recordatorios = notificationDao.findByUsuarioId(cap1.getId()).stream()
+        List<Notification> recordatorios = notificationDao.findByUsuarioId(cap1.getId(),
+                PageRequest.of(0, 10)).getContent().stream()
                 .filter(n -> n.getTipo() == Notification.TipoNotificacion.RECORDATORIO_PARTIDO)
                 .filter(n -> n.getReferenciaId().equals(encuentro.getId()))
                 .toList();

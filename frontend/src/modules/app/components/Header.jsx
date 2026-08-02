@@ -57,25 +57,28 @@ const Header = () => {
             return;
         }
 
-        backend.notificationService.getNotifications().then(response => {
-            if (response.ok && response.payload) {
-                const unread = response.payload.filter(n => !n.leido).length;
+        backend.notificationService.getUnreadCount().then(response => {
+            if (response.ok && typeof response.payload === 'number') {
+                const unread = response.payload;
                 const prev = prevUnreadRef.current;
                 prevUnreadRef.current = unread;
 
                 if (unread > prev) {
-                    // Find the most recent unread notification for the popup preview
-                    const latestUnread = response.payload
-                        .filter(n => !n.leido)
-                        .sort((a, b) => new Date(b.fechaCreacion) - new Date(a.fechaCreacion))[0];
-                    setPopupData({
-                        key: Date.now(),
-                        subject: latestUnread?.asunto || intl.formatMessage({
-                            id: 'project.app.Header.newNotification',
-                            defaultMessage: 'Tienes una nueva notificación'
-                        }),
-                        body: latestUnread?.cuerpo || ''
-                    });
+                    // carga la primera pagina para obtener la notificacion mas reciente sin leer
+                    backend.notificationService.getNotifications(0, 1).then(notifResponse => {
+                        if (notifResponse.ok && notifResponse.payload) {
+                            const latestUnread = (notifResponse.payload.items || [])
+                                .filter(n => !n.leido)[0];
+                            setPopupData({
+                                key: Date.now(),
+                                subject: latestUnread?.asunto || intl.formatMessage({
+                                    id: 'project.app.Header.newNotification',
+                                    defaultMessage: 'Tienes una nueva notificación'
+                                }),
+                                body: latestUnread?.cuerpo || ''
+                            });
+                        }
+                    }).catch(() => { });
                 }
                 setUnreadCount(unread);
             }
