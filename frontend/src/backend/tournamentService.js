@@ -109,6 +109,16 @@ export const registerResult = async (encuentroId, sets) => {
     return await appFetch('POST', `/encuentros/${encuentroId}/resultado`, { sets });
 };
 
+// POST /encuentros/{encuentroId}/aplazar: solicita el aplazamiento de un encuentro a una nueva fecha.
+export const solicitarAplazamiento = async (encuentroId, fecha, motivo) => {
+    return await appFetch('POST', `/encuentros/${encuentroId}/aplazar`, { fecha, motivo });
+};
+
+// POST /encuentros/solicitudes-aplazamiento/{solicitudId}/responder: acepta o rechaza una solicitud de aplazamiento.
+export const responderAplazamiento = async (solicitudId, aceptar) => {
+    return await appFetch('POST', `/encuentros/solicitudes-aplazamiento/${solicitudId}/responder`, { aceptar });
+};
+
 export default {
     getSolicitud,
     createTournament,
@@ -130,5 +140,7 @@ export default {
     updateTournament,
     getTournamentJornadas,
     getMyMatches,
-    registerResult
+    registerResult,
+    solicitarAplazamiento,
+    responderAplazamiento
 };

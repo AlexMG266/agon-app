@@ -178,4 +178,40 @@ describe('tournamentService', () => {
       body: JSON.stringify({ sets })
     }));
   });
+
+  it('solicitarAplazamiento envia POST con la fecha y el motivo', async () => {
+    fetch.mockResolvedValue(jsonResponse({}, 200));
+    await tournamentService.solicitarAplazamiento(7, '2026-09-10T19:00', 'no podemos jugar');
+    expect(fetch).toHaveBeenCalledWith(`${BACKEND}/encuentros/7/aplazar`, expect.objectContaining({
+      method: 'POST',
+      body: JSON.stringify({ fecha: '2026-09-10T19:00', motivo: 'no podemos jugar' })
+    }));
+  });
+
+  it('solicitarAplazamiento permite omitir el motivo', async () => {
+    fetch.mockResolvedValue(jsonResponse({}, 200));
+    await tournamentService.solicitarAplazamiento(7, '2026-09-10T19:00');
+    expect(fetch).toHaveBeenCalledWith(`${BACKEND}/encuentros/7/aplazar`, expect.objectContaining({
+      method: 'POST',
+      body: JSON.stringify({ fecha: '2026-09-10T19:00', motivo: undefined })
+    }));
+  });
+
+  it('responderAplazamiento envia POST con aceptar', async () => {
+    fetch.mockResolvedValue(jsonResponse({}, 200));
+    await tournamentService.responderAplazamiento(12, true);
+    expect(fetch).toHaveBeenCalledWith(`${BACKEND}/encuentros/solicitudes-aplazamiento/12/responder`, expect.objectContaining({
+      method: 'POST',
+      body: JSON.stringify({ aceptar: true })
+    }));
+  });
+
+  it('responderAplazamiento envia POST con rechazar', async () => {
+    fetch.mockResolvedValue(jsonResponse({}, 200));
+    await tournamentService.responderAplazamiento(12, false);
+    expect(fetch).toHaveBeenCalledWith(`${BACKEND}/encuentros/solicitudes-aplazamiento/12/responder`, expect.objectContaining({
+      method: 'POST',
+      body: JSON.stringify({ aceptar: false })
+    }));
+  });
 });
