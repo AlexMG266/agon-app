@@ -82,6 +82,40 @@ Build completo:
 docker compose exec backend mvn install
 ```
 
+## Cobertura de tests
+
+`mvn test` y `npm test` solo ejecutan los tests: **no generan informes de cobertura**. Para obtenerlos, usa los siguientes comandos dentro de los contenedores.
+
+### Backend (JaCoCo)
+
+```bash
+docker compose exec backend mvn test -Pcoverage
+```
+
+Genera el informe en `backend/target/site/jacoco/index.html` (junto con `jacoco.xml` y `jacoco.csv`). Como `backend/` está montado como volumen, el informe queda visible en el host.
+
+### Frontend (Vitest)
+
+```bash
+docker compose exec frontend npm run test:coverage
+```
+
+Genera el informe en `frontend/coverage/index.html` (además de `lcov.info`, útil para extensiones de VSCode como Coverage Gutters).
+
+### Cómo ver el informe
+
+- En el navegador: abre `frontend/coverage/index.html` o `backend/target/site/jacoco/index.html`.
+- En VSCode con la extensión **Coverage Gutters**: añade a `settings.json`:
+
+```json
+{
+  "coverage-gutters.coverageBaseDir": "**",
+  "coverage-gutters.coverageFileNames": ["lcov.info", "jacoco.xml"]
+}
+```
+
+y usa los comandos "Display Coverage" y "Watch" de la extensión.
+
 ## Comandos Maven útiles
 
 ```bash
