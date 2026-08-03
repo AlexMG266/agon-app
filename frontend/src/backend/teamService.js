@@ -30,29 +30,29 @@ export const deleteTeam = async (id) => {
     return await appFetch('DELETE', `/teams/${id}`);
 };
 
-// POST /teams/peticiones: solicitar union mediante código.
+// POST /teams/solicitudes: solicitar union mediante código.
 export const requestJoinWithCode = async (codigoEquipo) => {
-    return await appFetch('POST', `/teams/peticiones?codigoEquipo=${codigoEquipo}`, null);
+    return await appFetch('POST', '/teams/solicitudes', { codigoEquipo });
 };
 
-// POST /teams/{id}/leave: Abandonar el equipo.
+// DELETE /teams/{id}/miembros/me: Abandonar el equipo.
 export const leaveTeam = async (teamId) => {
-    return await appFetch('POST', `/teams/${teamId}/leave`, null);
+    return await appFetch('DELETE', `/teams/${teamId}/miembros/me`);
 };
 
-// POST /teams/{id}/disband: disolver el equipo.
+// DELETE /teams/{id}: disolver el equipo.
 export const dissolveTeam = async (teamId) => {
-    return await appFetch('POST', `/teams/${teamId}/disband`, null);
+    return await appFetch('DELETE', `/teams/${teamId}`);
 };
 
-// POST /teams/solicitudes/{solicitudId}/responder: aceptar o rechazar solicitud.
+// PATCH /teams/solicitudes/{solicitudId}: aceptar o rechazar solicitud.
 export const respondToRequest = async (solicitudId, aceptar) => {
-    return await appFetch('POST', `/teams/solicitudes/${solicitudId}/responder`, { aceptar });
+    return await appFetch('PATCH', `/teams/solicitudes/${solicitudId}`, { aceptar });
 };
 
-// POST /teams/{id}/members/{memberId}/kick: expulsar a un miembro del equipo (solo capitán).
+// DELETE /teams/{id}/miembros/{memberId}: expulsar a un miembro del equipo (solo capitán).
 export const kickMember = async (teamId, memberId) => {
-    return await appFetch('POST', `/teams/${teamId}/members/${memberId}/kick`, null);
+    return await appFetch('DELETE', `/teams/${teamId}/miembros/${memberId}`);
 };
 
 export default {

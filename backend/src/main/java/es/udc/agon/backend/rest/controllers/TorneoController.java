@@ -6,6 +6,8 @@ import es.udc.agon.backend.model.exceptions.InstanceNotFoundException;
 import es.udc.agon.backend.model.exceptions.PermissionException;
 import es.udc.agon.backend.model.services.Block;
 import es.udc.agon.backend.model.services.TorneoService;
+import es.udc.agon.backend.rest.dtos.ActualizarEstadoTorneoParamsDto;
+import es.udc.agon.backend.rest.dtos.ActualizarInscripcionParamsDto;
 import es.udc.agon.backend.rest.dtos.ActualizarTorneoParamsDto;
 import es.udc.agon.backend.rest.dtos.BlockDto;
 import es.udc.agon.backend.rest.dtos.ConfigurarEstructuraParamsDto;
@@ -138,7 +140,7 @@ public class TorneoController {
         return TorneoConversor.toTorneoDto(torneo);
     }
 
-    @PostMapping("/{id}/configure")
+    @PatchMapping("/{id}/estructura")
     @ResponseStatus(HttpStatus.OK)
     @Operation(
             summary = "Configurar estructura del torneo y generar calendario",
@@ -175,7 +177,7 @@ public class TorneoController {
         return TorneoConversor.toTorneoDto(torneo);
     }
 
-    @PostMapping("/{id}/enroll")
+    @PostMapping("/{id}/inscripciones")
     @ResponseStatus(HttpStatus.OK)
     @Operation(
             summary = "Solicitar inscripción de un equipo en el torneo",
@@ -205,7 +207,7 @@ public class TorneoController {
         return toSolicitudDto(solicitud);
     }
 
-    @PostMapping("/{id}/close")
+    @PatchMapping("/{id}")
     @ResponseStatus(HttpStatus.OK)
     @Operation(
             summary = "Cerrar inscripciones del torneo",
@@ -222,11 +224,15 @@ public class TorneoController {
             @ApiResponse(responseCode = "404", description = "Torneo no encontrado",
                     content = @Content)
     })
-    public TorneoDto cerrarInscripciones(
+    public TorneoDto actualizarEstadoTorneo(
             @Parameter(hidden = true) @RequestAttribute Long userId,
-            @Parameter(description = "ID del torneo", example = "1") @PathVariable Long id)
-            throws InstanceNotFoundException {
+            @Parameter(description = "ID del torneo", example = "1") @PathVariable Long id,
+            @RequestBody ActualizarEstadoTorneoParamsDto params)
+            throws InstanceNotFoundException, IllegalArgumentException {
 
+        if (!"INSCRIPCION_CERRADA".equals(params.getEstado())) {
+            throw new IllegalArgumentException("Estado de torneo no soportado: " + params.getEstado());
+        }
         torneoService.cerrarInscripciones(id);
         Torneo torneo = torneoService.consultarTorneo(id);
         return TorneoConversor.toTorneoDto(torneo);
@@ -249,7 +255,7 @@ public class TorneoController {
         return TorneoConversor.toTorneoDtos(torneos);
     }
 
-    @PostMapping("/{id}/follow")
+    @PutMapping("/{id}/seguidores/me")
     @ResponseStatus(HttpStatus.OK)
     @Operation(
             summary = "Seguir un torneo",
@@ -269,7 +275,7 @@ public class TorneoController {
         torneoService.seguirTorneo(userId, id);
     }
 
-    @DeleteMapping("/{id}/follow")
+    @DeleteMapping("/{id}/seguidores/me")
     @ResponseStatus(HttpStatus.OK)
     @Operation(
             summary = "Dejar de seguir un torneo",
@@ -336,8 +342,10 @@ public class TorneoController {
             @Parameter(description = "Tamaño de página", example = "10")
             @RequestParam(defaultValue = "10") int size,
             @Parameter(description = "Filtro de estado: ALL, RECLUTANDO, EN_JUEGO, FINALIZADO", example = "ALL")
-            @RequestParam(required = false, defaultValue = "ALL") String estado) {
-        Block<Torneo> block = torneoService.buscarTorneos(null, estado, page, size);
+            @RequestParam(required = false, defaultValue = "ALL") String estado,
+            @Parameter(description = "Filtro de búsqueda por nombre", example = "Copa")
+            @RequestParam(required = false) String filtro) {
+        Block<Torneo> block = torneoService.buscarTorneos(filtro, estado, page, size);
         return TorneoConversor.toBlockTorneoDtos(block);
     }
 
@@ -386,32 +394,7 @@ public class TorneoController {
         return TorneoConversor.toTorneoDto(torneo);
     }
 
-    @GetMapping("/search")
-    @Operation(
-            summary = "Buscar torneos por nombre (paginado)",
-            description = "Busca torneos cuyo nombre contenga el filtro proporcionado, con paginación."
-    )
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Resultados de la búsqueda paginados",
-                    content = @Content(schema = @Schema(implementation = BlockDto.class))),
-            @ApiResponse(responseCode = "401", description = "No autorizado",
-                    content = @Content)
-    })
-    public BlockDto<TorneoDto> buscarTorneos(
-            @Parameter(hidden = true) @RequestAttribute Long userId,
-            @Parameter(description = "Filtro de búsqueda por nombre", example = "Copa")
-            @RequestParam(required = false) String filtro,
-            @Parameter(description = "Número de página (0-based)", example = "0")
-            @RequestParam(defaultValue = "0") int page,
-            @Parameter(description = "Tamaño de página", example = "10")
-            @RequestParam(defaultValue = "10") int size,
-            @Parameter(description = "Filtro de estado: ALL, RECLUTANDO, EN_JUEGO, FINALIZADO", example = "ALL")
-            @RequestParam(required = false, defaultValue = "ALL") String estado) {
-
-        Block<Torneo> block = torneoService.buscarTorneos(filtro, estado, page, size);
-        return TorneoConversor.toBlockTorneoDtos(block);
-    }
-    @GetMapping("/{id}/enrollment-requests")
+    @GetMapping("/{id}/inscripciones")
     @ResponseStatus(HttpStatus.OK)
     @Operation(
             summary = "Obtener solicitudes de inscripción pendientes",
@@ -432,17 +415,17 @@ public class TorneoController {
         return solicitudes.stream().map(this::toSolicitudDto).collect(Collectors.toList());
     }
 
-    @PostMapping("/{id}/enrollment-requests/{solicitudId}/approve")
+    @PatchMapping("/{id}/inscripciones/{solicitudId}")
     @ResponseStatus(HttpStatus.OK)
     @Operation(
-            summary = "Aprobar una solicitud de inscripción",
-            description = "Acepta una solicitud de inscripción pendiente. El solicitante y el equipo quedarán inscritos en el torneo. " +
-                    "Solo el organizador puede aprobar solicitudes."
+            summary = "Aprobar o rechazar una solicitud de inscripción",
+            description = "Actualiza el estado de una solicitud de inscripción pendiente a APROBADA o RECHAZADA. " +
+                    "Solo el organizador puede gestionar solicitudes."
     )
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Solicitud aprobada e inscripción creada",
+            @ApiResponse(responseCode = "200", description = "Solicitud gestionada",
                     content = @Content(schema = @Schema(implementation = TorneoDto.class))),
-            @ApiResponse(responseCode = "400", description = "La solicitud no está PENDIENTE o el torneo ya no está RECLUTANDO",
+            @ApiResponse(responseCode = "400", description = "Estado no soportado, la solicitud no está PENDIENTE o el torneo ya no está RECLUTANDO",
                     content = @Content),
             @ApiResponse(responseCode = "401", description = "No autorizado",
                     content = @Content),
@@ -451,42 +434,22 @@ public class TorneoController {
             @ApiResponse(responseCode = "404", description = "Solicitud o torneo no encontrado",
                     content = @Content)
     })
-    public TorneoDto aprobarSolicitud(
+    public TorneoDto actualizarInscripcion(
             @Parameter(hidden = true) @RequestAttribute Long userId,
             @Parameter(description = "ID del torneo", example = "1") @PathVariable Long id,
-            @Parameter(description = "ID de la solicitud", example = "10") @PathVariable Long solicitudId)
-            throws InstanceNotFoundException, PermissionException {
-
-        torneoService.aprobarInscripcion(userId, solicitudId);
-        Torneo torneo = torneoService.consultarTorneo(id);
-        return TorneoConversor.toTorneoDto(torneo);
-    }
-
-    @PostMapping("/{id}/enrollment-requests/{solicitudId}/reject")
-    @ResponseStatus(HttpStatus.OK)
-    @Operation(
-            summary = "Rechazar una solicitud de inscripción",
-            description = "Rechaza una solicitud de inscripción pendiente. " +
-                    "Solo el organizador puede rechazar solicitudes."
-    )
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Solicitud rechazada"),
-            @ApiResponse(responseCode = "400", description = "La solicitud no está PENDIENTE o el torneo ya no está RECLUTANDO",
-                    content = @Content),
-            @ApiResponse(responseCode = "401", description = "No autorizado",
-                    content = @Content),
-            @ApiResponse(responseCode = "403", description = "El usuario no es el organizador del torneo",
-                    content = @Content),
-            @ApiResponse(responseCode = "404", description = "Solicitud o torneo no encontrado",
-                    content = @Content)
-    })
-    public void rechazarSolicitud(
-            @Parameter(hidden = true) @RequestAttribute Long userId,
-            @Parameter(description = "ID del torneo", example = "1") @PathVariable Long id,
-            @Parameter(description = "ID de la solicitud", example = "10") @PathVariable Long solicitudId)
+            @Parameter(description = "ID de la solicitud", example = "10") @PathVariable Long solicitudId,
+            @RequestBody ActualizarInscripcionParamsDto params)
             throws InstanceNotFoundException, PermissionException, IllegalArgumentException {
 
-        torneoService.rechazarInscripcion(userId, solicitudId);
+        if ("APROBADA".equals(params.getEstado())) {
+            torneoService.aprobarInscripcion(userId, solicitudId);
+        } else if ("RECHAZADA".equals(params.getEstado())) {
+            torneoService.rechazarInscripcion(userId, solicitudId);
+        } else {
+            throw new IllegalArgumentException("Estado de inscripción no soportado: " + params.getEstado());
+        }
+        Torneo torneo = torneoService.consultarTorneo(id);
+        return TorneoConversor.toTorneoDto(torneo);
     }
 
     @GetMapping("/{id}/jornadas")
@@ -495,7 +458,7 @@ public class TorneoController {
         return TorneoConversor.toJornadaDtos(torneoService.obtenerJornadas(id));
     }
 
-    @GetMapping("/solicitud/{solicitudId}")
+    @GetMapping("/inscripciones/{solicitudId}")
     @ResponseStatus(HttpStatus.OK)
     @Operation(
             summary = "Obtener una solicitud de inscripción por su ID",

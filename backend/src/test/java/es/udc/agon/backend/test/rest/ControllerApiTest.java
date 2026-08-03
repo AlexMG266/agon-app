@@ -2,6 +2,7 @@ package es.udc.agon.backend.test.rest;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -102,7 +103,7 @@ public class ControllerApiTest {
     }
 
     private Long inscribirEquipoEnTorneo(User cap, Equipo equipo, Long torneoId) throws Exception {
-        String solicitud = mockMvc.perform(post("/tournaments/" + torneoId + "/enroll")
+        String solicitud = mockMvc.perform(post("/tournaments/" + torneoId + "/inscripciones")
                         .header("Authorization", "Bearer " + tokenDe(cap))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("{\"equipoId\": " + equipo.getId() + "}"))
@@ -112,14 +113,15 @@ public class ControllerApiTest {
     }
 
     private void unirMiembro(User cap, User jugador, Equipo equipo) throws Exception {
-        String solicitud = mockMvc.perform(post("/teams/peticiones")
+        String solicitud = mockMvc.perform(post("/teams/solicitudes")
                         .header("Authorization", "Bearer " + tokenDe(jugador))
-                        .param("codigoEquipo", equipo.getCodigoEquipo()))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"codigoEquipo\": \"" + equipo.getCodigoEquipo() + "\"}"))
                 .andExpect(status().isCreated())
                 .andReturn().getResponse().getContentAsString();
         Long solicitudId = objectMapper.readTree(solicitud).get("id").asLong();
 
-        mockMvc.perform(post("/teams/solicitudes/" + solicitudId + "/responder")
+        mockMvc.perform(patch("/teams/solicitudes/" + solicitudId)
                         .header("Authorization", "Bearer " + tokenDe(cap))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("""
@@ -469,7 +471,7 @@ public class ControllerApiTest {
 
         Long torneoId = objectMapper.readTree(respuesta).get("id").asLong();
 
-        String solicitud1 = mockMvc.perform(post("/tournaments/" + torneoId + "/enroll")
+        String solicitud1 = mockMvc.perform(post("/tournaments/" + torneoId + "/inscripciones")
                         .header("Authorization", "Bearer " + tokenDe(cap1))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("{\"equipoId\": " + equipo1.getId() + "}"))
@@ -477,7 +479,7 @@ public class ControllerApiTest {
                 .andReturn().getResponse().getContentAsString();
         Long solicitud1Id = objectMapper.readTree(solicitud1).get("id").asLong();
 
-        String solicitud2 = mockMvc.perform(post("/tournaments/" + torneoId + "/enroll")
+        String solicitud2 = mockMvc.perform(post("/tournaments/" + torneoId + "/inscripciones")
                         .header("Authorization", "Bearer " + tokenDe(cap2))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("{\"equipoId\": " + equipo2.getId() + "}"))
@@ -485,19 +487,25 @@ public class ControllerApiTest {
                 .andReturn().getResponse().getContentAsString();
         Long solicitud2Id = objectMapper.readTree(solicitud2).get("id").asLong();
 
-        mockMvc.perform(post("/tournaments/" + torneoId + "/enrollment-requests/" + solicitud1Id + "/approve")
-                        .header("Authorization", "Bearer " + tokenDe(org)))
+        mockMvc.perform(patch("/tournaments/" + torneoId + "/inscripciones/" + solicitud1Id)
+                        .header("Authorization", "Bearer " + tokenDe(org))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"estado\": \"APROBADA\"}"))
                 .andExpect(status().isOk());
 
-        mockMvc.perform(post("/tournaments/" + torneoId + "/enrollment-requests/" + solicitud2Id + "/approve")
-                        .header("Authorization", "Bearer " + tokenDe(org)))
+        mockMvc.perform(patch("/tournaments/" + torneoId + "/inscripciones/" + solicitud2Id)
+                        .header("Authorization", "Bearer " + tokenDe(org))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"estado\": \"APROBADA\"}"))
                 .andExpect(status().isOk());
 
-        mockMvc.perform(post("/tournaments/" + torneoId + "/close")
-                        .header("Authorization", "Bearer " + tokenDe(org)))
+        mockMvc.perform(patch("/tournaments/" + torneoId)
+                        .header("Authorization", "Bearer " + tokenDe(org))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"estado\": \"INSCRIPCION_CERRADA\"}"))
                 .andExpect(status().isOk());
 
-        mockMvc.perform(post("/tournaments/" + torneoId + "/configure")
+        mockMvc.perform(patch("/tournaments/" + torneoId + "/estructura")
                         .header("Authorization", "Bearer " + tokenDe(org))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("""
@@ -520,7 +528,7 @@ public class ControllerApiTest {
         Long encuentroId = objectMapper.readTree(jornadas)
                 .get(0).get("encuentros").get(0).get("id").asLong();
 
-        mockMvc.perform(post("/encuentros/" + encuentroId + "/resultado")
+        mockMvc.perform(put("/encuentros/" + encuentroId + "/resultado")
                         .header("Authorization", "Bearer " + tokenDe(cap1))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("""
@@ -535,7 +543,7 @@ public class ControllerApiTest {
                 .andExpect(status().isNoContent());
 
         // segundo registro del mismo resultado: el encuentro ya esta jugado
-        mockMvc.perform(post("/encuentros/" + encuentroId + "/resultado")
+        mockMvc.perform(put("/encuentros/" + encuentroId + "/resultado")
                         .header("Authorization", "Bearer " + tokenDe(cap2))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("""
@@ -563,7 +571,7 @@ public class ControllerApiTest {
     public void testObtenerMisPartidosDevuelve200() throws Exception {
         User user = crearUsuario("matchUser", "match@mail.com");
 
-        mockMvc.perform(get("/encuentros/mis-partidos")
+        mockMvc.perform(get("/encuentros")
                         .header("Authorization", "Bearer " + tokenDe(user)))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$").isArray());
@@ -604,14 +612,15 @@ public class ControllerApiTest {
         User jugador = crearUsuario("jugPet", "jugpet@mail.com");
         Equipo equipo = crearEquipoDe(cap, "Equipo Peticion");
 
-        String solicitud = mockMvc.perform(post("/teams/peticiones")
+        String solicitud = mockMvc.perform(post("/teams/solicitudes")
                         .header("Authorization", "Bearer " + tokenDe(jugador))
-                        .param("codigoEquipo", equipo.getCodigoEquipo()))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"codigoEquipo\": \"" + equipo.getCodigoEquipo() + "\"}"))
                 .andExpect(status().isCreated())
                 .andReturn().getResponse().getContentAsString();
         Long solicitudId = objectMapper.readTree(solicitud).get("id").asLong();
 
-        mockMvc.perform(post("/teams/solicitudes/" + solicitudId + "/responder")
+        mockMvc.perform(patch("/teams/solicitudes/" + solicitudId)
                         .header("Authorization", "Bearer " + tokenDe(cap))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("""
@@ -631,9 +640,10 @@ public class ControllerApiTest {
         User jugador = crearUsuario("jugPro", "jugpro@mail.com");
         Equipo equipo = crearEquipoDe(cap, "Equipo Propuesta");
 
-        mockMvc.perform(post("/teams/" + equipo.getId() + "/propuestas")
+        mockMvc.perform(post("/teams/" + equipo.getId() + "/solicitudes")
                         .header("Authorization", "Bearer " + tokenDe(cap))
-                        .param("jugadorId", String.valueOf(jugador.getId())))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"jugadorId\": " + jugador.getId() + "}"))
                 .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.tipoSolicitud").value("PROPUESTA"));
     }
@@ -645,7 +655,7 @@ public class ControllerApiTest {
         Equipo equipo = crearEquipoDe(cap, "Equipo Abandono");
         unirMiembro(cap, jugador, equipo);
 
-        mockMvc.perform(post("/teams/" + equipo.getId() + "/leave")
+        mockMvc.perform(delete("/teams/" + equipo.getId() + "/miembros/me")
                         .header("Authorization", "Bearer " + tokenDe(jugador)))
                 .andExpect(status().isNoContent());
     }
@@ -657,7 +667,7 @@ public class ControllerApiTest {
         Equipo equipo = crearEquipoDe(cap, "Equipo Expulsion");
         unirMiembro(cap, jugador, equipo);
 
-        mockMvc.perform(post("/teams/" + equipo.getId() + "/members/" + jugador.getId() + "/kick")
+        mockMvc.perform(delete("/teams/" + equipo.getId() + "/miembros/" + jugador.getId())
                         .header("Authorization", "Bearer " + tokenDe(cap)))
                 .andExpect(status().isNoContent());
     }
@@ -748,7 +758,7 @@ public class ControllerApiTest {
         User user = crearUsuario("userFol", "userfol@mail.com");
         Long torneoId = crearTorneoPorHttp(org, "Torneo Seguido");
 
-        mockMvc.perform(post("/tournaments/" + torneoId + "/follow")
+        mockMvc.perform(put("/tournaments/" + torneoId + "/seguidores/me")
                         .header("Authorization", "Bearer " + tokenDe(user)))
                 .andExpect(status().isOk());
 
@@ -758,7 +768,7 @@ public class ControllerApiTest {
                 .andExpect(jsonPath("$.length()").value(1))
                 .andExpect(jsonPath("$[0].id").value(torneoId));
 
-        mockMvc.perform(delete("/tournaments/" + torneoId + "/follow")
+        mockMvc.perform(delete("/tournaments/" + torneoId + "/seguidores/me")
                         .header("Authorization", "Bearer " + tokenDe(user)))
                 .andExpect(status().isOk());
 
@@ -776,8 +786,10 @@ public class ControllerApiTest {
         Equipo equipo = crearEquipoDe(cap, "Equipo Inscrito");
         Long solicitudId = inscribirEquipoEnTorneo(cap, equipo, torneoId);
 
-        mockMvc.perform(post("/tournaments/" + torneoId + "/enrollment-requests/" + solicitudId + "/approve")
-                        .header("Authorization", "Bearer " + tokenDe(org)))
+        mockMvc.perform(patch("/tournaments/" + torneoId + "/inscripciones/" + solicitudId)
+                        .header("Authorization", "Bearer " + tokenDe(org))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"estado\": \"APROBADA\"}"))
                 .andExpect(status().isOk());
 
         mockMvc.perform(get("/tournaments/enrolled")
@@ -814,7 +826,7 @@ public class ControllerApiTest {
         User org = crearUsuario("orgBusc", "orgbusc@mail.com");
         crearTorneoPorHttp(org, "Torneo BusquedaUnicaApi");
 
-        mockMvc.perform(get("/tournaments/search")
+        mockMvc.perform(get("/tournaments")
                         .header("Authorization", "Bearer " + tokenDe(org))
                         .param("filtro", "BusquedaUnicaApi"))
                 .andExpect(status().isOk())
@@ -829,14 +841,16 @@ public class ControllerApiTest {
         Equipo equipo = crearEquipoDe(cap, "Equipo Solicitud");
         Long solicitudId = inscribirEquipoEnTorneo(cap, equipo, torneoId);
 
-        mockMvc.perform(get("/tournaments/" + torneoId + "/enrollment-requests")
+        mockMvc.perform(get("/tournaments/" + torneoId + "/inscripciones")
                         .header("Authorization", "Bearer " + tokenDe(org)))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.length()").value(1))
                 .andExpect(jsonPath("$[0].id").value(solicitudId));
 
-        mockMvc.perform(post("/tournaments/" + torneoId + "/enrollment-requests/" + solicitudId + "/reject")
-                        .header("Authorization", "Bearer " + tokenDe(org)))
+        mockMvc.perform(patch("/tournaments/" + torneoId + "/inscripciones/" + solicitudId)
+                        .header("Authorization", "Bearer " + tokenDe(org))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"estado\": \"RECHAZADA\"}"))
                 .andExpect(status().isOk());
     }
 
@@ -848,7 +862,7 @@ public class ControllerApiTest {
         Equipo equipo = crearEquipoDe(cap, "Equipo Solicitud Id");
         Long solicitudId = inscribirEquipoEnTorneo(cap, equipo, torneoId);
 
-        mockMvc.perform(get("/tournaments/solicitud/" + solicitudId)
+        mockMvc.perform(get("/tournaments/inscripciones/" + solicitudId)
                         .header("Authorization", "Bearer " + tokenDe(cap)))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.id").value(solicitudId))

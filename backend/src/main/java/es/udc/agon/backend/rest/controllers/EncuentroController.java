@@ -16,8 +16,10 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestAttribute;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -44,7 +46,7 @@ public class EncuentroController {
     @Autowired
     private IEncuentroService encuentroService;
 
-    @GetMapping("/mis-partidos")
+    @GetMapping
     @Operation(
             summary = "Obtener los encuentros del usuario agrupados por fecha",
             description = "Recupera todos los encuentros de los equipos del usuario autenticado, " +
@@ -67,7 +69,7 @@ public class EncuentroController {
         return TorneoConversor.toFechaEncuentrosDtos(encuentroService.consultarEncuentrosPropios(userId));
     }
 
-    @PostMapping("/{encuentroId}/resultado")
+    @PutMapping("/{encuentroId}/resultado")
     @Operation(
             summary = "Registrar el resultado de un encuentro",
             description = "Registra el resultado de un encuentro. Solo puede hacerlo el capitán de " +
@@ -101,7 +103,7 @@ public class EncuentroController {
         encuentroService.registrarResultado(userId, encuentroId, sets);
     }
 
-    @PostMapping("/{encuentroId}/aplazar")
+    @PostMapping("/{encuentroId}/aplazamientos")
     @Operation(
             summary = "Solicitar el aplazamiento de un encuentro",
             description = "El capitán de uno de los dos equipos solicita mover el encuentro a una " +
@@ -128,7 +130,7 @@ public class EncuentroController {
         encuentroService.solicitarAplazamiento(userId, encuentroId, params.getFecha(), params.getMotivo());
     }
 
-    @PostMapping("/solicitudes-aplazamiento/{solicitudId}/responder")
+    @PatchMapping("/aplazamientos/{solicitudId}")
     @Operation(
             summary = "Aceptar o rechazar una solicitud de aplazamiento",
             description = "El capitán del equipo contrario al solicitante acepta o rechaza el " +

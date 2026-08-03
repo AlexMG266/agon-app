@@ -20,9 +20,9 @@ export const getAllTournaments = async (page = 0, size = 10, estado = 'ALL') => 
     return await appFetch('GET', `/tournaments?page=${page}&size=${size}&estado=${encodeURIComponent(estado)}`);
 };
 
-// GET /tournaments/search?filtro=...: busca torneos por nombre (paginado).
+// GET /tournaments?filtro=...: busca torneos por nombre (paginado).
 export const searchTournaments = async (filtro, page = 0, size = 10, estado = 'ALL') => {
-    return await appFetch('GET', `/tournaments/search?filtro=${encodeURIComponent(filtro)}&page=${page}&size=${size}&estado=${encodeURIComponent(estado)}`);
+    return await appFetch('GET', `/tournaments?filtro=${encodeURIComponent(filtro)}&page=${page}&size=${size}&estado=${encodeURIComponent(estado)}`);
 };
 
 // GET /tournaments/by-code/{codigo}: busca un torneo por su código único.
@@ -30,43 +30,43 @@ export const getTournamentByCode = async (codigo) => {
     return await appFetch('GET', `/tournaments/by-code/${encodeURIComponent(codigo)}`);
 };
 
-// POST /tournaments/{id}/configure: configura estructura del torneo (tipo, grupos, playoff) y genera calendario.
+// PATCH /tournaments/{id}/estructura: configura estructura del torneo (tipo, grupos, playoff) y genera calendario.
 export const configureTournament = async (id, configData) => {
-    return await appFetch('POST', `/tournaments/${id}/configure`, configData);
+    return await appFetch('PATCH', `/tournaments/${id}/estructura`, configData);
 };
 
-// POST /tournaments/{id}/close: cierra las inscripciones del torneo.
+// PATCH /tournaments/{id}: cierra las inscripciones del torneo.
 export const closeTournament = async (id) => {
-    return await appFetch('POST', `/tournaments/${id}/close`);
+    return await appFetch('PATCH', `/tournaments/${id}`, { estado: 'INSCRIPCION_CERRADA' });
 };
 
-// POST /tournaments/{id}/enroll: solicita inscripción de un equipo en el torneo (con código opcional si es privado).
+// POST /tournaments/{id}/inscripciones: solicita inscripción de un equipo en el torneo (con código opcional si es privado).
 export const requestEnroll = async (tournamentId, equipoId, codigoTorneo) => {
     const body = { equipoId };
     if (codigoTorneo) {
         body.codigoTorneo = codigoTorneo;
     }
-    return await appFetch('POST', `/tournaments/${tournamentId}/enroll`, body);
+    return await appFetch('POST', `/tournaments/${tournamentId}/inscripciones`, body);
 };
 
-// GET /tournaments/{id}/enrollment-requests: obtiene solicitudes de inscripción pendientes.
+// GET /tournaments/{id}/inscripciones: obtiene solicitudes de inscripción pendientes.
 export const getPendingRequests = async (tournamentId) => {
-    return await appFetch('GET', `/tournaments/${tournamentId}/enrollment-requests`);
+    return await appFetch('GET', `/tournaments/${tournamentId}/inscripciones`);
 };
 
-// GET /tournaments/solicitud/{solicitudId}: obtiene una solicitud de inscripción por su ID.
+// GET /tournaments/inscripciones/{solicitudId}: obtiene una solicitud de inscripción por su ID.
 export const getSolicitud = async (solicitudId) => {
-    return await appFetch('GET', `/tournaments/solicitud/${solicitudId}`);
+    return await appFetch('GET', `/tournaments/inscripciones/${solicitudId}`);
 };
 
-// POST /tournaments/{id}/enrollment-requests/{solicitudId}/approve: aprueba una solicitud de inscripción.
+// PATCH /tournaments/{id}/inscripciones/{solicitudId}: aprueba una solicitud de inscripción.
 export const approveEnrollment = async (tournamentId, solicitudId) => {
-    return await appFetch('POST', `/tournaments/${tournamentId}/enrollment-requests/${solicitudId}/approve`);
+    return await appFetch('PATCH', `/tournaments/${tournamentId}/inscripciones/${solicitudId}`, { estado: 'APROBADA' });
 };
 
-// POST /tournaments/{id}/enrollment-requests/{solicitudId}/reject: rechaza una solicitud de inscripción.
+// PATCH /tournaments/{id}/inscripciones/{solicitudId}: rechaza una solicitud de inscripción.
 export const rejectEnrollment = async (tournamentId, solicitudId) => {
-    return await appFetch('POST', `/tournaments/${tournamentId}/enrollment-requests/${solicitudId}/reject`);
+    return await appFetch('PATCH', `/tournaments/${tournamentId}/inscripciones/${solicitudId}`, { estado: 'RECHAZADA' });
 };
 
 // GET /tournaments/followed: obtiene los torneos seguidos por el usuario autenticado.
@@ -79,14 +79,14 @@ export const getEnrolledTournaments = async () => {
     return await appFetch('GET', '/tournaments/enrolled');
 };
 
-// POST /tournaments/{id}/follow: sigue un torneo.
+// PUT /tournaments/{id}/seguidores/me: sigue un torneo.
 export const followTournament = async (id) => {
-    return await appFetch('POST', `/tournaments/${id}/follow`);
+    return await appFetch('PUT', `/tournaments/${id}/seguidores/me`);
 };
 
-// DELETE /tournaments/{id}/follow: deja de seguir un torneo.
+// DELETE /tournaments/{id}/seguidores/me: deja de seguir un torneo.
 export const unfollowTournament = async (id) => {
-    return await appFetch('DELETE', `/tournaments/${id}/follow`);
+    return await appFetch('DELETE', `/tournaments/${id}/seguidores/me`);
 };
 
 // PUT /tournaments/{id}: actualiza los datos editables de un torneo (solo organizador).
@@ -99,24 +99,24 @@ export const getTournamentJornadas = async (id) => {
     return await appFetch('GET', `/tournaments/${id}/jornadas`);
 };
 
-// GET /encuentros/mis-partidos: obtiene los encuentros del usuario agrupados por fecha.
+// GET /encuentros: obtiene los encuentros del usuario agrupados por fecha.
 export const getMyMatches = async () => {
-    return await appFetch('GET', '/encuentros/mis-partidos');
+    return await appFetch('GET', '/encuentros');
 };
 
-// POST /encuentros/{encuentroId}/resultado: registra el resultado de un encuentro (solo capitanes de los equipos).
+// PUT /encuentros/{encuentroId}/resultado: registra el resultado de un encuentro (solo capitanes de los equipos).
 export const registerResult = async (encuentroId, sets) => {
-    return await appFetch('POST', `/encuentros/${encuentroId}/resultado`, { sets });
+    return await appFetch('PUT', `/encuentros/${encuentroId}/resultado`, { sets });
 };
 
-// POST /encuentros/{encuentroId}/aplazar: solicita el aplazamiento de un encuentro a una nueva fecha.
+// POST /encuentros/{encuentroId}/aplazamientos: solicita el aplazamiento de un encuentro a una nueva fecha.
 export const solicitarAplazamiento = async (encuentroId, fecha, motivo) => {
-    return await appFetch('POST', `/encuentros/${encuentroId}/aplazar`, { fecha, motivo });
+    return await appFetch('POST', `/encuentros/${encuentroId}/aplazamientos`, { fecha, motivo });
 };
 
-// POST /encuentros/solicitudes-aplazamiento/{solicitudId}/responder: acepta o rechaza una solicitud de aplazamiento.
+// PATCH /encuentros/aplazamientos/{solicitudId}: acepta o rechaza una solicitud de aplazamiento.
 export const responderAplazamiento = async (solicitudId, aceptar) => {
-    return await appFetch('POST', `/encuentros/solicitudes-aplazamiento/${solicitudId}/responder`, { aceptar });
+    return await appFetch('PATCH', `/encuentros/aplazamientos/${solicitudId}`, { aceptar });
 };
 
 export default {

@@ -59,14 +59,14 @@ public class EquipoController {
         return EquipoConversor.toEquipoDto(equipo);
     }
 
-    @PostMapping("/{id}/propuestas")
+    @PostMapping("/{id}/solicitudes")
     @ResponseStatus(HttpStatus.CREATED)
     @Operation(
-            summary = "Proponer unirse a un miembro (Invitación proactiva)",
+            summary = "Proponer unirse a un jugador (invitación proactiva)",
             description = "Envía una propuesta de unión a un jugador específico. Solo puede realizarlo el creador del equipo."
     )
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "201", description = "Propuesta de unión generada correctamente",
+            @ApiResponse(responseCode = "201", description = "Propuesta de unión creada correctamente",
                     content = @Content(schema = @Schema(implementation = SolicitudDto.class))),
             @ApiResponse(responseCode = "400", description = "La propuesta no es válida (ej. el equipo está lleno, el usuario ya tiene solicitudes activas)",
                     content = @Content),
@@ -79,14 +79,14 @@ public class EquipoController {
     })
     public SolicitudDto crearPropuestaDeUnion(
             @Parameter(hidden = true) @RequestAttribute Long userId,
-            @Parameter(description = "ID del equipo al cual invitar", example = "1") @PathVariable Long id,
-            @Parameter(description = "ID del jugador invitado", example = "87") @RequestParam Long jugadorId)
+            @Parameter(description = "ID del equipo", example = "1") @PathVariable Long id,
+            @Validated @RequestBody CrearSolicitudParamsDto params)
             throws InstanceNotFoundException, PermissionException, IllegalArgumentException {
-        Solicitud solicitud = equipoService.crearPropuestaDeUnion(userId, id, jugadorId);
+        Solicitud solicitud = equipoService.crearPropuestaDeUnion(userId, id, params.getJugadorId());
         return EquipoConversor.toSolicitudDto(solicitud);
     }
 
-    @PostMapping("/peticiones")
+    @PostMapping("/solicitudes")
     @ResponseStatus(HttpStatus.CREATED)
     @Operation(
             summary = "Solicitar unirse a un equipo mediante código alfanumérico",
@@ -104,14 +104,13 @@ public class EquipoController {
     })
     public SolicitudDto crearPeticionDeUnion(
             @Parameter(hidden = true) @RequestAttribute Long userId,
-            @Parameter(description = "Código de invitación único del equipo (8 caracteres alfanuméricos)", example = "a7K9pX2L")
-            @RequestParam(name = "codigoEquipo", required = true) String codigoEquipo)
+            @Validated @RequestBody CrearSolicitudParamsDto params)
             throws InstanceNotFoundException, IllegalArgumentException {
-        Solicitud solicitud = equipoService.crearPeticionDeUnion(userId, codigoEquipo);
+        Solicitud solicitud = equipoService.crearPeticionDeUnion(userId, params.getCodigoEquipo());
         return EquipoConversor.toSolicitudDto(solicitud);
     }
 
-    @PostMapping("/solicitudes/{solicitudId}/responder")
+    @PatchMapping("/solicitudes/{solicitudId}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     @Operation(
             summary = "Responder a una solicitud (PROPUESTA o PETICION)",
@@ -136,7 +135,7 @@ public class EquipoController {
         equipoService.responderSolicitud(userId, solicitudId, params.getAceptar());
     }
 
-    @PostMapping("/{id}/leave")
+    @DeleteMapping("/{id}/miembros/me")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     @Operation(
             summary = "Abandonar el equipo",
@@ -160,7 +159,7 @@ public class EquipoController {
         equipoService.abandonarEquipo(userId, id);
     }
 
-    @PostMapping("/{id}/members/{memberId}/kick")
+    @DeleteMapping("/{id}/miembros/{memberId}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     @Operation(
             summary = "Expulsar a un miembro del equipo",

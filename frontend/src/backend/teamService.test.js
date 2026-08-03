@@ -64,36 +64,39 @@ describe('teamService', () => {
     expect(fetch).toHaveBeenCalledWith(`${BACKEND}/teams/1`, expect.objectContaining({ method: 'DELETE' }));
   });
 
-  it('requestJoinWithCode envia POST con el codigo como query', async () => {
+  it('requestJoinWithCode envia POST con el codigo en el body', async () => {
     fetch.mockResolvedValue(jsonResponse({}, 200));
     await teamService.requestJoinWithCode('ABC123');
-    expect(fetch).toHaveBeenCalledWith(`${BACKEND}/teams/peticiones?codigoEquipo=ABC123`, expect.objectContaining({ method: 'POST' }));
+    expect(fetch).toHaveBeenCalledWith(`${BACKEND}/teams/solicitudes`, expect.objectContaining({
+      method: 'POST',
+      body: JSON.stringify({ codigoEquipo: 'ABC123' })
+    }));
   });
 
-  it('leaveTeam envia POST /teams/{id}/leave', async () => {
+  it('leaveTeam envia DELETE /teams/{id}/miembros/me', async () => {
     fetch.mockResolvedValue(jsonResponse({}, 200));
     await teamService.leaveTeam(1);
-    expect(fetch).toHaveBeenCalledWith(`${BACKEND}/teams/1/leave`, expect.objectContaining({ method: 'POST' }));
+    expect(fetch).toHaveBeenCalledWith(`${BACKEND}/teams/1/miembros/me`, expect.objectContaining({ method: 'DELETE' }));
   });
 
-  it('dissolveTeam envia POST /teams/{id}/disband', async () => {
+  it('dissolveTeam envia DELETE /teams/{id}', async () => {
     fetch.mockResolvedValue(jsonResponse({}, 200));
     await teamService.dissolveTeam(1);
-    expect(fetch).toHaveBeenCalledWith(`${BACKEND}/teams/1/disband`, expect.objectContaining({ method: 'POST' }));
+    expect(fetch).toHaveBeenCalledWith(`${BACKEND}/teams/1`, expect.objectContaining({ method: 'DELETE' }));
   });
 
-  it('respondToRequest envia POST con aceptar', async () => {
+  it('respondToRequest envia PATCH con aceptar', async () => {
     fetch.mockResolvedValue(jsonResponse({}, 200));
     await teamService.respondToRequest(7, true);
-    expect(fetch).toHaveBeenCalledWith(`${BACKEND}/teams/solicitudes/7/responder`, expect.objectContaining({
-      method: 'POST',
+    expect(fetch).toHaveBeenCalledWith(`${BACKEND}/teams/solicitudes/7`, expect.objectContaining({
+      method: 'PATCH',
       body: JSON.stringify({ aceptar: true })
     }));
   });
 
-  it('kickMember envia POST /teams/{id}/members/{memberId}/kick', async () => {
+  it('kickMember envia DELETE /teams/{id}/miembros/{memberId}', async () => {
     fetch.mockResolvedValue(jsonResponse({}, 200));
     await teamService.kickMember(1, 2);
-    expect(fetch).toHaveBeenCalledWith(`${BACKEND}/teams/1/members/2/kick`, expect.objectContaining({ method: 'POST' }));
+    expect(fetch).toHaveBeenCalledWith(`${BACKEND}/teams/1/miembros/2`, expect.objectContaining({ method: 'DELETE' }));
   });
 });

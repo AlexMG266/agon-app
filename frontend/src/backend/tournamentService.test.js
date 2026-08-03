@@ -58,7 +58,7 @@ describe('tournamentService', () => {
   it('searchTournaments codifica el filtro', async () => {
     fetch.mockResolvedValue(jsonResponse([]));
     await tournamentService.searchTournaments('liga de prueba', 1, 20, 'ALL');
-    expect(fetch).toHaveBeenCalledWith(`${BACKEND}/tournaments/search?filtro=liga%20de%20prueba&page=1&size=20&estado=ALL`, expect.objectContaining({ method: 'GET' }));
+    expect(fetch).toHaveBeenCalledWith(`${BACKEND}/tournaments?filtro=liga%20de%20prueba&page=1&size=20&estado=ALL`, expect.objectContaining({ method: 'GET' }));
   });
 
   it('getTournamentByCode pide GET /tournaments/by-code/{codigo}', async () => {
@@ -67,25 +67,28 @@ describe('tournamentService', () => {
     expect(fetch).toHaveBeenCalledWith(`${BACKEND}/tournaments/by-code/ABC123`, expect.objectContaining({ method: 'GET' }));
   });
 
-  it('configureTournament envia POST con la config', async () => {
+  it('configureTournament envia PATCH con la config', async () => {
     fetch.mockResolvedValue(jsonResponse(torneo));
     await tournamentService.configureTournament(1, config);
-    expect(fetch).toHaveBeenCalledWith(`${BACKEND}/tournaments/1/configure`, expect.objectContaining({
-      method: 'POST',
+    expect(fetch).toHaveBeenCalledWith(`${BACKEND}/tournaments/1/estructura`, expect.objectContaining({
+      method: 'PATCH',
       body: JSON.stringify(config)
     }));
   });
 
-  it('closeTournament envia POST /tournaments/{id}/close', async () => {
+  it('closeTournament envia PATCH /tournaments/{id}', async () => {
     fetch.mockResolvedValue(jsonResponse({}, 200));
     await tournamentService.closeTournament(1);
-    expect(fetch).toHaveBeenCalledWith(`${BACKEND}/tournaments/1/close`, expect.objectContaining({ method: 'POST' }));
+    expect(fetch).toHaveBeenCalledWith(`${BACKEND}/tournaments/1`, expect.objectContaining({
+      method: 'PATCH',
+      body: JSON.stringify({ estado: 'INSCRIPCION_CERRADA' })
+    }));
   });
 
   it('requestEnroll envia el equipo', async () => {
     fetch.mockResolvedValue(jsonResponse({}, 200));
     await tournamentService.requestEnroll(1, 9);
-    expect(fetch).toHaveBeenCalledWith(`${BACKEND}/tournaments/1/enroll`, expect.objectContaining({
+    expect(fetch).toHaveBeenCalledWith(`${BACKEND}/tournaments/1/inscripciones`, expect.objectContaining({
       method: 'POST',
       body: JSON.stringify({ equipoId: 9 })
     }));
@@ -94,34 +97,40 @@ describe('tournamentService', () => {
   it('requestEnroll incluye el codigo si lo hay', async () => {
     fetch.mockResolvedValue(jsonResponse({}, 200));
     await tournamentService.requestEnroll(1, 9, 'SECRETO');
-    expect(fetch).toHaveBeenCalledWith(`${BACKEND}/tournaments/1/enroll`, expect.objectContaining({
+    expect(fetch).toHaveBeenCalledWith(`${BACKEND}/tournaments/1/inscripciones`, expect.objectContaining({
       method: 'POST',
       body: JSON.stringify({ equipoId: 9, codigoTorneo: 'SECRETO' })
     }));
   });
 
-  it('getPendingRequests pide GET /tournaments/{id}/enrollment-requests', async () => {
+  it('getPendingRequests pide GET /tournaments/{id}/inscripciones', async () => {
     fetch.mockResolvedValue(jsonResponse([]));
     await tournamentService.getPendingRequests(1);
-    expect(fetch).toHaveBeenCalledWith(`${BACKEND}/tournaments/1/enrollment-requests`, expect.objectContaining({ method: 'GET' }));
+    expect(fetch).toHaveBeenCalledWith(`${BACKEND}/tournaments/1/inscripciones`, expect.objectContaining({ method: 'GET' }));
   });
 
-  it('getSolicitud pide GET /tournaments/solicitud/{id}', async () => {
+  it('getSolicitud pide GET /tournaments/inscripciones/{id}', async () => {
     fetch.mockResolvedValue(jsonResponse({}));
     await tournamentService.getSolicitud(3);
-    expect(fetch).toHaveBeenCalledWith(`${BACKEND}/tournaments/solicitud/3`, expect.objectContaining({ method: 'GET' }));
+    expect(fetch).toHaveBeenCalledWith(`${BACKEND}/tournaments/inscripciones/3`, expect.objectContaining({ method: 'GET' }));
   });
 
-  it('approveEnrollment envia POST approve', async () => {
+  it('approveEnrollment envia PATCH con estado APROBADA', async () => {
     fetch.mockResolvedValue(jsonResponse({}, 200));
     await tournamentService.approveEnrollment(1, 3);
-    expect(fetch).toHaveBeenCalledWith(`${BACKEND}/tournaments/1/enrollment-requests/3/approve`, expect.objectContaining({ method: 'POST' }));
+    expect(fetch).toHaveBeenCalledWith(`${BACKEND}/tournaments/1/inscripciones/3`, expect.objectContaining({
+      method: 'PATCH',
+      body: JSON.stringify({ estado: 'APROBADA' })
+    }));
   });
 
-  it('rejectEnrollment envia POST reject', async () => {
+  it('rejectEnrollment envia PATCH con estado RECHAZADA', async () => {
     fetch.mockResolvedValue(jsonResponse({}, 200));
     await tournamentService.rejectEnrollment(1, 3);
-    expect(fetch).toHaveBeenCalledWith(`${BACKEND}/tournaments/1/enrollment-requests/3/reject`, expect.objectContaining({ method: 'POST' }));
+    expect(fetch).toHaveBeenCalledWith(`${BACKEND}/tournaments/1/inscripciones/3`, expect.objectContaining({
+      method: 'PATCH',
+      body: JSON.stringify({ estado: 'RECHAZADA' })
+    }));
   });
 
   it('getFollowedTournaments pide GET /tournaments/followed', async () => {
@@ -136,16 +145,16 @@ describe('tournamentService', () => {
     expect(fetch).toHaveBeenCalledWith(`${BACKEND}/tournaments/enrolled`, expect.objectContaining({ method: 'GET' }));
   });
 
-  it('followTournament envia POST follow', async () => {
+  it('followTournament envia PUT /seguidores/me', async () => {
     fetch.mockResolvedValue(jsonResponse({}, 200));
     await tournamentService.followTournament(1);
-    expect(fetch).toHaveBeenCalledWith(`${BACKEND}/tournaments/1/follow`, expect.objectContaining({ method: 'POST' }));
+    expect(fetch).toHaveBeenCalledWith(`${BACKEND}/tournaments/1/seguidores/me`, expect.objectContaining({ method: 'PUT' }));
   });
 
-  it('unfollowTournament envia DELETE follow', async () => {
+  it('unfollowTournament envia DELETE /seguidores/me', async () => {
     fetch.mockResolvedValue(jsonResponse({}, 200));
     await tournamentService.unfollowTournament(1);
-    expect(fetch).toHaveBeenCalledWith(`${BACKEND}/tournaments/1/follow`, expect.objectContaining({ method: 'DELETE' }));
+    expect(fetch).toHaveBeenCalledWith(`${BACKEND}/tournaments/1/seguidores/me`, expect.objectContaining({ method: 'DELETE' }));
   });
 
   it('updateTournament envia PUT con los datos', async () => {
@@ -163,18 +172,18 @@ describe('tournamentService', () => {
     expect(fetch).toHaveBeenCalledWith(`${BACKEND}/tournaments/1/jornadas`, expect.objectContaining({ method: 'GET' }));
   });
 
-  it('getMyMatches pide GET /encuentros/mis-partidos', async () => {
+  it('getMyMatches pide GET /encuentros', async () => {
     fetch.mockResolvedValue(jsonResponse([]));
     await tournamentService.getMyMatches();
-    expect(fetch).toHaveBeenCalledWith(`${BACKEND}/encuentros/mis-partidos`, expect.objectContaining({ method: 'GET' }));
+    expect(fetch).toHaveBeenCalledWith(`${BACKEND}/encuentros`, expect.objectContaining({ method: 'GET' }));
   });
 
-  it('registerResult envia POST con los sets', async () => {
+  it('registerResult envia PUT con los sets', async () => {
     fetch.mockResolvedValue(jsonResponse({}, 200));
     const sets = [{ numeroSet: 1, golesLocal: 25, golesVisitante: 20 }];
     await tournamentService.registerResult(1, sets);
     expect(fetch).toHaveBeenCalledWith(`${BACKEND}/encuentros/1/resultado`, expect.objectContaining({
-      method: 'POST',
+      method: 'PUT',
       body: JSON.stringify({ sets })
     }));
   });
@@ -182,7 +191,7 @@ describe('tournamentService', () => {
   it('solicitarAplazamiento envia POST con la fecha y el motivo', async () => {
     fetch.mockResolvedValue(jsonResponse({}, 200));
     await tournamentService.solicitarAplazamiento(7, '2026-09-10T19:00', 'no podemos jugar');
-    expect(fetch).toHaveBeenCalledWith(`${BACKEND}/encuentros/7/aplazar`, expect.objectContaining({
+    expect(fetch).toHaveBeenCalledWith(`${BACKEND}/encuentros/7/aplazamientos`, expect.objectContaining({
       method: 'POST',
       body: JSON.stringify({ fecha: '2026-09-10T19:00', motivo: 'no podemos jugar' })
     }));
@@ -191,26 +200,26 @@ describe('tournamentService', () => {
   it('solicitarAplazamiento permite omitir el motivo', async () => {
     fetch.mockResolvedValue(jsonResponse({}, 200));
     await tournamentService.solicitarAplazamiento(7, '2026-09-10T19:00');
-    expect(fetch).toHaveBeenCalledWith(`${BACKEND}/encuentros/7/aplazar`, expect.objectContaining({
+    expect(fetch).toHaveBeenCalledWith(`${BACKEND}/encuentros/7/aplazamientos`, expect.objectContaining({
       method: 'POST',
       body: JSON.stringify({ fecha: '2026-09-10T19:00', motivo: undefined })
     }));
   });
 
-  it('responderAplazamiento envia POST con aceptar', async () => {
+  it('responderAplazamiento envia PATCH con aceptar', async () => {
     fetch.mockResolvedValue(jsonResponse({}, 200));
     await tournamentService.responderAplazamiento(12, true);
-    expect(fetch).toHaveBeenCalledWith(`${BACKEND}/encuentros/solicitudes-aplazamiento/12/responder`, expect.objectContaining({
-      method: 'POST',
+    expect(fetch).toHaveBeenCalledWith(`${BACKEND}/encuentros/aplazamientos/12`, expect.objectContaining({
+      method: 'PATCH',
       body: JSON.stringify({ aceptar: true })
     }));
   });
 
-  it('responderAplazamiento envia POST con rechazar', async () => {
+  it('responderAplazamiento envia PATCH con rechazar', async () => {
     fetch.mockResolvedValue(jsonResponse({}, 200));
     await tournamentService.responderAplazamiento(12, false);
-    expect(fetch).toHaveBeenCalledWith(`${BACKEND}/encuentros/solicitudes-aplazamiento/12/responder`, expect.objectContaining({
-      method: 'POST',
+    expect(fetch).toHaveBeenCalledWith(`${BACKEND}/encuentros/aplazamientos/12`, expect.objectContaining({
+      method: 'PATCH',
       body: JSON.stringify({ aceptar: false })
     }));
   });
