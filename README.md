@@ -360,6 +360,7 @@ docker compose exec db psql -U agon -d agon
 | `backend` reinicia en bucle | No puede conectar con la BD | Espera al healthcheck de `db`; revisa `docker compose logs backend` |
 | `db` no está healthy | Credenciales de `.env` incorrectas | Revisa `POSTGRES_USER/PASSWORD/DB` y `docker compose logs db` |
 | La API responde `403`/`404` | El backend no está actualizado o `VITE_BACKEND_URL` incluye `/api` | Reconstruye el backend (`up -d --build`); `VITE_BACKEND_URL` debe ser `https://api.tudominio.com` **sin** `/api` |
+| Login responde `403` aunque las credenciales son correctas | `JWT_SIGN_KEY` es el placeholder corto (p. ej. `cambia-este-secreto-jwt`, 184 bits). jjwt lanza `WeakKeyException` al firmar el token | Genera una clave fuerte: `openssl rand -hex 64`, ponla en `JWT_SIGN_KEY` y reinicia el backend (`up -d backend`, sin `--build`) |
 | CORS bloqueado en el navegador | `CORS_ALLOWED_ORIGINS` no incluye el dominio real | Añádelo y reinicia el backend |
 | El frontend no llama a la API | `VITE_BACKEND_URL` incorrecto en el build | Cámbialo en `.env` y reconstruye (`up -d --build`) |
 | No hay datos de prueba | El volumen de la BD ya existía al añadir el seed | `down -v` y vuelve a levantar (pierde datos) |
