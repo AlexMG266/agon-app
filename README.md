@@ -153,8 +153,10 @@ Cliente ──HTTPS──► NPM (en el host, --network host)
 - El frontend llama a la API mediante `VITE_BACKEND_URL` (variable de build):
   - **Subdominio dedicado (recomendado)**: `https://api.tudominio.com`. El
     navegador lo trata como *cross-origin*, así que `CORS_ALLOWED_ORIGINS` es obligatorio.
-  - **Misma ruta `/api`** en el mismo dominio: NPM debe reenviar `/api/*` →
-    `127.0.0.1:8080` (eliminando el prefijo `/api`). Las peticiones son *same-origin*.
+  - **Misma ruta `/api`** en el mismo dominio: el backend de producción sirve la API
+    bajo `/api` (`server.servlet.context-path=/api`), así que NPM debe reenviar `/api/*` →
+    `127.0.0.1:8080` **conservando el prefijo `/api`** (no se elimina). Las peticiones
+    son *same-origin*.
 - Los scripts SQL de esquema y **datos de prueba** se ejecutan **automáticamente
   en el primer arranque** de la BD (ver [Datos de prueba](#datos-de-prueba)).
 
@@ -249,8 +251,9 @@ Crea **dos Proxy Hosts** en NPM (con certificados Let's Encrypt):
 
 **Alternativa con ruta `/api`** (un solo dominio): crea un Proxy Host para
 `app.tudominio.com` → `127.0.0.1:8081` y añade en "Advanced" de NPM una location
-que reenvíe `/api/*` → `127.0.0.1:8080` (eliminando el prefijo `/api`). En ese
-caso usa `VITE_BACKEND_URL=/api` en el `.env`.
+que reenvíe `/api/*` → `127.0.0.1:8080` **conservando el prefijo `/api`**
+(el backend ya sirve la API bajo `/api`; no lo elimines). En ese caso usa
+`VITE_BACKEND_URL=/api` en el `.env`.
 
 > 🔁 Recuerda: si cambias `VITE_BACKEND_URL`, reconstruye la imagen del frontend.
 
@@ -360,7 +363,7 @@ docker compose exec db psql -U agon -d agon
 |---|---|---|
 | `backend` reinicia en bucle | No puede conectar con la BD | Espera al healthcheck de `db`; revisa `docker compose logs backend` |
 | `db` no está healthy | Credenciales de `.env` incorrectas | Revisa `POSTGRES_USER/PASSWORD/DB` y `docker compose logs db` |
-| La API responde `404` en `/api/...` | NPM no reenvía `/api` sin el prefijo | Revisa la location en NPM (debe eliminar el prefijo `/api`) |
+| La API responde `403`/`404` en `/api/...` | NPM elimina el prefijo `/api` o el backend no está actualizado | NPM debe **conservar** `/api` (el backend sirve la API bajo `/api`); reconstruye el backend (`up -d --build`) |
 | CORS bloqueado en el navegador | `CORS_ALLOWED_ORIGINS` no incluye el dominio real | Añádelo y reinicia el backend |
 | El frontend no llama a la API | `VITE_BACKEND_URL` incorrecto en el build | Cámbialo en `.env` y reconstruye (`up -d --build`) |
 | No hay datos de prueba | El volumen de la BD ya existía al añadir el seed | `down -v` y vuelve a levantar (pierde datos) |
