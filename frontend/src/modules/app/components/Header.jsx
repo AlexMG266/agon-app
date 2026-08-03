@@ -14,7 +14,7 @@ import { NOTIFICATIONS_UPDATED_EVENT } from '../../../backend/notificationServic
 import { LOCALE_STORAGE_KEY, SUPPORTED_LOCALES } from '../../../i18n';
 import './Header.css';
 
-const Header = ({ mobileDrawerOpen, onToggleMobileDrawer }) => {
+const Header = ({ mobileDrawerOpen, onToggleMobileDrawer, onCloseMobileDrawer }) => {
     const intl = useIntl();
     const dispatch = useDispatch();
     const user = useSelector(users.selectors.getUser);
@@ -127,6 +127,14 @@ const Header = ({ mobileDrawerOpen, onToggleMobileDrawer }) => {
         en: 'English'
     };
 
+    // En móvil, si el drawer lateral está desplegado, al abrir los menús
+    // de idioma o perfil se colapsa automáticamente para que se vean.
+    const handleDropdownToggle = useCallback((isOpen) => {
+        if (isOpen && mobileDrawerOpen) {
+            onCloseMobileDrawer?.();
+        }
+    }, [mobileDrawerOpen, onCloseMobileDrawer]);
+
     return (
         <Navbar expand="lg" className="smart-topbar py-2">
             <Container fluid className="px-lg-5 d-flex justify-content-between align-items-center">
@@ -163,6 +171,7 @@ const Header = ({ mobileDrawerOpen, onToggleMobileDrawer }) => {
                         align="end"
                         id="language-dropdown"
                         onSelect={handleLocaleChange}
+                        onToggle={handleDropdownToggle}
                     >
                         <div className="px-3 pt-2 pb-1 text-muted small fw-bold" style={{ fontSize: '0.7rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
                             <FormattedMessage id="project.app.Header.language" defaultMessage="Idioma" />
@@ -240,6 +249,7 @@ const Header = ({ mobileDrawerOpen, onToggleMobileDrawer }) => {
                                 }
                                 align="end"
                                 id="user-dropdown"
+                                onToggle={handleDropdownToggle}
                             >
                                 <div className="px-3 pt-2 pb-1 text-muted small fw-bold" style={{ fontSize: '0.7rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
                                     <FormattedMessage id="project.app.Header.account" defaultMessage="Cuenta" />

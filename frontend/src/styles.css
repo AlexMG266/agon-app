@@ -32,6 +32,49 @@ body {
   max-width: 100%;
 }
 
+/* ─── Móvil: impedir que la página exceda el ancho/alto de la pantalla ─── */
+@media (max-width: 991.98px) {
+  html,
+  body,
+  #root {
+    max-width: 100%;
+    overflow-x: hidden;
+  }
+
+  /* Los hijos flex deben poder encogerse para no empujar el ancho */
+  #root > div,
+  .main-layout-wrapper {
+    max-width: 100%;
+    min-width: 0;
+  }
+
+  .app-content-area {
+    min-width: 0;
+    max-width: 100%;
+  }
+
+  /* Elementos posicionados dentro de la app nunca pueden salirse de la pantalla */
+  .app-sidebar,
+  .mobile-drawer-overlay,
+  .mobile-menu-btn {
+    max-width: 100vw;
+  }
+
+  /* Medios flexibles: nunca más anchos que su contenedor */
+  img,
+  video,
+  canvas,
+  svg {
+    max-width: 100%;
+    height: auto;
+  }
+
+  /* El popup de notificaciones no puede desbordar el ancho en móvil */
+  .notification-popup {
+    width: min(320px, calc(100vw - 1.5rem));
+  }
+}
+
 h1, h2, h3, h4, h5, h6 {
   font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
   font-weight: 600;

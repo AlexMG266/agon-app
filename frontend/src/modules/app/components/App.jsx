@@ -38,7 +38,11 @@ const App = () => {
     return (
         <div className="d-flex flex-column min-vh-100">
             <ScrollToTop />
-            <Header mobileDrawerOpen={mobileDrawerOpen} onToggleMobileDrawer={toggleMobileDrawer} />
+            <Header
+                mobileDrawerOpen={mobileDrawerOpen}
+                onToggleMobileDrawer={toggleMobileDrawer}
+                onCloseMobileDrawer={closeMobileDrawer}
+            />
             <Body mobileDrawerOpen={mobileDrawerOpen} onCloseMobileDrawer={closeMobileDrawer} />
         </div>
     );

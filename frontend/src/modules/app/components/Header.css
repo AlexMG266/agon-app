@@ -122,6 +122,13 @@
     display: none;
 }
 
+/* En móvil los menús desplegables no pueden salirse de la pantalla */
+@media (max-width: 576px) {
+    .smart-topbar .dropdown-menu {
+        max-width: calc(100vw - 1rem);
+    }
+}
+
 /* Bounce animation for inbox icon when new notification arrives */
 @keyframes inbox-bounce {
     0% { transform: scale(1); }

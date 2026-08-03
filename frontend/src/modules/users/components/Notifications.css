@@ -558,13 +558,14 @@
         width: 100%;
         min-width: unset;
         max-width: unset;
+        border: none;
         border-right: none;
-        border: 1px solid #e5e5ea;
-        border-radius: 16px;
-        margin: 0.6rem 0.75rem 0.75rem;
-        box-shadow: 0 4px 14px rgba(0, 0, 0, 0.07);
+        border-bottom: 1px solid #e5e5ea;
+        border-radius: 0;
+        margin: 0;
+        box-shadow: none;
         overflow: hidden;
-        max-height: calc(100% - 1.35rem);
+        max-height: none;
         flex-shrink: 0;
         background: #f5f5f7;
         display: flex;
@@ -657,7 +658,7 @@
     .notifications-master-panel {
         max-height: none;
         height: 100%;
-        margin: 0.5rem 0.75rem 0.75rem;
+        margin: 0;
     }
 
     .master-header {
