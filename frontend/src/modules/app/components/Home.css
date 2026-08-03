@@ -226,6 +226,8 @@
     border-radius: 8px;
     text-decoration: none;
     transition: background 0.12s ease;
+    height: 68px;
+    min-height: 68px;
 }
 
 .list-item:hover {

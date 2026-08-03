@@ -50,7 +50,8 @@ const LandingPage = () => {
     );
 };
 
-const PAGE_SIZE = 5;
+const TEAM_PAGE_SIZE = 4;
+const TOURNAMENT_PAGE_SIZE = 4;
 
 const Dashboard = () => {
     const dispatch = useDispatch();
@@ -68,10 +69,10 @@ const Dashboard = () => {
     const [teamPage, setTeamPage] = useState(1);
     const [tournamentPage, setTournamentPage] = useState(1);
 
-    const teamTotalPages = Math.ceil(teamsCount / PAGE_SIZE);
-    const tournamentTotalPages = Math.ceil(tournamentsCount / PAGE_SIZE);
-    const paginatedTeams = userTeams.slice((teamPage - 1) * PAGE_SIZE, teamPage * PAGE_SIZE);
-    const paginatedTournaments = userTournaments.slice((tournamentPage - 1) * PAGE_SIZE, tournamentPage * PAGE_SIZE);
+    const teamTotalPages = Math.ceil(teamsCount / TEAM_PAGE_SIZE);
+    const tournamentTotalPages = Math.ceil(tournamentsCount / TOURNAMENT_PAGE_SIZE);
+    const paginatedTeams = userTeams.slice((teamPage - 1) * TEAM_PAGE_SIZE, teamPage * TEAM_PAGE_SIZE);
+    const paginatedTournaments = userTournaments.slice((tournamentPage - 1) * TOURNAMENT_PAGE_SIZE, tournamentPage * TOURNAMENT_PAGE_SIZE);
 
     useEffect(() => {
         if (loggedIn) {
