@@ -19,17 +19,6 @@ logging:
             sql:
               BasicBinder: warn
 
-server:
-  # Endpoint base de la API. En producción todos los controladores responden
-  # bajo /api: /api/users/login, /api/teams, /api/tournaments, etc.
-  # El contenedor de servlets elimina el prefijo /api antes de enrutar, por lo
-  # que las reglas de Spring Security y las rutas de los controladores siguen
-  # siendo /users/login, /teams, ... SIN necesidad de variantes /api.
-  # En desarrollo/tests no se define context-path, así que las rutas quedan en /
-  # (igual que siempre).
-  servlet:
-    context-path: /api
-
 spring:
   devtools:
     restart:

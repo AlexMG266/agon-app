@@ -38,10 +38,10 @@ public class SecurityConfig {
                 .addFilterBefore(new JwtFilter(jwtGenerator), UsernamePasswordAuthenticationFilter.class)
 
                 .authorizeHttpRequests((authorize) -> authorize
-                    // Las rutas se declaran SIN el prefijo /api (igual que en
-                    // desarrollo). En producción, server.servlet.context-path=/api
-                    // hace que el contenedor de servlets elimine ese prefijo antes
-                    // de enrutar, por lo que las mismas reglas sirven para ambos.
+                    // Las rutas se declaran SIN prefijo: la API se sirve en la
+                    // raíz (/) tanto en desarrollo como en producción (dominio
+                    // dedicado, p. ej. https://api.tudominio.com). El frontend
+                    // apunta a la URL base completa vía VITE_BACKEND_URL.
                     .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
                     .requestMatchers(HttpMethod.POST, "/users/signup").permitAll()
                     .requestMatchers(HttpMethod.POST, "/users/login").permitAll()
@@ -102,8 +102,9 @@ public class SecurityConfig {
         // Orígenes permitidos desde configuración (application.yml / env var).
         // En desarrollo: localhost:5173 y localhost:8080.
         // En producción: el/los dominio(s) real(es) vía CORS_ALLOWED_ORIGINS.
-        // NOTA: si frontend y API comparten dominio (Nginx proxy de /api),
-        // las peticiones son same-origin y CORS ni siquiera se aplica.
+        // Como frontend y API usan dominios distintos (p. ej. app.tudominio.com
+        // y api.tudominio.com), CORS SI se aplica y CORS_ALLOWED_ORIGINS debe
+        // incluir el dominio del frontend.
         config.setAllowedOrigins(Arrays.asList(
             allowedOrigins.split(",")));
         config.addAllowedHeader("*");

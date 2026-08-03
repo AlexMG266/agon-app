@@ -141,8 +141,8 @@ recomendado— que corre en el propio VPS:
 
 ```
 Cliente ──HTTPS──► NPM (en el host, --network host)
-                     ├── app.tudominio.com  ──► http://127.0.0.1:8081  (frontend, SPA estática)
-                     └── api.tudominio.com  ──► http://127.0.0.1:8080  (backend, Spring Boot)
+                     ├── app.tudominio.com   ──► http://127.0.0.1:8081  (frontend, SPA estática)
+                     └── api.tudominio.com   ──► http://127.0.0.1:8080  (backend, Spring Boot)
 ```
 
 **Puntos clave:**
@@ -150,13 +150,11 @@ Cliente ──HTTPS──► NPM (en el host, --network host)
 - Los puertos `8080` y `8081` se publican **solo en loopback** (`127.0.0.1`):
   inaccesibles desde internet. NPM, al correr en modo `network host`, los alcanza
   por `127.0.0.1`. La base de datos **no publica ningún puerto**.
-- El frontend llama a la API mediante `VITE_BACKEND_URL` (variable de build):
-  - **Subdominio dedicado (recomendado)**: `https://api.tudominio.com`. El
-    navegador lo trata como *cross-origin*, así que `CORS_ALLOWED_ORIGINS` es obligatorio.
-  - **Misma ruta `/api`** en el mismo dominio: el backend de producción sirve la API
-    bajo `/api` (`server.servlet.context-path=/api`), así que NPM debe reenviar `/api/*` →
-    `127.0.0.1:8080` **conservando el prefijo `/api`** (no se elimina). Las peticiones
-    son *same-origin*.
+- **Dominio dedicado para la API**: la API se sirve en la **raíz** del subdominio
+  (`https://api.tudominio.com/users/login`), **sin prefijo `/api`**. El frontend
+  apunta a la URL base completa vía `VITE_BACKEND_URL` (variable de build).
+  Como frontend y API usan dominios distintos, el navegador lo trata como
+  *cross-origin*: `CORS_ALLOWED_ORIGINS` es obligatorio.
 - Los scripts SQL de esquema y **datos de prueba** se ejecutan **automáticamente
   en el primer arranque** de la BD (ver [Datos de prueba](#datos-de-prueba)).
 
@@ -187,7 +185,7 @@ nano .env                     # edita los valores (ver tabla siguiente)
 | `POSTGRES_PASSWORD` | Contraseña de la BD | Contraseña fuerte (≥ 16 caracteres) |
 | `JWT_SIGN_KEY` | Secreto de firma de tokens | `openssl rand -hex 64` |
 | `JWT_EXPIRATION_MINUTES` | Validez del token | `1440` (24 h) |
-| `VITE_BACKEND_URL` | URL de la API que usa el frontend | `https://api.tudominio.com` (o `/api`) |
+| `VITE_BACKEND_URL` | URL base de la API que usa el frontend | `https://api.tudominio.com` (sin `/api`) |
 | `CORS_ALLOWED_ORIGINS` | Orígenes permitidos en el navegador | `https://app.tudominio.com` |
 
 > ⚠️ **Nunca** subas `.env` al repositorio (ya está en `.gitignore`). En
@@ -214,7 +212,7 @@ docker compose -f docker-compose.prod.yml logs db
 
 # Comprobación local (solo loopback):
 curl http://127.0.0.1:8081                          # frontend -> HTML de la SPA
-curl -X POST http://127.0.0.1:8080/api/users/login \
+curl -X POST http://127.0.0.1:8080/users/login \
      -H 'Content-Type: application/json' \
      -d '{"username":"x","password":"x"}'           # backend -> 401/404 (esperado)
 ```
@@ -249,11 +247,9 @@ Crea **dos Proxy Hosts** en NPM (con certificados Let's Encrypt):
 | `app.tudominio.com` | `127.0.0.1` | `8081` | Frontend (SPA estática) |
 | `api.tudominio.com` | `127.0.0.1` | `8080` | Backend (Spring Boot) |
 
-**Alternativa con ruta `/api`** (un solo dominio): crea un Proxy Host para
-`app.tudominio.com` → `127.0.0.1:8081` y añade en "Advanced" de NPM una location
-que reenvíe `/api/*` → `127.0.0.1:8080` **conservando el prefijo `/api`**
-(el backend ya sirve la API bajo `/api`; no lo elimines). En ese caso usa
-`VITE_BACKEND_URL=/api` en el `.env`.
+> ⚠️ **No** añadas custom locations ni reescrituras de ruta en el Proxy Host de
+> `api.tudominio.com`: el reenvío debe ser directo a `127.0.0.1:8080` **sin tocar
+> la ruta**, porque la API se sirve en la raíz del subdominio.
 
 > 🔁 Recuerda: si cambias `VITE_BACKEND_URL`, reconstruye la imagen del frontend.
 
@@ -363,7 +359,7 @@ docker compose exec db psql -U agon -d agon
 |---|---|---|
 | `backend` reinicia en bucle | No puede conectar con la BD | Espera al healthcheck de `db`; revisa `docker compose logs backend` |
 | `db` no está healthy | Credenciales de `.env` incorrectas | Revisa `POSTGRES_USER/PASSWORD/DB` y `docker compose logs db` |
-| La API responde `403`/`404` en `/api/...` | NPM elimina el prefijo `/api` o el backend no está actualizado | NPM debe **conservar** `/api` (el backend sirve la API bajo `/api`); reconstruye el backend (`up -d --build`) |
+| La API responde `403`/`404` | El backend no está actualizado o `VITE_BACKEND_URL` incluye `/api` | Reconstruye el backend (`up -d --build`); `VITE_BACKEND_URL` debe ser `https://api.tudominio.com` **sin** `/api` |
 | CORS bloqueado en el navegador | `CORS_ALLOWED_ORIGINS` no incluye el dominio real | Añádelo y reinicia el backend |
 | El frontend no llama a la API | `VITE_BACKEND_URL` incorrecto en el build | Cámbialo en `.env` y reconstruye (`up -d --build`) |
 | No hay datos de prueba | El volumen de la BD ya existía al añadir el seed | `down -v` y vuelve a levantar (pierde datos) |

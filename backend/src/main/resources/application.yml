@@ -48,6 +48,6 @@ project:
     # En desarrollo el frontend (localhost:5173) y el backend (localhost:8080)
     # son orígenes distintos, así que el default cubre ambos.
     # En producción se sobrescribe con la variable CORS_ALLOWED_ORIGINS
-    # (p. ej. https://tu-dominio.com). Si frontend y API comparten dominio vía
-    # Nginx, CORS ni siquiera se aplica (mismo-origen).
+    # (p. ej. https://app.tudominio.com). Como frontend y API usan dominios
+    # distintos en producción, CORS siempre se aplica y este valor es obligatorio.
     allowed-origins: ${CORS_ALLOWED_ORIGINS:http://localhost:5173,http://localhost:8080}

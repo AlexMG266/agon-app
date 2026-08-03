@@ -42,7 +42,7 @@ services:
     # Nombre de imagen EXPLÍCITO (agon-backend:dev) para que NO colisione con
     # el de producción (agon-backend:prod). Si ambos comparten tag (agon-app-backend),
     # un `up --build` de dev y un `up -f docker-compose.prod.yml` sin --build
-    # recrean el contenedor prod con la imagen DEV (sin context-path=/api) -> 403.
+    # recrean el contenedor prod con la imagen DEV.
     image: agon-backend:dev
     build:
       context: .

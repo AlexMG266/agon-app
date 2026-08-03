@@ -13,15 +13,15 @@
 #     del host (Nginx Proxy Manager), que reenvía a los puertos publicados.
 #
 # IMPORTANTE: VITE_BACKEND_URL es un ARG de build. Indica a qué URL apunta
-# el frontend para llamar a la API:
-#   - Subdominio dedicado (recomendado con NPM): https://api.tudominio.com
-#   - Misma ruta /api en el mismo dominio:        /api
+# el frontend para llamar a la API. Con NPM se usa un subdominio dedicado y
+# la API se sirve en la RAÍZ de ese dominio (sin prefijo /api):
+#   - Subdominio dedicado: https://api.tudominio.com
 # Se puede sobrescribir desde docker-compose.prod.yml (o --build-arg):
 #   docker build --build-arg VITE_BACKEND_URL=https://api.tudominio.com ...
 # ============================================================
 
 # ARG a nivel global (accesible en todas las etapas, antes del FROM)
-ARG VITE_BACKEND_URL=/api
+ARG VITE_BACKEND_URL=https://api.tudominio.com
 
 # ---- ETAPA 1: BUILD del frontend (Node) ----
 FROM node:22-alpine AS builder

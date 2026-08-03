@@ -67,8 +67,7 @@ services:
     # Nombre de imagen EXPLÍCITO y distinto del de desarrollo (dev usa
     # agon-backend:dev). Evita que un `docker compose up --build` (dev) y un
     # `up -f docker-compose.prod.yml` compartan el mismo tag agon-app-backend,
-    # lo que hacía que el contenedor prod se recreara con la imagen DEV
-    # (sin context-path=/api) y la API volviera a devolver 403.
+    # lo que hacía que el contenedor prod se recreara con la imagen DEV.
     image: agon-backend:prod
     build:
       context: .
@@ -116,12 +115,11 @@ services:
       context: .
       dockerfile: docker/frontend/Dockerfile
       args:
-        # URL base de la API usada por el frontend:
-        #  - Subdominio dedicado (recomendado con NPM):
-        #      VITE_BACKEND_URL=https://api.tudominio.com
-        #  - Misma ruta /api en el mismo dominio:
-        #      VITE_BACKEND_URL=/api
-        VITE_BACKEND_URL: ${VITE_BACKEND_URL:-/api}
+        # URL base de la API usada por el frontend. Con NPM se usa un
+        # subdominio dedicado para la API; la API se sirve en la RAÍZ de ese
+        # dominio (sin prefijo /api):
+        #   VITE_BACKEND_URL=https://api.tudominio.com
+        VITE_BACKEND_URL: ${VITE_BACKEND_URL:-https://api.tudominio.com}
     container_name: agon_frontend_prod
     restart: unless-stopped
     ports:
