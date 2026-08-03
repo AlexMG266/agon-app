@@ -1,8 +1,39 @@
+# ============================================================
+# .dockerignore - se aplica al contexto de build (raíz del proyecto)
+#
+# Los Dockerfiles de producción usan contexto `.` (multi-stage con
+# backend/ y frontend/). Excluimos todo lo que no necesita la imagen
+# final para reducir tamaño y evitar filtrar secretos/artefactos.
+# ============================================================
+
+# Control de versiones
 .git
-frontend
+.gitignore
+
+# Documentación
+README.md
+LICENSE
 design
+
+# Entorno / secretos (¡nunca deben entrar en la imagen!)
+.env
+.env.*
+
+# Backend: artefactos de build
 **/target
+**/*.class
+
+# Frontend: dependencias y artefactos de build
 **/node_modules
+**/dist
+**/coverage
+**/.vite
+**/.eslintcache
+
+# IDE / OS
 **/.idea
 **/.vscode
+**/*.iml
+**/.DS_Store
+**/Thumbs.db
 **/*.log

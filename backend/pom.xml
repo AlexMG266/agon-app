@@ -36,6 +36,15 @@
         <!-- Plugin versions -->
         <surefireMavenPlugin.version>3.5.2</surefireMavenPlugin.version>
         <sqlPlugin.version>3.0.0</sqlPlugin.version>
+        <!--
+            Permite desactivar el sql-maven-plugin (creación de tablas de test)
+            fuera del entorno de desarrollo, p. ej. en el build de la imagen
+            Docker de PRODUCCIÓN, donde no existe el host "db":
+              mvn -DsqlPlugin.skip=true package
+            En desarrollo se mantiene en false para que `mvn test` siga
+            creando las tablas en la BD agon_test.
+        -->
+        <sqlPlugin.skip>false</sqlPlugin.skip>
 
         <!-- JDBC driver properties -->
         <jdbcDriver.groupId>org.postgresql</jdbcDriver.groupId>
@@ -232,7 +241,7 @@
                     <password>${dataSource.password}</password>
                     <autocommit>true</autocommit>
                     <onError>continue</onError>
-                    <orderFile>ascending</orderFile> 
+                    <orderFile>ascending</orderFile>
                     <fileset>
                         <basedir>${basedir}</basedir>
                         <includes>
@@ -244,6 +253,10 @@
                             </include>
                         </includes>
                     </fileset>
+                    <!-- Permite desactivar la ejecución en builds sin BD de
+                         desarrollo (p. ej. Dockerfile de producción):
+                         mvn -DsqlPlugin.skip=true ... -->
+                    <skip>${sqlPlugin.skip}</skip>
                 </configuration>
                 <executions>
                     <execution>

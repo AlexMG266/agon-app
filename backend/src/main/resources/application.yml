@@ -38,5 +38,16 @@ springdoc:
 
 project:
   jwt:
-    signKey: W27sJe29ATI7dR3juV5lWkT9WgS2C8RT
-    expirationMinutes: 1440
+    # Secreto JWT inyectado desde variable de entorno (nunca hardcodeado).
+    # En desarrollo se mantiene el valor por defecto; en producción debe
+    # venir de .env (JWT_SIGN_KEY) con un valor fuerte.
+    signKey: ${JWT_SIGN_KEY:W27sJe29ATI7dR3juV5lWkT9WgS2C8RT}
+    expirationMinutes: ${JWT_EXPIRATION_MINUTES:1440}
+  cors:
+    # Orígenes permitidos por CORS, separados por coma.
+    # En desarrollo el frontend (localhost:5173) y el backend (localhost:8080)
+    # son orígenes distintos, así que el default cubre ambos.
+    # En producción se sobrescribe con la variable CORS_ALLOWED_ORIGINS
+    # (p. ej. https://tu-dominio.com). Si frontend y API comparten dominio vía
+    # Nginx, CORS ni siquiera se aplica (mismo-origen).
+    allowed-origins: ${CORS_ALLOWED_ORIGINS:http://localhost:5173,http://localhost:8080}

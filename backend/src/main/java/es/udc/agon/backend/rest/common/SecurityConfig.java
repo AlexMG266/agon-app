@@ -1,6 +1,7 @@
 package es.udc.agon.backend.rest.common;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
@@ -15,6 +16,7 @@ import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
 import java.util.Arrays;
+import java.util.List;
 
 @Configuration
 @EnableWebSecurity
@@ -22,6 +24,9 @@ public class SecurityConfig {
 
     @Autowired
     private JwtGenerator jwtGenerator;
+
+    @Value("${project.cors.allowed-origins}")
+    private String allowedOrigins;
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
@@ -90,7 +95,13 @@ public class SecurityConfig {
         CorsConfiguration config = new CorsConfiguration();
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         config.setAllowCredentials(true);
-        config.setAllowedOriginPatterns(Arrays.asList("*"));
+        // Orígenes permitidos desde configuración (application.yml / env var).
+        // En desarrollo: localhost:5173 y localhost:8080.
+        // En producción: el/los dominio(s) real(es) vía CORS_ALLOWED_ORIGINS.
+        // NOTA: si frontend y API comparten dominio (Nginx proxy de /api),
+        // las peticiones son same-origin y CORS ni siquiera se aplica.
+        config.setAllowedOrigins(Arrays.asList(
+            allowedOrigins.split(",")));
         config.addAllowedHeader("*");
         config.addAllowedMethod("*");
         source.registerCorsConfiguration("/**", config);

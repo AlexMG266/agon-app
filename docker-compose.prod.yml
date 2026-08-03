@@ -1,0 +1,135 @@
+# ============================================================
+# docker-compose.prod.yml - STACK DE PRODUCCIÓN (Agón App)
+#
+# El proyecto despliega SOLO el producto software: db + backend +
+# frontend. El enrutado y el HTTPS los gestiona un reverse proxy
+# EXTERNO al proyecto (Nginx Proxy Manager en el host), que reenvía:
+#   - app.tudominio.com  -> http://127.0.0.1:8081  (frontend)
+#   - api.tudominio.com  -> http://127.0.0.1:8080  (backend)
+#
+# Diferencias clave frente a docker-compose.yml (desarrollo):
+#   - Backend: imagen multi-stage con JAR precompilado (JRE, sin Maven,
+#     sin DevTools, sin volúmenes de código).
+#   - Frontend: build estático servido por Nginx (sin Vite dev server).
+#   - Credenciales de BD y secreto JWT desde variables de entorno (.env).
+#   - Límites duros de memoria por contenedor (VPS 4 GB friendly).
+#   - Puertos publicados SOLO en 127.0.0.1 (loopback): inaccesibles desde
+#     el exterior; únicamente el proxy del host (network host) los alcanza.
+#
+# Uso:
+#   cp .env.example .env      # y rellena las credenciales reales
+#   docker compose -f docker-compose.prod.yml up -d --build
+# ============================================================
+
+services:
+  # ---------- Database: PostgreSQL ----------
+  # SIN puerto expuesto. Solo accesible desde la red interna Docker.
+  db:
+    image: postgres:16-alpine
+    container_name: agon_db_prod
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
+    volumes:
+      - postgres_prod_data:/var/lib/postgresql/data
+      # Inicialización única (solo la primera vez, volumen vacío):
+      # crea el esquema con las tablas. El seed de datos de prueba NO se
+      # inyecta en producción.
+      - ./backend/src/sql/1-PostgreSQLCreateTables.sql:/docker-entrypoint-initdb.d/01-schema.sql:ro
+    networks:
+      - agon_prod_network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 20s
+    deploy:
+      resources:
+        limits:
+          memory: 512M
+        reservations:
+          memory: 256M
+    labels:
+      - "com.agon.environment=production"
+      - "com.agon.service=database"
+
+  # ---------- Backend: Spring Boot (JAR precompilado) ----------
+  # Puerto publicado SOLO en 127.0.0.1 para que el proxy externo del
+  # host (NPM) reenvíe api.tudominio.com -> 127.0.0.1:8080.
+  backend:
+    build:
+      context: .
+      dockerfile: docker/backend/Dockerfile
+    container_name: agon_backend_prod
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:8080:8080"
+    environment:
+      # Conexión a BD dentro de la red Docker (host = servicio "db")
+      SPRING_DATASOURCE_URL: jdbc:postgresql://db:5432/${POSTGRES_DB}
+      SPRING_DATASOURCE_USERNAME: ${POSTGRES_USER}
+      SPRING_DATASOURCE_PASSWORD: ${POSTGRES_PASSWORD}
+      # Secreto JWT desde entorno (NUNCA hardcodeado en el código)
+      JWT_SIGN_KEY: ${JWT_SIGN_KEY}
+      JWT_EXPIRATION_MINUTES: ${JWT_EXPIRATION_MINUTES:-1440}
+      # Perfil de producción: desactiva DevTools, SQL debug y Swagger
+      SPRING_PROFILES_ACTIVE: prod
+      # Locale por defecto (igual que en desarrollo)
+      JAVA_TOOL_OPTIONS: "-Xmx512m -XX:MaxMetaspaceSize=256m -Duser.language=es -Duser.country=ES"
+    depends_on:
+      db:
+        condition: service_healthy
+    networks:
+      - agon_prod_network
+    deploy:
+      resources:
+        limits:
+          memory: 768M
+        reservations:
+          memory: 512M
+    labels:
+      - "com.agon.environment=production"
+      - "com.agon.service=backend"
+
+  # ---------- Frontend: build estático + Nginx (solo estático) ----------
+  # Puerto publicado SOLO en 127.0.0.1 para que el proxy externo del
+  # host (NPM) reenvíe app.tudominio.com -> 127.0.0.1:8081.
+  # Nginx NO hace reverse proxy: solo sirve la SPA.
+  frontend:
+    build:
+      context: .
+      dockerfile: docker/frontend/Dockerfile
+      args:
+        # URL base de la API usada por el frontend:
+        #  - Subdominio dedicado (recomendado con NPM):
+        #      VITE_BACKEND_URL=https://api.tudominio.com
+        #  - Misma ruta /api en el mismo dominio:
+        #      VITE_BACKEND_URL=/api
+        VITE_BACKEND_URL: ${VITE_BACKEND_URL:-/api}
+    container_name: agon_frontend_prod
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:8081:80"
+    networks:
+      - agon_prod_network
+    deploy:
+      resources:
+        limits:
+          memory: 256M
+        reservations:
+          memory: 128M
+    labels:
+      - "com.agon.environment=production"
+      - "com.agon.service=frontend"
+
+networks:
+  agon_prod_network:
+    driver: bridge
+    name: agon_prod_network
+
+volumes:
+  postgres_prod_data:
+    name: agon_prod_postgres_data

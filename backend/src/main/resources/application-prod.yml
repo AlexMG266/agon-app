@@ -1,0 +1,31 @@
+# ============================================================
+# Perfil de PRODUCCIÓN (se activa con SPRING_PROFILES_ACTIVE=prod)
+#
+# Endurece la configuración de cara al despliegue:
+#   - Desactiva el SQL debug de Hibernate (evita exponer datos/consultas
+#     sensibles en los logs).
+#   - Desactiva Spring DevTools (recarga en caliente, innecesaria y
+#     peligrosa en producción).
+#   - Desactiva Swagger/OpenAPI (no exponer la documentación de la API
+#     públicamente).
+# ============================================================
+logging:
+  level:
+    org:
+      hibernate:
+        SQL: warn
+        type:
+          descriptor:
+            sql:
+              BasicBinder: warn
+
+spring:
+  devtools:
+    restart:
+      enabled: false
+
+springdoc:
+  swagger-ui:
+    enabled: false
+  api-docs:
+    enabled: false
