@@ -16,6 +16,7 @@ import Table from '../../common/components/Table';
 import JoinTeamModal from './JoinTeamModal';
 import CodeSearchModal from './CodeSearchModal';
 import CreateTeamModal from '../../teams/components/CreateTeam';
+import EloStats from './EloStats';
 import './Home.css';
 
 const LandingPage = () => {
@@ -140,6 +141,9 @@ const Dashboard = () => {
                     <FormattedMessage id="project.app.Home.dashboard.codeSearchTitle" defaultMessage="Buscar torneo por código" />
                 </button>
             </div>
+
+            {/* ── Estadísticas de ELO ── */}
+            <EloStats />
 
             {/* ── Main Grid ── */}
             <div className="dashboard-grid">

@@ -46,5 +46,8 @@ export const updateProfile = async user =>
     await appFetch('PUT', `/users/${user.id}`, user);
 
 export const changePassword = async (id, oldPassword, newPassword) =>
-    await appFetch('POST', `/users/${id}/changePassword`, 
+    await appFetch('POST', `/users/${id}/changePassword`,
         {oldPassword, newPassword});
+
+export const getEloHistory = async id =>
+    await appFetch('GET', `/users/${id}/elo-history`);

@@ -98,4 +98,18 @@ describe('userService', () => {
       body: JSON.stringify({ oldPassword: 'old', newPassword: 'new' })
     }));
   });
+
+  it('getEloHistory envia GET al historial de ELO', async () => {
+    const historial = [
+      { id: 1, encuentroId: 7, eloAnterior: 800, eloNuevo: 832, variacion: 32, resultado: 'VICTORIA' },
+      { id: 2, encuentroId: 8, eloAnterior: 832, eloNuevo: 800, variacion: -32, resultado: 'DERROTA' }
+    ];
+    fetch.mockResolvedValue(jsonResponse(historial));
+    const response = await userService.getEloHistory(1);
+    expect(fetch).toHaveBeenCalledWith(`${BACKEND}/users/1/elo-history`, expect.objectContaining({
+      method: 'GET'
+    }));
+    expect(response.ok).toBe(true);
+    expect(response.payload).toEqual(historial);
+  });
 });
