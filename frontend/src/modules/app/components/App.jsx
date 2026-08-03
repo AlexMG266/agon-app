@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { useDispatch } from 'react-redux';
 
 import Header from './Header';
@@ -10,6 +10,16 @@ import backend from '../../../backend';
 const App = () => {
 
     const dispatch = useDispatch();
+
+    const [mobileDrawerOpen, setMobileDrawerOpen] = useState(false);
+
+    const toggleMobileDrawer = useCallback(() => {
+        setMobileDrawerOpen(prev => !prev);
+    }, []);
+
+    const closeMobileDrawer = useCallback(() => {
+        setMobileDrawerOpen(false);
+    }, []);
 
     useEffect(() => {
 
@@ -28,8 +38,8 @@ const App = () => {
     return (
         <div className="d-flex flex-column min-vh-100">
             <ScrollToTop />
-            <Header/>
-            <Body/>
+            <Header mobileDrawerOpen={mobileDrawerOpen} onToggleMobileDrawer={toggleMobileDrawer} />
+            <Body mobileDrawerOpen={mobileDrawerOpen} onCloseMobileDrawer={closeMobileDrawer} />
         </div>
     );
 

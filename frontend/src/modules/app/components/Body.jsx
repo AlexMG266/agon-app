@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import { useSelector } from 'react-redux';
 import { Route, Routes, NavLink, useLocation } from 'react-router';
 import { FormattedMessage } from 'react-intl';
@@ -16,7 +16,7 @@ import './Body.css';
 
 const SIDEBAR_STORAGE_KEY = 'agon_sidebar_collapsed';
 
-const Body = () => {
+const Body = ({ mobileDrawerOpen, onCloseMobileDrawer }) => {
     const loggedIn = useSelector(users.selectors.isLoggedIn);
     const location = useLocation();
 
@@ -25,6 +25,11 @@ const Body = () => {
         return saved === 'true';
     });
     const [showCreateTeamModal, setShowCreateTeamModal] = useState(false);
+
+    // Cierra el drawer móvil al navegar
+    useEffect(() => {
+        onCloseMobileDrawer?.();
+    }, [location.pathname, onCloseMobileDrawer]);
 
     const toggleSidebar = useCallback(() => {
         setCollapsed(prev => {
@@ -41,7 +46,7 @@ const Body = () => {
             <AppGlobalComponents />
 
             {loggedIn && (
-                <aside className={`app-sidebar ${collapsed ? 'collapsed' : ''}`}>
+                <aside className={`app-sidebar ${collapsed ? 'collapsed' : ''} ${mobileDrawerOpen ? 'mobile-open' : ''}`}>
                     <div className="sidebar-group">
                         <span className="sidebar-title"><FormattedMessage id="project.app.sidebar.competition" defaultMessage="Competición" /></span>
                         <NavLink to="/" className={({ isActive }) => `sidebar-link ${isActive ? 'active' : ''}`} end>
@@ -59,7 +64,10 @@ const Body = () => {
                         <button
                             type="button"
                             className="sidebar-link sidebar-link-btn"
-                            onClick={() => setShowCreateTeamModal(true)}
+                            onClick={() => {
+                                setShowCreateTeamModal(true);
+                                onCloseMobileDrawer?.();
+                            }}
                         >
                             <i className="fa-solid fa-plus"></i>
                             <span className="sidebar-label"><FormattedMessage id="project.app.sidebar.createTeam" defaultMessage="Crear equipo" /></span>
@@ -144,6 +152,15 @@ const Body = () => {
                 <CreateTeamModal
                     show={showCreateTeamModal}
                     onHide={() => setShowCreateTeamModal(false)}
+                />
+            )}
+
+            {/* Overlay del drawer móvil */}
+            {loggedIn && (
+                <div
+                    className={`mobile-drawer-overlay ${mobileDrawerOpen ? 'visible' : ''}`}
+                    onClick={onCloseMobileDrawer}
+                    aria-hidden="true"
                 />
             )}
         </div>

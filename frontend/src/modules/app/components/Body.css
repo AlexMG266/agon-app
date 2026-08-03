@@ -220,79 +220,98 @@
 }
 
 /* ─── Responsive ───
-   En pantallas pequeñas el sidebar se convierte en una
-   barra inferior fija con iconos (estilo tab bar iOS). */
+   En pantallas pequeñas el sidebar pasa a ser un drawer
+   (menú lateral deslizante) accesible desde el botón
+   hamburguesa del header. Se conserva todo el contenido
+   del sidebar (títulos y etiquetas) correctamente visible. */
 @media (max-width: 820px) {
     .main-layout-wrapper {
-        flex-direction: column;
         height: calc(100dvh - 60px);
         overflow: hidden;
     }
 
     .app-content-area {
-        order: 1;
         flex: 1 1 auto;
-        padding: 1.25rem 1rem 6rem;
+        padding: 1.25rem 1rem;
         overflow-y: auto;
     }
 
-    .app-sidebar {
-        order: 2;
-        width: 100% !important;
+    /* Drawer: oculto por defecto, se desliza desde la izquierda */
+    .app-sidebar,
+    .app-sidebar.collapsed {
+        position: fixed;
+        top: 60px;
+        bottom: 0;
+        left: 0;
+        width: 280px;
+        max-width: 85vw;
         height: auto;
-        flex-direction: row;
-        align-items: center;
-        justify-content: space-around;
-        gap: 0.25rem;
-        padding: 0.4rem 0.35rem calc(0.4rem + env(safe-area-inset-bottom, 0px));
-        border-right: none;
-        border-top: 1px solid #d2d2d7;
-        background-color: rgba(255, 255, 255, 0.92);
-        backdrop-filter: blur(20px);
-        -webkit-backdrop-filter: blur(20px);
-        flex-shrink: 0;
-        overflow-x: auto;
-        overflow-y: hidden;
+        padding: 1.5rem 0.9rem 2rem 0.9rem;
+        flex-direction: column;
+        align-items: stretch;
+        gap: 1.2rem;
+        margin: 0;
+        border-right: 1px solid #d2d2d7;
+        border-top: none;
+        background-color: #f5f5f7;
+        z-index: 1040;
+        transform: translateX(-100%);
+        transition: transform 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94), box-shadow 0.3s ease;
+        box-shadow: none;
+        overflow-y: auto;
+        overflow-x: hidden;
+        -webkit-overflow-scrolling: touch;
     }
 
+    .app-sidebar.mobile-open,
+    .app-sidebar.collapsed.mobile-open {
+        transform: translateX(0);
+        box-shadow: 8px 0 30px rgba(0, 0, 0, 0.12);
+    }
+
+    /* En el drawer siempre se muestran títulos y etiquetas */
     .app-sidebar .sidebar-title,
+    .app-sidebar.collapsed .sidebar-title,
     .app-sidebar .sidebar-label,
-    .app-sidebar .sidebar-collapse-btn {
-        display: none;
+    .app-sidebar.collapsed .sidebar-label {
+        display: block;
     }
 
-    .app-sidebar .sidebar-group {
-        flex-direction: row;
-        align-items: center;
-        gap: 0.25rem;
-        width: auto;
+    .app-sidebar .sidebar-group,
+    .app-sidebar.collapsed .sidebar-group {
+        align-items: stretch;
+        width: 100%;
         margin: 0 !important;
     }
 
-    .app-sidebar .sidebar-link {
-        flex-direction: column;
-        justify-content: center;
-        gap: 0.15rem;
-        padding: 0.35rem 0.55rem;
-        width: auto;
+    .app-sidebar .sidebar-link,
+    .app-sidebar.collapsed .sidebar-link {
+        justify-content: flex-start;
+        padding: 0.6rem 0.75rem;
+        width: 100%;
         height: auto;
-        font-size: 0.6rem;
-        font-weight: 500;
-        color: #86868b;
+        border-radius: 8px;
+        font-size: 0.92rem;
         white-space: nowrap;
     }
 
-    .app-sidebar .sidebar-link i {
-        width: auto;
+    .app-sidebar .sidebar-link i,
+    .app-sidebar.collapsed .sidebar-link i {
+        width: 18px;
         margin: 0;
-        font-size: 1.05rem;
-        color: #86868b;
+        font-size: 0.95rem;
+    }
+
+    /* El botón de colapsar no tiene sentido dentro del drawer móvil */
+    .app-sidebar .sidebar-collapse-btn,
+    .app-sidebar.collapsed .sidebar-collapse-btn {
+        display: none;
     }
 
     .app-sidebar .sidebar-link.active {
-        background: transparent;
-        color: #0071e3;
-        font-weight: 600;
+        background-color: rgba(0, 0, 0, 0.07);
+        color: #000000;
+        font-weight: 500;
     }
 
     .app-sidebar .sidebar-link.active i {
@@ -303,22 +322,40 @@
     .app-sidebar .sidebar-link.text-danger-hover:hover {
         color: #ff453a;
     }
-    .app-sidebar .sidebar-link.text-danger-hover.active i {
+    .app-sidebar .sidebar-link.text-danger-hover.active i,
+    .app-sidebar .sidebar-link.text-danger-hover:hover i {
         color: #ff453a;
+    }
+
+    /* Overlay para cerrar el drawer al tocar fuera.
+       Empieza bajo el header para que la barra superior
+       siga siendo utilizable (idioma, perfil, cerrar). */
+    .mobile-drawer-overlay {
+        position: fixed;
+        top: 60px;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background-color: rgba(0, 0, 0, 0.45);
+        z-index: 1035;
+        opacity: 0;
+        pointer-events: none;
+        transition: opacity 0.3s ease;
+    }
+
+    .mobile-drawer-overlay.visible {
+        opacity: 1;
+        pointer-events: auto;
     }
 }
 
 @media (max-width: 480px) {
     .app-content-area {
-        padding: 1rem 0.75rem 5.5rem;
+        padding: 1rem 0.75rem;
     }
 
-    .app-sidebar {
-        justify-content: flex-start;
-    }
-
-    .app-sidebar .sidebar-link {
-        padding: 0.3rem 0.45rem;
-        font-size: 0.55rem;
+    .app-sidebar,
+    .app-sidebar.collapsed {
+        width: min(280px, 85vw);
     }
 }

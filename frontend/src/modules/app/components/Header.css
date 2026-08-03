@@ -219,6 +219,41 @@
     text-decoration: underline;
 }
 
+/* Botón hamburguesa para abrir el drawer en móvil */
+.mobile-menu-btn {
+    display: none;
+    width: 40px;
+    height: 40px;
+    border: none;
+    background: transparent;
+    border-radius: 50%;
+    align-items: center;
+    justify-content: center;
+    color: #1d1d1f;
+    cursor: pointer;
+    transition: background-color 0.2s ease, transform 0.2s ease;
+}
+
+.mobile-menu-btn:hover {
+    background-color: rgba(0, 0, 0, 0.05);
+    transform: scale(1.05);
+}
+
+.mobile-menu-btn:focus-visible {
+    outline: 2px solid #0071e3;
+    outline-offset: 2px;
+}
+
+.mobile-menu-btn i {
+    font-size: 1.15rem;
+}
+
+@media (max-width: 820px) {
+    .mobile-menu-btn {
+        display: flex;
+    }
+}
+
 /* ─── Responsive ─── */
 @media (max-width: 768px) {
     .smart-topbar .container-fluid {

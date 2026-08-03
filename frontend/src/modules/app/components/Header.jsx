@@ -14,7 +14,7 @@ import { NOTIFICATIONS_UPDATED_EVENT } from '../../../backend/notificationServic
 import { LOCALE_STORAGE_KEY, SUPPORTED_LOCALES } from '../../../i18n';
 import './Header.css';
 
-const Header = () => {
+const Header = ({ mobileDrawerOpen, onToggleMobileDrawer }) => {
     const intl = useIntl();
     const dispatch = useDispatch();
     const user = useSelector(users.selectors.getUser);
@@ -131,9 +131,22 @@ const Header = () => {
         <Navbar expand="lg" className="smart-topbar py-2">
             <Container fluid className="px-lg-5 d-flex justify-content-between align-items-center">
                 
-                <Navbar.Brand as={Link} to="/" className="fw-bold text-dark m-0" style={{ letterSpacing: '-0.02em' }}>
-                    Agón
-                </Navbar.Brand>
+                <div className="d-flex align-items-center gap-2">
+                    {user && (
+                        <button
+                            type="button"
+                            className="mobile-menu-btn"
+                            onClick={onToggleMobileDrawer}
+                            aria-label="Abrir menú de navegación"
+                            aria-expanded={mobileDrawerOpen}
+                        >
+                            <i className={`fa-solid ${mobileDrawerOpen ? 'fa-xmark' : 'fa-bars'}`}></i>
+                        </button>
+                    )}
+                    <Navbar.Brand as={Link} to="/" className="fw-bold text-dark m-0" style={{ letterSpacing: '-0.02em' }}>
+                        Agón
+                    </Navbar.Brand>
+                </div>
 
                 <Navbar.Collapse id="navbarSupportedContent">
                     <Nav className="me-auto">
