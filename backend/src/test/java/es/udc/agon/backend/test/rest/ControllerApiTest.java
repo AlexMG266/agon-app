@@ -907,4 +907,110 @@ public class ControllerApiTest {
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.globalError").isNotEmpty());
     }
+
+    @Test
+    public void testHistorialEloTrasRegistrarResultado() throws Exception {
+        User org = crearUsuario("orgElo", "orgelo@mail.com");
+        User cap1 = crearUsuario("capEloUno", "capelo1@mail.com");
+        User cap2 = crearUsuario("capEloDos", "capelo2@mail.com");
+        User curioso = crearUsuario("curiosoElo", "curiosoelo@mail.com");
+
+        Equipo equipo1 = equipoService.crearEquipo(cap1.getId(), "Equipo Elo Uno", "desc");
+        Equipo equipo2 = equipoService.crearEquipo(cap2.getId(), "Equipo Elo Dos", "desc");
+
+        Long torneoId = crearTorneoPorHttp(org, "Torneo Elo");
+
+        Long solicitud1Id = inscribirEquipoEnTorneo(cap1, equipo1, torneoId);
+        Long solicitud2Id = inscribirEquipoEnTorneo(cap2, equipo2, torneoId);
+
+        mockMvc.perform(patch("/tournaments/" + torneoId + "/inscripciones/" + solicitud1Id)
+                        .header("Authorization", "Bearer " + tokenDe(org))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"estado\": \"APROBADA\"}"))
+                .andExpect(status().isOk());
+
+        mockMvc.perform(patch("/tournaments/" + torneoId + "/inscripciones/" + solicitud2Id)
+                        .header("Authorization", "Bearer " + tokenDe(org))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"estado\": \"APROBADA\"}"))
+                .andExpect(status().isOk());
+
+        mockMvc.perform(patch("/tournaments/" + torneoId)
+                        .header("Authorization", "Bearer " + tokenDe(org))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"estado\": \"INSCRIPCION_CERRADA\"}"))
+                .andExpect(status().isOk());
+
+        mockMvc.perform(patch("/tournaments/" + torneoId + "/estructura")
+                        .header("Authorization", "Bearer " + tokenDe(org))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                {
+                                  "tipoTorneo": "LIGA_UNICA",
+                                  "numGrupos": 1,
+                                  "equiposPorGrupo": 2,
+                                  "tienePlayoff": false,
+                                  "idaVueltaPlayoff": false,
+                                  "estrategiaPlayoff": "RAPIDO"
+                                }
+                                """))
+                .andExpect(status().isOk());
+
+        String jornadas = mockMvc.perform(get("/tournaments/" + torneoId + "/jornadas")
+                        .header("Authorization", "Bearer " + tokenDe(org)))
+                .andExpect(status().isOk())
+                .andReturn().getResponse().getContentAsString();
+
+        Long encuentroId = objectMapper.readTree(jornadas)
+                .get(0).get("encuentros").get(0).get("id").asLong();
+
+        // victoria local 3-0 (ambos equipos con ELO medio 1500 -> esperado 0.5, K=32)
+        mockMvc.perform(put("/encuentros/" + encuentroId + "/resultado")
+                        .header("Authorization", "Bearer " + tokenDe(cap1))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                {
+                                  "sets": [
+                                    { "golesLocal": 25, "golesVisitante": 20 },
+                                    { "golesLocal": 25, "golesVisitante": 18 },
+                                    { "golesLocal": 25, "golesVisitante": 20 }
+                                  ]
+                                }
+                                """))
+                .andExpect(status().isNoContent());
+
+        // historial del ganador: VICTORIA, 1500 -> 1516 (+16)
+        mockMvc.perform(get("/users/" + cap1.getId() + "/elo-history")
+                        .header("Authorization", "Bearer " + tokenDe(cap1)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$").isArray())
+                .andExpect(jsonPath("$[0].resultado").value("VICTORIA"))
+                .andExpect(jsonPath("$[0].eloAnterior").value(1500))
+                .andExpect(jsonPath("$[0].eloNuevo").value(1516))
+                .andExpect(jsonPath("$[0].variacion").value(16))
+                .andExpect(jsonPath("$[0].encuentroId").value(encuentroId))
+                .andExpect(jsonPath("$[0].equipoLocal").value("Equipo Elo Uno"))
+                .andExpect(jsonPath("$[0].equipoVisitante").value("Equipo Elo Dos"))
+                .andExpect(jsonPath("$[0].fecha").isNotEmpty());
+
+        // historial del perdedor: DERROTA, 1500 -> 1484 (-16)
+        mockMvc.perform(get("/users/" + cap2.getId() + "/elo-history")
+                        .header("Authorization", "Bearer " + tokenDe(cap2)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$").isArray())
+                .andExpect(jsonPath("$[0].resultado").value("DERROTA"))
+                .andExpect(jsonPath("$[0].eloAnterior").value(1500))
+                .andExpect(jsonPath("$[0].eloNuevo").value(1484))
+                .andExpect(jsonPath("$[0].variacion").value(-16));
+
+        // el usuario sin permisos no puede ver el historial ajeno
+        mockMvc.perform(get("/users/" + cap1.getId() + "/elo-history")
+                        .header("Authorization", "Bearer " + tokenDe(curioso)))
+                .andExpect(status().isForbidden());
+
+        // historial inexistente
+        mockMvc.perform(get("/users/999999/elo-history")
+                        .header("Authorization", "Bearer " + tokenDe(curioso)))
+                .andExpect(status().isForbidden());
+    }
 }
