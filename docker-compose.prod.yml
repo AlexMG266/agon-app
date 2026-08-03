@@ -88,6 +88,7 @@ services:
         condition: service_healthy
     networks:
       - agon_prod_network
+      - global-proxy-net
     deploy:
       resources:
         limits:
@@ -119,6 +120,7 @@ services:
       - "127.0.0.1:8081:80"
     networks:
       - agon_prod_network
+      - global-proxy-net
     deploy:
       resources:
         limits:
@@ -133,6 +135,8 @@ networks:
   agon_prod_network:
     driver: bridge
     name: agon_prod_network
+  global-proxy-net:
+    external: true
 
 volumes:
   postgres_prod_data:

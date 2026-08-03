@@ -20,6 +20,14 @@ logging:
               BasicBinder: warn
 
 spring:
+  # Endpoint base de la API. En producción todos los controladores responden
+  # bajo /api: /api/users/login, /api/teams, /api/tournaments, etc.
+  # Así el reverse proxy externo (NPM) puede reenviar /api/* -> 127.0.0.1:8080
+  # SIN eliminar el prefijo (el backend ya sirve la ruta /api).
+  # En desarrollo/tests (servlet path "/") las rutas quedan como /users, /teams...
+  mvc:
+    servlet:
+      path: /api
   devtools:
     restart:
       enabled: false
