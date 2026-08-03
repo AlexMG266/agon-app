@@ -218,3 +218,107 @@
     background-color: rgba(0, 0, 0, 0.04);
     color: #000000;
 }
+
+/* ─── Responsive ───
+   En pantallas pequeñas el sidebar se convierte en una
+   barra inferior fija con iconos (estilo tab bar iOS). */
+@media (max-width: 820px) {
+    .main-layout-wrapper {
+        flex-direction: column;
+        height: calc(100dvh - 60px);
+        overflow: hidden;
+    }
+
+    .app-content-area {
+        order: 1;
+        flex: 1 1 auto;
+        padding: 1.25rem 1rem 6rem;
+        overflow-y: auto;
+    }
+
+    .app-sidebar {
+        order: 2;
+        width: 100% !important;
+        height: auto;
+        flex-direction: row;
+        align-items: center;
+        justify-content: space-around;
+        gap: 0.25rem;
+        padding: 0.4rem 0.35rem calc(0.4rem + env(safe-area-inset-bottom, 0px));
+        border-right: none;
+        border-top: 1px solid #d2d2d7;
+        background-color: rgba(255, 255, 255, 0.92);
+        backdrop-filter: blur(20px);
+        -webkit-backdrop-filter: blur(20px);
+        flex-shrink: 0;
+        overflow-x: auto;
+        overflow-y: hidden;
+    }
+
+    .app-sidebar .sidebar-title,
+    .app-sidebar .sidebar-label,
+    .app-sidebar .sidebar-collapse-btn {
+        display: none;
+    }
+
+    .app-sidebar .sidebar-group {
+        flex-direction: row;
+        align-items: center;
+        gap: 0.25rem;
+        width: auto;
+        margin: 0 !important;
+    }
+
+    .app-sidebar .sidebar-link {
+        flex-direction: column;
+        justify-content: center;
+        gap: 0.15rem;
+        padding: 0.35rem 0.55rem;
+        width: auto;
+        height: auto;
+        font-size: 0.6rem;
+        font-weight: 500;
+        color: #86868b;
+        white-space: nowrap;
+    }
+
+    .app-sidebar .sidebar-link i {
+        width: auto;
+        margin: 0;
+        font-size: 1.05rem;
+        color: #86868b;
+    }
+
+    .app-sidebar .sidebar-link.active {
+        background: transparent;
+        color: #0071e3;
+        font-weight: 600;
+    }
+
+    .app-sidebar .sidebar-link.active i {
+        color: #0071e3;
+    }
+
+    .app-sidebar .sidebar-link.text-danger-hover.active,
+    .app-sidebar .sidebar-link.text-danger-hover:hover {
+        color: #ff453a;
+    }
+    .app-sidebar .sidebar-link.text-danger-hover.active i {
+        color: #ff453a;
+    }
+}
+
+@media (max-width: 480px) {
+    .app-content-area {
+        padding: 1rem 0.75rem 5.5rem;
+    }
+
+    .app-sidebar {
+        justify-content: flex-start;
+    }
+
+    .app-sidebar .sidebar-link {
+        padding: 0.3rem 0.45rem;
+        font-size: 0.55rem;
+    }
+}

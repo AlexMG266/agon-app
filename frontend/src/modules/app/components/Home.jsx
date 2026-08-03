@@ -21,7 +21,7 @@ import './Home.css';
 
 const LandingPage = () => {
     return (
-        <Container className="mt-5 py-4" style={{ fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif' }}>
+        <Container className="home-landing mt-5 py-4" style={{ fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif' }}>
             <Row className="align-items-center g-5">
                 <Col lg={5}>
                     <h1 className="display-3 fw-bold text-dark mb-3" style={{ letterSpacing: '-0.03em' }}>

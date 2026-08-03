@@ -24,6 +24,12 @@ body {
   color: var(--apple-text);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  overflow-x: hidden;
+}
+
+html,
+body {
+  max-width: 100%;
 }
 
 h1, h2, h3, h4, h5, h6 {
@@ -170,4 +176,71 @@ a:not([class]):hover {
   padding-left: 2px;
   letter-spacing: -0.01em;
   text-align: left;
+}
+
+/* ─── Responsive global ─── */
+
+/* Evitar el zoom automático de iOS al enfocar inputs
+   (el tamaño de fuente del input debe ser >= 16px) */
+@media (max-width: 768px) {
+  input,
+  select,
+  textarea {
+    font-size: 16px !important;
+  }
+}
+
+/* Tipografías adaptadas a pantallas pequeñas */
+@media (max-width: 768px) {
+  h1 { font-size: 1.9rem; }
+  h2 { font-size: 1.6rem; }
+  h3 { font-size: 1.35rem; }
+  h4 { font-size: 1.15rem; }
+  h5 { font-size: 1rem; }
+}
+
+/* Modales: asegurar que no se salgan del viewport en móvil */
+@media (max-width: 576px) {
+  .modal-dialog {
+    margin: 0.5rem auto;
+  }
+  .modal-content {
+    border-radius: 18px;
+  }
+  .modal-body {
+    padding: 1rem;
+  }
+}
+
+/* ─── Pantallas de autenticación (Login / SignUp) ─── */
+.auth-form-col {
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+@media (max-width: 991.98px) {
+  /* En móvil el contenedor debe permitir scroll vertical */
+  .fade-in-page {
+    position: fixed !important;
+    inset: 0;
+    overflow-y: auto !important;
+  }
+
+  .fade-in-page > .row {
+    min-height: 100%;
+  }
+
+  .auth-form-col {
+    min-height: 100vh;
+  }
+}
+
+@media (max-width: 576px) {
+  .auth-form-col {
+    padding: 1.5rem 1rem !important;
+  }
+
+  .auth-form-col h2 {
+    font-size: 1.5rem;
+  }
 }

@@ -218,3 +218,42 @@
     color: #005bbf;
     text-decoration: underline;
 }
+
+/* ─── Responsive ─── */
+@media (max-width: 768px) {
+    .smart-topbar .container-fluid {
+        padding-left: 1rem !important;
+        padding-right: 1rem !important;
+    }
+
+    .smart-topbar .navbar-brand {
+        font-size: 1.2rem;
+    }
+
+    /* El popup de notificaciones no debe salirse del viewport */
+    .notification-popup {
+        position: fixed;
+        top: 56px;
+        right: 0.5rem;
+        left: 0.5rem;
+        width: auto;
+        max-width: 320px;
+        margin-left: auto;
+    }
+}
+
+@media (max-width: 480px) {
+    .profile-username {
+        display: none;
+    }
+
+    .navbar-icon-btn {
+        width: 36px;
+        height: 36px;
+    }
+
+    .notification-popup {
+        right: 0.4rem;
+        left: 0.4rem;
+    }
+}

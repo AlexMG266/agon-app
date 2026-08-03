@@ -176,7 +176,7 @@ const SignUp = () => {
                 </Col>
 
                 {/* COLUMNA DERECHA: Formulario de Registro */}
-                <Col lg={6} className="d-flex align-items-center justify-content-center p-4 bg-white" style={{ overflowY: 'auto' }}>
+                <Col lg={6} className="auth-form-col d-flex align-items-center justify-content-center p-4 bg-white">
                     <div className="w-100 my-auto" style={{ maxWidth: '380px' }}>
 
                         <div className="mb-4 text-start">

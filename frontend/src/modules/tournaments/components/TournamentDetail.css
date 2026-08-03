@@ -1347,6 +1347,11 @@
     box-shadow: 0 0 0 3px rgba(0,113,227,0.12);
 }
 
+.td-clasificacion-scroll {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+}
+
 .td-clasificacion-table {
     width: 100%;
     border-collapse: collapse;
@@ -1876,5 +1881,48 @@
     .td-partidos-mobile-select-wrapper {
         display: block;
         flex: 1;
+    }
+}
+
+/* ─── Responsive adicional ─── */
+@media (max-width: 768px) {
+    .td-fullbleed {
+        margin-left: -1rem;
+        margin-right: -1rem;
+    }
+
+    .td-top-nav {
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+
+    .td-clasificacion-table {
+        min-width: 520px;
+    }
+
+    .td-hero-actions {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .td-hero-actions .btn,
+    .td-hero-actions .td-enroll-btn {
+        width: 100%;
+        justify-content: center;
+    }
+}
+
+@media (max-width: 480px) {
+    .td-container {
+        padding-left: 0.75rem;
+        padding-right: 0.75rem;
+    }
+
+    .td-clasificacion-grupo-select {
+        width: 100%;
+    }
+
+    .td-config-form .form-label {
+        font-size: 0.85rem;
     }
 }

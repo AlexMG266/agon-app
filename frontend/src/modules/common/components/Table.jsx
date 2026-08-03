@@ -54,13 +54,13 @@ const Table = () => {
     );
 
     return (
-        <div 
-            className="position-relative w-100 rounded-4 shadow-sm border" 
-            style={{ 
-                height: '400px', 
-                backgroundColor: '#e8e8ea', 
-                borderColor: '#c8c8cc', 
-                overflow: 'hidden' 
+        <div
+            className="foosball-table position-relative w-100 rounded-4 shadow-sm border"
+            style={{
+                height: '400px',
+                backgroundColor: '#e8e8ea',
+                borderColor: '#c8c8cc',
+                overflow: 'hidden'
             }}
         >
             {/* Línea central */}

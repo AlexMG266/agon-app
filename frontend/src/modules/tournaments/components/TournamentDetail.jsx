@@ -1860,49 +1860,51 @@ const TournamentDetail = () => {
                                 ? clasificadosPorGrupo(tournament.rondaInicioPlayoff, tournament.numGrupos)
                                 : 0;
                             return equiposGrupo.length > 0 ? (
-                                <table className="td-clasificacion-table">
-                                    <thead>
-                                        <tr>
-                                            <th>#</th>
-                                            <th><FormattedMessage id="project.tournaments.Detail.clasificacion.team" defaultMessage="Equipo" /></th>
-                                            <th><FormattedMessage id="project.tournaments.Detail.clasificacion.pj" defaultMessage="PJ" /></th>
-                                            <th><FormattedMessage id="project.tournaments.Detail.clasificacion.g" defaultMessage="G" /></th>
-                                            <th><FormattedMessage id="project.tournaments.Detail.clasificacion.e" defaultMessage="E" /></th>
-                                            <th><FormattedMessage id="project.tournaments.Detail.clasificacion.p" defaultMessage="P" /></th>
-                                            <th><FormattedMessage id="project.tournaments.Detail.clasificacion.dg" defaultMessage="DG" /></th>
-                                            <th><FormattedMessage id="project.tournaments.Detail.clasificacion.pts" defaultMessage="PTS" /></th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        {equiposGrupo.map((insc, idx) => {
-                                            const pos = idx + 1;
-                                            const dg = (insc.diferenciaSets ?? (insc.setsGanados || 0) - (insc.setsPerdidos || 0));
-                                            return (
-                                                <tr key={insc.equipoId}>
-                                                    <td>
-                                                        <span className={`td-clasificacion-pos ${clasificanPlayoff > 0 && pos <= clasificanPlayoff ? 'td-clasificacion-pos--playoff' : ''}`}>
-                                                            {pos}
-                                                        </span>
-                                                    </td>
-                                                    <td>
-                                                        <div className="td-clasificacion-team">
-                                                            <div className="td-clasificacion-shield">
-                                                                <i className="fa-regular fa-shield-halved" />
+                                <div className="td-clasificacion-scroll">
+                                    <table className="td-clasificacion-table">
+                                        <thead>
+                                            <tr>
+                                                <th>#</th>
+                                                <th><FormattedMessage id="project.tournaments.Detail.clasificacion.team" defaultMessage="Equipo" /></th>
+                                                <th><FormattedMessage id="project.tournaments.Detail.clasificacion.pj" defaultMessage="PJ" /></th>
+                                                <th><FormattedMessage id="project.tournaments.Detail.clasificacion.g" defaultMessage="G" /></th>
+                                                <th><FormattedMessage id="project.tournaments.Detail.clasificacion.e" defaultMessage="E" /></th>
+                                                <th><FormattedMessage id="project.tournaments.Detail.clasificacion.p" defaultMessage="P" /></th>
+                                                <th><FormattedMessage id="project.tournaments.Detail.clasificacion.dg" defaultMessage="DG" /></th>
+                                                <th><FormattedMessage id="project.tournaments.Detail.clasificacion.pts" defaultMessage="PTS" /></th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {equiposGrupo.map((insc, idx) => {
+                                                const pos = idx + 1;
+                                                const dg = (insc.diferenciaSets ?? (insc.setsGanados || 0) - (insc.setsPerdidos || 0));
+                                                return (
+                                                    <tr key={insc.equipoId}>
+                                                        <td>
+                                                            <span className={`td-clasificacion-pos ${clasificanPlayoff > 0 && pos <= clasificanPlayoff ? 'td-clasificacion-pos--playoff' : ''}`}>
+                                                                {pos}
+                                                            </span>
+                                                        </td>
+                                                        <td>
+                                                            <div className="td-clasificacion-team">
+                                                                <div className="td-clasificacion-shield">
+                                                                    <i className="fa-regular fa-shield-halved" />
+                                                                </div>
+                                                                {insc.nombreEquipo}
                                                             </div>
-                                                            {insc.nombreEquipo}
-                                                        </div>
-                                                    </td>
-                                                    <td>{insc.partidosJugados || 0}</td>
-                                                    <td>{insc.partidosGanados || 0}</td>
-                                                    <td>{insc.partidosEmpatados || 0}</td>
-                                                    <td>{insc.partidosPerdidos || 0}</td>
-                                                    <td style={{ color: '#8e8e93' }}>{dg > 0 ? `+${dg}` : dg}</td>
-                                                    <td>{insc.puntosLiga || 0}</td>
-                                                </tr>
-                                            );
-                                        })}
-                                    </tbody>
-                                </table>
+                                                        </td>
+                                                        <td>{insc.partidosJugados || 0}</td>
+                                                        <td>{insc.partidosGanados || 0}</td>
+                                                        <td>{insc.partidosEmpatados || 0}</td>
+                                                        <td>{insc.partidosPerdidos || 0}</td>
+                                                        <td style={{ color: '#8e8e93' }}>{dg > 0 ? `+${dg}` : dg}</td>
+                                                        <td>{insc.puntosLiga || 0}</td>
+                                                    </tr>
+                                                );
+                                            })}
+                                        </tbody>
+                                    </table>
+                                </div>
                             ) : (
                                 <div className="td-empty-state">
                                     <div className="td-empty-state-icon">

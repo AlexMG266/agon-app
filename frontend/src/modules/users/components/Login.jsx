@@ -131,7 +131,7 @@ const Login = () => {
                 </Col>
 
                 {/* COLUMNA DERECHA: Formulario */}
-                <Col lg={6} className="d-flex align-items-center justify-content-center p-4 bg-white">
+                <Col lg={6} className="auth-form-col d-flex align-items-center justify-content-center p-4 bg-white">
                     <div className="w-100" style={{ maxWidth: '360px' }}>
 
                         <div className="mb-4 text-start">

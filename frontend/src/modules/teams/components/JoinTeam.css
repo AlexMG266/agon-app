@@ -290,3 +290,21 @@
     font-weight: 500 !important;
     padding: 0.5rem 1.25rem !important;
 }
+
+/* ─── Responsive ─── */
+@media (max-width: 768px) {
+    .join-team-input-group {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .join-team-search-btn {
+        justify-content: center;
+        width: 100%;
+        height: 42px;
+    }
+
+    .join-team-result-header {
+        flex-wrap: wrap;
+    }
+}

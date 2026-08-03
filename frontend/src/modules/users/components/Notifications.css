@@ -618,3 +618,10 @@
         gap: 0.5rem;
     }
 }
+
+/* ─── Ajustes para la barra de navegación inferior (móvil) ─── */
+@media (max-width: 820px) {
+    .notifications-container {
+        height: calc(100dvh - 60px);
+    }
+}

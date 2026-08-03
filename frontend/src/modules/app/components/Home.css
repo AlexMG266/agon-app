@@ -566,3 +566,42 @@
         padding: 1.5rem 1rem;
     }
 }
+
+/* ─── Landing Page (no autenticado) ─── */
+@media (max-width: 768px) {
+    .home-landing {
+        padding: 0 1rem;
+    }
+}
+
+@media (max-width: 576px) {
+    .home-landing .display-3 {
+        font-size: 2.4rem;
+    }
+
+    .home-landing .h4 {
+        font-size: 1.2rem;
+    }
+
+    .home-landing .d-flex.gap-3 {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .home-landing .d-flex.gap-3 .btn {
+        width: 100%;
+    }
+}
+
+/* ─── Gráfico de mesa de futbolín (Table) ─── */
+@media (max-width: 576px) {
+    .foosball-table {
+        height: 260px !important;
+    }
+}
+
+@media (max-width: 400px) {
+    .foosball-table {
+        height: 220px !important;
+    }
+}
