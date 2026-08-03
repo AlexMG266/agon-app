@@ -12,6 +12,7 @@
 --   40 torneos privados (1 por test user)
 --   2 ligas comenzadas de user000 (20 equipos, 1 partido por terminar)
 --   1 liga + playoff a mitad de competición (84): jornadas 1-2 jugadas, 3-5 pendientes
+-- Historial de ELO: 6 variaciones por usuario (ids 1-42), coherente con el ELO actual
 -- pagesUser (contraseña: pagesUser123!): 100 notificaciones, 20 equipos,
 --   10 torneos creados, 10 torneos seguidos y su equipo 21 inscrito en 10 torneos públicos
 -- ============================================================
@@ -760,4 +761,134 @@ SELECT
     END,
     NOW() - (i || ' minutes')::INTERVAL
 FROM generate_series(1, 100) AS i;
+
+-- ============================================================
+-- 12. HISTORIAL DE ELO (6 variaciones por usuario)
+--     Genera un historial de ELO coherente para TODOS los usuarios (ids 1-42):
+--       - test001..test040 (ids 2-41): usan sus encuentros reales JUGADO del
+--         torneo 83 (Liga Única 2026); el resultado (VICTORIA/DERROTA/EMPATE)
+--         se deriva de los sets reales disputados por su equipo.
+--       - user000 (1) y pagesUser (42): no disputan partidos, así que se les
+--         genera un patrón de ejemplo alternando victorias/derrotas/empates
+--         referenciando encuentros reales del torneo 83.
+--     El ELO de la última entrada coincide siempre con el ELO actual de cada
+--     usuario (las variaciones se encadenan hacia atrás desde el ELO final).
+-- ============================================================
+DO $$
+DECLARE
+    usr RECORD;
+    enc RECORD;
+    srow RECORD;
+    equipo_id BIGINT;
+    participa BOOLEAN;
+    enc_ids BIGINT[];
+    res_arr TEXT[];
+    var_arr INT[];
+    fecha_arr TIMESTAMP[];
+    sets_l INT;
+    sets_v INT;
+    aux INT;
+    res TEXT;
+    variacion INT;
+    delta INT;
+    base INT;
+    elo_actual INT;
+    i INT;
+BEGIN
+    FOR usr IN SELECT id, elo FROM "User" ORDER BY id LOOP
+        -- Equipo al que pertenece el usuario (si existe)
+        SELECT em.equipo_id INTO equipo_id FROM Equipo_Miembros em
+        WHERE em.usuario_id = usr.id LIMIT 1;
+
+        -- ¿Juega el usuario en el torneo 83?
+        participa := equipo_id IS NOT NULL AND EXISTS (
+            SELECT 1 FROM Inscripcion WHERE idTorneo = 83 AND idEquipo = equipo_id
+        );
+
+        -- Encuentros de referencia (6, ordenados cronológicamente):
+        --   - los reales del usuario si participa en el torneo 83
+        --   - los primeros JUGADO del torneo 83 en caso contrario (demo)
+        SELECT array_agg(sub.id ORDER BY sub.fechaRealizacion)
+        INTO enc_ids
+        FROM (
+            SELECT e.id, e.fechaRealizacion
+            FROM Encuentro e
+            JOIN Jornada j ON e.idJornada = j.id
+            WHERE j.idTorneo = 83
+              AND e.estadoEncuentro = 'JUGADO'
+              AND (NOT participa OR e.idEquipoLocal = equipo_id OR e.idEquipoVisitante = equipo_id)
+            ORDER BY e.fechaRealizacion
+            LIMIT 6
+        ) sub;
+
+        IF enc_ids IS NULL OR array_length(enc_ids, 1) = 0 THEN
+            CONTINUE;
+        END IF;
+
+        res_arr := ARRAY[]::TEXT[];
+        var_arr := ARRAY[]::INT[];
+        fecha_arr := ARRAY[]::TIMESTAMP[];
+        delta := 0;
+
+        FOR i IN 1..array_length(enc_ids, 1) LOOP
+            SELECT * INTO enc FROM Encuentro WHERE id = enc_ids[i];
+            fecha_arr := fecha_arr || enc.fechaRealizacion;
+
+            IF participa AND (enc.idEquipoLocal = equipo_id OR enc.idEquipoVisitante = equipo_id) THEN
+                -- Resultado real derivado de los sets del encuentro
+                sets_l := 0;
+                sets_v := 0;
+                FOR srow IN SELECT golesLocal, golesVisitante FROM Set_Entity WHERE idEncuentro = enc.id LOOP
+                    IF srow.golesLocal > srow.golesVisitante THEN
+                        sets_l := sets_l + 1;
+                    ELSE
+                        sets_v := sets_v + 1;
+                    END IF;
+                END LOOP;
+                IF enc.idEquipoVisitante = equipo_id THEN
+                    aux := sets_l; sets_l := sets_v; sets_v := aux;
+                END IF;
+
+                IF sets_l > sets_v THEN
+                    res := 'VICTORIA';
+                ELSIF sets_l < sets_v THEN
+                    res := 'DERROTA';
+                ELSE
+                    res := 'EMPATE';
+                END IF;
+            ELSE
+                -- Patrón alternado para usuarios sin partidos reales (demo)
+                IF i % 3 = 1 THEN
+                    res := 'VICTORIA';
+                ELSIF i % 3 = 2 THEN
+                    res := 'DERROTA';
+                ELSE
+                    res := 'EMPATE';
+                END IF;
+            END IF;
+
+            IF res = 'VICTORIA' THEN
+                variacion := 16;
+            ELSIF res = 'DERROTA' THEN
+                variacion := -16;
+            ELSE
+                variacion := 0;
+            END IF;
+
+            res_arr := res_arr || res;
+            var_arr := var_arr || variacion;
+            delta := delta + variacion;
+        END LOOP;
+
+        -- ELO base tal que la última entrada termine en el ELO actual del usuario
+        base := GREATEST(0, usr.elo - delta);
+        elo_actual := base;
+
+        FOR i IN 1..array_length(enc_ids, 1) LOOP
+            INSERT INTO Elo_Historial (idUsuario, idEncuentro, eloAnterior, eloNuevo, resultado, fecha)
+            VALUES (usr.id, enc_ids[i], elo_actual, elo_actual + var_arr[i], res_arr[i], fecha_arr[i]);
+            elo_actual := elo_actual + var_arr[i];
+        END LOOP;
+    END LOOP;
+END $$;
 
