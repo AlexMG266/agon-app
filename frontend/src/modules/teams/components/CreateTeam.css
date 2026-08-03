@@ -171,7 +171,8 @@
 
 @media (max-width: 768px) {
     .ct-modal-dialog {
-        max-width: 100%;
+        max-width: min(480px, calc(100% - 2rem));
+        width: auto;
     }
 
     .ct-success-actions {

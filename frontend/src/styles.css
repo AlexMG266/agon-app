@@ -199,16 +199,25 @@ a:not([class]):hover {
   h5 { font-size: 1rem; }
 }
 
-/* Modales: asegurar que no se salgan del viewport en móvil */
+/* Modales: en móvil deben verse como tarjetas flotantes,
+   con márgenes laterales — no ocupar todo el ancho. */
 @media (max-width: 576px) {
   .modal-dialog {
-    margin: 0.5rem auto;
+    margin: 1.25rem auto;
+    max-width: calc(100% - 2.5rem);
   }
   .modal-content {
     border-radius: 18px;
   }
   .modal-body {
     padding: 1rem;
+  }
+}
+
+@media (max-width: 400px) {
+  .modal-dialog {
+    margin: 1rem auto;
+    max-width: calc(100% - 2rem);
   }
 }
 
