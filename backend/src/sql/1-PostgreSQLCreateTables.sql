@@ -1,3 +1,4 @@
+DROP TABLE IF EXISTS Elo_Historial CASCADE;
 DROP TABLE IF EXISTS SeguimientoTorneo CASCADE;
 DROP TABLE IF EXISTS Solicitud_Aplazamiento CASCADE;
 DROP TABLE IF EXISTS Set_Entity CASCADE;
@@ -228,3 +229,18 @@ CREATE TABLE SeguimientoTorneo (
 
 CREATE INDEX SeguimientoTorneoIndexByUsuarioId ON SeguimientoTorneo (usuarioId);
 CREATE INDEX SeguimientoTorneoIndexByTorneoId ON SeguimientoTorneo (torneoId);
+
+CREATE TABLE Elo_Historial (
+    id BIGSERIAL NOT NULL,
+    idUsuario BIGINT NOT NULL,
+    idEncuentro BIGINT NOT NULL,
+    eloAnterior INTEGER NOT NULL,
+    eloNuevo INTEGER NOT NULL,
+    resultado VARCHAR(20) NOT NULL,
+    fecha TIMESTAMP NOT NULL,
+    CONSTRAINT EloHistorialPK PRIMARY KEY (id),
+    CONSTRAINT EloHistorialUsuarioIdFK FOREIGN KEY (idUsuario) REFERENCES "User"(id) ON DELETE CASCADE,
+    CONSTRAINT EloHistorialEncuentroIdFK FOREIGN KEY (idEncuentro) REFERENCES Encuentro(id) ON DELETE CASCADE
+);
+
+CREATE INDEX EloHistorialIndexByUsuarioId ON Elo_Historial (idUsuario);

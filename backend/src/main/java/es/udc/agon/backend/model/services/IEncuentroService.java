@@ -67,4 +67,13 @@ public interface IEncuentroService {
      */
     void responderAplazamiento(Long capitanId, Long solicitudId, boolean aceptar)
             throws InstanceNotFoundException, PermissionException, IllegalArgumentException;
+
+    /**
+     * consulta el historial de variaciones de ELO de un usuario,
+     * ordenado cronológicamente (más antiguo primero).
+     *
+     * @param usuarioId id del usuario.
+     * @return lista de registros de historial de ELO.
+     */
+    List<EloHistorial> consultarHistorialElo(Long usuarioId);
 }

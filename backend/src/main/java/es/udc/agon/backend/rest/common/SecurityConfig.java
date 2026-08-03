@@ -41,8 +41,9 @@ public class SecurityConfig {
                     .requestMatchers("/docs/**").permitAll()
                     .requestMatchers("/swagger-ui/**").permitAll()
 
-                    .requestMatchers(HttpMethod.PUT, "/users/*").hasRole("USER")  
-                    .requestMatchers(HttpMethod.POST, "/users/*/changePassword").hasRole("USER")  
+                    .requestMatchers(HttpMethod.PUT, "/users/*").hasRole("USER")
+                    .requestMatchers(HttpMethod.POST, "/users/*/changePassword").hasRole("USER")
+                    .requestMatchers(HttpMethod.GET, "/users/*/elo-history").hasRole("USER")
 
                     .requestMatchers(HttpMethod.GET, "/notifications").hasRole("USER")
                     .requestMatchers(HttpMethod.GET, "/notifications/*").hasRole("USER")

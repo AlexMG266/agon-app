@@ -49,6 +49,12 @@ public class EncuentroServiceImpl implements IEncuentroService {
     @Autowired
     private NotificationDao notificationDao;
 
+    @Autowired
+    private EloHistorialDao eloHistorialDao;
+
+    @Autowired
+    private UserDao userDao;
+
     @Override
     @Transactional(readOnly = true)
     public List<Encuentro> consultarEncuentrosPropios(Long userId) {
@@ -150,6 +156,9 @@ public class EncuentroServiceImpl implements IEncuentroService {
 
         encuentro.setEstadoEncuentro(EstadoEncuentro.JUGADO);
         encuentroDao.save(encuentro);
+
+        // recalcular ELO de todos los jugadores de ambos equipos y registrar el historial
+        aplicarVariacionElo(encuentro, sets);
 
         // actualizar estadisticas de inscripciones
         // (el empate es posible: sets iguales, p.ej. 2-2, no hay ganador)
@@ -440,5 +449,92 @@ public class EncuentroServiceImpl implements IEncuentroService {
         }
         String[] partes = hora.split(":");
         return Integer.parseInt(partes[0].trim()) * 60 + Integer.parseInt(partes[1].trim());
+    }
+
+    // ── Cálculo de ELO ─────────────────────────────────────────────
+    // Coeficiente K usado en la fórmula ELO (controla la magnitud de las variaciones).
+    private static final int K_ELO = 32;
+
+    /**
+     * Recalcula el ELO de todos los jugadores (miembros) de los dos equipos
+     * de un encuentro ya jugado y guarda un registro de historial por jugador.
+     *
+     * La variación se calcula comparando el ELO medio del equipo propio frente
+     * al del rival (fórmula clásica de Elo). Un jugador sube si su equipo gana
+     * el encuentro y baja si lo pierde; en caso de empate la variación depende
+     * de la diferencia de nivel entre equipos.
+     */
+    private void aplicarVariacionElo(Encuentro encuentro, List<SetEntity> sets) {
+        Equipo local = encuentro.getLocal();
+        Equipo visitante = encuentro.getVisitante();
+        if (local == null || visitante == null) {
+            return;
+        }
+
+        // resultado del encuentro desde la perspectiva del equipo local
+        int setsLocal = 0;
+        int setsVisitante = 0;
+        for (SetEntity set : sets) {
+            if (set.getGolesLocal() > set.getGolesVisitante()) {
+                setsLocal++;
+            } else if (set.getGolesVisitante() > set.getGolesLocal()) {
+                setsVisitante++;
+            }
+        }
+        double sLocal;
+        if (setsLocal > setsVisitante) {
+            sLocal = 1.0;
+        } else if (setsVisitante > setsLocal) {
+            sLocal = 0.0;
+        } else {
+            sLocal = 0.5;
+        }
+        double sVisitante = 1.0 - sLocal;
+
+        int eloMedioLocal = eloMedio(local);
+        int eloMedioVisitante = eloMedio(visitante);
+
+        aplicarEloAEquipo(local, sLocal, eloMedioLocal, eloMedioVisitante, encuentro);
+        aplicarEloAEquipo(visitante, sVisitante, eloMedioVisitante, eloMedioLocal, encuentro);
+    }
+
+    private int eloMedio(Equipo equipo) {
+        if (equipo == null || equipo.getMiembros() == null || equipo.getMiembros().isEmpty()) {
+            return 1500;
+        }
+        int suma = 0;
+        for (User miembro : equipo.getMiembros()) {
+            suma += miembro.getElo();
+        }
+        return suma / equipo.getMiembros().size();
+    }
+
+    private void aplicarEloAEquipo(Equipo equipo, double resultado, int eloPropio, int eloRival,
+            Encuentro encuentro) {
+        if (equipo == null || equipo.getMiembros() == null) {
+            return;
+        }
+        for (User miembro : equipo.getMiembros()) {
+            double esperado = 1.0 / (1.0 + Math.pow(10, (eloRival - eloPropio) / 400.0));
+            int variacion = (int) Math.round(K_ELO * (resultado - esperado));
+            int eloAnterior = miembro.getElo();
+            int eloNuevo = Math.max(0, eloAnterior + variacion);
+
+            if (eloNuevo != eloAnterior) {
+                miembro.setElo(eloNuevo);
+                userDao.save(miembro);
+
+                EloHistorial historial = new EloHistorial(miembro, encuentro, eloAnterior, eloNuevo,
+                        resultado >= 1.0 ? "VICTORIA" : (resultado <= 0.0 ? "DERROTA" : "EMPATE"),
+                        LocalDateTime.now(clock));
+                eloHistorialDao.save(historial);
+            }
+        }
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<EloHistorial> consultarHistorialElo(Long usuarioId) {
+        return eloHistorialDao.findByUsuarioIdOrderByFechaAsc(usuarioId);
     }
 }

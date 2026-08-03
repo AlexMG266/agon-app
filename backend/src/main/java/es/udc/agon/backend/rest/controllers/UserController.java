@@ -1,10 +1,12 @@
 package es.udc.agon.backend.rest.controllers;
 
+import static es.udc.agon.backend.rest.dtos.EloHistorialConversor.toEloHistorialDtos;
 import static es.udc.agon.backend.rest.dtos.UserConversor.toAuthenticatedUserDto;
 import static es.udc.agon.backend.rest.dtos.UserConversor.toUser;
 import static es.udc.agon.backend.rest.dtos.UserConversor.toUserDto;
 
 import java.net.URI;
+import java.util.List;
 import java.util.Locale;
 import java.util.HashMap;
 import java.util.Map;
@@ -27,6 +29,7 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestAttribute;
@@ -47,8 +50,10 @@ import es.udc.agon.backend.model.services.UserService;
 import es.udc.agon.backend.rest.common.ErrorsDto;
 import es.udc.agon.backend.rest.common.JwtGenerator;
 import es.udc.agon.backend.rest.common.JwtInfo;
+import es.udc.agon.backend.model.services.IEncuentroService;
 import es.udc.agon.backend.rest.dtos.AuthenticatedUserDto;
 import es.udc.agon.backend.rest.dtos.ChangePasswordParamsDto;
+import es.udc.agon.backend.rest.dtos.EloHistorialDto;
 import es.udc.agon.backend.rest.dtos.LoginParamsDto;
 import es.udc.agon.backend.rest.dtos.UserDto;
 
@@ -69,6 +74,9 @@ public class UserController {
 
     @Autowired
     private UserService userService;
+
+    @Autowired
+    private IEncuentroService encuentroService;
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
     @ResponseStatus(HttpStatus.BAD_REQUEST)
@@ -222,6 +230,32 @@ public class UserController {
         }
 
         userService.changePassword(id, params.getOldPassword(), params.getNewPassword());
+    }
+
+    @GetMapping("/{id}/elo-history")
+    @Operation(
+            summary = "Consultar historial de ELO",
+            description = "Devuelve el historial de subidas y bajadas de ELO del usuario, ordenado cronológicamente.",
+            security = @SecurityRequirement(name = "bearerAuth")
+    )
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Historial de ELO obtenido correctamente",
+                    content = @Content(schema = @Schema(implementation = EloHistorialDto.class))),
+            @ApiResponse(responseCode = "403", description = "No tienes permisos para consultar este historial",
+                    content = @Content),
+            @ApiResponse(responseCode = "404", description = "Usuario no encontrado",
+                    content = @Content)
+    })
+    public List<EloHistorialDto> getEloHistory(
+            @Parameter(hidden = true) @RequestAttribute Long userId,
+            @Parameter(description = "ID del usuario del que se consulta el historial de ELO", example = "42") @PathVariable Long id)
+            throws PermissionException {
+
+        if (!id.equals(userId)) {
+            throw new PermissionException();
+        }
+
+        return toEloHistorialDtos(encuentroService.consultarHistorialElo(id));
     }
 
     private String generateServiceToken(User user) {
