@@ -35,9 +35,13 @@ services:
     volumes:
       - postgres_prod_data:/var/lib/postgresql/data
       # Inicialización única (solo la primera vez, volumen vacío):
-      # crea el esquema con las tablas. El seed de datos de prueba NO se
-      # inyecta en producción.
+      # 01-schema.sql  -> crea el esquema con las tablas
+      # 02-seed.sql    -> inyecta los datos de prueba (para poder hacer
+      #                  pruebas en vivo con datos ya cargados)
+      # NOTA: estos scripts solo se ejecutan cuando el volumen está vacío.
+      # Para reinicializar desde cero: docker compose -f docker-compose.prod.yml down -v
       - ./backend/src/sql/1-PostgreSQLCreateTables.sql:/docker-entrypoint-initdb.d/01-schema.sql:ro
+      - ./backend/src/sql/3-SeedData.sql:/docker-entrypoint-initdb.d/02-seed.sql:ro
     networks:
       - agon_prod_network
     healthcheck:
