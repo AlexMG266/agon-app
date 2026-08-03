@@ -11,12 +11,12 @@ import org.springframework.security.config.annotation.web.configuration.EnableWe
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
 import java.util.Arrays;
-import java.util.List;
 
 @Configuration
 @EnableWebSecurity
@@ -38,55 +38,59 @@ public class SecurityConfig {
                 .addFilterBefore(new JwtFilter(jwtGenerator), UsernamePasswordAuthenticationFilter.class)
 
                 .authorizeHttpRequests((authorize) -> authorize
-                    // Las rutas se declaran SIN prefijo: la API se sirve en la
-                    // raíz (/) tanto en desarrollo como en producción (dominio
-                    // dedicado, p. ej. https://api.tudominio.com). El frontend
-                    // apunta a la URL base completa vía VITE_BACKEND_URL.
-                    .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
-                    .requestMatchers(HttpMethod.POST, "/users/signup").permitAll()
-                    .requestMatchers(HttpMethod.POST, "/users/login").permitAll()
-                    .requestMatchers(HttpMethod.POST, "/users/loginFromServiceToken").permitAll()
-                    .requestMatchers("/api-docs/**").permitAll()
-                    .requestMatchers("/docs/**").permitAll()
-                    .requestMatchers("/swagger-ui/**").permitAll()
+                    // Se usa AntPathRequestMatcher (matching de patrón puro sobre el
+                    // servlet path) en lugar del MvcRequestMatcher por defecto: es
+                    // determinista e independiente del contexto de Spring MVC, lo que
+                    // evita 403 inesperados en runtime de producción.
+                    // Las rutas se declaran SIN prefijo: la API se sirve en la raíz (/)
+                    // tanto en desarrollo como en producción (dominio dedicado, p. ej.
+                    // https://api.tudominio.com). El frontend apunta a la URL base
+                    // completa vía VITE_BACKEND_URL.
+                    .requestMatchers(new AntPathRequestMatcher("/**", "OPTIONS")).permitAll()
+                    .requestMatchers(new AntPathRequestMatcher("/users/signup", "POST")).permitAll()
+                    .requestMatchers(new AntPathRequestMatcher("/users/login", "POST")).permitAll()
+                    .requestMatchers(new AntPathRequestMatcher("/users/loginFromServiceToken", "POST")).permitAll()
+                    .requestMatchers(new AntPathRequestMatcher("/api-docs/**")).permitAll()
+                    .requestMatchers(new AntPathRequestMatcher("/docs/**")).permitAll()
+                    .requestMatchers(new AntPathRequestMatcher("/swagger-ui/**")).permitAll()
 
-                    .requestMatchers(HttpMethod.PUT, "/users/*").hasRole("USER")
-                    .requestMatchers(HttpMethod.POST, "/users/*/changePassword").hasRole("USER")
-                    .requestMatchers(HttpMethod.GET, "/users/*/elo-history").hasRole("USER")
+                    .requestMatchers(new AntPathRequestMatcher("/users/*", "PUT")).hasRole("USER")
+                    .requestMatchers(new AntPathRequestMatcher("/users/*/changePassword", "POST")).hasRole("USER")
+                    .requestMatchers(new AntPathRequestMatcher("/users/*/elo-history", "GET")).hasRole("USER")
 
-                    .requestMatchers(HttpMethod.GET, "/notifications").hasRole("USER")
-                    .requestMatchers(HttpMethod.GET, "/notifications/*").hasRole("USER")
-                    .requestMatchers(HttpMethod.POST, "/notifications").hasRole("USER")
-                    .requestMatchers(HttpMethod.POST, "/notifications/*").hasRole("USER")
-                    .requestMatchers(HttpMethod.PUT, "/notifications/*").hasRole("USER")
+                    .requestMatchers(new AntPathRequestMatcher("/notifications", "GET")).hasRole("USER")
+                    .requestMatchers(new AntPathRequestMatcher("/notifications/*", "GET")).hasRole("USER")
+                    .requestMatchers(new AntPathRequestMatcher("/notifications", "POST")).hasRole("USER")
+                    .requestMatchers(new AntPathRequestMatcher("/notifications/*", "POST")).hasRole("USER")
+                    .requestMatchers(new AntPathRequestMatcher("/notifications/*", "PUT")).hasRole("USER")
 
-                    .requestMatchers(HttpMethod.GET, "/encuentros").hasRole("USER")
-                    .requestMatchers(HttpMethod.GET, "/encuentros/**").hasRole("USER")
-                    .requestMatchers(HttpMethod.POST, "/encuentros/**").hasRole("USER")
-                    .requestMatchers(HttpMethod.PUT, "/encuentros/*/resultado").hasRole("USER")
-                    .requestMatchers(HttpMethod.PATCH, "/encuentros/aplazamientos/*").hasRole("USER")
+                    .requestMatchers(new AntPathRequestMatcher("/encuentros", "GET")).hasRole("USER")
+                    .requestMatchers(new AntPathRequestMatcher("/encuentros/**", "GET")).hasRole("USER")
+                    .requestMatchers(new AntPathRequestMatcher("/encuentros/**", "POST")).hasRole("USER")
+                    .requestMatchers(new AntPathRequestMatcher("/encuentros/*/resultado", "PUT")).hasRole("USER")
+                    .requestMatchers(new AntPathRequestMatcher("/encuentros/aplazamientos/*", "PATCH")).hasRole("USER")
 
-                    .requestMatchers(HttpMethod.POST, "/teams").hasRole("USER")
-                    .requestMatchers(HttpMethod.GET, "/teams").hasRole("USER")
-                    .requestMatchers(HttpMethod.GET, "/teams/**").hasRole("USER")
-                    .requestMatchers(HttpMethod.PUT, "/teams/*").hasRole("USER")
-                    .requestMatchers(HttpMethod.DELETE, "/teams/*").hasRole("USER")
-                    .requestMatchers(HttpMethod.DELETE, "/teams/*/miembros/*").hasRole("USER")
-                    .requestMatchers(HttpMethod.POST, "/teams/*/solicitudes").hasRole("USER")
-                    .requestMatchers(HttpMethod.POST, "/teams/solicitudes").hasRole("USER")
-                    .requestMatchers(HttpMethod.PATCH, "/teams/solicitudes/*").hasRole("USER")
+                    .requestMatchers(new AntPathRequestMatcher("/teams", "POST")).hasRole("USER")
+                    .requestMatchers(new AntPathRequestMatcher("/teams", "GET")).hasRole("USER")
+                    .requestMatchers(new AntPathRequestMatcher("/teams/**", "GET")).hasRole("USER")
+                    .requestMatchers(new AntPathRequestMatcher("/teams/*", "PUT")).hasRole("USER")
+                    .requestMatchers(new AntPathRequestMatcher("/teams/*", "DELETE")).hasRole("USER")
+                    .requestMatchers(new AntPathRequestMatcher("/teams/*/miembros/*", "DELETE")).hasRole("USER")
+                    .requestMatchers(new AntPathRequestMatcher("/teams/*/solicitudes", "POST")).hasRole("USER")
+                    .requestMatchers(new AntPathRequestMatcher("/teams/solicitudes", "POST")).hasRole("USER")
+                    .requestMatchers(new AntPathRequestMatcher("/teams/solicitudes/*", "PATCH")).hasRole("USER")
 
-                    .requestMatchers(HttpMethod.POST, "/tournaments").hasRole("USER")
-                    .requestMatchers(HttpMethod.POST, "/tournaments/**").hasRole("USER")
-                    .requestMatchers(HttpMethod.GET, "/tournaments").hasRole("USER")
-                    .requestMatchers(HttpMethod.GET, "/tournaments/**").hasRole("USER")
-                    .requestMatchers(HttpMethod.PUT, "/tournaments/*").hasRole("USER")
-                    .requestMatchers(HttpMethod.PUT, "/tournaments/*/seguidores/*").hasRole("USER")
-                    .requestMatchers(HttpMethod.DELETE, "/tournaments/**").hasRole("USER")
-                    .requestMatchers(HttpMethod.DELETE, "/tournaments/*/seguidores/*").hasRole("USER")
-                    .requestMatchers(HttpMethod.PATCH, "/tournaments/*").hasRole("USER")
-                    .requestMatchers(HttpMethod.PATCH, "/tournaments/*/estructura").hasRole("USER")
-                    .requestMatchers(HttpMethod.PATCH, "/tournaments/*/inscripciones/*").hasRole("USER")
+                    .requestMatchers(new AntPathRequestMatcher("/tournaments", "POST")).hasRole("USER")
+                    .requestMatchers(new AntPathRequestMatcher("/tournaments/**", "POST")).hasRole("USER")
+                    .requestMatchers(new AntPathRequestMatcher("/tournaments", "GET")).hasRole("USER")
+                    .requestMatchers(new AntPathRequestMatcher("/tournaments/**", "GET")).hasRole("USER")
+                    .requestMatchers(new AntPathRequestMatcher("/tournaments/*", "PUT")).hasRole("USER")
+                    .requestMatchers(new AntPathRequestMatcher("/tournaments/*/seguidores/*", "PUT")).hasRole("USER")
+                    .requestMatchers(new AntPathRequestMatcher("/tournaments/**", "DELETE")).hasRole("USER")
+                    .requestMatchers(new AntPathRequestMatcher("/tournaments/*/seguidores/*", "DELETE")).hasRole("USER")
+                    .requestMatchers(new AntPathRequestMatcher("/tournaments/*", "PATCH")).hasRole("USER")
+                    .requestMatchers(new AntPathRequestMatcher("/tournaments/*/estructura", "PATCH")).hasRole("USER")
+                    .requestMatchers(new AntPathRequestMatcher("/tournaments/*/inscripciones/*", "PATCH")).hasRole("USER")
 
                     .anyRequest().denyAll()
                 );
