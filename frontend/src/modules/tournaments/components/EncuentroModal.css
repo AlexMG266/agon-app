@@ -175,15 +175,15 @@
   box-shadow: 0 4px 14px rgba(0, 0, 0, 0.2);
 }
 
-.enm-vs-played {
-  background: rgba(0, 113, 227, 0.1);
-  color: #0071e3;
-  border-radius: 999px;
-  width: auto;
-  height: auto;
-  padding: 6px 16px;
-  font-size: 0.95rem;
-  box-shadow: none;
+/* resultado final: texto plano "X - X" sin card */
+.enm-result {
+  font-size: 1.05rem;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+  color: #1d1d1f;
+  white-space: nowrap;
+  flex-shrink: 0;
+  line-height: 1;
 }
 
 /* etiquetas de seccion */
@@ -555,6 +555,10 @@
     width: 40px;
     height: 40px;
     font-size: 0.75rem;
+  }
+
+  .enm-result {
+    font-size: 0.9rem;
   }
 
   .enm-actions {

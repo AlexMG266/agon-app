@@ -197,9 +197,13 @@ const EncuentroModal = ({ show, encuentro, capitanTeamIds = [], onHide, onRegist
                                     {encuentro.equipoLocalNombre || '—'}
                                 </div>
                             </div>
-                            <div className={`enm-vs ${jugado ? 'enm-vs-played' : ''}`}>
-                                {jugado ? encuentro.resultado : <FormattedMessage id="project.matches.vs" defaultMessage="vs" />}
-                            </div>
+                            {jugado ? (
+                                <div className="enm-result">{encuentro.resultado}</div>
+                            ) : (
+                                <div className="enm-vs">
+                                    <FormattedMessage id="project.matches.vs" defaultMessage="vs" />
+                                </div>
+                            )}
                             <div className="enm-team">
                                 <div className="enm-team-icon enm-team-icon-visitor">
                                     <i className="fa-solid fa-shield-halved" />

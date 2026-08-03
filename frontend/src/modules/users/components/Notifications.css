@@ -539,29 +539,71 @@
     }
 }
 
+/* El botón volver solo se muestra en móvil (≤768px) */
+.notifications-back-btn {
+    display: none;
+}
+
 @media (max-width: 768px) {
     .notifications-container {
         flex-direction: column;
         height: calc(100vh - 65px);
+        position: relative;
+        overflow: hidden;
     }
 
+    /* En móvil: la lista y el detalle son dos vistas independientes.
+       La lista se muestra primero; al pulsar una notificación se abre el detalle. */
     .notifications-master-panel {
         width: 100%;
         min-width: unset;
         max-width: unset;
         border-right: none;
-        border-bottom: 1px solid #e5e5ea;
-        max-height: 45vh;
+        border: 1px solid #e5e5ea;
+        border-radius: 16px;
+        margin: 0.6rem 0.75rem 0.75rem;
+        box-shadow: 0 4px 14px rgba(0, 0, 0, 0.07);
+        overflow: hidden;
+        max-height: calc(100% - 1.35rem);
         flex-shrink: 0;
+        background: #f5f5f7;
+        display: flex;
+        flex-direction: column;
+        transition: transform 0.28s cubic-bezier(0.25, 0.46, 0.45, 0.94), opacity 0.25s ease;
     }
 
     .notifications-detail-panel {
         flex: 1;
-        min-height: 55vh;
+        min-height: 0;
+        position: absolute;
+        inset: 0;
+        background: #ffffff;
+        transform: translateX(100%);
+        transition: transform 0.28s cubic-bezier(0.25, 0.46, 0.45, 0.94), opacity 0.25s ease;
+        opacity: 0;
+        z-index: 20;
+        overflow-y: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+
+    /* Vista detalle abierta */
+    .notifications-container.detail-open .notifications-master-panel {
+        transform: translateX(-30%);
+        opacity: 0.4;
+        pointer-events: none;
+    }
+
+    .notifications-container.detail-open .notifications-detail-panel {
+        transform: translateX(0);
+        opacity: 1;
+        pointer-events: auto;
     }
 
     .detail-content {
         padding: 1.25rem 1.5rem;
+        max-width: none;
+        height: auto;
+        min-height: 100%;
     }
 
     .detail-title {
@@ -583,6 +625,97 @@
     .notification-card {
         padding: 0.4rem 0.6rem;
         gap: 8px;
+    }
+
+    /* Botón volver (solo móvil) */
+    .notifications-back-btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 36px;
+        height: 36px;
+        border: none;
+        border-radius: 50%;
+        background: #f5f5f7;
+        color: #1d1d1f;
+        font-size: 0.9rem;
+        cursor: pointer;
+        flex-shrink: 0;
+        transition: background 0.2s ease;
+    }
+
+    .notifications-back-btn:active {
+        background: #e5e5ea;
+    }
+}
+
+@media (max-width: 576px) {
+    .notifications-container {
+        height: calc(100dvh - 60px);
+    }
+
+    .notifications-master-panel {
+        max-height: none;
+        height: 100%;
+        margin: 0.5rem 0.75rem 0.75rem;
+    }
+
+    .master-header {
+        padding: 0.85rem 1rem 0.75rem;
+    }
+
+    .master-header-top {
+        margin-bottom: 0.75rem;
+    }
+
+    .filter-container {
+        flex-wrap: wrap;
+        gap: 0.4rem;
+    }
+
+    .filter-pill {
+        flex: 1 1 auto;
+        justify-content: center;
+        padding: 0.3rem 0.6rem;
+        font-size: 0.72rem;
+    }
+
+    .detail-content {
+        padding: 1.1rem;
+    }
+
+    .detail-header {
+        padding-bottom: 0.75rem;
+        margin-bottom: 1rem;
+    }
+
+    .detail-actions {
+        padding-top: 1rem;
+        margin-top: 1rem;
+    }
+
+    /* Botones Aceptar/Rechazar apilados a ancho completo */
+    .detail-actions-buttons {
+        flex-direction: column;
+        gap: 0.5rem;
+        padding-top: 1rem;
+        margin-top: 1rem;
+    }
+
+    .btn-action-accept,
+    .btn-action-reject {
+        width: 100%;
+        justify-content: center;
+        padding: 0.6rem 1rem !important;
+    }
+
+    .btn-action-primary {
+        width: 100%;
+        justify-content: center;
+    }
+
+    .btn-action-details {
+        width: 100%;
     }
 }
 

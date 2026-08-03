@@ -59,6 +59,7 @@ const Notifications = () => {
     const [pendingConfirmAction, setPendingConfirmAction] = useState(null);
     const [showTeamModal, setShowTeamModal] = useState(false);
     const [modalEquipoId, setModalEquipoId] = useState(null);
+    const [detailOpen, setDetailOpen] = useState(false);
     const [unreadCount, setUnreadCount] = useState(0);
     const [loadingMore, setLoadingMore] = useState(false);
     const listRef = useRef(null);
@@ -149,6 +150,12 @@ const Notifications = () => {
         }
     }, [notifications]);
 
+    // En móvil: abre el detalle a pantalla completa al pulsar una notificación
+    const handleOpenNotification = useCallback((id) => {
+        setDetailOpen(true);
+        handleSelectNotification(id);
+    }, [handleSelectNotification]);
+
     const reloadNotifications = useCallback(async () => {
         const notifResponse = await backend.notificationService.getNotifications(0, PAGE_SIZE);
         if (notifResponse.ok && notifResponse.payload) {
@@ -161,6 +168,7 @@ const Notifications = () => {
                 setSelectedNotification(prev => ({ ...prev, ...updatedNotif, pendienteDeAccion: false }));
             } else {
                 setSelectedNotification(null);
+                setDetailOpen(false);
             }
         }
     }, [selectedNotification]);
@@ -481,7 +489,7 @@ const Notifications = () => {
     }
 
     return (
-        <div className="notifications-container">
+        <div className={`notifications-container ${detailOpen ? 'detail-open' : ''}`}>
             <div className="notifications-master-panel">
                 <header className="master-header">
                     <div className="master-header-top">
@@ -529,7 +537,7 @@ const Notifications = () => {
                                 return (
                                     <div
                                         key={n.id}
-                                        onClick={() => handleSelectNotification(n.id)}
+                                        onClick={() => handleOpenNotification(n.id)}
                                         className={`notification-card ${isSelected ? 'selected' : ''} ${!n.leido ? 'unread' : ''}`}
                                     >
                                         <div className="notification-card-icon">
@@ -584,6 +592,14 @@ const Notifications = () => {
                     <div className="detail-content">
                         <div className="detail-header">
                             <div className="detail-header-left">
+                                <button
+                                    type="button"
+                                    className="notifications-back-btn"
+                                    onClick={() => setDetailOpen(false)}
+                                    aria-label="Volver"
+                                >
+                                    <i className="fa-solid fa-arrow-left"></i>
+                                </button>
                                 <div className="detail-icon">
                                     {getNotificationIcon(selectedNotification.tipo)}
                                 </div>

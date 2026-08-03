@@ -251,16 +251,6 @@ const Header = ({ mobileDrawerOpen, onToggleMobileDrawer }) => {
 
                                 <NavDropdown.Divider className="my-1" />
 
-                                <div className="px-3 pt-2 pb-1 text-muted small fw-bold" style={{ fontSize: '0.7rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
-                                    <FormattedMessage id="project.app.Header.competition" defaultMessage="Competición" />
-                                </div>
-                                <NavDropdown.Item as={Link} to="/users/stats" className="py-2">
-                                    <i className="fa-solid fa-chart-line me-2 text-secondary" style={{ width: '18px', textAlign: 'center' }}></i>
-                                    <FormattedMessage id="project.app.Header.history" defaultMessage="Mi Historial y ELO" />
-                                </NavDropdown.Item>
-
-                                <NavDropdown.Divider className="my-1" />
-
                                 <NavDropdown.Item as={Link} to="/users/logout" className="text-danger py-2">
                                     <i className="fa-solid fa-sign-out-alt me-2" style={{ width: '18px', textAlign: 'center' }}></i> 
                                     <FormattedMessage id="project.app.Header.logout" defaultMessage="Cerrar Sesión" />
