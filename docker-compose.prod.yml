@@ -64,6 +64,12 @@ services:
   # Puerto publicado SOLO en 127.0.0.1 para que el proxy externo del
   # host (NPM) reenvíe api.tudominio.com -> 127.0.0.1:8080.
   backend:
+    # Nombre de imagen EXPLÍCITO y distinto del de desarrollo (dev usa
+    # agon-backend:dev). Evita que un `docker compose up --build` (dev) y un
+    # `up -f docker-compose.prod.yml` compartan el mismo tag agon-app-backend,
+    # lo que hacía que el contenedor prod se recreara con la imagen DEV
+    # (sin context-path=/api) y la API volviera a devolver 403.
+    image: agon-backend:prod
     build:
       context: .
       dockerfile: docker/backend/Dockerfile
@@ -104,6 +110,8 @@ services:
   # host (NPM) reenvíe app.tudominio.com -> 127.0.0.1:8081.
   # Nginx NO hace reverse proxy: solo sirve la SPA.
   frontend:
+    # Nombre de imagen EXPLÍCITO y distinto del de desarrollo (agon-frontend:dev).
+    image: agon-frontend:prod
     build:
       context: .
       dockerfile: docker/frontend/Dockerfile
