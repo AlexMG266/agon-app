@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
-import { useSelector } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import { Link, useLocation } from 'react-router';
 import { FormattedMessage, useIntl } from 'react-intl';
 import Navbar from 'react-bootstrap/Navbar';
@@ -7,14 +7,18 @@ import Nav from 'react-bootstrap/Nav';
 import NavDropdown from 'react-bootstrap/NavDropdown';
 import Container from "react-bootstrap/Container";
 
+import app from '..';
 import users from '../../users';
 import backend from '../../../backend';
 import { NOTIFICATIONS_UPDATED_EVENT } from '../../../backend/notificationService';
+import { LOCALE_STORAGE_KEY, SUPPORTED_LOCALES } from '../../../i18n';
 import './Header.css';
 
 const Header = () => {
     const intl = useIntl();
+    const dispatch = useDispatch();
     const user = useSelector(users.selectors.getUser);
+    const locale = useSelector(app.selectors.getLocale);
     const location = useLocation();
     const [unreadCount, setUnreadCount] = useState(0);
     const prevUnreadRef = useRef(0);
@@ -110,6 +114,19 @@ const Header = () => {
         return text.substring(0, max) + '...';
     };
 
+    const handleLocaleChange = (selectedLocale) => {
+        if (SUPPORTED_LOCALES.includes(selectedLocale)) {
+            localStorage.setItem(LOCALE_STORAGE_KEY, selectedLocale);
+            dispatch(app.actions.setLocale(selectedLocale));
+        }
+    };
+
+    const localeLabels = {
+        es: 'Español',
+        gl: 'Galego',
+        en: 'English'
+    };
+
     return (
         <Navbar expand="lg" className="smart-topbar py-2">
             <Container fluid className="px-lg-5 d-flex justify-content-between align-items-center">
@@ -124,6 +141,31 @@ const Header = () => {
                 </Navbar.Collapse>
 
                 <div className="d-flex align-items-center gap-1">
+                    <NavDropdown
+                        title={
+                            <span className="navbar-icon-btn d-flex align-items-center justify-content-center">
+                                <i className="fa-solid fa-bars fs-5" style={{ color: '#1d1d1f' }}></i>
+                            </span>
+                        }
+                        align="end"
+                        id="language-dropdown"
+                        onSelect={handleLocaleChange}
+                    >
+                        <div className="px-3 pt-2 pb-1 text-muted small fw-bold" style={{ fontSize: '0.7rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                            <FormattedMessage id="project.app.Header.language" defaultMessage="Idioma" />
+                        </div>
+                        {SUPPORTED_LOCALES.map(code => (
+                            <NavDropdown.Item
+                                key={code}
+                                eventKey={code}
+                                active={locale === code}
+                                className="py-2"
+                            >
+                                <i className="fa-solid fa-language me-2 text-secondary" style={{ width: '18px', textAlign: 'center' }}></i> {localeLabels[code]}
+                            </NavDropdown.Item>
+                        ))}
+                    </NavDropdown>
+
                     {user ? (
                         <>
                             <div className="position-relative" ref={iconRef}>

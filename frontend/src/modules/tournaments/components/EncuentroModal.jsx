@@ -45,9 +45,9 @@ const EncuentroModal = ({ show, encuentro, capitanTeamIds = [], onHide, onRegist
 
     const fecha = encuentro.fechaRealizacion ? new Date(encuentro.fechaRealizacion) : null;
     const fechaStr = fecha
-        ? fecha.toLocaleDateString('es-ES', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })
+        ? intl.formatDate(fecha, { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })
         : '';
-    const horaStr = fecha ? fecha.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' }) : '';
+    const horaStr = fecha ? intl.formatTime(fecha, { hour: '2-digit', minute: '2-digit' }) : '';
     const estado = ESTADOS[encuentro.estado] || null;
 
     const jugado = encuentro.estado === 'JUGADO';
@@ -198,7 +198,7 @@ const EncuentroModal = ({ show, encuentro, capitanTeamIds = [], onHide, onRegist
                                 </div>
                             </div>
                             <div className={`enm-vs ${jugado ? 'enm-vs-played' : ''}`}>
-                                {jugado ? encuentro.resultado : 'vs'}
+                                {jugado ? encuentro.resultado : <FormattedMessage id="project.matches.vs" defaultMessage="vs" />}
                             </div>
                             <div className="enm-team">
                                 <div className="enm-team-icon enm-team-icon-visitor">
@@ -273,7 +273,9 @@ const EncuentroModal = ({ show, encuentro, capitanTeamIds = [], onHide, onRegist
                                                 <FormattedMessage id="project.encuentro.set" defaultMessage="Set" /> {s.numeroSet}
                                             </span>
                                             <div className="enm-score-side">
-                                                <span className="enm-score-label">Local</span>
+                                                <span className="enm-score-label">
+                                                    <FormattedMessage id="project.encuentro.local" defaultMessage="Local" />
+                                                </span>
                                                 <Form.Control
                                                     type="number"
                                                     min={0}
@@ -284,7 +286,9 @@ const EncuentroModal = ({ show, encuentro, capitanTeamIds = [], onHide, onRegist
                                             </div>
                                             <span className="enm-divider">—</span>
                                             <div className="enm-score-side">
-                                                <span className="enm-score-label">Visitante</span>
+                                                <span className="enm-score-label">
+                                                    <FormattedMessage id="project.encuentro.visitor" defaultMessage="Visitante" />
+                                                </span>
                                                 <Form.Control
                                                     type="number"
                                                     min={0}

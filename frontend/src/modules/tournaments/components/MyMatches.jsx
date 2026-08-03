@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { FormattedMessage } from 'react-intl';
+import { FormattedMessage, useIntl } from 'react-intl';
 import Spinner from 'react-bootstrap/Spinner';
 import { useSelector } from 'react-redux';
 import backend from '../../../backend';
@@ -14,20 +14,27 @@ const ESTADOS = {
     SOLICITADO_APLAZAMIENTO: { labelId: 'project.matches.estado.solicitadoAplazamiento', label: 'Aplazamiento solicitado', css: 'mm-badge--requested' },
 };
 
-const formatDateLong = (fecha) => {
-    if (!fecha) return '';
-    const d = new Date(fecha);
-    return d.toLocaleDateString('es-ES', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
-};
-
-const formatDateShort = (fecha) => {
-    if (!fecha) return '';
-    const d = new Date(fecha);
-    return d.toLocaleDateString('es-ES', { day: 'numeric', month: 'short' });
-};
-
 const MyMatches = ({ embedded = false }) => {
     const carouselRef = useRef(null);
+    const intl = useIntl();
+    const formatDateLong = (fecha) => {
+        if (!fecha) return '';
+        const d = new Date(fecha);
+        if (Number.isNaN(d.getTime())) return '';
+        return intl.formatDate(d, { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
+    };
+    const formatDateShort = (fecha) => {
+        if (!fecha) return '';
+        const d = new Date(fecha);
+        if (Number.isNaN(d.getTime())) return '';
+        return intl.formatDate(d, { day: 'numeric', month: 'short' });
+    };
+    const formatTime = (fecha) => {
+        if (!fecha) return '';
+        const d = new Date(fecha);
+        if (Number.isNaN(d.getTime())) return '';
+        return intl.formatTime(d, { hour: '2-digit', minute: '2-digit' });
+    };
     const loggedUser = useSelector(users.selectors.getUser);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(false);
@@ -184,7 +191,7 @@ const MyMatches = ({ embedded = false }) => {
                             className="mm-carousel-btn"
                             disabled={currentIdx <= 0}
                             onClick={() => setCurrentIdx(prev => Math.max(0, prev - 1))}
-                            aria-label="Fecha anterior"
+                            aria-label={intl.formatMessage({ id: 'project.matches.prevDate', defaultMessage: 'Fecha anterior' })}
                         >
                             <i className="fa-regular fa-chevron-left" />
                         </button>
@@ -202,7 +209,7 @@ const MyMatches = ({ embedded = false }) => {
                                         onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') setCurrentIdx(idx); }}
                                     >
                                         <span className="mm-carousel-item-day">
-                                            {f.fecha ? new Date(f.fecha).toLocaleDateString('es-ES', { day: 'numeric' }) : '—'}
+                                            {f.fecha ? intl.formatDate(new Date(f.fecha), { day: 'numeric' }) : '—'}
                                         </span>
                                         <span className="mm-carousel-item-date">{fechaStr}</span>
                                         {isToday && (
@@ -220,7 +227,7 @@ const MyMatches = ({ embedded = false }) => {
                                 className="mm-mobile-select"
                                 value={currentIdx}
                                 onChange={e => setCurrentIdx(parseInt(e.target.value))}
-                                aria-label="Seleccionar fecha"
+                                aria-label={intl.formatMessage({ id: 'project.matches.selectDate', defaultMessage: 'Seleccionar fecha' })}
                             >
                                 {fechas.map((f, idx) => (
                                     <option key={f.fecha || idx} value={idx}>
@@ -233,7 +240,7 @@ const MyMatches = ({ embedded = false }) => {
                             className="mm-carousel-btn"
                             disabled={currentIdx >= fechas.length - 1}
                             onClick={() => setCurrentIdx(prev => Math.min(fechas.length - 1, prev + 1))}
-                            aria-label="Fecha siguiente"
+                            aria-label={intl.formatMessage({ id: 'project.matches.nextDate', defaultMessage: 'Fecha siguiente' })}
                         >
                             <i className="fa-regular fa-chevron-right" />
                         </button>
@@ -257,8 +264,8 @@ const MyMatches = ({ embedded = false }) => {
                                 <div className="mm-grid">
                                     {current.encuentros.map(enc => {
                                         const fecha = enc.fechaRealizacion ? new Date(enc.fechaRealizacion) : null;
-                                        const fechaStr = fecha ? fecha.toLocaleDateString('es-ES', { day: 'numeric', month: 'short', year: 'numeric' }) : '';
-                                        const horaStr = fecha ? fecha.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' }) : '';
+                                        const fechaStr = fecha ? intl.formatDate(fecha, { day: 'numeric', month: 'short', year: 'numeric' }) : '';
+                                        const horaStr = fecha ? formatTime(enc.fechaRealizacion) : '';
                                         const estado = ESTADOS[enc.estado] || null;
                                         const jugado = enc.estado === 'JUGADO';
                                         return (

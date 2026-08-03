@@ -22,18 +22,18 @@ const ESTADOS = {
 };
 
 const DAYS_OF_WEEK = [
-    { key: 'L', labelId: 'project.tournaments.Create.Step4.mon', label: 'Lun' },
-    { key: 'M', labelId: 'project.tournaments.Create.Step4.tue', label: 'Mar' },
-    { key: 'X', labelId: 'project.tournaments.Create.Step4.wed', label: 'Mié' },
-    { key: 'J', labelId: 'project.tournaments.Create.Step4.thu', label: 'Jue' },
-    { key: 'V', labelId: 'project.tournaments.Create.Step4.fri', label: 'Vie' },
-    { key: 'S', labelId: 'project.tournaments.Create.Step4.sat', label: 'Sáb' },
-    { key: 'D', labelId: 'project.tournaments.Create.Step4.sun', label: 'Dom' },
+    { key: 'L', labelId: 'project.tournaments.Detail.params.field.day.mon', label: 'Lun' },
+    { key: 'M', labelId: 'project.tournaments.Detail.params.field.day.tue', label: 'Mar' },
+    { key: 'X', labelId: 'project.tournaments.Detail.params.field.day.wed', label: 'Mié' },
+    { key: 'J', labelId: 'project.tournaments.Detail.params.field.day.thu', label: 'Jue' },
+    { key: 'V', labelId: 'project.tournaments.Detail.params.field.day.fri', label: 'Vie' },
+    { key: 'S', labelId: 'project.tournaments.Detail.params.field.day.sat', label: 'Sáb' },
+    { key: 'D', labelId: 'project.tournaments.Detail.params.field.day.sun', label: 'Dom' },
 ];
 
 const DISTRIBUCION_OPTS = [
-    { value: 'JORNADAS', labelId: 'project.tournaments.Create.Step4.dist.jornadas', label: 'Por jornadas' },
-    { value: 'RAPIDO', labelId: 'project.tournaments.Create.Step4.dist.rapido', label: 'Rápido' },
+    { value: 'JORNADAS', labelId: 'project.tournaments.CreateTournament.step4.distribution.matchdays', label: 'Jornadas' },
+    { value: 'RAPIDO', labelId: 'project.tournaments.CreateTournament.step4.distribution.fast', label: 'Rápido' },
 ];
 
 
@@ -76,10 +76,10 @@ const calcularEquiposPorGrupoMax = (numGrupos, totalEquipos) => {
 
 // Rondas de inicio de la eliminatoria: valores que entiende el backend (rondaInicioPlayoff).
 const RONDA_OPTS = [
-    { value: 'OCTAVOS', label: 'Octavos de final', equipos: 16 },
-    { value: 'CUARTOS', label: 'Cuartos de final', equipos: 8 },
-    { value: 'SEMIFINALES', label: 'Semifinales', equipos: 4 },
-    { value: 'FINAL', label: 'Final', equipos: 2 },
+    { value: 'OCTAVOS', labelId: 'project.tournaments.Detail.playoffs.round.OCTAVOS', label: 'Octavos de final', equipos: 16 },
+    { value: 'CUARTOS', labelId: 'project.tournaments.Detail.playoffs.round.CUARTOS', label: 'Cuartos de final', equipos: 8 },
+    { value: 'SEMIFINALES', labelId: 'project.tournaments.Detail.playoffs.round.SEMIFINALES', label: 'Semifinales', equipos: 4 },
+    { value: 'FINAL', labelId: 'project.tournaments.Detail.playoffs.round.FINAL', label: 'Final', equipos: 2 },
 ];
 
 // Secuencia completa de rondas de playoffs (de más a menos equipos).
@@ -149,6 +149,20 @@ const TournamentDetail = () => {
     const { id } = useParams();
     const navigate = useNavigate();
     const intl = useIntl();
+
+    const formatDate = (value, opts) => {
+        if (!value) return '';
+        const d = new Date(value);
+        if (Number.isNaN(d.getTime())) return typeof value === 'string' ? value.substring(0, 10) : '';
+        return intl.formatDate(d, opts || { day: 'numeric', month: 'short' });
+    };
+    const formatTime = (value) => {
+        if (!value) return '';
+        const d = new Date(value);
+        if (Number.isNaN(d.getTime())) return '';
+        return intl.formatTime(d, { hour: '2-digit', minute: '2-digit' });
+    };
+
     const loggedUser = useSelector(users.selectors.getUser);
     const [tournament, setTournament] = useState(null);
     const [loading, setLoading] = useState(true);
@@ -783,16 +797,16 @@ const TournamentDetail = () => {
 
                         <div className="td-hero-stats">
                             <div className="td-hero-stat">
-                                <span className="td-hero-stat-value">{tournament.fechaInicio ? (typeof tournament.fechaInicio === 'string' ? tournament.fechaInicio.substring(0, 10) : tournament.fechaInicio.substring(0, 10)) : '—'}</span>
-                                <span className="td-hero-stat-label"><FormattedMessage id="project.tournaments.Create.Step1.fechaInicio" defaultMessage="Fecha de inicio" /></span>
+                                <span className="td-hero-stat-value">{tournament.fechaInicio ? formatDate(tournament.fechaInicio, { day: 'numeric', month: 'short', year: 'numeric' }) : '—'}</span>
+                                <span className="td-hero-stat-label"><FormattedMessage id="project.tournaments.Detail.params.field.startDate" defaultMessage="Fecha de inicio" /></span>
                             </div>
                             <div className="td-hero-stat">
-                                <span className="td-hero-stat-value">{tournament.fechaFin ? (typeof tournament.fechaFin === 'string' ? tournament.fechaFin.substring(0, 10) : tournament.fechaFin.substring(0, 10)) : '—'}</span>
-                                <span className="td-hero-stat-label"><FormattedMessage id="project.tournaments.Create.Step1.fechaFin" defaultMessage="Fecha de fin" /></span>
+                                <span className="td-hero-stat-value">{tournament.fechaFin ? formatDate(tournament.fechaFin, { day: 'numeric', month: 'short', year: 'numeric' }) : '—'}</span>
+                                <span className="td-hero-stat-label"><FormattedMessage id="project.tournaments.Detail.params.field.endDate" defaultMessage="Fecha de fin" /></span>
                             </div>
                             <div className="td-hero-stat">
-                                <span className="td-hero-stat-value">{tournament.fechaLimiteInscripcion ? (typeof tournament.fechaLimiteInscripcion === 'string' ? tournament.fechaLimiteInscripcion.substring(0, 10) : tournament.fechaLimiteInscripcion.substring(0, 10)) : '—'}</span>
-                                <span className="td-hero-stat-label"><FormattedMessage id="project.tournaments.Create.Step1.fechaLimite" defaultMessage="Límite inscripción" /></span>
+                                <span className="td-hero-stat-value">{tournament.fechaLimiteInscripcion ? formatDate(tournament.fechaLimiteInscripcion, { day: 'numeric', month: 'short', year: 'numeric' }) : '—'}</span>
+                                <span className="td-hero-stat-label"><FormattedMessage id="project.tournaments.Detail.params.field.deadline" defaultMessage="Límite inscripción" /></span>
                             </div>
                         </div>
                     </div>
@@ -881,24 +895,24 @@ const TournamentDetail = () => {
                                     <form onSubmit={handleConfigure} className="td-config-form">
                                         <div className="td-config-field td-config-field--full">
                                             <label>
-                                                <FormattedMessage id="project.tournaments.Create.Step2.tipoTorneo" defaultMessage="Tipo de torneo" />
+                                                <FormattedMessage id="project.tournaments.CreateTournament.step2.type" defaultMessage="Tipo de torneo" />
                                             </label>
                                             <div className="td-config-segmented">
                                                 {[
-                                                    { value: 'LIGA_UNICA', label: 'Liga única' },
-                                                    { value: 'GRUPOS_PLAYOFF', label: 'Grupos + Playoff' },
+                                                    { value: 'LIGA_UNICA', labelId: 'project.tournaments.Detail.config.tipo.ligaUnica', label: 'Liga única' },
+                                                    { value: 'GRUPOS_PLAYOFF', labelId: 'project.tournaments.Detail.config.tipo.gruposPlayoff', label: 'Grupos + Playoff' },
                                                 ].map(opt => (
                                                     <button key={opt.value} type="button"
                                                         className={`td-config-seg-btn ${configData.tipoTorneo === opt.value ? 'active' : ''}`}
                                                         onClick={() => handleConfigChange('tipoTorneo', opt.value)}>
-                                                        {opt.label}
+                                                        <FormattedMessage id={opt.labelId} defaultMessage={opt.label} />
                                                     </button>
                                                 ))}
                                             </div>
                                         </div>
                                         <div className={`td-config-field td-config-field--num ${configErrors.numGrupos ? 'error' : ''}`}>
                                             <label>
-                                                <FormattedMessage id="project.tournaments.Create.Step2.numGrupos" defaultMessage="Grupos" />
+                                                <FormattedMessage id="project.tournaments.CreateTournament.step2.numGroups" defaultMessage="Grupos" />
                                             </label>
                                             <input type="number" min={1} max={16} step={1} value={configData.numGrupos}
                                                 onChange={e => handleConfigChange('numGrupos', e.target.value)} />
@@ -908,9 +922,11 @@ const TournamentDetail = () => {
                                                 </span>
                                             )}
                                             {configErrors.numGrupos && <span className="td-config-field-error">
-                                                {configData.tipoTorneo === 'GRUPOS_PLAYOFF'
-                                                    ? 'El número de grupos debe ser potencia de 2 para la eliminatoria'
-                                                    : 'Válido requerido'}
+                                                {configData.tipoTorneo === 'GRUPOS_PLAYOFF' ? (
+                                                    <FormattedMessage id="project.tournaments.Detail.config.error.potencia" defaultMessage="El número de grupos debe ser potencia de 2 para la eliminatoria" />
+                                                ) : (
+                                                    <FormattedMessage id="project.tournaments.Detail.config.error.required" defaultMessage="Valor requerido" />
+                                                )}
                                             </span>}
                                         </div>
                                         <div className={`td-config-field td-config-field--num ${configErrors.equiposPorGrupo ? 'error' : ''}`}>
@@ -941,11 +957,13 @@ const TournamentDetail = () => {
                                                     <select className="form-control-apple" value={configData.rondaInicioPlayoff}
                                                         onChange={e => handleConfigChange('rondaInicioPlayoff', e.target.value)}>
                                                         {RONDA_OPTS.map(opt => (
-                                                            <option key={opt.value} value={opt.value}>{opt.label}</option>
+                                                            <option key={opt.value} value={opt.value}>
+                                                                <FormattedMessage id={opt.labelId} defaultMessage={opt.label} />
+                                                            </option>
                                                         ))}
                                                     </select>
                                                     {configErrors.rondaInicioPlayoff && <span className="td-config-field-error">
-                                                        La ronda elegida no divide exactamente el número de grupos
+                                                        <FormattedMessage id="project.tournaments.Detail.config.error.ronda" defaultMessage="La ronda elegida no divide exactamente el número de grupos" />
                                                     </span>}
                                                     {!configErrors.rondaInicioPlayoff && clasificadosPorGrupo(configData.rondaInicioPlayoff, configData.numGrupos) > 0 && (
                                                         <span className="td-config-field-hint">
@@ -956,7 +974,7 @@ const TournamentDetail = () => {
                                                 <div className="td-config-toggles td-config-field--full">
                                                     <label className="td-config-toggle">
                                                         <span>
-                                                            <FormattedMessage id="project.tournaments.Create.Step2.idaVuelta" defaultMessage="Playoff ida y vuelta" />
+                                                            <FormattedMessage id="project.tournaments.CreateTournament.step2.homeAwayPlayoff" defaultMessage="Playoff ida y vuelta" />
                                                         </span>
                                                         <input type="checkbox" checked={configData.idaVueltaPlayoff}
                                                             onChange={e => handleConfigChange('idaVueltaPlayoff', e.target.checked)} />
@@ -968,8 +986,8 @@ const TournamentDetail = () => {
                                                     </label>
                                                     <select className="form-control-apple" value={configData.estrategiaPlayoff || 'RAPIDO'}
                                                         onChange={e => handleConfigChange('estrategiaPlayoff', e.target.value)}>
-                                                        <option value="RAPIDO">Rápido</option>
-                                                        <option value="JORNADAS">Jornadas</option>
+                                                        <option value="RAPIDO"><FormattedMessage id="project.tournaments.CreateTournament.step4.distribution.fast" defaultMessage="Rápido" /></option>
+                                                        <option value="JORNADAS"><FormattedMessage id="project.tournaments.CreateTournament.step4.distribution.matchdays" defaultMessage="Jornadas" /></option>
                                                     </select>
                                                 </div>
                                                 {configData.estrategiaPlayoff === 'JORNADAS' && (
@@ -986,7 +1004,7 @@ const TournamentDetail = () => {
                                         <div className="td-config-field td-config-field--full" style={{ marginTop: '8px' }}>
                                             <label className="td-edit-label">
                                                 <FormattedMessage id="project.tournaments.Detail.config.endDate" defaultMessage="Fecha de fin (estimada)" />
-                                                <i className="fa-regular fa-circle-question ms-1 text-muted" title="Se calcula automáticamente según la configuración. Puedes modificarla manualmente." />
+                                                <i className="fa-regular fa-circle-question ms-1 text-muted" title={intl.formatMessage({ id: 'project.tournaments.Detail.config.endDateHint', defaultMessage: 'Se calcula automáticamente según la configuración. Puedes modificarla manualmente.' })} />
                                             </label>
                                             <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                                                 <input type="date" className="form-control-apple" style={{ flex: 1 }}
@@ -996,14 +1014,18 @@ const TournamentDetail = () => {
                                                     <button type="button" className="td-config-btn td-config-btn--secondary" style={{ whiteSpace: 'nowrap', padding: '6px 12px', fontSize: '0.8rem' }}
                                                         onClick={() => handleConfigChange('fechaFin', calcularFinPropuesto(configData, tournament))}>
                                                         <i className="fa-regular fa-calculator me-1" />
-                                                        Calcular
+                                                        <FormattedMessage id="project.tournaments.Detail.config.calculate" defaultMessage="Calcular" />
                                                     </button>
                                                 )}
                                             </div>
                                             {configData.fechaFin && tournament?.fechaInicio && (
                                                 <small className="text-muted" style={{ display: 'block', marginTop: '4px', fontSize: '0.75rem' }}>
                                                     <i className="fa-regular fa-calendar me-1" />
-                                                    Inicio: {tournament.fechaInicio} → Fin: {configData.fechaFin}
+                                                    <FormattedMessage
+                                                        id="project.tournaments.Detail.config.startEnd"
+                                                        defaultMessage="Inicio: {start} → Fin: {end}"
+                                                        values={{ start: formatDate(tournament.fechaInicio, { day: 'numeric', month: 'short', year: 'numeric' }), end: formatDate(configData.fechaFin, { day: 'numeric', month: 'short', year: 'numeric' }) }}
+                                                    />
                                                 </small>
                                             )}
                                         </div>
@@ -1039,7 +1061,7 @@ const TournamentDetail = () => {
                                     className="td-config-panel-edit-btn"
                                     onClick={toggleEditMode}
                                     disabled={updateLoading || tournament.tipoTorneo}
-                                    title={tournament.tipoTorneo ? "El torneo ya ha comenzado y no puede editarse" : ""}
+                                    title={tournament.tipoTorneo ? intl.formatMessage({ id: 'project.tournaments.Detail.params.lockedHint', defaultMessage: 'El torneo ya ha comenzado y no puede editarse' }) : ""}
                                 >
                                     {tournament.tipoTorneo ? (
                                         <><i className="fa-regular fa-lock me-1" /><FormattedMessage id="project.tournaments.Detail.params.locked" defaultMessage="Bloqueado" /></>
@@ -1067,22 +1089,22 @@ const TournamentDetail = () => {
                                     <FormattedMessage id="project.tournaments.Detail.params.infoTitle" defaultMessage="Información básica" />
                                 </h6>
                                 <div className="td-edit-row">
-                                    <span className="td-edit-label"><FormattedMessage id="project.tournaments.Create.Step1.nombre" defaultMessage="Nombre" /></span>
+                                    <span className="td-edit-label"><FormattedMessage id="project.tournaments.Detail.params.field.name" defaultMessage="Nombre" /></span>
                                     <input type="text" className="td-edit-input" value={editFields.nombre}
                                         onChange={e => handleEditFieldChange('nombre', e.target.value)} />
                                 </div>
                                 <div className="td-edit-row">
-                                    <span className="td-edit-label"><FormattedMessage id="project.tournaments.Create.Step1.fechaInicio" defaultMessage="Fecha de inicio" /></span>
+                                    <span className="td-edit-label"><FormattedMessage id="project.tournaments.Detail.params.field.startDate" defaultMessage="Fecha de inicio" /></span>
                                     <input type="date" className="td-edit-input" value={editFields.fechaInicio}
                                         onChange={e => handleEditFieldChange('fechaInicio', e.target.value)} />
                                 </div>
                                 <div className="td-edit-row">
-                                    <span className="td-edit-label"><FormattedMessage id="project.tournaments.Create.Step1.fechaFin" defaultMessage="Fecha de fin" /></span>
+                                    <span className="td-edit-label"><FormattedMessage id="project.tournaments.Detail.params.field.endDate" defaultMessage="Fecha de fin" /></span>
                                     <input type="date" className="td-edit-input" value={editFields.fechaFin}
                                         onChange={e => handleEditFieldChange('fechaFin', e.target.value)} />
                                 </div>
                                 <div className="td-edit-row">
-                                    <span className="td-edit-label"><FormattedMessage id="project.tournaments.Create.Step1.fechaLimite" defaultMessage="Límite inscripción" /></span>
+                                    <span className="td-edit-label"><FormattedMessage id="project.tournaments.Detail.params.field.deadline" defaultMessage="Límite inscripción" /></span>
                                     <input type="date" className="td-edit-input" value={editFields.fechaLimiteInscripcion}
                                         onChange={e => handleEditFieldChange('fechaLimiteInscripcion', e.target.value)} />
                                 </div>
@@ -1093,28 +1115,28 @@ const TournamentDetail = () => {
                                     <FormattedMessage id="project.tournaments.Detail.params.scoringTitle" defaultMessage="Sistema de puntuación" />
                                 </h6>
                                 <div className="td-edit-row">
-                                    <span className="td-edit-label"><FormattedMessage id="project.tournaments.Create.Step3.puntosVictoria" defaultMessage="Puntos victoria" /></span>
+                                    <span className="td-edit-label"><FormattedMessage id="project.tournaments.Detail.params.field.winPoints" defaultMessage="Puntos victoria" /></span>
                                     <input type="number" min={0} className="td-edit-input td-edit-input--sm" value={editFields.puntosVictoria}
                                         onChange={e => handleEditFieldChange('puntosVictoria', parseInt(e.target.value) || 0)} />
                                 </div>
                                 <div className="td-edit-row">
-                                    <span className="td-edit-label"><FormattedMessage id="project.tournaments.Create.Step3.puntosEmpate" defaultMessage="Puntos empate" /></span>
+                                    <span className="td-edit-label"><FormattedMessage id="project.tournaments.Detail.params.field.drawPoints" defaultMessage="Puntos empate" /></span>
                                     <input type="number" min={0} className="td-edit-input td-edit-input--sm" value={editFields.puntosEmpate}
                                         onChange={e => handleEditFieldChange('puntosEmpate', parseInt(e.target.value) || 0)} />
                                 </div>
                                 <div className="td-edit-row">
-                                    <span className="td-edit-label"><FormattedMessage id="project.tournaments.Create.Step3.puntosDerrota" defaultMessage="Puntos derrota" /></span>
+                                    <span className="td-edit-label"><FormattedMessage id="project.tournaments.Detail.params.field.lossPoints" defaultMessage="Puntos derrota" /></span>
                                     <input type="number" min={0} className="td-edit-input td-edit-input--sm" value={editFields.puntosDerrota}
                                         onChange={e => handleEditFieldChange('puntosDerrota', parseInt(e.target.value) || 0)} />
                                 </div>
                                 <div className="td-edit-row">
-                                    <span className="td-edit-label"><FormattedMessage id="project.tournaments.Create.Step3.formatoPartidos" defaultMessage="Formato partidos" /></span>
+                                    <span className="td-edit-label"><FormattedMessage id="project.tournaments.Detail.params.field.matchFormat" defaultMessage="Formato partidos" /></span>
                                     <select className="td-edit-input" value={editFields.formatoPartidos}
                                         onChange={e => handleEditFieldChange('formatoPartidos', e.target.value)}>
                                         <option value="">—</option>
-                                        <option value="BO1">BO1 (Al mejor de 1)</option>
-                                        <option value="BO3">BO3 (Al mejor de 3)</option>
-                                        <option value="BO5">BO5 (Al mejor de 5)</option>
+                                        <option value="BO1"><FormattedMessage id="project.tournaments.Detail.params.field.format.bo1" defaultMessage="BO1 (Al mejor de 1)" /></option>
+                                        <option value="BO3"><FormattedMessage id="project.tournaments.Detail.params.field.format.bo3" defaultMessage="BO3 (Al mejor de 3)" /></option>
+                                        <option value="BO5"><FormattedMessage id="project.tournaments.Detail.params.field.format.bo5" defaultMessage="BO5 (Al mejor de 5)" /></option>
                                     </select>
                                 </div>
                                 <div className="td-edit-section-divider" />
@@ -1123,7 +1145,7 @@ const TournamentDetail = () => {
                                     <FormattedMessage id="project.tournaments.Detail.params.scheduleTitle" defaultMessage="Calendario" />
                                 </h6>
                                 <div className="td-edit-row td-edit-row--full">
-                                    <span className="td-edit-label"><FormattedMessage id="project.tournaments.Create.Step4.diasDisponibles" defaultMessage="Días disponibles" /></span>
+                                    <span className="td-edit-label"><FormattedMessage id="project.tournaments.Detail.params.field.availableDays" defaultMessage="Días disponibles" /></span>
                                     <div className="td-edit-days">
                                         {DAYS_OF_WEEK.map(d => (
                                             <button
@@ -1132,43 +1154,43 @@ const TournamentDetail = () => {
                                                 className={`td-edit-day-btn ${(editFields.diasDisponibles || []).includes(d.key) ? 'active' : ''}`}
                                                 onClick={() => handleToggleDay(d.key)}
                                             >
-                                                {d.label}
+                                                <FormattedMessage id={d.labelId} defaultMessage={d.label} />
                                             </button>
                                         ))}
                                     </div>
                                 </div>
                                 <div className="td-edit-row">
-                                    <span className="td-edit-label"><FormattedMessage id="project.tournaments.Create.Step4.horaInicio" defaultMessage="Hora inicio" /></span>
+                                    <span className="td-edit-label"><FormattedMessage id="project.tournaments.Detail.params.field.startTime" defaultMessage="Hora inicio" /></span>
                                     <input type="time" className="td-edit-input" value={editFields.horaInicio}
                                         onChange={e => handleEditFieldChange('horaInicio', e.target.value)} />
                                 </div>
                                 <div className="td-edit-row">
-                                    <span className="td-edit-label"><FormattedMessage id="project.tournaments.Create.Step4.horaFin" defaultMessage="Hora fin" /></span>
+                                    <span className="td-edit-label"><FormattedMessage id="project.tournaments.Detail.params.field.endTime" defaultMessage="Hora fin" /></span>
                                     <input type="time" className="td-edit-input" value={editFields.horaFin}
                                         onChange={e => handleEditFieldChange('horaFin', e.target.value)} />
                                 </div>
                                 <div className="td-edit-row">
-                                    <span className="td-edit-label"><FormattedMessage id="project.tournaments.Create.Step4.duracionPartido" defaultMessage="Duración partido (min)" /></span>
+                                    <span className="td-edit-label"><FormattedMessage id="project.tournaments.Detail.params.field.durationEdit" defaultMessage="Duración partido (min)" /></span>
                                     <input type="number" min={5} step={5} className="td-edit-input td-edit-input--sm" value={editFields.duracionPartido}
                                         onChange={e => handleEditFieldChange('duracionPartido', parseInt(e.target.value) || 0)} />
                                 </div>
                                 <div className="td-edit-row">
-                                    <span className="td-edit-label"><FormattedMessage id="project.tournaments.Create.Step4.distribucion" defaultMessage="Distribución" /></span>
+                                    <span className="td-edit-label"><FormattedMessage id="project.tournaments.Detail.params.field.distribution" defaultMessage="Distribución" /></span>
                                     <select className="td-edit-input" value={editFields.estrategiaDistribucion}
                                         onChange={e => handleEditFieldChange('estrategiaDistribucion', e.target.value)}>
                                         <option value="">—</option>
                                         {DISTRIBUCION_OPTS.map(opt => (
-                                            <option key={opt.value} value={opt.value}>{opt.label}</option>
+                                            <option key={opt.value} value={opt.value}><FormattedMessage id={opt.labelId} defaultMessage={opt.label} /></option>
                                         ))}
                                     </select>
                                 </div>
                                 <div className="td-edit-row">
-                                    <span className="td-edit-label"><FormattedMessage id="project.tournaments.Create.Step4.diasEntreJornadas" defaultMessage="Días entre jornadas" /></span>
+                                    <span className="td-edit-label"><FormattedMessage id="project.tournaments.Detail.params.field.daysBetweenMatchdays" defaultMessage="Días entre jornadas" /></span>
                                     <input type="number" min={1} max={30} className="td-edit-input td-edit-input--sm" value={editFields.diasEntreJornadas ?? 7}
                                         onChange={e => handleEditFieldChange('diasEntreJornadas', parseInt(e.target.value) || 7)} />
                                 </div>
                                 <div className="td-edit-row td-edit-row--full">
-                                    <span className="td-edit-label"><FormattedMessage id="project.tournaments.Create.Step4.fechasExcluidas" defaultMessage="Fechas excluidas" /></span>
+                                    <span className="td-edit-label"><FormattedMessage id="project.tournaments.Detail.params.field.excludedDates" defaultMessage="Fechas excluidas" /></span>
                                     <div className="td-edit-excluded-dates">
                                         <div className="td-edit-excluded-row">
                                             <input type="date" className="td-edit-input" value={newExcludedDate}
@@ -1207,63 +1229,74 @@ const TournamentDetail = () => {
                             /* MODO VISUALIZACIÓN — visible para todos */
                             <div className="td-view-content">
                                 <div className="td-view-field-row">
-                                    <span className="td-view-field-label"><FormattedMessage id="project.tournaments.Create.Step1.nombre" defaultMessage="Nombre" /></span>
+                                    <span className="td-view-field-label"><FormattedMessage id="project.tournaments.Detail.params.field.name" defaultMessage="Nombre" /></span>
                                     <span className="td-view-field-value">{tournament.nombre || '—'}</span>
                                 </div>
                                 <div className="td-view-field-row">
-                                    <span className="td-view-field-label"><FormattedMessage id="project.tournaments.Create.Step1.fechaInicio" defaultMessage="Fecha de inicio" /></span>
-                                    <span className="td-view-field-value">{tournament.fechaInicio ? tournament.fechaInicio.substring(0, 10) : '—'}</span>
+                                    <span className="td-view-field-label"><FormattedMessage id="project.tournaments.Detail.params.field.startDate" defaultMessage="Fecha de inicio" /></span>
+                                    <span className="td-view-field-value">{formatDate(tournament.fechaInicio, { day: 'numeric', month: 'short', year: 'numeric' }) || '—'}</span>
                                 </div>
                                 <div className="td-view-field-row">
-                                    <span className="td-view-field-label"><FormattedMessage id="project.tournaments.Create.Step1.fechaFin" defaultMessage="Fecha de fin" /></span>
-                                    <span className="td-view-field-value">{tournament.fechaFin ? tournament.fechaFin.substring(0, 10) : '—'}</span>
+                                    <span className="td-view-field-label"><FormattedMessage id="project.tournaments.Detail.params.field.endDate" defaultMessage="Fecha de fin" /></span>
+                                    <span className="td-view-field-value">{formatDate(tournament.fechaFin, { day: 'numeric', month: 'short', year: 'numeric' }) || '—'}</span>
                                 </div>
                                 <div className="td-view-field-row">
-                                    <span className="td-view-field-label"><FormattedMessage id="project.tournaments.Create.Step1.fechaLimite" defaultMessage="Límite inscripción" /></span>
-                                    <span className="td-view-field-value">{tournament.fechaLimiteInscripcion ? tournament.fechaLimiteInscripcion.substring(0, 10) : '—'}</span>
+                                    <span className="td-view-field-label"><FormattedMessage id="project.tournaments.Detail.params.field.deadline" defaultMessage="Límite inscripción" /></span>
+                                    <span className="td-view-field-value">{formatDate(tournament.fechaLimiteInscripcion, { day: 'numeric', month: 'short', year: 'numeric' }) || '—'}</span>
                                 </div>
                                 <div className="td-view-field-row">
-                                    <span className="td-view-field-label"><FormattedMessage id="project.tournaments.Create.Step3.puntosVictoria" defaultMessage="Puntos victoria" /></span>
+                                    <span className="td-view-field-label"><FormattedMessage id="project.tournaments.Detail.params.field.winPoints" defaultMessage="Puntos victoria" /></span>
                                     <span className="td-view-field-value">{tournament.puntosVictoria ?? '—'}</span>
                                 </div>
                                 <div className="td-view-field-row">
-                                    <span className="td-view-field-label"><FormattedMessage id="project.tournaments.Create.Step3.puntosEmpate" defaultMessage="Puntos empate" /></span>
+                                    <span className="td-view-field-label"><FormattedMessage id="project.tournaments.Detail.params.field.drawPoints" defaultMessage="Puntos empate" /></span>
                                     <span className="td-view-field-value">{tournament.puntosEmpate ?? '—'}</span>
                                 </div>
                                 <div className="td-view-field-row">
-                                    <span className="td-view-field-label"><FormattedMessage id="project.tournaments.Create.Step3.puntosDerrota" defaultMessage="Puntos derrota" /></span>
+                                    <span className="td-view-field-label"><FormattedMessage id="project.tournaments.Detail.params.field.lossPoints" defaultMessage="Puntos derrota" /></span>
                                     <span className="td-view-field-value">{tournament.puntosDerrota ?? '—'}</span>
                                 </div>
                                 <div className="td-view-field-row">
-                                    <span className="td-view-field-label"><FormattedMessage id="project.tournaments.Create.Step3.formatoPartidos" defaultMessage="Formato partidos" /></span>
+                                    <span className="td-view-field-label"><FormattedMessage id="project.tournaments.Detail.params.field.matchFormat" defaultMessage="Formato partidos" /></span>
                                     <span className="td-view-field-value">{tournament.formatoPartidos || '—'}</span>
                                 </div>
                                 <div className="td-view-field-row">
-                                    <span className="td-view-field-label"><FormattedMessage id="project.tournaments.Create.Step4.diasDisponibles" defaultMessage="Días disponibles" /></span>
-                                    <span className="td-view-field-value">{tournament.diasDisponibles ? tournament.diasDisponibles.join(', ') : '—'}</span>
-                                </div>
-                                <div className="td-view-field-row">
-                                    <span className="td-view-field-label"><FormattedMessage id="project.tournaments.Create.Step4.horaInicio" defaultMessage="Hora inicio" /></span>
-                                    <span className="td-view-field-value">{tournament.horaInicio || '—'}</span>
-                                </div>
-                                <div className="td-view-field-row">
-                                    <span className="td-view-field-label"><FormattedMessage id="project.tournaments.Create.Step4.horaFin" defaultMessage="Hora fin" /></span>
-                                    <span className="td-view-field-value">{tournament.horaFin || '—'}</span>
-                                </div>
-                                <div className="td-view-field-row">
-                                    <span className="td-view-field-label"><FormattedMessage id="project.tournaments.Create.Step4.duracionPartido" defaultMessage="Duración partido" /></span>
-                                    <span className="td-view-field-value">{tournament.duracionPartido ? `${tournament.duracionPartido} min` : '—'}</span>
-                                </div>
-                                <div className="td-view-field-row">
-                                    <span className="td-view-field-label"><FormattedMessage id="project.tournaments.Create.Step4.distribucion" defaultMessage="Distribución" /></span>
+                                    <span className="td-view-field-label"><FormattedMessage id="project.tournaments.Detail.params.field.availableDays" defaultMessage="Días disponibles" /></span>
                                     <span className="td-view-field-value">
-                                        {tournament.estrategiaDistribucion === 'JORNADAS' ? 'Jornadas'
-                                            : (tournament.estrategiaDistribucion === 'RAPIDO' || tournament.estrategiaDistribucion === 'UNIFORME') ? 'Rápido'
+                                        {tournament.diasDisponibles && tournament.diasDisponibles.length > 0
+                                            ? tournament.diasDisponibles.map(key => {
+                                                const day = DAYS_OF_WEEK.find(d => d.key === key);
+                                                return day
+                                                    ? intl.formatMessage({ id: day.labelId, defaultMessage: day.label })
+                                                    : key;
+                                            }).join(', ')
                                             : '—'}
                                     </span>
                                 </div>
                                 <div className="td-view-field-row">
-                                    <span className="td-view-field-label"><FormattedMessage id="project.tournaments.Create.Step4.fechasExcluidas" defaultMessage="Fechas excluidas" /></span>
+                                    <span className="td-view-field-label"><FormattedMessage id="project.tournaments.Detail.params.field.startTime" defaultMessage="Hora inicio" /></span>
+                                    <span className="td-view-field-value">{tournament.horaInicio || '—'}</span>
+                                </div>
+                                <div className="td-view-field-row">
+                                    <span className="td-view-field-label"><FormattedMessage id="project.tournaments.Detail.params.field.endTime" defaultMessage="Hora fin" /></span>
+                                    <span className="td-view-field-value">{tournament.horaFin || '—'}</span>
+                                </div>
+                                <div className="td-view-field-row">
+                                    <span className="td-view-field-label"><FormattedMessage id="project.tournaments.Detail.params.field.duration" defaultMessage="Duración partido" /></span>
+                                    <span className="td-view-field-value">{tournament.duracionPartido ? `${tournament.duracionPartido} min` : '—'}</span>
+                                </div>
+                                <div className="td-view-field-row">
+                                    <span className="td-view-field-label"><FormattedMessage id="project.tournaments.Detail.params.field.distribution" defaultMessage="Distribución" /></span>
+                                    <span className="td-view-field-value">
+                                        {tournament.estrategiaDistribucion === 'JORNADAS'
+                                            ? <FormattedMessage id="project.tournaments.CreateTournament.step4.distribution.matchdays" defaultMessage="Jornadas" />
+                                            : (tournament.estrategiaDistribucion === 'RAPIDO' || tournament.estrategiaDistribucion === 'UNIFORME')
+                                                ? <FormattedMessage id="project.tournaments.CreateTournament.step4.distribution.fast" defaultMessage="Rápido" />
+                                                : '—'}
+                                    </span>
+                                </div>
+                                <div className="td-view-field-row">
+                                    <span className="td-view-field-label"><FormattedMessage id="project.tournaments.Detail.params.field.excludedDates" defaultMessage="Fechas excluidas" /></span>
                                     <span className="td-view-field-value">{tournament.fechasExcluidas && tournament.fechasExcluidas.length > 0 ? tournament.fechasExcluidas.join(', ') : '—'}</span>
                                 </div>
                             </div>
@@ -1358,7 +1391,7 @@ const TournamentDetail = () => {
                                     className="td-partidos-carousel-btn"
                                     disabled={currentJornadaIdx <= 0}
                                     onClick={() => setCurrentJornadaIdx(prev => Math.max(0, prev - 1))}
-                                    aria-label="Jornada anterior"
+                                    aria-label={intl.formatMessage({ id: 'project.tournaments.Detail.partidos.prevJornada', defaultMessage: 'Jornada anterior' })}
                                 >
                                     <i className="fa-regular fa-chevron-left" />
                                 </button>
@@ -1366,7 +1399,7 @@ const TournamentDetail = () => {
                                     {carouselJornadas.map((j, idx) => {
                                         const isFinalCard = j === null;
                                         const fecha = !isFinalCard && j.fechaInicio ? new Date(j.fechaInicio) : null;
-                                        const fechaStr = fecha ? fecha.toLocaleDateString('es-ES', { day: 'numeric', month: 'short' }) : '';
+                                        const fechaStr = fecha ? formatDate(fecha, { day: 'numeric', month: 'short' }) : '';
                                         return (
                                             <div
                                                 key={isFinalCard ? 'liga-finalizada' : j.id}
@@ -1402,12 +1435,12 @@ const TournamentDetail = () => {
                                         className="td-partidos-mobile-select"
                                         value={currentJornadaIdx}
                                         onChange={e => setCurrentJornadaIdx(parseInt(e.target.value))}
-                                        aria-label="Seleccionar jornada"
+                                        aria-label={intl.formatMessage({ id: 'project.tournaments.Detail.partidos.selectJornada', defaultMessage: 'Seleccionar jornada' })}
                                     >
                                         {carouselJornadas.map((j, idx) => {
                                             const isFinalCard = j === null;
                                             const fecha = !isFinalCard && j.fechaInicio ? new Date(j.fechaInicio) : null;
-                                            const fechaStr = fecha ? fecha.toLocaleDateString('es-ES', { day: 'numeric', month: 'short' }) : '';
+                                            const fechaStr = fecha ? formatDate(fecha, { day: 'numeric', month: 'short' }) : '';
                                             return (
                                                 <option key={isFinalCard ? 'liga-finalizada' : j.id} value={idx}>
                                                     {isFinalCard
@@ -1422,7 +1455,7 @@ const TournamentDetail = () => {
                                     className="td-partidos-carousel-btn"
                                     disabled={currentJornadaIdx >= carouselJornadas.length - 1}
                                     onClick={() => setCurrentJornadaIdx(prev => Math.min(carouselJornadas.length - 1, prev + 1))}
-                                    aria-label="Jornada siguiente"
+                                    aria-label={intl.formatMessage({ id: 'project.tournaments.Detail.partidos.nextJornada', defaultMessage: 'Jornada siguiente' })}
                                 >
                                     <i className="fa-regular fa-chevron-right" />
                                 </button>
@@ -1502,8 +1535,8 @@ const TournamentDetail = () => {
                                                 <div className="td-partidos-grid">
                                                     {grupo.encuentros.map(enc => {
                                                         const fecha = enc.fechaRealizacion ? new Date(enc.fechaRealizacion) : null;
-                                                        const fechaStr = fecha ? fecha.toLocaleDateString('es-ES', { day: 'numeric', month: 'short', year: 'numeric' }) : '';
-                                                        const horaStr = fecha ? fecha.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' }) : '';
+                                                        const fechaStr = fecha ? formatDate(fecha, { day: 'numeric', month: 'short', year: 'numeric' }) : '';
+                                                        const horaStr = fecha ? formatTime(fecha) : '';
                                                         const jugado = enc.estado === 'JUGADO';
                                                         return (
                                                             <div
@@ -1552,8 +1585,8 @@ const TournamentDetail = () => {
                                                 <div className="td-partidos-grid">
                                                     {sinGrupo.map(enc => {
                                                         const fecha = enc.fechaRealizacion ? new Date(enc.fechaRealizacion) : null;
-                                                        const fechaStr = fecha ? fecha.toLocaleDateString('es-ES', { day: 'numeric', month: 'short', year: 'numeric' }) : '';
-                                                        const horaStr = fecha ? fecha.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' }) : '';
+                                                        const fechaStr = fecha ? formatDate(fecha, { day: 'numeric', month: 'short', year: 'numeric' }) : '';
+                                                        const horaStr = fecha ? formatTime(fecha) : '';
                                                         const jugado = enc.estado === 'JUGADO';
                                                         return (
                                                             <div
@@ -1638,7 +1671,7 @@ const TournamentDetail = () => {
                                     className="td-partidos-carousel-btn"
                                     disabled={currentRondaIdx <= 0}
                                     onClick={() => setCurrentRondaIdx(prev => Math.max(0, prev - 1))}
-                                    aria-label="Ronda anterior"
+                                    aria-label={intl.formatMessage({ id: 'project.tournaments.Detail.playoffs.prevRonda', defaultMessage: 'Ronda anterior' })}
                                 >
                                     <i className="fa-regular fa-chevron-left" />
                                 </button>
@@ -1646,7 +1679,7 @@ const TournamentDetail = () => {
                                     {rondasPlan.map((ronda, idx) => {
                                         const jornada = ronda.jornada;
                                         const fecha = jornada && jornada.fechaInicio ? new Date(jornada.fechaInicio) : null;
-                                        const fechaStr = fecha ? fecha.toLocaleDateString('es-ES', { day: 'numeric', month: 'short' }) : '';
+                                        const fechaStr = fecha ? formatDate(fecha, { day: 'numeric', month: 'short' }) : '';
                                         const rondaLabel = getRondaLabel(ronda.rondaValue, idx);
                                         return (
                                             <div
@@ -1668,12 +1701,12 @@ const TournamentDetail = () => {
                                         className="td-partidos-mobile-select"
                                         value={currentRondaIdx}
                                         onChange={e => setCurrentRondaIdx(parseInt(e.target.value))}
-                                        aria-label="Seleccionar ronda"
+                                        aria-label={intl.formatMessage({ id: 'project.tournaments.Detail.playoffs.selectRonda', defaultMessage: 'Seleccionar ronda' })}
                                     >
                                         {rondasPlan.map((ronda, idx) => {
                                             const jornada = ronda.jornada;
                                             const fecha = jornada && jornada.fechaInicio ? new Date(jornada.fechaInicio) : null;
-                                            const fechaStr = fecha ? fecha.toLocaleDateString('es-ES', { day: 'numeric', month: 'short' }) : '';
+                                            const fechaStr = fecha ? formatDate(fecha, { day: 'numeric', month: 'short' }) : '';
                                             const rondaLabel = getRondaLabel(ronda.rondaValue, idx);
                                             return (
                                                 <option key={ronda.rondaValue || idx} value={idx}>
@@ -1687,7 +1720,7 @@ const TournamentDetail = () => {
                                     className="td-partidos-carousel-btn"
                                     disabled={currentRondaIdx >= rondasPlan.length - 1}
                                     onClick={() => setCurrentRondaIdx(prev => Math.min(rondasPlan.length - 1, prev + 1))}
-                                    aria-label="Ronda siguiente"
+                                    aria-label={intl.formatMessage({ id: 'project.tournaments.Detail.playoffs.nextRonda', defaultMessage: 'Ronda siguiente' })}
                                 >
                                     <i className="fa-regular fa-chevron-right" />
                                 </button>
@@ -1700,7 +1733,7 @@ const TournamentDetail = () => {
                                 const encuentros = (jornada && jornada.encuentros) || [];
                                 const rondaLabel = getRondaLabel(ronda.rondaValue, currentRondaIdx);
                                 const fecha = jornada && jornada.fechaInicio ? new Date(jornada.fechaInicio) : null;
-                                const fechaStr = fecha ? fecha.toLocaleDateString('es-ES', { day: 'numeric', month: 'short', year: 'numeric' }) : '';
+                                const fechaStr = fecha ? formatDate(fecha, { day: 'numeric', month: 'short', year: 'numeric' }) : '';
                                 return (
                                     <div className="td-playoffs-ronda">
                                         <div className="td-partidos-jornada-label">
@@ -1718,8 +1751,8 @@ const TournamentDetail = () => {
                                             <div className="td-partidos-grid">
                                                 {encuentros.map(enc => {
                                                     const fechaEnc = enc.fechaRealizacion ? new Date(enc.fechaRealizacion) : null;
-                                                    const fechaStrEnc = fechaEnc ? fechaEnc.toLocaleDateString('es-ES', { day: 'numeric', month: 'short', year: 'numeric' }) : '';
-                                                    const horaStr = fechaEnc ? fechaEnc.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' }) : '';
+                                                    const fechaStrEnc = fechaEnc ? formatDate(fechaEnc, { day: 'numeric', month: 'short', year: 'numeric' }) : '';
+                                                    const horaStr = fechaEnc ? formatTime(fechaEnc) : '';
                                                     const jugado = enc.estado === 'JUGADO';
                                                     return (
                                                         <div
@@ -1777,7 +1810,7 @@ const TournamentDetail = () => {
                                 const gruposMap = {};
                                 (tournament.inscripciones || []).forEach(insc => {
                                     const gId = insc.grupoId || 0;
-                                    const gNombre = insc.grupoNombre || 'Sin grupo';
+                                    const gNombre = insc.grupoNombre || intl.formatMessage({ id: 'project.tournaments.Detail.clasificacion.sinGrupo', defaultMessage: 'Sin grupo' });
                                     if (!gruposMap[gId]) gruposMap[gId] = { nombre: gNombre, equipos: [] };
                                     gruposMap[gId].equipos.push(insc);
                                 });
@@ -1807,7 +1840,7 @@ const TournamentDetail = () => {
                             const gruposMap = {};
                             (tournament.inscripciones || []).forEach(insc => {
                                 const gId = insc.grupoId || 0;
-                                const gNombre = insc.grupoNombre || 'Sin grupo';
+                                const gNombre = insc.grupoNombre || intl.formatMessage({ id: 'project.tournaments.Detail.clasificacion.sinGrupo', defaultMessage: 'Sin grupo' });
                                 if (!gruposMap[gId]) gruposMap[gId] = { nombre: gNombre, equipos: [] };
                                 gruposMap[gId].equipos.push(insc);
                             });
