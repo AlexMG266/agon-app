@@ -133,7 +133,8 @@ public class ControllerApiTest {
                         .header("Authorization", "Bearer " + tokenDe(user)))
                 .andExpect(status().isOk())
                 .andReturn().getResponse().getContentAsString();
-        return objectMapper.readTree(respuesta).get(0).get("id").asLong();
+        // el endpoint devuelve un bloque paginado { items: [...], existMoreItems: ... }
+        return objectMapper.readTree(respuesta).get("items").get(0).get("id").asLong();
     }
 
     @Test
@@ -554,7 +555,8 @@ public class ControllerApiTest {
         mockMvc.perform(get("/notifications")
                         .header("Authorization", "Bearer " + tokenDe(user)))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$").isArray());
+                .andExpect(jsonPath("$.items").isArray())
+                .andExpect(jsonPath("$.existMoreItems").isBoolean());
     }
 
     @Test

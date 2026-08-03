@@ -400,7 +400,9 @@ public class EncuentroServiceTest {
         User cap2 = createUser("cap_aplazar2");
 
         Encuentro encuentro = setupEncuentro(org, cap1, cap2);
-        LocalDateTime nuevaFecha = LocalDateTime.now().plusDays(14);
+        // usar una hora fija dentro del horario por defecto del torneo (16:00-22:00)
+        // para que el test no dependa de la hora del dia en que se ejecute
+        LocalDateTime nuevaFecha = LocalDateTime.now().plusDays(14).withHour(18).withMinute(0).withSecond(0).withNano(0);
 
         encuentroService.solicitarAplazamiento(cap1.getId(), encuentro.getId(), nuevaFecha, "Motivo de prueba");
 
@@ -423,7 +425,7 @@ public class EncuentroServiceTest {
         User cap2 = createUser("cap_aplazar2_2");
 
         Encuentro encuentro = setupEncuentro(org, cap1, cap2);
-        LocalDateTime nuevaFecha = LocalDateTime.now().plusDays(10);
+        LocalDateTime nuevaFecha = LocalDateTime.now().plusDays(10).withHour(18).withMinute(0).withSecond(0).withNano(0);
 
         encuentroService.solicitarAplazamiento(cap2.getId(), encuentro.getId(), nuevaFecha, "Motivo visitante");
 
