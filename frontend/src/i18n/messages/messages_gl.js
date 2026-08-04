@@ -126,6 +126,8 @@ export default {
     'project.users.Login.footer': '© {year} Agón Arena.',
     'project.users.Login.newUser': 'Es novo na plataforma?',
     'project.users.Login.error.connection': 'Erro de conexión co servidor',
+    'project.users.Login.error.google': 'Non se puido iniciar sesión con Google',
+    'project.users.Login.googleDivider': 'ou',
     'project.users.Login.placeholder.userName': 'Usuario',
     'project.users.Login.placeholder.password': 'Contrasinal',
 
@@ -134,6 +136,8 @@ export default {
     'project.users.SignUp.subtitle': 'Completa o formulario para rexistrarte en Agón.',
     'project.users.SignUp.hasAccount': 'Xa tes unha conta?',
     'project.users.SignUp.error.connection': 'Erro de conexión co servidor',
+    'project.users.SignUp.error.google': 'Non se puido completar o rexistro con Google',
+    'project.users.SignUp.googleDivider': 'ou',
     'project.users.SignUp.error.nombre.required': 'O nome é obrigatorio.',
     'project.users.SignUp.error.nombre.minLength': 'O nome debe ter polo menos 3 caracteres.',
     'project.users.SignUp.error.nombre.maxLength': 'O nome non pode superar os 15 caracteres.',

@@ -172,6 +172,19 @@
             <optional>true</optional>
         </dependency>
 
+        <!-- Google Identity Services: validación de ID Tokens de Google
+             (inicio de sesión con cuenta de Google) -->
+        <dependency>
+            <groupId>com.google.api-client</groupId>
+            <artifactId>google-api-client</artifactId>
+            <version>2.7.2</version>
+        </dependency>
+        <dependency>
+            <groupId>com.google.http-client</groupId>
+            <artifactId>google-http-client-gson</artifactId>
+            <version>1.44.2</version>
+        </dependency>
+
         <!-- OpenAPI 3 / Swagger Generator -->
         <dependency>
             <groupId>org.springdoc</groupId>

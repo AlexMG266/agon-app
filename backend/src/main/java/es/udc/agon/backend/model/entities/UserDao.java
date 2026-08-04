@@ -9,5 +9,9 @@ public interface UserDao extends CrudRepository<User, Long> {
 	boolean existsByNombre(String nombre);
 
 	Optional<User> findByNombre(String nombre);
+
+	Optional<User> findByEmail(String email);
+
+	Optional<User> findByGoogleId(String googleId);
 	
 }

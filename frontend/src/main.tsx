@@ -4,6 +4,7 @@ import { BrowserRouter } from 'react-router';
 import { Provider } from 'react-redux';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { ChakraProvider, defaultSystem } from '@chakra-ui/react';
+import { GoogleOAuthProvider } from '@react-oauth/google';
 
 import 'bootstrap/dist/css/bootstrap.min.css';
 import '@fortawesome/fontawesome-free/css/fontawesome.css';
@@ -35,14 +36,17 @@ const rootElement = document.getElementById('root');
 if (!rootElement) throw new Error('Failed to find the root element');
 
 const root = ReactDOM.createRoot(rootElement);
-root.render(
+
+const googleClientId = import.meta.env.VITE_GOOGLE_CLIENT_ID;
+
+const renderApp = (children) => (
     <React.StrictMode>
         <Provider store={store}>
             <QueryClientProvider client={queryClient}>
                 <ChakraProvider value={defaultSystem}>
                     <AppIntlProvider>
                         <BrowserRouter>
-                            <App />
+                            {children}
                         </BrowserRouter>
                     </AppIntlProvider>
                 </ChakraProvider>
@@ -50,3 +54,13 @@ root.render(
         </Provider>
     </React.StrictMode>
 );
+
+if (googleClientId) {
+    root.render(
+        <GoogleOAuthProvider clientId={googleClientId}>
+            {renderApp(<App />)}
+        </GoogleOAuthProvider>
+    );
+} else {
+    root.render(renderApp(<App />));
+}

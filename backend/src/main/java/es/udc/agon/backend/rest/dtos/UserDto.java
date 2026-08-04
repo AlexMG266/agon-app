@@ -59,9 +59,8 @@ public class UserDto {
     )
     private String password;
 
-    @NotNull(groups = { AllValidations.class, UpdateValidations.class })
     @Past(groups = { AllValidations.class, UpdateValidations.class })
-    @Schema(description = "Fecha de nacimiento del usuario. Debe ser una fecha pasada.", example = "2000-01-15", requiredMode = Schema.RequiredMode.REQUIRED)
+    @Schema(description = "Fecha de nacimiento del usuario. Debe ser una fecha pasada. Opcional para cuentas vinculadas a Google.", example = "2000-01-15", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
     private LocalDate fechaNacimiento;
 
     @Schema(description = "Indica si el ELO del jugador es provisional (pocas partidas jugadas)", example = "true", accessMode = Schema.AccessMode.READ_ONLY)

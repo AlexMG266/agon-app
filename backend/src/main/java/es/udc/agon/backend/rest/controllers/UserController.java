@@ -54,6 +54,7 @@ import es.udc.agon.backend.model.services.IEncuentroService;
 import es.udc.agon.backend.rest.dtos.AuthenticatedUserDto;
 import es.udc.agon.backend.rest.dtos.ChangePasswordParamsDto;
 import es.udc.agon.backend.rest.dtos.EloHistorialDto;
+import es.udc.agon.backend.rest.dtos.GoogleLoginParamsDto;
 import es.udc.agon.backend.rest.dtos.LoginParamsDto;
 import es.udc.agon.backend.rest.dtos.UserDto;
 
@@ -148,6 +149,22 @@ public class UserController {
     public AuthenticatedUserDto login(@Validated @RequestBody LoginParamsDto params)
             throws IncorrectLoginException {
         User user = userService.login(params.getNombre(), params.getPassword());
+        return toAuthenticatedUserDto(generateServiceToken(user), user);
+    }
+
+    @PostMapping("/google")
+    @Operation(summary = "Iniciar sesión con cuenta de Google", description = "Valida el ID Token de Google en el servidor y, si el usuario no existe todavía, lo registra automáticamente. Devuelve el token de acceso junto al perfil.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Autenticación con Google exitosa",
+                    content = @Content(schema = @Schema(implementation = AuthenticatedUserDto.class))),
+            @ApiResponse(responseCode = "400", description = "ID Token de Google no válido o faltante",
+                    content = @Content),
+            @ApiResponse(responseCode = "404", description = "No se pudo verificar el ID Token de Google",
+                    content = @Content(schema = @Schema(implementation = ErrorsDto.class)))
+    })
+    public AuthenticatedUserDto loginWithGoogle(@Validated @RequestBody GoogleLoginParamsDto params)
+            throws IncorrectLoginException {
+        User user = userService.loginWithGoogle(params.getGoogleToken());
         return toAuthenticatedUserDto(generateServiceToken(user), user);
     }
 

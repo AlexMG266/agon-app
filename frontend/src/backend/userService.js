@@ -40,6 +40,15 @@ export const signUp = async (user, reauthenticationCallback) => {
 
 }
 
+export const loginWithGoogle = async (googleToken, reauthenticationCallback) => {
+    const response = await appFetch('POST', '/users/google', {googleToken});
+    if (response.ok) {
+        setServiceToken(response.payload.serviceToken);
+        setReauthenticationCallback(reauthenticationCallback);
+    }
+    return response;
+}
+
 export const logout = () => removeServiceToken();
 
 export const updateProfile = async user =>

@@ -26,6 +26,16 @@ public interface UserService {
 	User login(String nombre, String password) throws IncorrectLoginException;
 
 	/**
+	 * Inicia sesión (o registra y autentica) mediante un ID Token de Google.
+	 *
+	 * @param googleToken ID Token JWT obtenido del flujo "Sign in with Google"
+	 * @return el usuario autenticado (nuevo o ya existente)
+	 * @throws IncorrectLoginException si el token no es válido o no pertenece
+	 *         al Client ID configurado
+	 */
+	User loginWithGoogle(String googleToken) throws IncorrectLoginException;
+
+	/**
 	 *
 	 * @param id
 	 * @return

@@ -22,14 +22,16 @@
 
 # ARG a nivel global (accesible en todas las etapas, antes del FROM)
 ARG VITE_BACKEND_URL=https://api.tudominio.com
+ARG VITE_GOOGLE_CLIENT_ID=
 
 # ---- ETAPA 1: BUILD del frontend (Node) ----
 FROM node:22-alpine AS builder
 
 WORKDIR /app
 
-# Re-declara el ARG dentro de la etapa para poder usarlo como ENV
+# Re-declara los ARG dentro de la etapa para poder usarlos como ENV
 ARG VITE_BACKEND_URL
+ARG VITE_GOOGLE_CLIENT_ID
 
 # Copia solo los manifiestos para cachear la instalación de dependencias
 COPY frontend/package.json frontend/package-lock.json* ./
@@ -40,8 +42,9 @@ RUN npm ci --no-audit --no-fund
 # Copia el código fuente del frontend
 COPY frontend/ .
 
-# Expone la URL base de la API al build de Vite
+# Expone la URL base de la API y el Client ID de Google al build de Vite
 ENV VITE_BACKEND_URL=$VITE_BACKEND_URL
+ENV VITE_GOOGLE_CLIENT_ID=$VITE_GOOGLE_CLIENT_ID
 
 # Compila a archivos estáticos
 RUN npm run build

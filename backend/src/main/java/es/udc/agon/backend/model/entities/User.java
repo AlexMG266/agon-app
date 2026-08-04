@@ -25,6 +25,7 @@ public class User {
     private boolean notificacionesPartidos = true;
     private int diasAntelacionPartidos = 1;
     private String role;
+    private String googleId;
 
     public User() {
     }
@@ -144,5 +145,14 @@ public class User {
 
     public void setRole(String role) {
         this.role = role;
+    }
+
+    @Column(name = "googleId", length = 100)
+    public String getGoogleId() {
+        return googleId;
+    }
+
+    public void setGoogleId(String googleId) {
+        this.googleId = googleId;
     }
 }

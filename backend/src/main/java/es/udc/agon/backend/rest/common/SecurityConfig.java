@@ -49,6 +49,7 @@ public class SecurityConfig {
                     .requestMatchers(new AntPathRequestMatcher("/**", "OPTIONS")).permitAll()
                     .requestMatchers(new AntPathRequestMatcher("/users/signup", "POST")).permitAll()
                     .requestMatchers(new AntPathRequestMatcher("/users/login", "POST")).permitAll()
+                    .requestMatchers(new AntPathRequestMatcher("/users/google", "POST")).permitAll()
                     .requestMatchers(new AntPathRequestMatcher("/users/loginFromServiceToken", "POST")).permitAll()
                     .requestMatchers(new AntPathRequestMatcher("/api-docs/**")).permitAll()
                     .requestMatchers(new AntPathRequestMatcher("/docs/**")).permitAll()

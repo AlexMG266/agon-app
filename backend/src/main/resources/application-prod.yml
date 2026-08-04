@@ -29,3 +29,10 @@ springdoc:
     enabled: false
   api-docs:
     enabled: false
+
+# --- Google OAuth (Sign in with Google) ---
+# Client ID del proyecto OAuth creado en Google Cloud Console.
+# Se inyecta desde .env con la variable GOOGLE_CLIENT_ID.
+project:
+  google:
+    client-id: ${GOOGLE_CLIENT_ID:}

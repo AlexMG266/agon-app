@@ -173,7 +173,7 @@ describe('Profile', () => {
   });
 
   it('no llama al backend si faltan campos obligatorios', () => {
-    const { container } = renderProfile({ id: 1, nombre: 'ana', email: 'ana@test.com' });
+    const { container } = renderProfile({ id: 1, nombre: 'ana', email: '' });
     fireEvent.submit(container.querySelector('form'));
     expect(backend.userService.updateProfile).not.toHaveBeenCalled();
     expect(screen.getAllByText('Campo obligatorio').length).toBeGreaterThan(0);

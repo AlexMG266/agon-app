@@ -13,6 +13,7 @@ import Spinner from "react-bootstrap/Spinner";
 import { Errors } from '../../common';
 import * as actions from '../actions';
 import backend from '../../../backend';
+import GoogleAuthButton from './GoogleAuthButton';
 
 const SignUp = () => {
     const dispatch = useDispatch();
@@ -69,6 +70,39 @@ const SignUp = () => {
             setBackendErrors(null);
             setFormValidated(true);
         }
+    };
+
+    const handleGoogleSuccess = async credentialResponse => {
+        const googleToken = credentialResponse?.credential;
+        if (!googleToken) {
+            setBackendErrors({ globalError: intl.formatMessage({ id: 'project.users.SignUp.error.connection', defaultMessage: 'Error de conexión con el servidor' }) });
+            return;
+        }
+
+        setIsSubmitting(true);
+        setBackendErrors(null);
+
+        try {
+            const response = await backend.userService.loginWithGoogle(googleToken, () => {
+                navigate('/users/login');
+                dispatch(actions.logout());
+            });
+
+            if (response.ok) {
+                dispatch(actions.signUpCompleted(response.payload));
+                navigate('/');
+            } else {
+                setBackendErrors(response.payload);
+            }
+        } catch {
+            setBackendErrors({ globalError: intl.formatMessage({ id: 'project.users.SignUp.error.connection', defaultMessage: 'Error de conexión con el servidor' }) });
+        } finally {
+            setIsSubmitting(false);
+        }
+    };
+
+    const handleGoogleError = () => {
+        setBackendErrors({ globalError: intl.formatMessage({ id: 'project.users.SignUp.error.google', defaultMessage: 'No se pudo completar el registro con Google' }) });
     };
 
     const checkConfirmPassword = () => {
@@ -303,6 +337,25 @@ const SignUp = () => {
                                 )}
                             </Button>
                         </Form>
+
+                        {import.meta.env.VITE_GOOGLE_CLIENT_ID && (
+                            <>
+                                <div className="d-flex align-items-center my-3">
+                                    <div className="flex-grow-1" style={{ borderTop: '1px solid #d2d2d7' }}></div>
+                                    <span className="mx-3 small text-secondary" style={{ fontSize: '0.75rem', color: '#86868b' }}>
+                                        <FormattedMessage id="project.users.SignUp.googleDivider" defaultMessage="o" />
+                                    </span>
+                                    <div className="flex-grow-1" style={{ borderTop: '1px solid #d2d2d7' }}></div>
+                                </div>
+
+                                <GoogleAuthButton
+                                    onSuccess={handleGoogleSuccess}
+                                    onError={handleGoogleError}
+                                    text="signup_with"
+                                    disabled={isSubmitting}
+                                />
+                            </>
+                        )}
 
                         <p className="mt-4 small text-secondary text-center" style={{ fontSize: '0.82rem', color: '#86868b' }}>
                             <FormattedMessage id="project.users.SignUp.hasAccount" defaultMessage="¿Ya tienes una cuenta?" />{' '}

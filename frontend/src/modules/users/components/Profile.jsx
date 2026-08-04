@@ -299,7 +299,7 @@ const Profile = () => {
                                             <FormattedMessage id="project.global.fields.fechaNacimiento" defaultMessage="Fecha de Nacimiento" />
                                         </Form.Label>
                                         <Col md={8}>
-                                            <Form.Control type="date" value={fechaNacimiento} onChange={e => setFechaNacimiento(e.target.value)} required className="form-control-apple" />
+                                            <Form.Control type="date" value={fechaNacimiento} onChange={e => setFechaNacimiento(e.target.value)} className="form-control-apple" />
                                             <Form.Control.Feedback type="invalid" className="small">
                                                 <FormattedMessage id='project.global.validator.required' />
                                             </Form.Control.Feedback>

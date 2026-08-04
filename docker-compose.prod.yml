@@ -84,6 +84,8 @@ services:
       # Secreto JWT desde entorno (NUNCA hardcodeado en el código)
       JWT_SIGN_KEY: ${JWT_SIGN_KEY}
       JWT_EXPIRATION_MINUTES: ${JWT_EXPIRATION_MINUTES:-1440}
+      # Client ID de Google OAuth (para validar los ID Tokens de Google)
+      GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID:-}
       # Orígenes CORS permitidos (obligatorio: frontend y API usan dominios distintos).
       # Sin esta variable Spring usa el default de desarrollo (localhost) y el
       # navegador bloquea las peticiones con error CORS.
@@ -124,6 +126,9 @@ services:
         # dominio (sin prefijo /api):
         #   VITE_BACKEND_URL=https://api.tudominio.com
         VITE_BACKEND_URL: ${VITE_BACKEND_URL:-https://api.tudominio.com}
+        # Client ID de Google OAuth (se inyecta en el build del frontend para
+        # mostrar el botón "Sign in with Google")
+        VITE_GOOGLE_CLIENT_ID: ${VITE_GOOGLE_CLIENT_ID:-}
     container_name: agon_frontend_prod
     restart: unless-stopped
     ports:

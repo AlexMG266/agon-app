@@ -19,17 +19,20 @@ CREATE TABLE "User" (
     nombre VARCHAR(60) NOT NULL,
     email VARCHAR(120) NOT NULL,
     imagenPerfil TEXT,
-    password VARCHAR(60) NOT NULL,
-    fechaNacimiento DATE NOT NULL,
+    password VARCHAR(60),
+    fechaNacimiento DATE,
     eloProvisional BOOLEAN NOT NULL DEFAULT TRUE,
     notificacionesPartidos BOOLEAN NOT NULL DEFAULT TRUE,
     diasAntelacionPartidos INTEGER NOT NULL DEFAULT 1,
     role VARCHAR(20) NOT NULL DEFAULT 'USER',
+    googleId VARCHAR(100),
     CONSTRAINT UserPK PRIMARY KEY (id),
-    CONSTRAINT UserNombreUniqueKey UNIQUE (nombre)
+    CONSTRAINT UserNombreUniqueKey UNIQUE (nombre),
+    CONSTRAINT UserGoogleIdUniqueKey UNIQUE (googleId)
 );
 
 CREATE INDEX UserIndexByNombre ON "User" (nombre);
+CREATE INDEX UserIndexByEmail ON "User" (email);
 
 CREATE TABLE Notification (
     id BIGSERIAL NOT NULL,
