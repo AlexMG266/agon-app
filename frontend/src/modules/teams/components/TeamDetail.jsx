@@ -318,7 +318,7 @@ const TeamDetail = () => {
                                             {member.elo != null && (
                                                 <span className={`td-elo ${member.elo >= 1500 ? 'high' : ''}`}>
                                                     <i className="fa-solid fa-bolt" />
-                                                    {member.elo}{member.eloProvisional && <span className="td-elo-provisional">*</span>}
+                                                    {member.elo}{member.eloProvisional && <span className="td-elo-provisional">?</span>}
                                                 </span>
                                             )}
                                             {isTeamCaptain && (

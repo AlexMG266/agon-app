@@ -205,7 +205,7 @@ const TeamInfoModal = ({ show, equipoId, onHide }) => {
                                                         }}
                                                     >
                                                         <i className="fa-solid fa-bolt" style={{ fontSize: '0.6rem' }} />
-                                                        {member.elo}{member.eloProvisional && '*'}
+                                                        {member.elo}{member.eloProvisional && <span className="td-elo-provisional">?</span>}
                                                     </span>
                                                 )}
                                             </div>

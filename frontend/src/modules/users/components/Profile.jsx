@@ -201,7 +201,7 @@ const Profile = () => {
                                 <span className="profile-stat-icon">🎯</span>
                                 <div>
                                     <div className="profile-stat-label"><FormattedMessage id="project.users.Profile.elo" defaultMessage="ELO Actual" /></div>
-                                    <div className="profile-stat-value">{user.elo || 800}</div>
+                                    <div className="profile-stat-value">{user.elo || 800}{user.eloProvisional && <span className="profile-elo-provisional">?</span>}</div>
                                     {user.eloProvisional && (
                                         <div className="profile-stat-sub"><FormattedMessage id="project.users.Profile.provisional" defaultMessage="Provisional" /></div>
                                     )}

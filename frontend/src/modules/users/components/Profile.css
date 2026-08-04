@@ -95,6 +95,14 @@
     line-height: 1.2;
 }
 
+.profile-elo-provisional {
+    font-size: 0.7rem;
+    font-weight: 700;
+    color: #6e6e73;
+    opacity: 0.6;
+    margin-left: 0.15rem;
+}
+
 .profile-stat-sub {
     font-size: 0.65rem;
     color: #6e6e73;

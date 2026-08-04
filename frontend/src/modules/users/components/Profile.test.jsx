@@ -143,9 +143,10 @@ describe('Profile', () => {
     expect((await screen.findAllByText('0')).length).toBeGreaterThan(0);
   });
 
-  it('muestra el subindice provisional si el ELO es provisional', () => {
+  it('muestra el subindice provisional y el marcador ? si el ELO es provisional', () => {
     renderProfile({ ...user, eloProvisional: true });
     expect(screen.getByText('Provisional')).toBeInTheDocument();
+    expect(screen.getByText('?')).toBeInTheDocument();
   });
 
   it('actualiza el perfil correctamente', async () => {
