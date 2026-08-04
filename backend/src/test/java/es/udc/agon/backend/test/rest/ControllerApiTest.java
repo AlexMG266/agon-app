@@ -964,7 +964,7 @@ public class ControllerApiTest {
         Long encuentroId = objectMapper.readTree(jornadas)
                 .get(0).get("encuentros").get(0).get("id").asLong();
 
-        // victoria local 3-0 (ambos equipos con ELO medio 1500 -> esperado 0.5, K=32)
+        // victoria local 3-0 (ambos equipos con ELO medio 1500 -> esperado 0.5, K=40 por ser jugadores nuevos)
         mockMvc.perform(put("/encuentros/" + encuentroId + "/resultado")
                         .header("Authorization", "Bearer " + tokenDe(cap1))
                         .contentType(MediaType.APPLICATION_JSON)
@@ -986,22 +986,22 @@ public class ControllerApiTest {
                 .andExpect(jsonPath("$").isArray())
                 .andExpect(jsonPath("$[0].resultado").value("VICTORIA"))
                 .andExpect(jsonPath("$[0].eloAnterior").value(1500))
-                .andExpect(jsonPath("$[0].eloNuevo").value(1516))
-                .andExpect(jsonPath("$[0].variacion").value(16))
+                .andExpect(jsonPath("$[0].eloNuevo").value(1520))
+                .andExpect(jsonPath("$[0].variacion").value(20))
                 .andExpect(jsonPath("$[0].encuentroId").value(encuentroId))
                 .andExpect(jsonPath("$[0].equipoLocal").value("Equipo Elo Uno"))
                 .andExpect(jsonPath("$[0].equipoVisitante").value("Equipo Elo Dos"))
                 .andExpect(jsonPath("$[0].fecha").isNotEmpty());
 
-        // historial del perdedor: DERROTA, 1500 -> 1484 (-16)
+        // historial del perdedor: DERROTA, 1500 -> 1480 (-20)
         mockMvc.perform(get("/users/" + cap2.getId() + "/elo-history")
                         .header("Authorization", "Bearer " + tokenDe(cap2)))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$").isArray())
                 .andExpect(jsonPath("$[0].resultado").value("DERROTA"))
                 .andExpect(jsonPath("$[0].eloAnterior").value(1500))
-                .andExpect(jsonPath("$[0].eloNuevo").value(1484))
-                .andExpect(jsonPath("$[0].variacion").value(-16));
+                .andExpect(jsonPath("$[0].eloNuevo").value(1480))
+                .andExpect(jsonPath("$[0].variacion").value(-20));
 
         // el usuario sin permisos no puede ver el historial ajeno
         mockMvc.perform(get("/users/" + cap1.getId() + "/elo-history")
