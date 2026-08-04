@@ -4,6 +4,8 @@ erDiagram
     USUARIO ||--o{ SOLICITUD : "candidato"
     USUARIO ||--o{ SOLICITUD : "decisor"
     USUARIO ||--o{ TORNEO : "organiza"
+    USUARIO ||--o{ SEGUIMIENTO_TORNEO : "sigue"
+    USUARIO ||--o{ ELO_HISTORIAL : "tiene historial ELO"
 
     EQUIPO ||--|| USUARIO : "creador"
     EQUIPO ||--o{ EQUIPO_MIEMBROS : "tiene"
@@ -16,6 +18,8 @@ erDiagram
     TORNEO ||--o{ GRUPO : "posee"
     TORNEO ||--o{ JORNADA : "planifica"
     TORNEO ||--o{ INSCRIPCION : "gestiona"
+    TORNEO ||--o{ SOLICITUD : "recibe inscripciones"
+    TORNEO ||--o{ SEGUIMIENTO_TORNEO : "es seguido"
 
     GRUPO ||--o{ INSCRIPCION : "agrupa"
 
@@ -23,6 +27,7 @@ erDiagram
 
     ENCUENTRO ||--o{ SET : "tiene"
     ENCUENTRO ||--o{ SOLICITUD_APLAZAMIENTO : "gestiona"
+    ENCUENTRO ||--o{ ELO_HISTORIAL : "genera"
 
     USUARIO {
         bigint id PK
@@ -33,7 +38,10 @@ erDiagram
         string password
         date fechaNacimiento
         boolean eloProvisional
+        boolean notificacionesPartidos
+        int diasAntelacionPartidos
         string role
+        string googleId UK
     }
 
     NOTIFICACION {
@@ -53,6 +61,7 @@ erDiagram
         bigint candidato_id FK
         bigint decisor_id FK
         bigint equipo_id FK
+        bigint torneo_id FK
         string estado
         string tipo_solicitud
         timestamp fecha_creacion
@@ -65,6 +74,7 @@ erDiagram
         string estado
         bigint creador_id FK
         string codigo_equipo UK
+        timestamp fecha_creacion
     }
 
     EQUIPO_MIEMBROS {
@@ -76,10 +86,32 @@ erDiagram
         bigint id PK
         bigint idOrganizador FK
         string nombre
+        boolean privado
+        string codigoTorneo UK
         int numGrupos
         int equiposPorGrupo
         boolean tienePlayoff
+        string tipoTorneo
+        boolean idaVueltaPlayoff
         string estado
+        date fechaInicio
+        date fechaFin
+        date fechaLimiteInscripcion
+        int puntosVictoria
+        int puntosEmpate
+        int puntosDerrota
+        string formatoPartidos
+        string criterioDesempate
+        string diasDisponibles
+        string horaInicio
+        string horaFin
+        int duracionPartido
+        text fechasExcluidas
+        string estrategiaDistribucion
+        int diasEntreJornadas
+        string estrategiaPlayoff
+        int diasEntrePlayoff
+        string rondaInicioPlayoff
     }
 
     GRUPO {
@@ -94,6 +126,9 @@ erDiagram
         bigint idEquipo FK
         bigint idGrupo FK
         int partidosJugados
+        int partidosGanados
+        int partidosEmpatados
+        int partidosPerdidos
         string estadoInscripcion
         int puntosLiga
         int setsGanados
@@ -117,7 +152,7 @@ erDiagram
         bigint idEquipoLocal FK
         bigint idEquipoVisitante FK
         string estadoEncuentro
-        datetime fechaRealizacion
+        timestamp fechaRealizacion
     }
 
     SET {
@@ -132,6 +167,23 @@ erDiagram
         bigint id PK
         bigint idEncuentro FK
         bigint idEquipoSolicitante FK
-        datetime fechaSolicitada
+        timestamp fechaSolicitada
         string estado
+    }
+
+    SEGUIMIENTO_TORNEO {
+        bigint id PK
+        bigint usuarioId FK
+        bigint torneoId FK
+        timestamp fechaCreacion
+    }
+
+    ELO_HISTORIAL {
+        bigint id PK
+        bigint idUsuario FK
+        bigint idEncuentro FK
+        int eloAnterior
+        int eloNuevo
+        string resultado
+        timestamp fecha
     }

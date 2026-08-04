@@ -2,18 +2,18 @@ classDiagram
     direction TB
 
     class EstadoSolicitud { <<enumeration>> PENDIENTE, ACEPTADO, RECHAZADO }
-    class TipoSolicitud { <<enumeration>> PROPUESTA, PETICION }
-    class TipoNotificacion { <<enumeration>> INVITACION, RECORDATORIO_PARTIDO, RESULTADO_PARTIDO, SOLICITUD_APLAZAMIENTO, SYSTEM }
+    class TipoSolicitud { <<enumeration>> PROPUESTA, PETICION, SOLICITUD_INSCRIPCION }
+    class TipoNotificacion { <<enumeration>> INVITACION, RECORDATORIO_PARTIDO, RESULTADO_PARTIDO, SOLICITUD_APLAZAMIENTO, SOLICITUD_INSCRIPCION, SYSTEM }
     class EstadoEquipo { <<enumeration>> ACTIVO, DISUELTO }
 
-    class EstadoTorneo { <<enumeration>> RECLUTANDO, FASE_GRUPOS, PLAYOFF, FINALIZADO }
+    class EstadoTorneo { <<enumeration>> RECLUTANDO, INSCRIPCION_CERRADA, FASE_GRUPOS, PLAYOFF, FINALIZADO }
     class EstadoInscripcion { <<enumeration>> ACTIVA, CANCELADA }
     class TipoFase { <<enumeration>> LIGA_GRUPO, ELIMINATORIA }
     class EstadoJornada { <<enumeration>> ACTIVA, APLAZADA }
     class TipoJornada { <<enumeration>> LIGA_4_SETS, PLAYOFF_BEST_OF_5 }
-    class EstadoEncuentro { <<enumeration>> PENDIENTE, JUGADO, APLAZADO, SOLICITADO_APLAZAMIENTO }
+    class EstadoEncuentro { <<enumeration>> PENDIENTE, JUGADO, APLAZADO, SOLICITUD_APLAZAMIENTO }
 
-    %% --- Entidades implementadas --- %%
+    %% --- Entidades del modelo (todas implementadas) --- %%
     class Usuario {
         -Long id
         -int elo
@@ -23,7 +23,10 @@ classDiagram
         -String password
         -LocalDate fechaNacimiento
         -boolean eloProvisional
+        -boolean notificacionesPartidos
+        -int diasAntelacionPartidos
         -String role
+        -String googleId
     }
     class Notificacion {
         -Long id
@@ -44,6 +47,7 @@ classDiagram
         -String descripcion
         -User creador
         -String codigoEquipo
+        -LocalDateTime fechaCreacion
         -Set~User~ miembros
         +addMiembro(User) void
         +removeMiembro(User) void
@@ -53,106 +57,161 @@ classDiagram
         -User candidato
         -User decisor
         -Equipo equipo
+        -Torneo torneo
         -EstadoSolicitud estado
         -TipoSolicitud tipoSolicitud
         -LocalDateTime fechaCreacion
         +aceptar() void
         +rechazar() void
     }
-
-    %% --- Entidades no implementadas  --- %%
     class Torneo {
         -Long id
+        -User organizador
         -String nombre
         -int numGrupos
         -int equiposPorGrupo
         -boolean tienePlayoff
+        -String tipoTorneo
+        -boolean idaVueltaPlayoff
+        -boolean privado
+        -String codigoTorneo
         -EstadoTorneo estado
+        -LocalDate fechaInicio
+        -LocalDate fechaFin
+        -LocalDate fechaLimiteInscripcion
+        -int puntosVictoria
+        -int puntosEmpate
+        -int puntosDerrota
+        -String formatoPartidos
+        -String criterioDesempate
+        -List~String~ diasDisponibles
+        -String horaInicio
+        -String horaFin
+        -int duracionPartido
+        -List~String~ fechasExcluidas
+        -String estrategiaDistribucion
+        -int diasEntreJornadas
+        -String estrategiaPlayoff
+        -int diasEntrePlayoff
+        -String rondaInicioPlayoff
+        -Set~Grupo~ grupos
+        -Set~Jornada~ jornadas
+        -Set~Inscripcion~ inscripciones
     }
     class Grupo {
         -Long id
         -String nombreGrupo
-        +getClasificacion() List~Inscripcion~
+        -Set~Inscripcion~ inscripciones
         +estaLLeno() boolean
     }
     class Inscripcion {
         -Long id
+        -Torneo torneo
+        -Equipo equipo
+        -Grupo grupo
         -int partidosJugados
+        -int partidosGanados
+        -int partidosEmpatados
+        -int partidosPerdidos
+        -EstadoInscripcion estadoInscripcion
         -int puntosLiga
         -int setsGanados
         -int setsPerdidos
-        -EstadoInscripcion estadoInscripcion
         +actualizarEstadisticas(int setsAFavor, int setsEnContra) void
     }
     class Jornada {
         -Long id
+        -Torneo torneo
         -int numeroJornada
         -TipoFase tipoFase
         -TipoJornada formatoJornada
         -EstadoJornada estado
         -LocalDate fechaInicio
         -LocalDate fechaFin
+        -Set~Encuentro~ encuentros
     }
     class Encuentro {
         -Long id
+        -Jornada jornada
         -Equipo local
         -Equipo visitante
         -EstadoEncuentro estadoEncuentro
         -LocalDateTime fechaRealizacion
-        +registrarResultado(List~Set~ sets) void
+        -List~SetEntity~ sets
+        -List~SolicitudAplazamiento~ solicitudesAplazamiento
         +getGanador() Equipo
         +getPuntosLocal() int
         +getPuntosVisitante() int
     }
-    class Set {
+    class SetEntity {
         -Long id
+        -Encuentro encuentro
         -int numeroSet
         -int golesLocal
         -int golesVisitante
     }
     class SolicitudAplazamiento {
         -Long id
+        -Encuentro encuentro
+        -Equipo equipoSolicitante
         -LocalDateTime fechaSolicitada
         -EstadoSolicitud estado
         +aceptarSolicitud() void
         +cancelarSolicitud() void
     }
+    class SeguimientoTorneo {
+        -Long id
+        -User usuario
+        -Torneo torneo
+        -LocalDateTime fechaCreacion
+    }
+    class EloHistorial {
+        -Long id
+        -User usuario
+        -Encuentro encuentro
+        -int eloAnterior
+        -int eloNuevo
+        -String resultado
+        -LocalDateTime fecha
+    }
 
-    %% --- RELACIONES IMPLEMENTADAS --- %%
+    %% --- RELACIONES --- %%
     Usuario "1" --> "N" Equipo : "es creador de"
     Usuario "1" --> "N" Notificacion : "recibe"
     Usuario "1" --> "N" Solicitud : "candidato (envía)"
     Usuario "1" --> "N" Solicitud : "decisor (decide)"
+    Usuario "1" --> "N" Torneo : "organiza"
+    Usuario "1" --> "N" SeguimientoTorneo : "sigue torneos"
+    Usuario "1" --> "N" EloHistorial : "tiene historial ELO"
 
     Equipo "1" --> "1" User : "creador"
     Equipo "N" --> "N" User : "miembros"
     Equipo "1" --> "N" Solicitud : "recibe solicitudes"
+    Equipo "1" --> "N" Inscripcion : "pertenece a"
 
-    %% --- RELACIONES CON ENUMERADOS IMPLEMENTADAS --- %%
-    Notificacion ..> TipoNotificacion : "tipo"
-    Equipo ..> EstadoEquipo : "estado"
-    Solicitud ..> EstadoSolicitud : "estado"
-    Solicitud ..> TipoSolicitud : "tipoSolicitud"
-
-    %% --- RELACIONES NO IMPLEMENTADAS  --- %%
-    Usuario "1" --> "N" Torneo : "organiza"
-
+    Torneo "1" --> "N" Solicitud : "solicitudes de inscripción"
     Torneo "1" *-- "N" Grupo : "posee"
     Torneo "1" *-- "N" Jornada : "planifica"
     Torneo "1" --> "N" Inscripcion : "gestiona"
-
-    Equipo "1" --> "N" Inscripcion : "pertenece a"
+    Torneo "1" --> "N" SeguimientoTorneo : "es seguido por"
 
     Grupo "1" --> "N" Inscripcion : "clasifica"
 
     Jornada "1" *-- "N" Encuentro : "contiene"
 
-    Encuentro "1" *-- "N" Set : "tiene"
+    Encuentro "1" *-- "N" SetEntity : "tiene"
     Encuentro "1" --> "N" SolicitudAplazamiento : "recibe"
     Encuentro "1" --> "1" Equipo : "local"
     Encuentro "1" --> "1" Equipo : "visitante"
+    Encuentro "1" --> "N" EloHistorial : "genera registros"
 
-    %% --- RELACIONES CON ENUMERADOS NO IMPLEMENTADAS --- %%
+    SolicitudAplazamiento "1" --> "1" Equipo : "equipo solicitante"
+
+    %% --- RELACIONES CON ENUMERADOS --- %%
+    Notificacion ..> TipoNotificacion : "tipo"
+    Equipo ..> EstadoEquipo : "estado"
+    Solicitud ..> EstadoSolicitud : "estado"
+    Solicitud ..> TipoSolicitud : "tipoSolicitud"
     Torneo ..> EstadoTorneo : "estado"
     Inscripcion ..> EstadoInscripcion : "estadoInscripcion"
     Jornada ..> TipoFase : "tipoFase"

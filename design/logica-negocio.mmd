@@ -1,0 +1,193 @@
+classDiagram
+    direction TB
+
+    %% --- Interfaces de servicios (Contratos de Negocio) --- %%
+    class UserService {
+        <<interface>>
+        +signUp(User user) User
+        +login(String nombre, String password) User
+        +loginWithGoogle(String googleToken) User
+        +loginFromId(Long id) User
+        +updateProfile(Long id, String nombre, String email, String imagenPerfil, LocalDate fechaNacimiento, boolean notificacionesPartidos, int diasAntelacionPartidos) User
+        +changePassword(Long id, String oldPassword, String newPassword) User
+    }
+
+    class EquipoService {
+        <<interface>>
+        +crearEquipo(Long userId, String nombreEquipo, String descripcion) Equipo
+        +crearPropuestaDeUnion(Long creadorId, Long equipoId, Long jugadorId) Solicitud
+        +crearPeticionDeUnion(Long jugadorId, String codigoEquipo) Solicitud
+        +responderSolicitud(Long usuarioId, Long solicitudId, boolean aceptar) void
+        +abandonarEquipo(Long usuarioId, Long equipoId) void
+        +eliminarEquipo(Long usuarioId, Long equipoId) void
+        +obtenerEquiposDeUsuario(Long usuarioId) List~Equipo~
+        +obtenerEquipo(Long equipoId) Equipo
+        +buscarEquipoPorCodigo(String codigoEquipo) Equipo
+        +expulsarMiembro(Long captainId, Long equipoId, Long miembroId) void
+    }
+
+    class NotificationService {
+        <<interface>>
+        +createWelcomeNotification(User user) void
+        +getNotifications(Long userId, int page, int size) Block~Notification~
+        +getUnreadCount(Long userId) long
+        +getNotification(Long userId, Long notificationId) Notification
+        +markAsRead(Long userId, Long notificationId) Notification
+    }
+
+    class TorneoService {
+        <<interface>>
+        +buscarTorneos(String filtro, String estadoFilter, int page, int size) Block~Torneo~
+        +obtenerTorneosOrganizador(Long organizadorId) List~Torneo~
+        +obtenerTorneosSeguidos(Long usuarioId) List~Torneo~
+        +obtenerTorneosInscritos(Long usuarioId) List~Torneo~
+        +seguirTorneo(Long usuarioId, Long torneoId) void
+        +dejarDeSeguirTorneo(Long usuarioId, Long torneoId) void
+        +consultarTorneo(Long torneoId) Torneo
+        +crearTorneo(Long organizadorId, Torneo torneo, Boolean privado) Torneo
+        +solicitarInscripcion(Long capitanId, Long torneoId, Long equipoId, String codigoTorneo) Solicitud
+        +aprobarInscripcion(Long organizadorId, Long solicitudId) Inscripcion
+        +rechazarInscripcion(Long organizadorId, Long solicitudId) void
+        +cerrarInscripciones(Long torneoId) void
+        +configurarEstructuraYGenerarCalendario(Long torneoId, String tipoTorneo, int numGrupos, int equiposPorGrupo, boolean tienePlayoff, boolean idaVueltaPlayoff, String estrategiaPlayoff, Integer diasEntrePlayoff, String fechaFin) Torneo
+        +configurarEstructuraYGenerarCalendario(Long torneoId, String tipoTorneo, int numGrupos, int equiposPorGrupo, boolean tienePlayoff, boolean idaVueltaPlayoff, String estrategiaPlayoff, Integer diasEntrePlayoff, String fechaFin, String rondaInicioPlayoff) Torneo
+        +generarCalendario(Long torneoId) void
+        +buscarPorCodigo(String codigoTorneo) Torneo
+        +generarCodigoQR(Long torneoId) String
+        +gestionarJornadas(Long torneoId, Long jornadaId, EstadoJornada nuevoEstado) void
+        +obtenerSolicitudesPendientes(Long torneoId) List~Solicitud~
+        +actualizarTorneo(Long userId, Long torneoId, Torneo datos) Torneo
+        +obtenerJornadas(Long torneoId) List~Jornada~
+        +obtenerSolicitud(Long solicitudId) Solicitud
+        +generarPlayoffs(Long torneoId) List~Jornada~
+    }
+
+    class IEncuentroService {
+        <<interface>>
+        +consultarEncuentrosPropios(Long userId) List~Encuentro~
+        +generarRecordatoriosPartidos(Long userId) void
+        +registrarResultado(Long capitanId, Long encuentroId, List~SetEntity~ sets) void
+        +solicitarAplazamiento(Long capitanId, Long encuentroId, LocalDateTime fecha, String motivo) void
+        +responderAplazamiento(Long capitanId, Long solicitudId, boolean aceptar) void
+        +consultarHistorialElo(Long usuarioId) List~EloHistorial~
+    }
+
+    %% --- Implementaciones --- %%
+    class UserServiceImpl {
+        -PermissionChecker permissionChecker
+        -BCryptPasswordEncoder passwordEncoder
+        -UserDao userDao
+        -NotificationService notificationService
+        -GoogleIdTokenVerifier googleIdTokenVerifier
+    }
+
+    class EquipoServiceImpl {
+        -EquipoDao equipoDao
+        -SolicitudDao solicitudDao
+        -UserDao userDao
+        -NotificationDao notificationDao
+        -NotificationDispatcher notificationDispatcher
+    }
+
+    class NotificationServiceImpl {
+        -PermissionChecker permissionChecker
+        -NotificationDao notificationDao
+    }
+
+    class TorneoServiceImpl {
+        -Clock clock
+        -TorneoDao torneoDao
+        -InscripcionDao inscripcionDao
+        -JornadaDao jornadaDao
+        -GrupoDao grupoDao
+        -EquipoDao equipoDao
+        -PermissionChecker permissionChecker
+        -SeguimientoTorneoDao seguimientoTorneoDao
+        -SolicitudDao solicitudDao
+        -NotificationDao notificationDao
+    }
+
+    class EncuentroServiceImpl {
+        -Clock clock
+        -EncuentroDao encuentroDao
+        -InscripcionDao inscripcionDao
+        -SolicitudAplazamientoDao solicitudAplazamientoDao
+        -PermissionChecker permissionChecker
+        -EquipoDao equipoDao
+        -NotificationDispatcher notificationDispatcher
+        -NotificationDao notificationDao
+        -EloHistorialDao eloHistorialDao
+        -UserDao userDao
+        -TorneoService torneoService
+    }
+
+    %% --- Componente de notificaciones (dispatcher) --- %%
+    class NotificationDispatcher {
+        <<component>>
+        -NotificationDao notificationDao
+        -MessageSource messageSource
+        +solicitudAceptada(User destinatario, String nombreEquipo, String decisorNombre) void
+        +solicitudRechazada(User destinatario, String nombreEquipo, String decisorNombre) void
+        +miembroAbandono(User capitan, String miembroNombre, String nombreEquipo) void
+        +miembroExpulsado(User miembro, String nombreEquipo, String capitanNombre) void
+        +notificacionPendienteDeAccion(User destinatario, String asunto, String cuerpo, Long referenciaId) void
+        +notificacionAplazamientoSolicitada(User destinatario, String equipoLocal, String equipoVisitante, LocalDateTime fecha) void
+        +notificacionAplazamientoAceptada(User destinatario, String equipoLocal, String equipoVisitante, LocalDateTime fecha) void
+        +notificacionAplazamientoRechazada(User destinatario, String equipoLocal, String equipoVisitante) void
+        +recordatorioPartido(User destinatario, Encuentro encuentro) void
+    }
+
+    %% --- Componente de Control de Acceso --- %%
+    class PermissionChecker {
+        +checkUser(Long userId) User
+    }
+
+    %% --- Implementación de Relaciones --- %%
+    UserService <|.. UserServiceImpl
+    EquipoService <|.. EquipoServiceImpl
+    NotificationService <|.. NotificationServiceImpl
+    TorneoService <|.. TorneoServiceImpl
+    IEncuentroService <|.. EncuentroServiceImpl
+
+    %% --- Inyección de DAOs y dependencias reales --- %%
+    UserServiceImpl ..> UserDao : @Autowired
+    UserServiceImpl ..> NotificationService : @Autowired
+    UserServiceImpl ..> GoogleIdTokenVerifier : @Autowired
+
+    EquipoServiceImpl ..> EquipoDao : @Autowired
+    EquipoServiceImpl ..> SolicitudDao : @Autowired
+    EquipoServiceImpl ..> UserDao : @Autowired
+    EquipoServiceImpl ..> NotificationDao : @Autowired
+    EquipoServiceImpl ..> NotificationDispatcher : @Autowired
+
+    NotificationServiceImpl ..> NotificationDao : @Autowired
+
+    TorneoServiceImpl ..> TorneoDao : @Autowired
+    TorneoServiceImpl ..> InscripcionDao : @Autowired
+    TorneoServiceImpl ..> JornadaDao : @Autowired
+    TorneoServiceImpl ..> GrupoDao : @Autowired
+    TorneoServiceImpl ..> EquipoDao : @Autowired
+    TorneoServiceImpl ..> SeguimientoTorneoDao : @Autowired
+    TorneoServiceImpl ..> SolicitudDao : @Autowired
+    TorneoServiceImpl ..> NotificationDao : @Autowired
+    TorneoServiceImpl ..> Clock : @Autowired
+
+    EncuentroServiceImpl ..> EncuentroDao : @Autowired
+    EncuentroServiceImpl ..> InscripcionDao : @Autowired
+    EncuentroServiceImpl ..> SolicitudAplazamientoDao : @Autowired
+    EncuentroServiceImpl ..> EquipoDao : @Autowired
+    EncuentroServiceImpl ..> NotificationDao : @Autowired
+    EncuentroServiceImpl ..> EloHistorialDao : @Autowired
+    EncuentroServiceImpl ..> UserDao : @Autowired
+    EncuentroServiceImpl ..> NotificationDispatcher : @Autowired
+    EncuentroServiceImpl ..> TorneoService : @Autowired
+    EncuentroServiceImpl ..> Clock : @Autowired
+
+    NotificationDispatcher ..> NotificationDao : @Autowired
+    NotificationDispatcher ..> MessageSource : @Autowired
+
+    %% --- Relaciones con PermissionChecker --- %%
+    UserServiceImpl --> PermissionChecker : @Autowired
+    NotificationServiceImpl --> PermissionChecker : @Autowired
+    TorneoServiceImpl --> PermissionChecker : @Autowired
+    EncuentroServiceImpl --> PermissionChecker : @Autowired
