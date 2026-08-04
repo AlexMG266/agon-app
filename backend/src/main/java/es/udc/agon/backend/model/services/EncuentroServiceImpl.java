@@ -452,8 +452,24 @@ public class EncuentroServiceImpl implements IEncuentroService {
     }
 
     // ── Cálculo de ELO ─────────────────────────────────────────────
-    // Coeficiente K usado en la fórmula ELO (controla la magnitud de las variaciones).
-    private static final int K_ELO = 32;
+    // Umbral de encuentros para que un ELO deje de ser provisional.
+    private static final int ENCUENTROS_ELO_PROVISIONAL = 20;
+
+    /**
+     * Devuelve el coeficiente K (magnitud de la variación ELO) en función del número
+     * de encuentros jugados y del ELO actual del jugador, siguiendo el criterio de la FIDE:
+     * K = 40 para ELO provisional (pocas partidas), K = 20 para jugadores con rating
+     * estable por debajo de 2400 y K = 10 para la élite (>= 2400).
+     */
+    private int calcularK(int elo, long encuentrosJugados) {
+        if (encuentrosJugados < ENCUENTROS_ELO_PROVISIONAL) {
+            return 40;
+        }
+        if (elo >= 2400) {
+            return 10;
+        }
+        return 20;
+    }
 
     /**
      * Recalcula el ELO de todos los jugadores (miembros) de los dos equipos
@@ -515,13 +531,18 @@ public class EncuentroServiceImpl implements IEncuentroService {
             return;
         }
         for (User miembro : equipo.getMiembros()) {
+            long encuentrosJugados = eloHistorialDao.countDistinctEncuentrosByUsuarioId(miembro.getId());
             double esperado = 1.0 / (1.0 + Math.pow(10, (eloRival - eloPropio) / 400.0));
-            int variacion = (int) Math.round(K_ELO * (resultado - esperado));
+            int variacion = (int) Math.round(calcularK(miembro.getElo(), encuentrosJugados) * (resultado - esperado));
             int eloAnterior = miembro.getElo();
             int eloNuevo = Math.max(0, eloAnterior + variacion);
 
             if (eloNuevo != eloAnterior) {
                 miembro.setElo(eloNuevo);
+                // El ELO deja de ser provisional al superar el umbral de encuentros jugados.
+                if (miembro.isEloProvisional() && (encuentrosJugados + 1) >= ENCUENTROS_ELO_PROVISIONAL) {
+                    miembro.setEloProvisional(false);
+                }
                 userDao.save(miembro);
 
                 EloHistorial historial = new EloHistorial(miembro, encuentro, eloAnterior, eloNuevo,
