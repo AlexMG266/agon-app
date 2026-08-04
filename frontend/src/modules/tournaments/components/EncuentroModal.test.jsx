@@ -80,7 +80,7 @@ const renderEncuentro = (props = {}) => {
 };
 
 const rellenarSetsValidos = () => {
-  const inputs = screen.getAllByRole('spinbutton');
+  const inputs = screen.getAllByRole('textbox');
   const valores = [[25, 20], [20, 25], [25, 18], [18, 25]];
   valores.forEach(([local, visitante], i) => {
     fireEvent.change(inputs[i * 2], { target: { value: String(local) } });
@@ -158,7 +158,7 @@ describe('EncuentroModal', () => {
   it('muestra el formulario con 4 sets por defecto al capitan', () => {
     renderEncuentro({ capitanTeamIds: [1] });
     expect(screen.getAllByText('Registrar resultado')).toHaveLength(2);
-    expect(screen.getAllByRole('spinbutton')).toHaveLength(8);
+    expect(screen.getAllByRole('textbox')).toHaveLength(8);
     expect(screen.getAllByText('Local')).toHaveLength(4);
     expect(screen.getAllByText('Visitante')).toHaveLength(4);
     expect(screen.getByText('Set 4')).toBeInTheDocument();
@@ -171,21 +171,21 @@ describe('EncuentroModal', () => {
       capitanTeamIds: [2],
       encuentro: encuentroBase({ sets: [{ numeroSet: 1, golesLocal: 25, golesVisitante: 20 }] })
     });
-    const inputs = screen.getAllByRole('spinbutton');
+    const inputs = screen.getAllByRole('textbox');
     expect(inputs).toHaveLength(8);
-    expect(inputs[0]).toHaveValue(25);
-    expect(inputs[1]).toHaveValue(20);
-    expect(inputs[2]).toHaveValue(0);
+    expect(inputs[0]).toHaveValue('25');
+    expect(inputs[1]).toHaveValue('20');
+    expect(inputs[2]).toHaveValue('0');
   });
 
   it('anade y quita sets (maximo 5)', () => {
     renderEncuentro({ capitanTeamIds: [1] });
     fireEvent.click(screen.getByTitle('Añadir set'));
-    expect(screen.getAllByRole('spinbutton')).toHaveLength(10);
+    expect(screen.getAllByRole('textbox')).toHaveLength(10);
     expect(screen.getByText('Set 5')).toBeInTheDocument();
     expect(screen.getByTitle('Añadir set')).toBeDisabled();
     fireEvent.click(screen.getByTitle('Quitar set'));
-    expect(screen.getAllByRole('spinbutton')).toHaveLength(8);
+    expect(screen.getAllByRole('textbox')).toHaveLength(8);
     expect(screen.queryByText('Set 5')).not.toBeInTheDocument();
     expect(screen.getByTitle('Añadir set')).not.toBeDisabled();
   });
@@ -206,14 +206,12 @@ describe('EncuentroModal', () => {
     expect(onRegistered).not.toHaveBeenCalled();
   });
 
-  it('muestra error de puntos negativos y no registra', () => {
+  it('ignora caracteres no numericos en los marcadores de los sets', () => {
     renderEncuentro({ capitanTeamIds: [1] });
-    fireEvent.change(screen.getAllByRole('spinbutton')[0], { target: { value: '-1' } });
-    // el navegador bloquearia el submit por min=0; se envia el formulario
-    // directamente para probar la validacion propia del componente.
-    fireEvent.submit(document.querySelector('form'));
-    expect(screen.getByText('Los puntos no pueden ser negativos.')).toBeInTheDocument();
-    expect(backend.tournamentService.registerResult).not.toHaveBeenCalled();
+    const inputs = screen.getAllByRole('textbox');
+    fireEvent.change(inputs[0], { target: { value: '-1' } });
+    expect(inputs[0]).toHaveValue('1');
+    expect(inputs[1]).toHaveValue('0');
   });
 
   it('registra el resultado, muestra la confirmacion y cierra', async () => {

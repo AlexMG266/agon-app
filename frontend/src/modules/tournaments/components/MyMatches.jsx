@@ -23,6 +23,12 @@ const MyMatches = ({ embedded = false }) => {
         if (Number.isNaN(d.getTime())) return '';
         return intl.formatDate(d, { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
     };
+    const formatDateMedium = (fecha) => {
+        if (!fecha) return '';
+        const d = new Date(fecha);
+        if (Number.isNaN(d.getTime())) return '';
+        return intl.formatDate(d, { day: 'numeric', month: 'long', year: 'numeric' });
+    };
     const formatDateShort = (fecha) => {
         if (!fecha) return '';
         const d = new Date(fecha);
@@ -231,7 +237,7 @@ const MyMatches = ({ embedded = false }) => {
                             >
                                 {fechas.map((f, idx) => (
                                     <option key={f.fecha || idx} value={idx}>
-                                        {formatDateLong(f.fecha)} ({f.encuentros.length})
+                                        {formatDateMedium(f.fecha)}
                                     </option>
                                 ))}
                             </select>

@@ -54,8 +54,15 @@ const EncuentroModal = ({ show, encuentro, capitanTeamIds = [], onHide, onRegist
     const esCapitan = capitanTeamIds.includes(encuentro.equipoLocalId) || capitanTeamIds.includes(encuentro.equipoVisitanteId);
     const puedeRegistrar = !jugado && esCapitan;
 
+    const toNumber = (v) => {
+        if (v === '' || v === null || v === undefined) return 0;
+        const n = parseInt(v, 10);
+        return Number.isNaN(n) ? 0 : n;
+    };
+
     const handleSetChange = (idx, field, value) => {
-        setSets(prev => prev.map((s, i) => (i === idx ? { ...s, [field]: parseInt(value) || 0 } : s)));
+        const cleaned = String(value).replace(/[^0-9]/g, '').slice(0, 2);
+        setSets(prev => prev.map((s, i) => (i === idx ? { ...s, [field]: cleaned } : s)));
     };
 
     const handleAddSet = () => {
@@ -75,10 +82,12 @@ const EncuentroModal = ({ show, encuentro, capitanTeamIds = [], onHide, onRegist
     const validateSets = () => {
         if (!sets.length) return intl.formatMessage({ id: 'project.encuentro.error.noSets', defaultMessage: 'Debes indicar al menos un set.' });
         for (const s of sets) {
-            if (s.golesLocal === s.golesVisitante) {
+            const local = toNumber(s.golesLocal);
+            const visitante = toNumber(s.golesVisitante);
+            if (local === visitante) {
                 return intl.formatMessage({ id: 'project.encuentro.error.draw', defaultMessage: 'Un set no puede terminar en empate.' });
             }
-            if (s.golesLocal < 0 || s.golesVisitante < 0) {
+            if (local < 0 || visitante < 0) {
                 return intl.formatMessage({ id: 'project.encuentro.error.negative', defaultMessage: 'Los puntos no pueden ser negativos.' });
             }
         }
@@ -97,8 +106,8 @@ const EncuentroModal = ({ show, encuentro, capitanTeamIds = [], onHide, onRegist
         try {
             const payload = sets.map(s => ({
                 numeroSet: s.numeroSet,
-                golesLocal: s.golesLocal,
-                golesVisitante: s.golesVisitante,
+                golesLocal: toNumber(s.golesLocal),
+                golesVisitante: toNumber(s.golesVisitante),
             }));
             const response = await backend.tournamentService.registerResult(encuentro.id, payload);
             if (response.ok) {
@@ -281,9 +290,11 @@ const EncuentroModal = ({ show, encuentro, capitanTeamIds = [], onHide, onRegist
                                                     <FormattedMessage id="project.encuentro.local" defaultMessage="Local" />
                                                 </span>
                                                 <Form.Control
-                                                    type="number"
-                                                    min={0}
+                                                    type="text"
+                                                    inputMode="numeric"
+                                                    maxLength={2}
                                                     value={s.golesLocal}
+                                                    onFocus={e => e.target.select()}
                                                     onChange={e => handleSetChange(idx, 'golesLocal', e.target.value)}
                                                     className="enm-score-input"
                                                 />
@@ -294,9 +305,11 @@ const EncuentroModal = ({ show, encuentro, capitanTeamIds = [], onHide, onRegist
                                                     <FormattedMessage id="project.encuentro.visitor" defaultMessage="Visitante" />
                                                 </span>
                                                 <Form.Control
-                                                    type="number"
-                                                    min={0}
+                                                    type="text"
+                                                    inputMode="numeric"
+                                                    maxLength={2}
                                                     value={s.golesVisitante}
+                                                    onFocus={e => e.target.select()}
                                                     onChange={e => handleSetChange(idx, 'golesVisitante', e.target.value)}
                                                     className="enm-score-input"
                                                 />
