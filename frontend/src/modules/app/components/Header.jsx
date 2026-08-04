@@ -165,7 +165,7 @@ const Header = ({ mobileDrawerOpen, onToggleMobileDrawer, onCloseMobileDrawer })
                     <NavDropdown
                         title={
                             <span className="navbar-icon-btn d-flex align-items-center justify-content-center">
-                                <i className="fa-solid fa-bars fs-5" style={{ color: '#1d1d1f' }}></i>
+                                <i className="fa-solid fa-language fs-5" style={{ color: '#1d1d1f' }}></i>
                             </span>
                         }
                         align="end"

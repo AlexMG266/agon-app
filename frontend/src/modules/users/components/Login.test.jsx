@@ -33,6 +33,8 @@ const messages = {
   'project.users.Login.hero.feature4.desc': 'Historial centralizado.',
   'project.users.Login.footer': '© {year} Agón Arena.',
   'project.users.Login.title': 'Autenticarse',
+  'project.users.Login.showPassword': 'Mostrar contraseña',
+  'project.users.Login.hidePassword': 'Ocultar contraseña',
   'project.users.Login.subtitle': 'Introduce tus datos de acceso para continuar.',
   'project.users.Login.newUser': '¿Eres nuevo en la plataforma?',
   'project.users.SignUp.title': 'Registrarse'

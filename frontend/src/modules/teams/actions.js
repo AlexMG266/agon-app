@@ -21,7 +21,6 @@ export const createTeam = (nombre, descripcion, onSuccess, onError) => dispatch 
 export const getMyTeams = () => dispatch => {
     backend.teamService.getMyTeams()
         .then(response => {
-            console.log("Datos recibidos del servidor:", response);
             if (response.ok) {
                 dispatch({ type: actionTypes.GET_MY_TEAMS_COMPLETED, userTeams: response.payload });
             } else {

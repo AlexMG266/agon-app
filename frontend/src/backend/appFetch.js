@@ -50,10 +50,8 @@ const getOptions = (method, body) => {
 export const appFetch = async (method, path, body) => {
     try {
         const url = `${import.meta.env.VITE_BACKEND_URL}${path}`;
-        console.log('Fetching:', url, method, body);
 
         const response = await fetch(url, getOptions(method, body));
-        console.log('Response status:', response.status);
 
         const appFetchResponse = {ok: response.ok, payload: null, status: response.status};
 
@@ -70,7 +68,6 @@ export const appFetch = async (method, path, body) => {
 
         if (isJson(response)) {
             appFetchResponse.payload = await response.json();
-            console.log('Response payload:', appFetchResponse.payload);
         }
 
         return appFetchResponse;

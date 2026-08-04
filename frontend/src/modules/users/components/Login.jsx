@@ -22,6 +22,7 @@ const Login = () => {
     const intl = useIntl();
     const [userName, setUserName] = useState('');
     const [password, setPassword] = useState('');
+    const [showPassword, setShowPassword] = useState(false);
     const [formValidated, setFormValidated] = useState(false);
     const [backendErrors, setBackendErrors] = useState(null);
     
@@ -213,16 +214,32 @@ const Login = () => {
                                 style={{ fontSize: '0.85rem' }}
                             >
                                 <Form.Control
-                                    type="password"
+                                    type={showPassword ? 'text' : 'password'}
                                     placeholder="Contraseña"
                                     value={password}
                                     onChange={e => setPassword(e.target.value)}
                                     disabled={isSubmitting}
                                     autoComplete="current-password"
-                                    className="bg-white border rounded-3 shadow-none custom-input"
+                                    className="bg-white border rounded-3 shadow-none custom-input password-input"
                                     style={{ fontSize: '0.92rem', borderColor: '#d2d2d7', height: '50px', color: '#1d1d1f' }}
                                     required
                                 />
+                                <button
+                                    type="button"
+                                    className="password-toggle-btn"
+                                    onMouseDown={(e) => { e.preventDefault(); setShowPassword(true); }}
+                                    onMouseUp={() => setShowPassword(false)}
+                                    onMouseLeave={() => setShowPassword(false)}
+                                    onTouchStart={(e) => { e.preventDefault(); setShowPassword(true); }}
+                                    onTouchEnd={() => setShowPassword(false)}
+                                    onTouchCancel={() => setShowPassword(false)}
+                                    aria-label={showPassword
+                                        ? intl.formatMessage({ id: 'project.users.Login.hidePassword', defaultMessage: 'Ocultar contraseña' })
+                                        : intl.formatMessage({ id: 'project.users.Login.showPassword', defaultMessage: 'Mostrar contraseña' })}
+                                    disabled={isSubmitting}
+                                >
+                                    <i className={`fa-solid ${showPassword ? 'fa-eye-slash' : 'fa-eye'}`}></i>
+                                </button>
                                 <Form.Control.Feedback type="invalid" className="small mt-1 text-danger" style={{ fontSize: '0.75rem' }}>
                                     <FormattedMessage id='project.global.validator.required' />
                                 </Form.Control.Feedback>
@@ -294,6 +311,25 @@ const Login = () => {
                 .custom-input:focus {
                     border-color: #86868b !important;
                     box-shadow: 0 0 0 3px rgba(0, 0, 0, 0.04) !important;
+                }
+                .password-input {
+                    padding-right: 44px !important;
+                }
+                .password-toggle-btn {
+                    position: absolute;
+                    top: 50%;
+                    right: 8px;
+                    transform: translateY(-50%);
+                    background: transparent;
+                    border: none;
+                    padding: 8px 10px;
+                    color: #86868b;
+                    cursor: pointer;
+                    z-index: 5;
+                    line-height: 1;
+                }
+                .password-toggle-btn:hover {
+                    color: #1d1d1f;
                 }
                 .form-floating > .form-control:focus ~ label::after {
                     background-color: transparent !important;

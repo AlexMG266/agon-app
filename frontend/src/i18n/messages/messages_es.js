@@ -112,6 +112,8 @@ export default {
     'project.users.ChangePassword.title': 'Cambiar contraseña',
 
     'project.users.Login.title': 'Autenticarse',
+    'project.users.Login.showPassword': 'Mostrar contraseña',
+    'project.users.Login.hidePassword': 'Ocultar contraseña',
     'project.users.Login.subtitle': 'Introduce tus datos de acceso para continuar.',
     'project.users.Login.hero.title': 'Organiza, inscríbete y domina la mesa.',
     'project.users.Login.hero.description': 'La plataforma definitiva para la gestión de tus partidas de futbolín. Toma el control de la competición con herramientas diseñadas para llevar tu comunidad al siguiente nivel.',

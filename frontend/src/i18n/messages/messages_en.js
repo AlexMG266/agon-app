@@ -112,6 +112,8 @@ export default {
     'project.users.ChangePassword.title': 'Change password',
 
     'project.users.Login.title': 'Login',
+    'project.users.Login.showPassword': 'Show password',
+    'project.users.Login.hidePassword': 'Hide password',
     'project.users.Login.subtitle': 'Enter your credentials to continue.',
     'project.users.Login.hero.title': 'Organize, sign up and dominate the table.',
     'project.users.Login.hero.description': 'The ultimate platform for managing your foosball matches. Take control of the competition with tools designed to take your community to the next level.',

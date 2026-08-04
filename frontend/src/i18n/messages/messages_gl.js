@@ -112,6 +112,8 @@ export default {
     'project.users.ChangePassword.title': 'Cambiar contrasinal',
 
     'project.users.Login.title': 'Autenticarse',
+    'project.users.Login.showPassword': 'Amosar contrasinal',
+    'project.users.Login.hidePassword': 'Ocultar contrasinal',
     'project.users.Login.subtitle': 'Introduce os teus datos de acceso para continuar.',
     'project.users.Login.hero.title': 'Organiza, inscríbete e domina a mesa.',
     'project.users.Login.hero.description': 'A plataforma definitiva para a xestión das túas partidas de futbolín. Toma o control da competición con ferramentas deseñadas para levar a túa comunidade ao seguinte nivel.',
