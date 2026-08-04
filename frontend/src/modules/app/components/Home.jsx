@@ -30,7 +30,7 @@ const LandingPage = () => {
                     <p className="h4 text-secondary mb-4" style={{ fontWeight: '400', letterSpacing: '-0.01em' }}>
                         <FormattedMessage id="project.app.Home.landingHero.title" defaultMessage="La plataforma para organizar y competir en torneos de futbolín" />
                     </p>
-                    <p className="text-muted mb-5" style={{ fontSize: '1.05rem', lineHeight: '1.6' }}>
+                    <p className="text-muted mb-5 hero-description">
                         <FormattedMessage id="project.app.Home.landingHero.description" defaultMessage="Crea competiciones fácilmente o únete con tu pareja de juego. Registra resultados al instante, sigue el calendario en tiempo real y mide tu nivel con el sistema de puntuación ELO." />
                     </p>
                     <div className="d-flex gap-3">

@@ -568,6 +568,11 @@
 }
 
 /* ─── Landing Page (no autenticado) ─── */
+.home-landing .hero-description {
+    font-size: 1.05rem;
+    line-height: 1.6;
+}
+
 @media (max-width: 768px) {
     .home-landing {
         padding: 0 1rem;
@@ -575,17 +580,36 @@
 }
 
 @media (max-width: 576px) {
+    .home-landing.mt-5 {
+        margin-top: 1rem;
+    }
+
+    /* Reduce el gutter de la row para que texto y mesa respiren mejor */
+    .home-landing > .row {
+        --bs-gutter-x: 1rem;
+        --bs-gutter-y: 1.75rem;
+    }
+
     .home-landing .display-3 {
-        font-size: 2.4rem;
+        font-size: 2.2rem;
+        line-height: 1.1;
     }
 
     .home-landing .h4 {
-        font-size: 1.2rem;
+        font-size: 1.15rem;
+        line-height: 1.45;
+    }
+
+    .home-landing .hero-description {
+        font-size: 0.95rem;
+        line-height: 1.55;
+        margin-bottom: 1.75rem;
     }
 
     .home-landing .d-flex.gap-3 {
         flex-direction: column;
         align-items: stretch;
+        gap: 0.6rem;
     }
 
     .home-landing .d-flex.gap-3 .btn {
@@ -593,15 +617,23 @@
     }
 }
 
+@media (max-width: 400px) {
+    .home-landing .display-3 {
+        font-size: 2rem;
+    }
+}
+
 /* ─── Gráfico de mesa de futbolín (Table) ─── */
 @media (max-width: 576px) {
     .foosball-table {
-        height: 260px !important;
+        height: auto !important;
+        aspect-ratio: 2.35 / 1;
+        --fs-scale: 0.6 !important;
     }
 }
 
 @media (max-width: 400px) {
     .foosball-table {
-        height: 220px !important;
+        --fs-scale: 0.5 !important;
     }
 }

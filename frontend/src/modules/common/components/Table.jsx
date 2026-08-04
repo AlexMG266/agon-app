@@ -22,13 +22,13 @@ const Table = () => {
     };
 
     const PlayerBar = ({ left, positions, color }) => (
-        <div 
-            className="position-absolute" 
-            style={{ 
-                left: left, 
-                top: '0', 
-                height: '100%', 
-                width: '6px',
+        <div
+            className="position-absolute"
+            style={{
+                left: left,
+                top: '0',
+                height: '100%',
+                width: 'calc(6px * var(--fs-scale, 1))',
                 backgroundColor: 'rgba(180, 180, 185, 0.25)',
                 borderRadius: '3px',
                 transform: 'translateX(-50%)'
@@ -41,8 +41,8 @@ const Table = () => {
                     style={{
                         top: `${top}%`,
                         left: '50%',
-                        width: '12px',
-                        height: '12px',
+                        width: 'calc(12px * var(--fs-scale, 1))',
+                        height: 'calc(12px * var(--fs-scale, 1))',
                         backgroundColor: color,
                         transform: 'translate(-50%, -50%)',
                         boxShadow: i === 1 ? `0 0 16px ${color}60` : '0 1px 3px rgba(0,0,0,0.15)',
@@ -58,6 +58,7 @@ const Table = () => {
             className="foosball-table position-relative w-100 rounded-4 shadow-sm border"
             style={{
                 height: '400px',
+                '--fs-scale': 1,
                 backgroundColor: '#e8e8ea',
                 borderColor: '#c8c8cc',
                 overflow: 'hidden'
@@ -69,21 +70,21 @@ const Table = () => {
             
             {/* Círculo central */}
             <div className="position-absolute rounded-circle border" 
-                style={{ 
-                    width: '90px', 
-                    height: '90px', 
-                    top: 'calc(50% - 45px)', 
-                    left: 'calc(50% - 45px)', 
+                style={{
+                    width: 'calc(90px * var(--fs-scale, 1))',
+                    height: 'calc(90px * var(--fs-scale, 1))',
+                    top: 'calc(50% - 45px * var(--fs-scale, 1))',
+                    left: 'calc(50% - 45px * var(--fs-scale, 1))',
                     borderColor: '#c8c8cc' 
                 }} />
 
             {/* Área de gol izquierda */}
             <div className="position-absolute" 
-                style={{ 
-                    width: '28px', 
-                    height: '140px', 
-                    top: 'calc(50% - 70px)', 
-                    left: 0, 
+                style={{
+                    width: 'calc(28px * var(--fs-scale, 1))',
+                    height: 'calc(140px * var(--fs-scale, 1))',
+                    top: 'calc(50% - 70px * var(--fs-scale, 1))',
+                    left: 0,
                     border: '2px solid #c8c8cc',
                     borderLeft: 'none',
                     borderRadius: '0 4px 4px 0' 
@@ -91,40 +92,40 @@ const Table = () => {
             
             {/* Área de gol derecha */}
             <div className="position-absolute" 
-                style={{ 
-                    width: '28px', 
-                    height: '140px', 
-                    top: 'calc(50% - 70px)', 
-                    right: 0, 
+                style={{
+                    width: 'calc(28px * var(--fs-scale, 1))',
+                    height: 'calc(140px * var(--fs-scale, 1))',
+                    top: 'calc(50% - 70px * var(--fs-scale, 1))',
+                    right: 0,
                     border: '2px solid #c8c8cc',
                     borderRight: 'none',
                     borderRadius: '4px 0 0 4px' 
                 }} />
 
             {/* Puntos de penalti */}
-            <div className="position-absolute rounded-circle" 
-                style={{ width: '6px', height: '6px', backgroundColor: '#c8c8cc', top: '50%', left: '18%' }} />
-            <div className="position-absolute rounded-circle" 
-                style={{ width: '6px', height: '6px', backgroundColor: '#c8c8cc', top: '50%', right: '18%' }} />
+            <div className="position-absolute rounded-circle"
+                style={{ width: 'calc(6px * var(--fs-scale, 1))', height: 'calc(6px * var(--fs-scale, 1))', backgroundColor: '#c8c8cc', top: '50%', left: '18%' }} />
+            <div className="position-absolute rounded-circle"
+                style={{ width: 'calc(6px * var(--fs-scale, 1))', height: 'calc(6px * var(--fs-scale, 1))', backgroundColor: '#c8c8cc', top: '50%', right: '18%' }} />
 
             {/* Círculo de penalti izquierdo */}
             <div className="position-absolute rounded-circle border" 
-                style={{ 
-                    width: '50px', 
-                    height: '50px', 
-                    top: 'calc(50% - 25px)', 
-                    left: '12%', 
+                style={{
+                    width: 'calc(50px * var(--fs-scale, 1))',
+                    height: 'calc(50px * var(--fs-scale, 1))',
+                    top: 'calc(50% - 25px * var(--fs-scale, 1))',
+                    left: '12%',
                     borderColor: '#c8c8cc',
                     borderStyle: 'dashed'
                 }} />
             
             {/* Círculo de penalti derecho */}
             <div className="position-absolute rounded-circle border" 
-                style={{ 
-                    width: '50px', 
-                    height: '50px', 
-                    top: 'calc(50% - 25px)', 
-                    right: '12%', 
+                style={{
+                    width: 'calc(50px * var(--fs-scale, 1))',
+                    height: 'calc(50px * var(--fs-scale, 1))',
+                    top: 'calc(50% - 25px * var(--fs-scale, 1))',
+                    right: '12%',
                     borderColor: '#c8c8cc',
                     borderStyle: 'dashed'
                 }} />
@@ -188,11 +189,11 @@ const Table = () => {
 
             {/* Pelota */}
             <div className="position-absolute rounded-circle" 
-                style={{ 
-                    width: '14px', 
-                    height: '14px', 
-                    top: 'calc(50% - 7px)', 
-                    left: 'calc(50% - 7px)', 
+                style={{
+                    width: 'calc(14px * var(--fs-scale, 1))',
+                    height: 'calc(14px * var(--fs-scale, 1))',
+                    top: 'calc(50% - 7px * var(--fs-scale, 1))',
+                    left: 'calc(50% - 7px * var(--fs-scale, 1))',
                     zIndex: 5,
                     backgroundColor: '#ffffff',
                     border: '1px solid #d2d2d7',
