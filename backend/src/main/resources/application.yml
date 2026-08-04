@@ -25,6 +25,22 @@ spring:
       ddl-auto: none
       naming:
         physical-strategy: org.hibernate.boot.model.naming.PhysicalNamingStrategyStandardImpl
+  # --- Flyway: migraciones de esquema de BD automáticas al arrancar ---
+  # Al iniciar el backend, Flyway aplica las migraciones pendientes de
+  # src/main/resources/db/migration (V1__baseline.sql, V2__google_sign_in.sql, ...).
+  # Así, tras `git pull` + `docker compose up -d --build`, el esquema se actualiza
+  # solo, sin ejecutar migraciones a mano (también en BDs ya existentes).
+  flyway:
+    # Si la BD ya tiene datos/esquema creado por los scripts de inicialización
+    # (docker-entrypoint-initdb.d / sql-maven-plugin) pero no tiene la tabla de
+    # historial de Flyway, la toma como punto de partida (baseline en V1) en
+    # lugar de fallar. NO borra nada.
+    baseline-on-migrate: true
+    # Version inicial del baseline: las BDs existentes se marcan en V1 y las
+    # migraciones posteriores (V2+) se aplican automáticamente.
+    baseline-version: 1
+    # Localización por defecto de las migraciones (carpeta estándar de Flyway).
+    locations: classpath:db/migration
   messages:
     basename: messages
     fallback-to-system-locale: true

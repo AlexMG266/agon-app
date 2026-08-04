@@ -1,0 +1,13 @@
+-- ============================================================
+-- V1: Baseline
+--
+-- El esquema base NO se crea aquí: lo crea 1-PostgreSQLCreateTables.sql
+-- (docker-entrypoint-initdb.d en BDs nuevas, o el sql-maven-plugin para
+-- la BD de test). Esta migración solo marca el punto de partida:
+-- las BDs existentes se "baselinean" en V1 al arrancar el backend y las
+-- migraciones posteriores (V2+) se aplican automáticamente, sin
+-- necesidad de ejecutar nada a mano tras un git pull + despliegue.
+--
+-- No-op intencional: solo protege el caso de una BD totalmente vacía.
+-- ============================================================
+SELECT 1;

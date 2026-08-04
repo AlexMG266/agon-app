@@ -5,3 +5,12 @@ spring:
     password: @testDataSource.password@
     hikari:
       maximum-pool-size: 1
+  # En la BD de TEST (agon_test) las tablas las crea el sql-maven-plugin desde
+  # 1-PostgreSQLCreateTables.sql, que ya contiene el esquema completo (googleId
+  # y password/fechaNacimiento opcionales). Las migraciones de Flyway sirven
+  # para actualizar BDs YA EXISTENTES (dev/prod), no para esquemas recién
+  # creados, así que se desactiva en tests: con un pool de 1 conexión, Flyway
+  # (que necesita una conexión para detectar el tipo de BD y otra para migrar)
+  # agota el pool y el contexto no arranca.
+  flyway:
+    enabled: false
