@@ -1,0 +1,153 @@
+# ============================================================
+# CI/CD - Agón App
+#
+# Pipeline único que cubre Integración Continua y Despliegue.
+# Se ejecuta en cada push a cualquier rama y en cada pull request.
+#
+#   Job "backend":  mvn test (Java 21 + Maven) contra un PostgreSQL de servicio
+#   Job "frontend": npm ci + eslint + vitest + build de producción (Vite)
+#   Job "deploy":   SOLO en main y SOLO si backend+frontend pasan.
+#                   Despliega en el VPS por SSH (git pull + docker compose up).
+#
+# El job de deploy vive AQUÍ (no en un workflow aparte) porque así GitHub
+# garantiza el orden: primero validación (CI), y solo si es verde, despliegue (CD).
+# ============================================================
+name: CI/CD
+
+on:
+  push:
+    branches: ['**']
+  pull_request:
+
+# Si haces 2 pushes seguidos a main, cancela el deploy anterior y deja que
+# solo el último se ejecute (evita despliegues en paralelo).
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  # ------------------------------------------------------------
+  # Backend: compilar + tests con PostgreSQL de servicio
+  # ------------------------------------------------------------
+  backend:
+    name: Backend (tests)
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: agon
+          POSTGRES_PASSWORD: agon
+          POSTGRES_DB: agon_test
+        ports:
+          - 5432:5432
+        # Healthcheck: espera a que Postgres acepte conexiones antes de empezar
+        options: >-
+          --health-cmd "pg_isready -U agon -d agon_test"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up JDK 21 (Temurin)
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+          cache: maven # cachea ~/.m2 para acelerar los siguientes runs
+
+      # Los tests usan @ActiveProfiles("test") y el sql-maven-plugin crea las
+      # tablas en testDataSource.url (por defecto jdbc:postgresql://db/agon_test,
+      # host Docker inexistente en CI). Se sobrescribe apuntando al servicio.
+      - name: Backend tests
+        working-directory: backend
+        run: mvn -B test
+          -DtestDataSource.url=jdbc:postgresql://localhost:5432/agon_test
+          -DtestDataSource.user=agon
+          -DtestDataSource.password=agon
+
+      # Opcional: guardar el informe de cobertura JaCoCo como artefacto
+      # (ejecutar con -Pcoverage si se quiere el informe; requiere forkCount=1).
+      - name: Upload JaCoCo report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: jacoco-report
+          path: backend/target/site/jacoco/
+          if-no-files-found: ignore
+
+  # ------------------------------------------------------------
+  # Frontend: lint + tests + build de producción
+  # ------------------------------------------------------------
+  frontend:
+    name: Frontend (lint + tests + build)
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: frontend
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Node 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+
+      # npm ci usa el lockfile exacto (igual que el Dockerfile de producción)
+      - name: Install dependencies
+        run: npm ci --no-audit --no-fund
+
+      - name: Lint (ESLint)
+        run: npm run lint
+
+      - name: Tests (Vitest)
+        run: npm test
+
+      - name: Build de producción (Vite)
+        run: npm run build
+
+      # Opcional: guardar el reporte de cobertura del frontend como artefacto
+      - name: Upload coverage report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: frontend-coverage
+          path: frontend/coverage/
+          if-no-files-found: ignore
+
+  # ------------------------------------------------------------
+  # Deploy: SOLO en main y SOLO si backend + frontend pasan
+  # ------------------------------------------------------------
+  deploy:
+    name: Deploy a producción (SSH)
+    runs-on: ubuntu-latest
+    # Garantiza el orden CI -> CD: solo se ejecuta si ambos jobs previos pasan.
+    needs: [backend, frontend]
+    # Solo en pushes a main (nunca en PRs ni en otras ramas).
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Deploy por SSH
+        uses: appleboy/ssh-action@v1.2.0
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USER }}
+          key: ${{ secrets.VPS_SSH_KEY }}
+          # Si no defines VPS_APP_DIR, usamos /opt/agon
+          script: |
+            set -e
+            cd "${{ secrets.VPS_APP_DIR || '/opt/agon' }}"
+            echo "==> git pull (main)"
+            git pull --ff-only origin main
+            echo "==> docker compose up -d --build (prod)"
+            docker compose -f docker-compose.prod.yml up -d --build
+            echo "==> Limpieza de imágenes viejas"
+            docker image prune -f
+            echo "==> Deploy completado"

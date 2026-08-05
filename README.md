@@ -25,9 +25,16 @@
    - [Configuración de Nginx Proxy Manager](#configuracion-de-nginx-proxy-manager)
    - [Notas de seguridad](#notas-de-seguridad-produccion)
    - [Operación y mantenimiento](#operacion-y-mantenimiento-produccion)
-5. [Pruebas y cobertura](#pruebas-y-cobertura)
-6. [Credenciales por defecto (desarrollo)](#credenciales-por-defecto-desarrollo)
-7. [Solución de problemas](#solucion-de-problemas)
+5. [CI/CD con GitHub Actions](#cicd-con-github-actions)
+   - [Cómo funciona](#como-funciona)
+   - [Requisitos previos](#requisitos-previos)
+   - [Configuración en el servidor (una vez)](#configuracion-en-el-servidor-una-vez)
+   - [Configuración en GitHub (una vez)](#configuracion-en-github-una-vez)
+   - [Despliegue automático](#despliegue-automatico)
+   - [Probar el pipeline localmente](#probar-el-pipeline-localmente)
+6. [Pruebas y cobertura](#pruebas-y-cobertura)
+7. [Credenciales por defecto (desarrollo)](#credenciales-por-defecto-desarrollo)
+8. [Solución de problemas](#solucion-de-problemas)
 
 ---
 
@@ -286,6 +293,121 @@ docker compose -f docker-compose.prod.yml down --rmi all --volumes --remove-orph
 ```
 
 > ⚠️ Se pierden todos los datos. Solo para empezar desde cero.
+
+---
+
+## CI/CD con GitHub Actions
+
+Este proyecto incluye un pipeline de **Integración Continua (CI)** y **Despliegue Continuo (CD)** con GitHub Actions. El objetivo: cada `push` a `main` valida el código (tests + lint + build) y, si todo es verde, **despliega automáticamente en el servidor de producción**.
+
+### Cómo funciona
+
+```mermaid
+flowchart TD
+    A["push a main"] --> B["GitHub Actions"]
+    B --> C["Job CI: backend<br/>mvn test + Postgres"]
+    B --> D["Job CI: frontend<br/>npm ci + lint + vitest + build"]
+    C --> E{"¿Todos los tests pasan?"}
+    D --> E
+    E -->|"No"| F["Pipeline en rojo<br/>nada se despliega"]
+    E -->|"Sí"| G["Job CD: deploy (solo main)"]
+    G --> H["SSH al servidor"]
+    H --> I["git pull + docker compose up -d --build"]
+    I --> J["Flyway migra la BD sola"]
+    J --> K["App actualizada"]
+```
+
+Todo vive en **un único workflow**: [`.github/workflows/ci.yml`](.github/workflows/ci.yml). Tiene 3 jobs:
+
+1. **`backend`** — `mvn test` (Java 21 + Postgres de servicio). Se ejecuta en cada push/PR.
+2. **`frontend`** — `npm ci` + `eslint` + `vitest` + `vite build`. Se ejecuta en cada push/PR.
+3. **`deploy`** — `needs: [backend, frontend]`: **solo** se ejecuta si los dos anteriores pasan, y **solo** en pushes a `main`. Despliega por SSH.
+
+> Al estar el deploy dentro del mismo workflow con `needs`, GitHub garantiza el orden CI → CD. Si los tests fallan, **no se despliega nada**.
+
+- **Migraciones de BD**: el backend usa **Flyway** (`baseline-on-migrate` en `application.yml`). Al arrancar, aplica automáticamente las migraciones pendientes, así que no hay que tocar la BD a mano.
+
+### Requisitos previos
+
+- Repositorio del proyecto en GitHub (este ya lo está: `git@github.com:AlexMG266/agon-app.git`).
+- Servidor de producción (VPS) con **git** y **Docker Compose** instalados, y acceso SSH.
+- La red Docker externa `global-proxy-net` (la usa `docker-compose.prod.yml`) creada en el servidor.
+
+### Configuración en el servidor (una vez)
+
+1. Copia y ejecuta el script de setup (automatiza clon, `.env` y red Docker):
+
+   ```bash
+   scp scripts/server-setup.sh usuario@IP_DEL_SERVIDOR:/tmp/
+   ssh usuario@IP_DEL_SERVIDOR 'chmod +x /tmp/server-setup.sh && /tmp/server-setup.sh'
+   ```
+
+   > Si tu repo es privado, tendrás que clonar con tu clave SSH (o usar una deploy key) antes de que el script pueda hacer `git pull`.
+
+2. Rellena `.env` con los valores reales (el script copia `.env.example` a `.env` la primera vez):
+
+   ```bash
+   ssh usuario@IP_DEL_SERVIDOR 'nano /opt/agon/.env'
+   ```
+
+3. Crea la **deploy key** en el servidor (para que GitHub Actions haga `git pull`):
+
+   ```bash
+   ssh usuario@IP_DEL_SERVIDOR 'mkdir -p ~/.ssh && ssh-keygen -t ed25519 -f ~/.ssh/agon_deploy -N "" && cat ~/.ssh/agon_deploy.pub'
+   ```
+
+4. Comprueba que el stack arranca manualmente la primera vez:
+
+   ```bash
+   ssh usuario@IP_DEL_SERVIDOR 'cd /opt/agon && docker compose -f docker-compose.prod.yml up -d --build'
+   ```
+
+### Configuración en GitHub (una vez)
+
+1. **Añade la deploy key pública** en el repositorio:
+   *Repo → Settings → Deploy keys → Add deploy key* — pega el contenido de `~/.ssh/agon_deploy.pub` (generado en el paso anterior).
+
+2. **Añade los secrets** en *Repo → Settings → Secrets and variables → Actions*:
+
+   | Secret | Valor |
+   |---|---|
+   | `VPS_HOST` | IP o dominio del servidor |
+   | `VPS_USER` | usuario SSH (con permisos docker) |
+   | `VPS_SSH_KEY` | contenido de `~/.ssh/agon_deploy` (la clave **privada**) |
+   | `VPS_APP_DIR` | ruta del repo en el servidor (default `/opt/agon`) |
+
+   > Nunca subas `.env` ni las claves al repositorio: ya está ignorado en `.gitignore`.
+
+### Despliegue automático
+
+A partir de ahora, cada `push` a `main`:
+
+1. **CI** valida backend (`mvn test` con Postgres de servicio) y frontend (`npm ci` + `eslint` + `vitest` + `vite build`).
+2. Si todo es verde, el job **`deploy`** se conecta por SSH al servidor y ejecuta:
+
+   ```bash
+   cd /opt/agon
+   git pull --ff-only origin main
+   docker compose -f docker-compose.prod.yml up -d --build
+   ```
+
+3. Flyway aplica las migraciones de BD pendientes automáticamente.
+
+Puedes ver el estado y los logs de cada ejecución en la pestaña **Actions** del repositorio.
+
+### Probar el pipeline localmente
+
+Puedes replicar lo que hace el CI en tu máquina antes de hacer push:
+
+```bash
+# Backend (necesita Postgres; en desarrollo usa el de docker compose)
+docker compose exec backend mvn test
+
+# Frontend
+cd frontend && npm ci && npm run lint && npm test && npm run build
+```
+
+> ⚠️ En CI, los tests del backend corren contra un PostgreSQL de servicio con la URL sobrescrita a `localhost:5432`. En local usa el contenedor de desarrollo (`docker compose up -d`).
 
 ---
 
