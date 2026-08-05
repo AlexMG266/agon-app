@@ -1,13 +1,27 @@
 <p align="center">
-  <img src="https://img.shields.io/badge/AgonApp-Project-0F172A?style=for-the-badge" alt="AgonApp" />
-</p>
-
-<p align="center">
-  <img src="https://img.shields.io/badge/Spring%20Boot-6DB33F?style=for-the-badge&logo=springboot&logoColor=white" alt="Spring Boot" />
-  <img src="https://img.shields.io/badge/React-61DAFB?style=for-the-badge&logo=react&logoColor=000" alt="React" />
-  <img src="https://img.shields.io/badge/Docker-2496ED?style=for-the-badge&logo=docker&logoColor=white" alt="Docker" />
-  <img src="https://img.shields.io/badge/PostgreSQL-4169E1?style=for-the-badge&logo=postgresql&logoColor=white" alt="PostgreSQL" />
-  <img src="https://img.shields.io/badge/Maven-C71A36?style=for-the-badge&logo=apachemaven&logoColor=white" alt="Maven" />
+  <img src="https://img.shields.io/badge/Spring%20Boot-3.3.8-6DB33F?logo=springboot&logoColor=white&style=flat-square" alt="Spring Boot 3.3.8" />
+  <img src="https://img.shields.io/badge/Java-21-007396?logo=openjdk&logoColor=white&style=flat-square" alt="Java 21" />
+  <img src="https://img.shields.io/badge/React-19.0.0-61DAFB?logo=react&logoColor=000&style=flat-square" alt="React 19.0.0" />
+  <img src="https://img.shields.io/badge/TypeScript-5.9.3-3178C6?logo=typescript&logoColor=white&style=flat-square" alt="TypeScript 5.9.3" />
+  <img src="https://img.shields.io/badge/Vite-6.1.0-646CFF?logo=vite&logoColor=white&style=flat-square" alt="Vite 6.1.0" />
+  <img src="https://img.shields.io/badge/Redux%20Toolkit-2.5.1-764ABC?logo=redux&logoColor=white&style=flat-square" alt="Redux Toolkit 2.5.1" />
+  <img src="https://img.shields.io/badge/React%20Router-7.1.5-CA4245?logo=reactrouter&logoColor=white&style=flat-square" alt="React Router 7.1.5" />
+  <img src="https://img.shields.io/badge/TanStack%20Query-5.101.2-FF4154?logo=reactquery&logoColor=white&style=flat-square" alt="TanStack Query 5.101.2" />
+  <img src="https://img.shields.io/badge/Maven-3.9.9-C71A36?logo=apachemaven&logoColor=white&style=flat-square" alt="Maven 3.9.9" />
+  <img src="https://img.shields.io/badge/PostgreSQL-16-4169E1?logo=postgresql&logoColor=white&style=flat-square" alt="PostgreSQL 16" />
+  <img src="https://img.shields.io/badge/Vitest-4.1.10-6E9F18?logo=vitest&logoColor=white&style=flat-square" alt="Vitest 4.1.10" />
+  <img src="https://img.shields.io/badge/ESLint-9.19.0-4B32C3?logo=eslint&logoColor=white&style=flat-square" alt="ESLint 9.19.0" />
+  <img src="https://img.shields.io/badge/Axios-1.18.1-5A29E4?logo=axios&logoColor=white&style=flat-square" alt="Axios 1.18.1" />
+  <img src="https://img.shields.io/badge/JUnit-5-25A162?logo=junit5&logoColor=white&style=flat-square" alt="JUnit 5" />
+  <img src="https://img.shields.io/badge/Docker-2496ED?logo=docker&logoColor=white&style=flat-square" alt="Docker" />
+  <img src="https://img.shields.io/badge/Node.js-22-339933?logo=nodedotjs&logoColor=white&style=flat-square" alt="Node.js 22" />
+  <img src="https://img.shields.io/badge/Nginx-1.27-009639?logo=nginx&logoColor=white&style=flat-square" alt="Nginx 1.27" />
+  <img src="https://img.shields.io/badge/Flyway-10-CC0200?logo=flyway&logoColor=white&style=flat-square" alt="Flyway 10" />
+  <img src="https://img.shields.io/github/actions/workflow/status/AlexMG266/agon-app/ci.yml?branch=main&label=CI&style=flat-square" alt="CI status" />
+  <img src="https://img.shields.io/github/license/AlexMG266/agon-app?color=blue&style=flat-square" alt="License" />
+  <img src="https://img.shields.io/github/languages/top/AlexMG266/agon-app?style=flat-square" alt="Top language" />
+  <img src="https://img.shields.io/github/languages/code-size/AlexMG266/agon-app?style=flat-square" alt="Code size" />
+  <img src="https://img.shields.io/github/last-commit/AlexMG266/agon-app?style=flat-square" alt="Last commit" />
 </p>
 
 **AgonApp** es una aplicación web de gestión de torneos de futbolín, desarrollada con Spring Boot (backend) y React (frontend). Este repositorio incluye dos entornos Docker completamente separados: **desarrollo** (recarga en caliente) y **producción** (ligero y seguro).

@@ -129,7 +129,10 @@ jobs:
     # Garantiza el orden CI -> CD: solo se ejecuta si ambos jobs previos pasan.
     needs: [backend, frontend]
     # Solo en pushes a main (nunca en PRs ni en otras ramas).
-    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    # Además, si NO existen los secrets del servidor (VPS_HOST, VPS_USER,
+    # VPS_SSH_KEY) el job se OMITE ("skipped") en lugar de fallar, así el
+    # pipeline queda verde aunque el despliegue aún no esté configurado.
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push' && secrets.VPS_HOST != ''
 
     steps:
       - uses: actions/checkout@v4
