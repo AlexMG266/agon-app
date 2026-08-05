@@ -188,9 +188,9 @@ Cliente ──HTTPS──► NPM (en el host, --network host)
 curl -fsSL https://get.docker.com | sh
 
 # Copiar el proyecto al servidor
-scp -r . user@tu-vps:/opt/agon
-# (alternativa: git clone https://github.com/tu-usuario/agon-app.git /opt/agon)
-cd /opt/agon
+scp -r . user@tu-vps:/opt/docker/agon-app
+# (alternativa: git clone https://github.com/tu-usuario/agon-app.git /opt/docker/agon-app)
+cd /opt/docker/agon-app
 ```
 
 #### 2. Configurar las credenciales
@@ -349,31 +349,36 @@ Todo vive en **un único workflow**: [`.github/workflows/ci.yml`](.github/workfl
 
 ### Configuración en el servidor (una vez)
 
-1. Copia y ejecuta el script de setup (automatiza clon, `.env` y red Docker):
+1. Clona el repositorio (si aún no lo tienes) y crea el `.env` desde `.env.example`:
 
    ```bash
-   scp scripts/server-setup.sh usuario@IP_DEL_SERVIDOR:/tmp/
-   ssh usuario@IP_DEL_SERVIDOR 'chmod +x /tmp/server-setup.sh && /tmp/server-setup.sh'
+   git clone git@github.com:AlexMG266/agon-app.git /opt/docker/agon-app
+   cd /opt/docker/agon-app
+   cp .env.example .env
    ```
 
-   > Si tu repo es privado, tendrás que clonar con tu clave SSH (o usar una deploy key) antes de que el script pueda hacer `git pull`.
-
-2. Rellena `.env` con los valores reales (el script copia `.env.example` a `.env` la primera vez):
+2. Rellena `.env` con los valores reales:
 
    ```bash
-   ssh usuario@IP_DEL_SERVIDOR 'nano /opt/agon/.env'
+   nano /opt/docker/agon-app/.env
    ```
 
-3. Crea la **deploy key** en el servidor (para que GitHub Actions haga `git pull`):
+3. Crea la red Docker externa `global-proxy-net` (la usa `docker-compose.prod.yml`):
 
    ```bash
-   ssh usuario@IP_DEL_SERVIDOR 'mkdir -p ~/.ssh && ssh-keygen -t ed25519 -f ~/.ssh/agon_deploy -N "" && cat ~/.ssh/agon_deploy.pub'
+   docker network create global-proxy-net
    ```
 
-4. Comprueba que el stack arranca manualmente la primera vez:
+4. Crea la **deploy key** en el servidor (para que GitHub Actions haga `git pull`):
 
    ```bash
-   ssh usuario@IP_DEL_SERVIDOR 'cd /opt/agon && docker compose -f docker-compose.prod.yml up -d --build'
+   mkdir -p ~/.ssh && ssh-keygen -t ed25519 -f ~/.ssh/agon_deploy -N "" && cat ~/.ssh/agon_deploy.pub
+   ```
+
+5. Comprueba que el stack arranca manualmente la primera vez:
+
+   ```bash
+   cd /opt/docker/agon-app && docker compose -f docker-compose.prod.yml up -d --build
    ```
 
 ### Configuración en GitHub (una vez)
@@ -388,7 +393,7 @@ Todo vive en **un único workflow**: [`.github/workflows/ci.yml`](.github/workfl
    | `VPS_HOST` | IP o dominio del servidor |
    | `VPS_USER` | usuario SSH (con permisos docker) |
    | `VPS_SSH_KEY` | contenido de `~/.ssh/agon_deploy` (la clave **privada**) |
-   | `VPS_APP_DIR` | ruta del repo en el servidor (default `/opt/agon`) |
+   | `VPS_APP_DIR` | ruta del repo en el servidor (default `/opt/docker/agon-app`) |
 
    > Nunca subas `.env` ni las claves al repositorio: ya está ignorado en `.gitignore`.
 
@@ -400,7 +405,7 @@ A partir de ahora, cada `push` a `main`:
 2. Si todo es verde, el job **`deploy`** se conecta por SSH al servidor y ejecuta:
 
    ```bash
-   cd /opt/agon
+   cd /opt/docker/agon-app
    git pull --ff-only origin main
    docker compose -f docker-compose.prod.yml up -d --build
    ```

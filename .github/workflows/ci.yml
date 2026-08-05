@@ -143,10 +143,10 @@ jobs:
           host: ${{ secrets.VPS_HOST }}
           username: ${{ secrets.VPS_USER }}
           key: ${{ secrets.VPS_SSH_KEY }}
-          # Si no defines VPS_APP_DIR, usamos /opt/agon
+          # Si no defines VPS_APP_DIR, usamos /opt/docker/agon-app
           script: |
             set -e
-            cd "${{ secrets.VPS_APP_DIR || '/opt/agon' }}"
+            cd "${{ secrets.VPS_APP_DIR || '/opt/docker/agon-app' }}"
             echo "==> git pull (main)"
             git pull --ff-only origin main
             echo "==> docker compose up -d --build (prod)"
