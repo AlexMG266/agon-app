@@ -200,6 +200,34 @@ public class EncuentroServiceTest {
     }
 
     @Test
+    public void testObtenerNumPartidasJugadas() throws InstanceNotFoundException, PermissionException {
+        User org = createUser("org_partidas");
+        User cap1 = createUser("cap_partidas1");
+        User cap2 = createUser("cap_partidas2");
+
+        Encuentro encuentro = setupEncuentro(org, cap1, cap2);
+        Long idLocal = encuentro.getLocal().getId();
+        Long idVisitante = encuentro.getVisitante().getId();
+
+        // Sin partidas jugadas aún: el contador debe ser 0 para ambos equipos
+        assertEquals(0L, equipoService.obtenerNumPartidasJugadas(idLocal));
+        assertEquals(0L, equipoService.obtenerNumPartidasJugadas(idVisitante));
+
+        // Registrar el resultado del encuentro
+        List<SetEntity> sets = new ArrayList<>();
+        sets.add(new SetEntity(null, 1, 25, 20));
+        sets.add(new SetEntity(null, 2, 25, 18));
+        sets.add(new SetEntity(null, 3, 20, 25));
+        sets.add(new SetEntity(null, 4, 25, 22));
+
+        encuentroService.registrarResultado(cap1.getId(), encuentro.getId(), sets);
+
+        // Ahora ambos equipos han jugado 1 partida
+        assertEquals(1L, equipoService.obtenerNumPartidasJugadas(idLocal));
+        assertEquals(1L, equipoService.obtenerNumPartidasJugadas(idVisitante));
+    }
+
+    @Test
     public void testRegistrarResultadoYaJugado() throws InstanceNotFoundException, PermissionException {
         User org = createUser("org_resultado3");
         User cap1 = createUser("cap_res3_1");

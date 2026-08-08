@@ -31,10 +31,13 @@ public class EquipoDto {
     @Schema(description = "Fecha de creación en formato timestamp (milisegundos Epoch)", example = "1783958400000", accessMode = Schema.AccessMode.READ_ONLY)
     private Long fechaCreacion;
 
+    @Schema(description = "Número de encuentros jugados (estado JUGADO) en los que ha participado el equipo", example = "4")
+    private long numPartidas;
+
     public EquipoDto() {
     }
 
-    public EquipoDto(Long id, String nombreEquipo, String descripcion, String estado, Long creadorId, String codigoEquipo, List<UserDto> miembros, Long fechaCreacion) {
+    public EquipoDto(Long id, String nombreEquipo, String descripcion, String estado, Long creadorId, String codigoEquipo, List<UserDto> miembros, Long fechaCreacion, long numPartidas) {
         this.id = id;
         this.nombreEquipo = nombreEquipo;
         this.descripcion = descripcion;
@@ -43,6 +46,7 @@ public class EquipoDto {
         this.codigoEquipo = codigoEquipo;
         this.miembros = miembros;
         this.fechaCreacion = fechaCreacion;
+        this.numPartidas = numPartidas;
     }
 
     public Long getId() {
@@ -107,5 +111,13 @@ public class EquipoDto {
 
     public void setFechaCreacion(Long fechaCreacion) {
         this.fechaCreacion = fechaCreacion;
+    }
+
+    public long getNumPartidas() {
+        return numPartidas;
+    }
+
+    public void setNumPartidas(long numPartidas) {
+        this.numPartidas = numPartidas;
     }
 }

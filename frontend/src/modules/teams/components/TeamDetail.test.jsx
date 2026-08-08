@@ -79,6 +79,7 @@ const equipoBase = (overrides = {}) => ({
   creadorId: 1,
   codigoEquipo: 'ABC12345',
   estado: 'ACTIVO',
+  numPartidas: 7,
   fechaCreacion: '2026-01-15T10:00:00',
   miembros: [
     { id: 1, nombre: 'Juan Capitan', email: 'juan@test.com', elo: 1600, eloProvisional: false, imagenPerfil: null },
@@ -127,6 +128,14 @@ describe('TeamDetail', () => {
     expect(screen.getByText('Ana Jugadora')).toBeInTheDocument();
     expect(screen.getByText('Capitán')).toBeInTheDocument();
     expect(container.querySelectorAll('.td-member').length).toBe(2);
+    expect(container.querySelectorAll('.td-stat-value')[1]).toHaveTextContent('7');
+  });
+
+  it('muestra 0 partidas si el backend no envía numPartidas', async () => {
+    backend.teamService.getTeam.mockResolvedValue({ ok: true, payload: equipoBase({ numPartidas: undefined }) });
+    const { container } = renderDetail();
+    await screen.findByText('Los Reyes');
+    expect(container.querySelectorAll('.td-stat-value')[1]).toHaveTextContent('0');
   });
 
   it('no permite editar el nombre ni la descripcion del equipo', async () => {

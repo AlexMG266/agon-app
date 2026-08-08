@@ -235,7 +235,7 @@ const TeamDetail = () => {
                     <span className="td-stat-icon"><i className="fa-solid fa-trophy" /></span>
                     <div className="td-stat-body">
                         <span className="td-stat-label"><FormattedMessage id="project.teams.Detail.partidas" defaultMessage="Partidas" /></span>
-                        <span className="td-stat-value">—</span>
+                        <span className="td-stat-value">{team.numPartidas ?? 0}</span>
                     </div>
                 </div>
                 <div className="td-stat">

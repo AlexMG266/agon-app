@@ -103,6 +103,13 @@ public interface EquipoService {
     Equipo buscarEquipoPorCodigo(String codigoEquipo) throws InstanceNotFoundException;
 
     /**
+     * Cuenta las partidas jugadas (estado JUGADO) en las que ha participado el equipo.
+     * * @param equipoId Id del equipo.
+     * @return Número de encuentros jugados del equipo.
+     */
+    long obtenerNumPartidasJugadas(Long equipoId);
+
+    /**
      * El capitán expulsa a un miembro del equipo.
      * * @param captainId Id del capitán (creador del equipo).
      * @param equipoId Id del equipo.

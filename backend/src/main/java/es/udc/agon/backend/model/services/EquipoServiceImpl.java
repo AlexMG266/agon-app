@@ -29,6 +29,9 @@ public class EquipoServiceImpl implements EquipoService {
     @Autowired
     private NotificationDispatcher notificationDispatcher;
 
+    @Autowired
+    private EncuentroDao encuentroDao;
+
     private void validarEquipoActivo(Equipo equipo) {
         if (equipo.getEstado() != EstadoEquipo.ACTIVO) {
             throw new IllegalArgumentException("Operación no permitida: El equipo no está activo (estado: " + equipo.getEstado() + ")");
@@ -235,6 +238,11 @@ public class EquipoServiceImpl implements EquipoService {
     public Equipo obtenerEquipo(Long equipoId) throws InstanceNotFoundException {
         return equipoDao.findById(equipoId)
                 .orElseThrow(() -> new InstanceNotFoundException("project.entities.equipo", equipoId));
+    }
+
+    @Override
+    public long obtenerNumPartidasJugadas(Long equipoId) {
+        return encuentroDao.countPartidasJugadas(equipoId);
     }
 
     @Override

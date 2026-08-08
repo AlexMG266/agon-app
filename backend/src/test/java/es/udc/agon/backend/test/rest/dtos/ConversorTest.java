@@ -321,6 +321,16 @@ public class ConversorTest {
         assertEquals(equipo.getCodigoEquipo(), dto.getCodigoEquipo());
         assertEquals(1, dto.getMiembros().size());
         assertNotNull(dto.getFechaCreacion());
+        assertEquals(0L, dto.getNumPartidas());
+    }
+
+    @Test
+    public void toEquipoDtoConNumPartidas() {
+        User creador = buildUser(1L, "creador");
+        Equipo equipo = buildEquipo(2L, creador);
+        EquipoDto dto = EquipoConversor.toEquipoDto(equipo, 7);
+        assertEquals(2L, dto.getId());
+        assertEquals(7L, dto.getNumPartidas());
     }
 
     @Test

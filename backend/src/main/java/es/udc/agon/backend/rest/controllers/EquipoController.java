@@ -23,6 +23,7 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/teams")
@@ -216,7 +217,10 @@ public class EquipoController {
     })
     public List<EquipoDto> obtenerEquipos(
             @Parameter(hidden = true) @RequestAttribute Long userId) {
-        return EquipoConversor.toEquipoDtos(equipoService.obtenerEquiposDeUsuario(userId));
+        return equipoService.obtenerEquiposDeUsuario(userId).stream()
+                .map(equipo -> EquipoConversor.toEquipoDto(equipo,
+                        equipoService.obtenerNumPartidasJugadas(equipo.getId())))
+                .collect(Collectors.toList());
     }
 
     @GetMapping("/{id}")
@@ -238,7 +242,7 @@ public class EquipoController {
         throws InstanceNotFoundException {
     
         Equipo equipo = equipoService.obtenerEquipo(id);
-        return EquipoConversor.toEquipoDto(equipo);
+        return EquipoConversor.toEquipoDto(equipo, equipoService.obtenerNumPartidasJugadas(id));
     }
 
     @GetMapping("/by-code/{codigo}")
@@ -262,6 +266,6 @@ public class EquipoController {
             throws InstanceNotFoundException {
 
         Equipo equipo = equipoService.buscarEquipoPorCodigo(codigo);
-        return EquipoConversor.toEquipoDto(equipo);
+        return EquipoConversor.toEquipoDto(equipo, equipoService.obtenerNumPartidasJugadas(equipo.getId()));
     }
 }

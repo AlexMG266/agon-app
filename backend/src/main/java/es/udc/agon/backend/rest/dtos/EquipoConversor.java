@@ -14,6 +14,10 @@ public class EquipoConversor {
     }
 
     public static EquipoDto toEquipoDto(Equipo equipo) {
+        return toEquipoDto(equipo, 0);
+    }
+
+    public static EquipoDto toEquipoDto(Equipo equipo, long numPartidas) {
         return new EquipoDto(
                 equipo.getId(),
                 equipo.getNombreEquipo(),
@@ -26,7 +30,8 @@ public class EquipoConversor {
                     .collect(Collectors.toList()),
                 equipo.getFechaCreacion() != null
                     ? equipo.getFechaCreacion().toInstant(ZoneOffset.UTC).toEpochMilli()
-                    : null
+                    : null,
+                numPartidas
         );
     }
 
