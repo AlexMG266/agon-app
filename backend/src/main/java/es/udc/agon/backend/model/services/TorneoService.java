@@ -36,7 +36,7 @@ public interface TorneoService {
 
     void cerrarInscripciones(Long torneoId) throws InstanceNotFoundException, IllegalArgumentException;
 
-    Torneo configurarEstructuraYGenerarCalendario(Long torneoId, String tipoTorneo,
+    Torneo configurarEstructuraYGenerarCalendario(Long torneoId, TipoTorneo tipoTorneo,
                                                    int numGrupos, int equiposPorGrupo,
                                                    boolean tienePlayoff, boolean idaVueltaPlayoff,
                                                    String estrategiaPlayoff, Integer diasEntrePlayoff,
@@ -50,7 +50,7 @@ public interface TorneoService {
      * la ronda más alta posible según el número de grupos (deben clasificarse un número de
      * equipos que sea potencia de 2, sin byes).
      */
-    Torneo configurarEstructuraYGenerarCalendario(Long torneoId, String tipoTorneo,
+    Torneo configurarEstructuraYGenerarCalendario(Long torneoId, TipoTorneo tipoTorneo,
                                                    int numGrupos, int equiposPorGrupo,
                                                    boolean tienePlayoff, boolean idaVueltaPlayoff,
                                                    String estrategiaPlayoff, Integer diasEntrePlayoff,

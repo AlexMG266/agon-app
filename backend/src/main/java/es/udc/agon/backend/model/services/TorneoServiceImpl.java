@@ -358,7 +358,7 @@ public class TorneoServiceImpl implements TorneoService {
     }
 
     @Override
-    public Torneo configurarEstructuraYGenerarCalendario(Long torneoId, String tipoTorneo,
+    public Torneo configurarEstructuraYGenerarCalendario(Long torneoId, TipoTorneo tipoTorneo,
                                                           int numGrupos, int equiposPorGrupo,
                                                           boolean tienePlayoff, boolean idaVueltaPlayoff,
                                                           String estrategiaPlayoff, Integer diasEntrePlayoff,
@@ -369,7 +369,7 @@ public class TorneoServiceImpl implements TorneoService {
     }
 
     @Override
-    public Torneo configurarEstructuraYGenerarCalendario(Long torneoId, String tipoTorneo,
+    public Torneo configurarEstructuraYGenerarCalendario(Long torneoId, TipoTorneo tipoTorneo,
                                                           int numGrupos, int equiposPorGrupo,
                                                           boolean tienePlayoff, boolean idaVueltaPlayoff,
                                                           String estrategiaPlayoff, Integer diasEntrePlayoff,
@@ -399,7 +399,7 @@ public class TorneoServiceImpl implements TorneoService {
         // a eliminatorias (octavos, cuartos, semis, final) sin byes, el número de grupos debe ser
         // potencia de 2 y los clasificados por grupo (equiposRonda / numGrupos) un entero >= 1
         // que no supere el tamaño del grupo.
-        if (tienePlayoff && "GRUPOS_PLAYOFF".equals(tipoTorneo)) {
+        if (tienePlayoff && tipoTorneo == TipoTorneo.GRUPOS_PLAYOFF) {
             int equiposRonda = equiposPorRonda(rondaInicioPlayoff);
             if (equiposRonda == -1) {
                 // auto: los 2 mejores de cada grupo (la ronda más alta posible)

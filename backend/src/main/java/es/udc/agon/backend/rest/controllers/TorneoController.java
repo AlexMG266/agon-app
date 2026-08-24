@@ -1,6 +1,7 @@
 package es.udc.agon.backend.rest.controllers;
 
 import es.udc.agon.backend.model.entities.Solicitud;
+import es.udc.agon.backend.model.entities.TipoTorneo;
 import es.udc.agon.backend.model.entities.Torneo;
 import es.udc.agon.backend.model.exceptions.InstanceNotFoundException;
 import es.udc.agon.backend.model.exceptions.PermissionException;
@@ -164,7 +165,7 @@ public class TorneoController {
 
         Torneo torneo = torneoService.configurarEstructuraYGenerarCalendario(
                 id,
-                params.getTipoTorneo(),
+                params.getTipoTorneo() != null ? TipoTorneo.valueOf(params.getTipoTorneo()) : null,
                 params.getNumGrupos(),
                 params.getEquiposPorGrupo(),
                 params.isTienePlayoff(),

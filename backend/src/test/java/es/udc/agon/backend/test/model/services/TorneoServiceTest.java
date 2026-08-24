@@ -38,6 +38,7 @@ import es.udc.agon.backend.model.entities.SolicitudDao;
 import es.udc.agon.backend.model.entities.TipoFase;
 import es.udc.agon.backend.model.entities.TipoSolicitud;
 import es.udc.agon.backend.model.entities.TipoJornada;
+import es.udc.agon.backend.model.entities.TipoTorneo;
 import es.udc.agon.backend.model.entities.Torneo;
 import es.udc.agon.backend.model.entities.TorneoDao;
 import es.udc.agon.backend.model.entities.User;
@@ -126,7 +127,7 @@ public class TorneoServiceTest {
      * Helper para llamar a configurarEstructuraYGenerarCalendario con los 8 parámetros,
      * usando valores por defecto para los dos nuevos (null, null).
      */
-    private Torneo configurar(Torneo torneo, String tipoTorneo, int numGrupos, int equiposPorGrupo,
+    private Torneo configurar(Torneo torneo, TipoTorneo tipoTorneo, int numGrupos, int equiposPorGrupo,
                                boolean tienePlayoff, boolean idaVueltaPlayoff)
             throws InstanceNotFoundException {
         return torneoService.configurarEstructuraYGenerarCalendario(
@@ -137,7 +138,7 @@ public class TorneoServiceTest {
     /**
      * Helper con todos los parámetros incluyendo estrategiaPlayoff.
      */
-    private Torneo configurarConPlayoffStrategy(Torneo torneo, String tipoTorneo,
+    private Torneo configurarConPlayoffStrategy(Torneo torneo, TipoTorneo tipoTorneo,
                                                   int numGrupos, int equiposPorGrupo,
                                                   boolean tienePlayoff, boolean idaVueltaPlayoff,
                                                   String estrategiaPlayoff, Integer diasEntrePlayoff)
@@ -150,7 +151,7 @@ public class TorneoServiceTest {
     /**
      * Helper con todos los parámetros incluyendo la ronda de inicio del playoff.
      */
-    private Torneo configurarConRonda(Torneo torneo, String tipoTorneo,
+    private Torneo configurarConRonda(Torneo torneo, TipoTorneo tipoTorneo,
                                        int numGrupos, int equiposPorGrupo,
                                        boolean tienePlayoff, boolean idaVueltaPlayoff,
                                        String rondaInicioPlayoff)
@@ -371,7 +372,7 @@ public class TorneoServiceTest {
         Equipo equipo2 = equipoService.crearEquipo(cap2.getId(), "EquipoCal2", "Desc");
         inscribirEquipo(cap2, torneo, equipo2);
         torneoService.cerrarInscripciones(torneo.getId());
-        Torneo configurado = configurar(torneo, "GRUPOS_PLAYOFF", 1, 2, false, false);
+        Torneo configurado = configurar(torneo, TipoTorneo.GRUPOS_PLAYOFF, 1, 2, false, false);
         assertEquals(EstadoTorneo.FASE_GRUPOS, configurado.getEstado());
         assertEquals(Integer.valueOf(1), configurado.getNumGrupos());
         assertEquals(Integer.valueOf(2), configurado.getEquiposPorGrupo());
@@ -386,7 +387,7 @@ public class TorneoServiceTest {
         User org = createUser("org_cal2");
         Torneo torneo = createTorneo(org, "Torneo Sin Cerrar");
         assertThrows(IllegalArgumentException.class,
-                () -> configurar(torneo, "GRUPOS_PLAYOFF", 1, 2, false, false));
+                () -> configurar(torneo, TipoTorneo.GRUPOS_PLAYOFF, 1, 2, false, false));
     }
 
     @Test
@@ -400,16 +401,16 @@ public class TorneoServiceTest {
         Equipo equipo2 = equipoService.crearEquipo(cap2.getId(), "EquipoCal3_2", "Desc");
         inscribirEquipo(cap2, torneo, equipo2);
         torneoService.cerrarInscripciones(torneo.getId());
-        configurar(torneo, "GRUPOS_PLAYOFF", 1, 2, false, false);
+        configurar(torneo, TipoTorneo.GRUPOS_PLAYOFF, 1, 2, false, false);
         assertThrows(IllegalArgumentException.class,
-                () -> configurar(torneo, "GRUPOS_PLAYOFF", 1, 2, false, false));
+                () -> configurar(torneo, TipoTorneo.GRUPOS_PLAYOFF, 1, 2, false, false));
     }
 
     @Test
     public void testConfigurarEstructuraCapacidadInsuficiente() throws InstanceNotFoundException, PermissionException {
         Torneo torneo = prepararTorneoConEquipos(4, "capacidad");
         assertThrows(IllegalArgumentException.class,
-                () -> configurar(torneo, "LIGA_UNICA", 1, 2, false, false));
+                () -> configurar(torneo, TipoTorneo.LIGA_UNICA, 1, 2, false, false));
     }
 
     // ---- Tests de escala: 2 equipos, 1 grupo, LIGA_UNICA ----
@@ -424,7 +425,7 @@ public class TorneoServiceTest {
         torneo.setDiasEntreJornadas(7);
         torneo.setDiasDisponibles("L,M,X,J,V,S,D");
         torneoDao.save(torneo);
-        Torneo result = configurar(torneo, "LIGA_UNICA", 1, 2, false, false);
+        Torneo result = configurar(torneo, TipoTorneo.LIGA_UNICA, 1, 2, false, false);
         assertEquals(EstadoTorneo.FASE_GRUPOS, result.getEstado());
         List<Jornada> jornadas = jornadaDao.findByTorneoIdOrderByNumeroJornadaAsc(torneo.getId());
         assertEquals(1, jornadas.size(), "2 equipos => 1 ronda");
@@ -441,7 +442,7 @@ public class TorneoServiceTest {
         torneo.setDiasEntreJornadas(7);
         torneo.setDiasDisponibles("L,M,X,J,V,S,D");
         torneoDao.save(torneo);
-        Torneo result = configurar(torneo, "LIGA_UNICA", 1, 4, false, false);
+        Torneo result = configurar(torneo, TipoTorneo.LIGA_UNICA, 1, 4, false, false);
         assertEquals(EstadoTorneo.FASE_GRUPOS, result.getEstado());
         List<Jornada> jornadas = jornadaDao.findByTorneoIdOrderByNumeroJornadaAsc(torneo.getId());
         assertEquals(3, jornadas.size(), "4 equipos => 3 rondas");
@@ -460,7 +461,7 @@ public class TorneoServiceTest {
         torneo.setDiasEntreJornadas(7);
         torneo.setDiasDisponibles("L,M,X,J,V,S,D");
         torneoDao.save(torneo);
-        Torneo result = configurar(torneo, "LIGA_UNICA", 1, 6, false, false);
+        Torneo result = configurar(torneo, TipoTorneo.LIGA_UNICA, 1, 6, false, false);
         assertEquals(EstadoTorneo.FASE_GRUPOS, result.getEstado());
         List<Jornada> jornadas = jornadaDao.findByTorneoIdOrderByNumeroJornadaAsc(torneo.getId());
         assertEquals(5, jornadas.size(), "6 equipos => 5 rondas");
@@ -488,7 +489,7 @@ public class TorneoServiceTest {
         torneo.setDiasEntreJornadas(7);
         torneo.setDiasDisponibles("L,M,X,J,V,S,D");
         torneoDao.save(torneo);
-        Torneo result = configurar(torneo, "LIGA_UNICA", 1, 3, false, false);
+        Torneo result = configurar(torneo, TipoTorneo.LIGA_UNICA, 1, 3, false, false);
         assertEquals(EstadoTorneo.FASE_GRUPOS, result.getEstado());
         List<Jornada> jornadas = jornadaDao.findByTorneoIdOrderByNumeroJornadaAsc(torneo.getId());
         assertEquals(3, jornadas.size(), "3 equipos (impar) => 3 rondas");
@@ -509,7 +510,7 @@ public class TorneoServiceTest {
         torneo.setDiasEntreJornadas(7);
         torneo.setDiasDisponibles("L");
         torneoDao.save(torneo);
-        configurar(torneo, "LIGA_UNICA", 1, 4, false, false);
+        configurar(torneo, TipoTorneo.LIGA_UNICA, 1, 4, false, false);
         List<Jornada> jornadas = jornadaDao.findByTorneoIdOrderByNumeroJornadaAsc(torneo.getId());
         assertEquals(3, jornadas.size());
         // Cada jornada debe caer en lunes, separadas por 7 días
@@ -528,7 +529,7 @@ public class TorneoServiceTest {
         torneo.setEstrategiaDistribucion("RAPIDO");
         torneo.setDiasDisponibles("L,M,X,J,V,S,D");
         torneoDao.save(torneo);
-        configurar(torneo, "LIGA_UNICA", 1, 4, false, false);
+        configurar(torneo, TipoTorneo.LIGA_UNICA, 1, 4, false, false);
         List<Jornada> jornadas = jornadaDao.findByTorneoIdOrderByNumeroJornadaAsc(torneo.getId());
         assertEquals(3, jornadas.size());
         // RAPIDO: días consecutivos
@@ -549,7 +550,7 @@ public class TorneoServiceTest {
         torneo.setEstrategiaDistribucion("UNIFORME");
         torneo.setDiasDisponibles("L,M,X,J,V,S,D");
         torneoDao.save(torneo);
-        configurar(torneo, "LIGA_UNICA", 1, 4, false, false);
+        configurar(torneo, TipoTorneo.LIGA_UNICA, 1, 4, false, false);
         List<Jornada> jornadas = jornadaDao.findByTorneoIdOrderByNumeroJornadaAsc(torneo.getId());
         assertEquals(3, jornadas.size());
         // UNIFORME se normaliza a RAPIDO: días consecutivos
@@ -573,7 +574,7 @@ public class TorneoServiceTest {
         torneo.setDiasEntreJornadas(7);
         torneo.setDiasDisponibles("M,J"); // solo martes y jueves
         torneoDao.save(torneo);
-        configurar(torneo, "LIGA_UNICA", 1, 4, false, false);
+        configurar(torneo, TipoTorneo.LIGA_UNICA, 1, 4, false, false);
         List<Jornada> jornadas = jornadaDao.findByTorneoIdOrderByNumeroJornadaAsc(torneo.getId());
         assertEquals(3, jornadas.size());
         for (Jornada j : jornadas) {
@@ -593,7 +594,7 @@ public class TorneoServiceTest {
         // Excluir el 5, 6 y 7 de mayo
         torneo.setFechasExcluidas("2026-05-05,2026-05-06,2026-05-07");
         torneoDao.save(torneo);
-        configurar(torneo, "LIGA_UNICA", 1, 4, false, false);
+        configurar(torneo, TipoTorneo.LIGA_UNICA, 1, 4, false, false);
         List<Jornada> jornadas = jornadaDao.findByTorneoIdOrderByNumeroJornadaAsc(torneo.getId());
         assertEquals(3, jornadas.size());
         // J1 = 4 may; J2 salta 5,6,7 → 8 may; J3 = 9 may
@@ -614,7 +615,7 @@ public class TorneoServiceTest {
         torneo.setDiasEntreJornadas(7);
         torneo.setDiasDisponibles("L,M,X,J,V,S,D");
         torneoDao.save(torneo);
-        Torneo result = configurarConPlayoffStrategy(torneo, "GRUPOS_PLAYOFF", 2, 2, true, false, "RAPIDO", null);
+        Torneo result = configurarConPlayoffStrategy(torneo, TipoTorneo.GRUPOS_PLAYOFF, 2, 2, true, false, "RAPIDO", null);
         assertEquals(EstadoTorneo.FASE_GRUPOS, result.getEstado());
         List<Grupo> grupos = grupoDao.findByTorneoId(torneo.getId());
         assertEquals(2, grupos.size());
@@ -633,7 +634,7 @@ public class TorneoServiceTest {
         torneo.setDiasEntreJornadas(7);
         torneo.setDiasDisponibles("L,M,X,J,V,S,D");
         torneoDao.save(torneo);
-        Torneo result = configurarConPlayoffStrategy(torneo, "GRUPOS_PLAYOFF", 2, 4, false, false, null, null);
+        Torneo result = configurarConPlayoffStrategy(torneo, TipoTorneo.GRUPOS_PLAYOFF, 2, 4, false, false, null, null);
         assertEquals(EstadoTorneo.FASE_GRUPOS, result.getEstado());
         List<Grupo> grupos = grupoDao.findByTorneoId(torneo.getId());
         assertEquals(2, grupos.size());
@@ -658,7 +659,7 @@ public class TorneoServiceTest {
         torneo.setDiasDisponibles("L,M,X,J,V,S,D");
         torneoDao.save(torneo);
         assertThrows(IllegalArgumentException.class,
-                () -> configurar(torneo, "LIGA_UNICA", 1, 6, false, false));
+                () -> configurar(torneo, TipoTorneo.LIGA_UNICA, 1, 6, false, false));
     }
 
     @Test
@@ -670,7 +671,7 @@ public class TorneoServiceTest {
         torneo.setEstrategiaDistribucion("RAPIDO");
         torneo.setDiasDisponibles("L");
         torneoDao.save(torneo);
-        Torneo result = configurar(torneo, "LIGA_UNICA", 1, 2, false, false);
+        Torneo result = configurar(torneo, TipoTorneo.LIGA_UNICA, 1, 2, false, false);
         assertEquals(EstadoTorneo.FASE_GRUPOS, result.getEstado());
         List<Jornada> jornadas = jornadaDao.findByTorneoIdOrderByNumeroJornadaAsc(torneo.getId());
         assertEquals(1, jornadas.size());
@@ -684,7 +685,7 @@ public class TorneoServiceTest {
         torneo.setEstrategiaDistribucion("RAPIDO");
         torneo.setDiasDisponibles("L,M,X,J,V,S,D");
         torneoDao.save(torneo);
-        Torneo result = configurar(torneo, "LIGA_UNICA", 1, 4, false, false);
+        Torneo result = configurar(torneo, TipoTorneo.LIGA_UNICA, 1, 4, false, false);
         assertEquals(EstadoTorneo.FASE_GRUPOS, result.getEstado());
         List<Jornada> jornadas = jornadaDao.findByTorneoIdOrderByNumeroJornadaAsc(torneo.getId());
         assertEquals(3, jornadas.size());
@@ -702,7 +703,7 @@ public class TorneoServiceTest {
         torneo.setEstrategiaDistribucion("RAPIDO");
         torneo.setDiasDisponibles("L,M,X,J,V,S,D");
         torneoDao.save(torneo);
-        Torneo result = configurarConPlayoffStrategy(torneo, "GRUPOS_PLAYOFF", 1, 4, true, false, "RAPIDO", null);
+        Torneo result = configurarConPlayoffStrategy(torneo, TipoTorneo.GRUPOS_PLAYOFF, 1, 4, true, false, "RAPIDO", null);
         assertEquals(EstadoTorneo.FASE_GRUPOS, result.getEstado());
         List<Jornada> jornadas = jornadaDao.findByTorneoIdOrderByNumeroJornadaAsc(torneo.getId());
         assertEquals(3, jornadas.size(), "Deben generarse 3 jornadas de liga");
@@ -722,7 +723,7 @@ public class TorneoServiceTest {
         torneo.setEstrategiaDistribucion("RAPIDO");
         torneo.setDiasDisponibles("L,M,X,J,V,S,D");
         torneoDao.save(torneo);
-        Torneo result = configurarConPlayoffStrategy(torneo, "GRUPOS_PLAYOFF", 1, 4, true, false, "JORNADAS", 7);
+        Torneo result = configurarConPlayoffStrategy(torneo, TipoTorneo.GRUPOS_PLAYOFF, 1, 4, true, false, "JORNADAS", 7);
         assertEquals(EstadoTorneo.FASE_GRUPOS, result.getEstado());
         List<Jornada> jornadas = jornadaDao.findByTorneoIdOrderByNumeroJornadaAsc(torneo.getId());
         assertEquals(3, jornadas.size());
@@ -743,7 +744,7 @@ public class TorneoServiceTest {
         torneo.setEstrategiaDistribucion("RAPIDO");
         torneo.setDiasDisponibles("L,M,X,J,V,S,D");
         torneoDao.save(torneo);
-        Torneo result = configurar(torneo, "LIGA_UNICA", 1, 4, false, false);
+        Torneo result = configurar(torneo, TipoTorneo.LIGA_UNICA, 1, 4, false, false);
         assertEquals(EstadoTorneo.FASE_GRUPOS, result.getEstado());
         List<Jornada> jornadas = jornadaDao.findByTorneoIdOrderByNumeroJornadaAsc(torneo.getId());
         assertEquals(3, jornadas.size());
@@ -761,7 +762,7 @@ public class TorneoServiceTest {
         torneo.setEstrategiaDistribucion("RAPIDO");
         torneo.setDiasDisponibles("L,M,X,J,V,S,D");
         torneoDao.save(torneo);
-        Torneo result = configurarConPlayoffStrategy(torneo, "GRUPOS_PLAYOFF", 1, 4, true, true, "RAPIDO", null);
+        Torneo result = configurarConPlayoffStrategy(torneo, TipoTorneo.GRUPOS_PLAYOFF, 1, 4, true, true, "RAPIDO", null);
         assertEquals(EstadoTorneo.FASE_GRUPOS, result.getEstado());
         // Ida/vuelta: 6 rondas * 1 día = 6 días de reserva
         // Límite = 20 may - 6 = 14 may
@@ -784,7 +785,7 @@ public class TorneoServiceTest {
         inscribirEquipo(cap2, torneo, equipo2);
         torneoService.cerrarInscripciones(torneo.getId());
         // configurar estructura manualmente (sin generar calendario)
-        torneo.setTipoTorneo("LIGA_UNICA");
+        torneo.setTipoTorneo(TipoTorneo.LIGA_UNICA);
         torneo.setNumGrupos(1);
         torneo.setEquiposPorGrupo(2);
         torneo.setTienePlayoff(false);
@@ -829,7 +830,7 @@ public class TorneoServiceTest {
         Equipo equipo2 = equipoService.crearEquipo(cap2.getId(), "EquipoJorn2", "Desc");
         inscribirEquipo(cap2, torneo, equipo2);
         torneoService.cerrarInscripciones(torneo.getId());
-        configurar(torneo, "GRUPOS_PLAYOFF", 1, 2, false, false);
+        configurar(torneo, TipoTorneo.GRUPOS_PLAYOFF, 1, 2, false, false);
         List<Jornada> jornadas = jornadaDao.findByTorneoIdOrderByNumeroJornadaAsc(torneo.getId());
         assertEquals(1, jornadas.size());
         Jornada jornada = jornadas.get(0);
@@ -997,7 +998,7 @@ public class TorneoServiceTest {
         Equipo equipo2 = equipoService.crearEquipo(cap2.getId(), "EquipoOJ2", "Desc");
         inscribirEquipo(cap2, torneo, equipo2);
         torneoService.cerrarInscripciones(torneo.getId());
-        configurar(torneo, "GRUPOS_PLAYOFF", 1, 2, false, false);
+        configurar(torneo, TipoTorneo.GRUPOS_PLAYOFF, 1, 2, false, false);
         List<Jornada> jornadas = torneoService.obtenerJornadas(torneo.getId());
         assertEquals(1, jornadas.size());
         assertEquals(1, jornadas.get(0).getNumeroJornada());
@@ -1031,7 +1032,7 @@ public class TorneoServiceTest {
         inscribirEquipo(cap3, torneo, e3);
         inscribirEquipo(cap4, torneo, e4);
         torneoService.cerrarInscripciones(torneo.getId());
-        configurar(torneo, "GRUPOS_PLAYOFF", 1, 4, false, false);
+        configurar(torneo, TipoTorneo.GRUPOS_PLAYOFF, 1, 4, false, false);
         List<Jornada> jornadas = torneoService.obtenerJornadas(torneo.getId());
         for (int i = 1; i < jornadas.size(); i++) {
             assertTrue(jornadas.get(i - 1).getNumeroJornada() < jornadas.get(i).getNumeroJornada());
@@ -1047,7 +1048,7 @@ public class TorneoServiceTest {
         torneo.setFechaFin(LocalDate.of(2026, 7, 30));
         torneo.setDiasDisponibles("L,M,X,J,V,S,D");
         torneoDao.save(torneo);
-        Torneo result = configurarConPlayoffStrategy(torneo, "GRUPOS_PLAYOFF", 1, 4,
+        Torneo result = configurarConPlayoffStrategy(torneo, TipoTorneo.GRUPOS_PLAYOFF, 1, 4,
                 true, false, "JORNADAS", 3);
         assertEquals("JORNADAS", result.getEstrategiaPlayoff());
         assertEquals(Integer.valueOf(3), result.getDiasEntrePlayoff());
@@ -1060,7 +1061,7 @@ public class TorneoServiceTest {
         torneo.setFechaFin(LocalDate.of(2026, 7, 30));
         torneo.setDiasDisponibles("L,M,X,J,V,S,D");
         torneoDao.save(torneo);
-        Torneo result = configurar(torneo, "GRUPOS_PLAYOFF", 1, 4, true, false);
+        Torneo result = configurar(torneo, TipoTorneo.GRUPOS_PLAYOFF, 1, 4, true, false);
         assertNull(result.getEstrategiaPlayoff(), "Backwards compatible: null por defecto");
         assertNull(result.getDiasEntrePlayoff(), "Backwards compatible: null por defecto");
     }
@@ -1075,7 +1076,7 @@ public class TorneoServiceTest {
         torneo.setDiasDisponibles("L,M,X,J,V,S,D");
         torneoDao.save(torneo);
         // 4 grupos x 2 equipos, eliminatoria desde CUARTOS (8 equipos => 2 por grupo)
-        Torneo result = configurarConRonda(torneo, "GRUPOS_PLAYOFF", 4, 2,
+        Torneo result = configurarConRonda(torneo, TipoTorneo.GRUPOS_PLAYOFF, 4, 2,
                 true, false, "CUARTOS");
         assertEquals("CUARTOS", result.getRondaInicioPlayoff());
     }
@@ -1090,7 +1091,7 @@ public class TorneoServiceTest {
         torneoDao.save(torneo);
         // 3 grupos no es potencia de 2 -> debe lanzar IllegalArgumentException
         assertThrows(IllegalArgumentException.class, () -> configurarConRonda(
-                torneo, "GRUPOS_PLAYOFF", 3, 2, true, false, "OCTAVOS"));
+                torneo, TipoTorneo.GRUPOS_PLAYOFF, 3, 2, true, false, "OCTAVOS"));
     }
 
     @Test
@@ -1107,7 +1108,7 @@ public class TorneoServiceTest {
         // Aquí comprobamos OCTAVOS con 4 grupos: 16 % 4 == 0 pero 4 por grupo supera
         // el tamaño del grupo (2). Debe rechazarse por exceder equiposPorGrupo.
         assertThrows(IllegalArgumentException.class, () -> configurarConRonda(
-                torneo, "GRUPOS_PLAYOFF", 4, 2, true, false, "OCTAVOS"));
+                torneo, TipoTorneo.GRUPOS_PLAYOFF, 4, 2, true, false, "OCTAVOS"));
     }
 
     @Test
@@ -1118,7 +1119,7 @@ public class TorneoServiceTest {
         torneo.setDiasDisponibles("L,M,X,J,V,S,D");
         torneoDao.save(torneo);
         // Sin ronda configurada: comportamiento histórico (2 por grupo) y ronda auto-resuelta.
-        Torneo result = configurar(torneo, "GRUPOS_PLAYOFF", 4, 2, true, false);
+        Torneo result = configurar(torneo, TipoTorneo.GRUPOS_PLAYOFF, 4, 2, true, false);
         // 4 grupos x 2 = 8 equipos -> CUARTOS auto-resuelto
         assertEquals("CUARTOS", result.getRondaInicioPlayoff());
     }
@@ -1341,16 +1342,17 @@ public class TorneoServiceTest {
         torneo.setEstado(EstadoTorneo.INSCRIPCION_CERRADA);
         torneoDao.save(torneo);
         assertThrows(IllegalArgumentException.class,
-                () -> configurar(torneo, "LIGA_UNICA", 1, 2, false, false));
+                () -> configurar(torneo, TipoTorneo.LIGA_UNICA, 1, 2, false, false));
     }
 
     @Test
     public void testConfigurarEstructuraFechaFin() throws InstanceNotFoundException, PermissionException {
         Torneo torneo = prepararTorneoConEquipos(2, "FECHAFIN");
+        LocalDate fechaFin = LocalDate.now().plusDays(30);
         torneoService.configurarEstructuraYGenerarCalendario(
-                torneo.getId(), "LIGA_UNICA", 1, 2, false, false, null, null, "2026-08-15");
+                torneo.getId(), TipoTorneo.LIGA_UNICA, 1, 2, false, false, null, null, fechaFin.toString());
         Torneo actualizado = torneoDao.findById(torneo.getId()).get();
-        assertEquals(LocalDate.of(2026, 8, 15), actualizado.getFechaFin());
+        assertEquals(fechaFin, actualizado.getFechaFin());
     }
 
     @Test
@@ -1361,7 +1363,7 @@ public class TorneoServiceTest {
         torneo.setFechaFin(LocalDate.of(2026, 7, 30));
         torneo.setDiasDisponibles("L,M,X,J,V,S,D");
         torneoDao.save(torneo);
-        Torneo result = configurarConPlayoffStrategy(torneo, "GRUPOS_PLAYOFF", 1, 4,
+        Torneo result = configurarConPlayoffStrategy(torneo, TipoTorneo.GRUPOS_PLAYOFF, 1, 4,
                 true, false, "UNIFORME", null);
         assertEquals("RAPIDO", result.getEstrategiaPlayoff());
     }
@@ -1377,7 +1379,7 @@ public class TorneoServiceTest {
         torneo.setHoraFin("22:00");
         torneo.setDuracionPartido(60);
         torneoDao.save(torneo);
-        configurar(torneo, "LIGA_UNICA", 1, 4, false, false);
+        configurar(torneo, TipoTorneo.LIGA_UNICA, 1, 4, false, false);
         List<Jornada> jornadas = jornadaDao.findByTorneoIdOrderByNumeroJornadaAsc(torneo.getId());
         Encuentro primero = jornadas.get(0).getEncuentros().get(0);
         Encuentro segundo = jornadas.get(0).getEncuentros().get(1);
@@ -1396,7 +1398,7 @@ public class TorneoServiceTest {
         torneo.setHoraFin("10:30");
         torneo.setDuracionPartido(60);
         torneoDao.save(torneo);
-        configurar(torneo, "LIGA_UNICA", 1, 4, false, false);
+        configurar(torneo, TipoTorneo.LIGA_UNICA, 1, 4, false, false);
         List<Jornada> jornadas = jornadaDao.findByTorneoIdOrderByNumeroJornadaAsc(torneo.getId());
         for (Encuentro enc : jornadas.get(0).getEncuentros()) {
             assertEquals(10, enc.getFechaRealizacion().getHour());
@@ -1412,7 +1414,7 @@ public class TorneoServiceTest {
         torneo.setEstrategiaDistribucion("RAPIDO");
         torneo.setDiasDisponibles("L,M,X,J,V,S,D");
         torneoDao.save(torneo);
-        configurar(torneo, "GRUPOS_PLAYOFF", 2, 3, false, false);
+        configurar(torneo, TipoTorneo.GRUPOS_PLAYOFF, 2, 3, false, false);
         List<Jornada> jornadas = jornadaDao.findByTorneoIdOrderByNumeroJornadaAsc(torneo.getId());
         assertEquals(3, jornadas.size());
         assertEquals(2, jornadas.get(0).getEncuentros().size());
@@ -1431,7 +1433,7 @@ public class TorneoServiceTest {
     @Test
     public void testGenerarCalendarioYaTieneCalendario() throws InstanceNotFoundException, PermissionException {
         Torneo torneo = prepararTorneoConEquipos(2, "GEN_YA");
-        configurar(torneo, "LIGA_UNICA", 1, 2, false, false);
+        configurar(torneo, TipoTorneo.LIGA_UNICA, 1, 2, false, false);
         assertThrows(IllegalArgumentException.class,
                 () -> torneoService.generarCalendario(torneo.getId()));
     }
@@ -1479,7 +1481,7 @@ public class TorneoServiceTest {
         torneo.setFechaFin(LocalDate.of(2026, 7, 30));
         torneo.setDiasDisponibles("L,M,X,J,V,S,D");
         torneoDao.save(torneo);
-        Torneo result = configurarConRonda(torneo, "GRUPOS_PLAYOFF", 16, 2,
+        Torneo result = configurarConRonda(torneo, TipoTorneo.GRUPOS_PLAYOFF, 16, 2,
                 true, false, "DIECISEISAVOS");
         assertEquals("DIECISEISAVOS", result.getRondaInicioPlayoff());
     }
@@ -1492,7 +1494,7 @@ public class TorneoServiceTest {
         torneo.setFechaFin(LocalDate.of(2026, 7, 30));
         torneo.setDiasDisponibles("L,M,X,J,V,S,D");
         torneoDao.save(torneo);
-        Torneo result = configurar(torneo, "GRUPOS_PLAYOFF", 16, 2, true, false);
+        Torneo result = configurar(torneo, TipoTorneo.GRUPOS_PLAYOFF, 16, 2, true, false);
         assertEquals("DIECISEISAVOS", result.getRondaInicioPlayoff());
     }
 
@@ -1503,7 +1505,7 @@ public class TorneoServiceTest {
         torneo.setFechaFin(LocalDate.of(2026, 7, 30));
         torneo.setDiasDisponibles("L,M,X,J,V,S,D");
         torneoDao.save(torneo);
-        Torneo result = configurarConRonda(torneo, "GRUPOS_PLAYOFF", 2, 2,
+        Torneo result = configurarConRonda(torneo, TipoTorneo.GRUPOS_PLAYOFF, 2, 2,
                 true, false, "DESCONOCIDA");
         // equiposPorRonda devuelve -1 -> auto -> 2*2=4 -> SEMIFINALES
         assertEquals("SEMIFINALES", result.getRondaInicioPlayoff());
@@ -1513,7 +1515,7 @@ public class TorneoServiceTest {
     public void testGenerarPlayoffsSinEquiposClasificados() throws InstanceNotFoundException, PermissionException {
         // torneo con playoff pero sin grupos creados (configuracion manual incompleta)
         Torneo torneo = prepararTorneoConEquipos(2, "PO_SIN_CLAS");
-        torneo.setTipoTorneo("GRUPOS_PLAYOFF");
+        torneo.setTipoTorneo(TipoTorneo.GRUPOS_PLAYOFF);
         torneo.setTienePlayoff(true);
         torneo.setIdaVueltaPlayoff(false);
         torneo.setEstado(EstadoTorneo.FASE_GRUPOS);
@@ -1530,7 +1532,7 @@ public class TorneoServiceTest {
         torneo.setFechaFin(LocalDate.of(2026, 7, 30));
         torneo.setDiasDisponibles("L,M,X,J,V,S,D");
         torneoDao.save(torneo);
-        configurarConRonda(torneo, "GRUPOS_PLAYOFF", 2, 4, true, false, "CUARTOS");
+        configurarConRonda(torneo, TipoTorneo.GRUPOS_PLAYOFF, 2, 4, true, false, "CUARTOS");
         for (Grupo grupo : grupoDao.findByTorneoId(torneo.getId())) {
             List<Inscripcion> insc = inscripcionDao.findByGrupoId(grupo.getId());
             for (int i = 0; i < insc.size(); i++) {
@@ -1557,7 +1559,7 @@ public class TorneoServiceTest {
         torneo.setHoraFin("14:00");
         torneoDao.save(torneo);
         torneoService.configurarEstructuraYGenerarCalendario(
-                torneo.getId(), "GRUPOS_PLAYOFF", 1, 4, true, false, "JORNADAS", 7, "2026-08-01");
+                torneo.getId(), TipoTorneo.GRUPOS_PLAYOFF, 1, 4, true, false, "JORNADAS", 7, "2026-08-01");
         for (Grupo grupo : grupoDao.findByTorneoId(torneo.getId())) {
             List<Inscripcion> insc = inscripcionDao.findByGrupoId(grupo.getId());
             for (int i = 0; i < insc.size(); i++) {

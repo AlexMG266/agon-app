@@ -50,7 +50,6 @@ public class TorneoConversor {
                     .collect(Collectors.toList());
         }
 
-        // Convertir campos coma-separados a listas
         List<String> diasList = null;
         if (torneo.getDiasDisponibles() != null && !torneo.getDiasDisponibles().isEmpty()) {
             diasList = List.of(torneo.getDiasDisponibles().split(","));
@@ -69,7 +68,7 @@ public class TorneoConversor {
                 torneo.getEstado().name(),
                 torneo.getOrganizador().getId(),
                 torneo.getOrganizador().getNombre(),
-                torneo.getTipoTorneo(),
+                torneo.getTipoTorneo() != null ? torneo.getTipoTorneo().name() : null,
                 torneo.getIdaVueltaPlayoff() != null ? torneo.getIdaVueltaPlayoff() : false,
                 numInscritos,
                 torneo.getPrivado() != null ? torneo.getPrivado() : false,

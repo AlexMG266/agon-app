@@ -32,6 +32,7 @@ import es.udc.agon.backend.model.entities.Notification;
 import es.udc.agon.backend.model.entities.NotificationDao;
 import es.udc.agon.backend.model.entities.SetEntity;
 import es.udc.agon.backend.model.entities.Solicitud;
+import es.udc.agon.backend.model.entities.TipoTorneo;
 import es.udc.agon.backend.model.entities.Torneo;
 import es.udc.agon.backend.model.entities.User;
 import es.udc.agon.backend.model.entities.UserDao;
@@ -110,7 +111,7 @@ public class RecordatorioPartidoTest {
 
         torneoService.cerrarInscripciones(torneo.getId());
         torneoService.configurarEstructuraYGenerarCalendario(
-                torneo.getId(), "LIGA_UNICA", 1, 2, false, false, null, null, null);
+                torneo.getId(), TipoTorneo.LIGA_UNICA, 1, 2, false, false, null, null, null);
 
         List<Jornada> jornadas = jornadaDao.findByTorneoIdOrderByNumeroJornadaAsc(torneo.getId());
         return jornadas.get(0).getEncuentros().get(0);

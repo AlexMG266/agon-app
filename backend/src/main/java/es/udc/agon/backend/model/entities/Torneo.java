@@ -16,7 +16,7 @@ public class Torneo {
     private Integer numGrupos;
     private Integer equiposPorGrupo;
     private Boolean tienePlayoff;
-    private String tipoTorneo;
+    private TipoTorneo tipoTorneo;
     private Boolean idaVueltaPlayoff;
     private Boolean privado;
     private String codigoTorneo;
@@ -108,12 +108,13 @@ public class Torneo {
         this.equiposPorGrupo = equiposPorGrupo;
     }
 
+    @Enumerated(EnumType.STRING)
     @Column(name = "tipoTorneo", nullable = true)
-    public String getTipoTorneo() {
+    public TipoTorneo getTipoTorneo() {
         return tipoTorneo;
     }
 
-    public void setTipoTorneo(String tipoTorneo) {
+    public void setTipoTorneo(TipoTorneo tipoTorneo) {
         this.tipoTorneo = tipoTorneo;
     }
 

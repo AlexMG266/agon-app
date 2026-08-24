@@ -30,6 +30,7 @@ import es.udc.agon.backend.model.entities.Solicitud;
 import es.udc.agon.backend.model.entities.TipoFase;
 import es.udc.agon.backend.model.entities.TipoJornada;
 import es.udc.agon.backend.model.entities.TipoSolicitud;
+import es.udc.agon.backend.model.entities.TipoTorneo;
 import es.udc.agon.backend.model.entities.Torneo;
 import es.udc.agon.backend.model.entities.User;
 import es.udc.agon.backend.model.services.Block;
@@ -106,7 +107,7 @@ public class ConversorTest {
         torneo.setNumGrupos(2);
         torneo.setEquiposPorGrupo(4);
         torneo.setTienePlayoff(true);
-        torneo.setTipoTorneo("GRUPOS_PLAYOFF");
+        torneo.setTipoTorneo(TipoTorneo.GRUPOS_PLAYOFF);
         torneo.setIdaVueltaPlayoff(true);
         torneo.setDiasDisponibles("LUNES,MIERCOLES");
         torneo.setFechasExcluidas("2026-08-01,2026-08-15");

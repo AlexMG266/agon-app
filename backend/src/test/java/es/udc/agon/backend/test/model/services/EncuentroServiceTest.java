@@ -31,6 +31,7 @@ import es.udc.agon.backend.model.entities.SolicitudAplazamiento;
 import es.udc.agon.backend.model.entities.SolicitudAplazamientoDao;
 import es.udc.agon.backend.model.entities.TipoFase;
 import es.udc.agon.backend.model.entities.TipoJornada;
+import es.udc.agon.backend.model.entities.TipoTorneo;
 import es.udc.agon.backend.model.entities.Torneo;
 import es.udc.agon.backend.model.entities.TorneoDao;
 import es.udc.agon.backend.model.entities.User;
@@ -114,7 +115,7 @@ public class EncuentroServiceTest {
 
         torneoService.cerrarInscripciones(torneo.getId());
         torneoService.configurarEstructuraYGenerarCalendario(
-                torneo.getId(), "LIGA_UNICA", 1, 2, false, false, null, null, null);
+                torneo.getId(), TipoTorneo.LIGA_UNICA, 1, 2, false, false, null, null, null);
 
         // obtener la primera jornada y su encuentro generado
         List<Jornada> jornadas = jornadaDao.findByTorneoIdOrderByNumeroJornadaAsc(torneo.getId());
