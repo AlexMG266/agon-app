@@ -198,21 +198,6 @@ public class EntityTest {
     }
 
     @Test
-    public void encuentroPuntosLocalYVisitante() {
-        User org = buildUser(1L, "org");
-        Equipo local = buildEquipo(2L, org);
-        Equipo visitante = buildEquipo(3L, org);
-        Encuentro enc = new Encuentro(null, local, visitante, LocalDateTime.now());
-        List<SetEntity> sets = new ArrayList<>();
-        sets.add(new SetEntity(enc, 1, 25, 20));
-        sets.add(new SetEntity(enc, 2, 20, 25));
-        sets.add(new SetEntity(enc, 3, 25, 23));
-        enc.setSets(sets);
-        assertEquals(5, enc.getPuntosLocal());
-        assertEquals(4, enc.getPuntosVisitante());
-    }
-
-    @Test
     public void encuentroConstructorFijaEstadoPendiente() {
         User org = buildUser(1L, "org");
         Equipo local = buildEquipo(2L, org);

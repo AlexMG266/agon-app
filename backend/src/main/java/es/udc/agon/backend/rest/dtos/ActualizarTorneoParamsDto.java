@@ -31,9 +31,6 @@ public class ActualizarTorneoParamsDto {
     @Schema(description = "Formato de partidos: 4_SETS, 5_SETS", example = "4_SETS")
     private String formatoPartidos;
 
-    @Schema(description = "Criterio de desempate", example = "PUNTOS")
-    private String criterioDesempate;
-
     @Schema(description = "Días disponibles (L, M, X, J, V, S, D)")
     private List<String> diasDisponibles;
 
@@ -83,9 +80,6 @@ public class ActualizarTorneoParamsDto {
 
     public String getFormatoPartidos() { return formatoPartidos; }
     public void setFormatoPartidos(String formatoPartidos) { this.formatoPartidos = formatoPartidos; }
-
-    public String getCriterioDesempate() { return criterioDesempate; }
-    public void setCriterioDesempate(String criterioDesempate) { this.criterioDesempate = criterioDesempate; }
 
     public List<String> getDiasDisponibles() { return diasDisponibles; }
     public void setDiasDisponibles(List<String> diasDisponibles) { this.diasDisponibles = diasDisponibles; }

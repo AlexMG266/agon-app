@@ -128,30 +128,4 @@ public class Encuentro {
         }
         return null;
     }
-
-    @Transient
-    public int getPuntosLocal() {
-        int puntos = 0;
-        for (SetEntity set : sets) {
-            if (set.getGolesLocal() > set.getGolesVisitante()) {
-                puntos += 2;
-            } else {
-                puntos += 1;
-            }
-        }
-        return puntos;
-    }
-
-    @Transient
-    public int getPuntosVisitante() {
-        int puntos = 0;
-        for (SetEntity set : sets) {
-            if (set.getGolesVisitante() > set.getGolesLocal()) {
-                puntos += 2;
-            } else {
-                puntos += 1;
-            }
-        }
-        return puntos;
-    }
 }
