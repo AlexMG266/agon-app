@@ -60,6 +60,7 @@ CREATE TABLE Equipo (
     fecha_creacion TIMESTAMP NOT NULL DEFAULT NOW(),
     CONSTRAINT EquipoPK PRIMARY KEY (id),
     CONSTRAINT EquipoNombreUniqueKey UNIQUE (nombreEquipo),
+    CONSTRAINT EquipoCodigoUniqueKey UNIQUE (codigo_equipo),
     CONSTRAINT EquipoCreadorIdFK FOREIGN KEY (creador_id) REFERENCES "User"(id) ON DELETE CASCADE
 );
 
