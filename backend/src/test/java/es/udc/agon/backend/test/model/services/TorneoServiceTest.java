@@ -25,7 +25,6 @@ import es.udc.agon.backend.model.entities.Equipo;
 import es.udc.agon.backend.model.entities.EstrategiaDistribucion;
 import es.udc.agon.backend.model.entities.EstrategiaPlayoff;
 import es.udc.agon.backend.model.entities.EstadoInscripcion;
-import es.udc.agon.backend.model.entities.EstadoJornada;
 import es.udc.agon.backend.model.entities.EstadoSolicitud;
 import es.udc.agon.backend.model.entities.EstadoTorneo;
 import es.udc.agon.backend.model.entities.Grupo;
@@ -820,45 +819,6 @@ public class TorneoServiceTest {
     public void testGenerarCodigoQRInstanceNotFoundException() {
         assertThrows(InstanceNotFoundException.class,
                 () -> torneoService.generarCodigoQR(999L));
-    }
-
-    @Test
-    public void testGestionarJornadas() throws InstanceNotFoundException, PermissionException {
-        User org = createUser("org_jornada");
-        Torneo torneo = createTorneo(org, "Torneo Jornada");
-        User cap1 = createUser("cap_jorn1");
-        Equipo equipo1 = equipoService.crearEquipo(cap1.getId(), "EquipoJorn1", "Desc");
-        inscribirEquipo(cap1, torneo, equipo1);
-        User cap2 = createUser("cap_jorn2");
-        Equipo equipo2 = equipoService.crearEquipo(cap2.getId(), "EquipoJorn2", "Desc");
-        inscribirEquipo(cap2, torneo, equipo2);
-        torneoService.cerrarInscripciones(torneo.getId());
-        configurar(torneo, TipoTorneo.GRUPOS_PLAYOFF, 1, 2, false, false);
-        List<Jornada> jornadas = jornadaDao.findByTorneoIdOrderByNumeroJornadaAsc(torneo.getId());
-        assertEquals(1, jornadas.size());
-        Jornada jornada = jornadas.get(0);
-        assertEquals(EstadoJornada.ACTIVA, jornada.getEstado());
-        torneoService.gestionarJornadas(torneo.getId(), jornada.getId(), EstadoJornada.APLAZADA);
-        Jornada jornadaActualizada = jornadaDao.findById(jornada.getId()).get();
-        assertEquals(EstadoJornada.APLAZADA, jornadaActualizada.getEstado());
-    }
-
-    @Test
-    public void testGestionarJornadasJornadaNoPertenece() throws InstanceNotFoundException {
-        User org = createUser("org_jorn2");
-        Torneo torneo1 = createTorneo(org, "Torneo J1");
-        Torneo torneo2 = createTorneo(org, "Torneo J2");
-        Jornada jornada = new Jornada(torneo2, 1, TipoFase.LIGA_GRUPO, TipoJornada.LIGA_4_SETS,
-                LocalDate.now(), LocalDate.now().plusDays(7));
-        jornadaDao.save(jornada);
-        assertThrows(IllegalArgumentException.class,
-                () -> torneoService.gestionarJornadas(torneo1.getId(), jornada.getId(), EstadoJornada.APLAZADA));
-    }
-
-    @Test
-    public void testGestionarJornadasTorneoNotFound() {
-        assertThrows(InstanceNotFoundException.class,
-                () -> torneoService.gestionarJornadas(999L, 1L, EstadoJornada.APLAZADA));
     }
 
     @Test

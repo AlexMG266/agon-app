@@ -170,7 +170,6 @@ CREATE TABLE Jornada (
     numeroJornada INTEGER NOT NULL,
     tipoFase VARCHAR(20) NOT NULL,
     formatoJornada VARCHAR(20) NOT NULL,
-    estado VARCHAR(20) NOT NULL DEFAULT 'ACTIVA',
     fechaInicio DATE,
     fechaFin DATE,
     CONSTRAINT JornadaPK PRIMARY KEY (id),

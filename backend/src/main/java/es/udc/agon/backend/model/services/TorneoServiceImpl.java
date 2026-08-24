@@ -851,24 +851,6 @@ public class TorneoServiceImpl implements TorneoService {
     }
 
     @Override
-    public void gestionarJornadas(Long torneoId, Long jornadaId, EstadoJornada nuevoEstado)
-            throws InstanceNotFoundException, PermissionException, IllegalArgumentException {
-
-        Torneo torneo = torneoDao.findById(torneoId)
-                .orElseThrow(() -> new InstanceNotFoundException("project.entities.torneo", torneoId));
-
-        Jornada jornada = jornadaDao.findById(jornadaId)
-                .orElseThrow(() -> new InstanceNotFoundException("project.entities.jornada", jornadaId));
-
-        if (!jornada.getTorneo().getId().equals(torneoId)) {
-            throw new IllegalArgumentException("La jornada no pertenece al torneo especificado");
-        }
-
-        jornada.setEstado(nuevoEstado);
-        jornadaDao.save(jornada);
-    }
-
-    @Override
     @Transactional(readOnly = true)
     public List<Jornada> obtenerJornadas(Long torneoId) {
         return jornadaDao.findByTorneoIdOrderByNumeroJornadaAsc(torneoId);

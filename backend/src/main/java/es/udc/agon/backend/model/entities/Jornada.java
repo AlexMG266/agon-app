@@ -15,7 +15,6 @@ public class Jornada {
     private int numeroJornada;
     private TipoFase tipoFase;
     private TipoJornada formatoJornada;
-    private EstadoJornada estado;
     private LocalDate fechaInicio;
     private LocalDate fechaFin;
     private List<Encuentro> encuentros = new ArrayList<>();
@@ -29,7 +28,6 @@ public class Jornada {
         this.numeroJornada = numeroJornada;
         this.tipoFase = tipoFase;
         this.formatoJornada = formatoJornada;
-        this.estado = EstadoJornada.ACTIVA;
         this.fechaInicio = fechaInicio;
         this.fechaFin = fechaFin;
     }
@@ -81,16 +79,6 @@ public class Jornada {
 
     public void setFormatoJornada(TipoJornada formatoJornada) {
         this.formatoJornada = formatoJornada;
-    }
-
-    @Enumerated(EnumType.STRING)
-    @Column(name = "estado", nullable = false)
-    public EstadoJornada getEstado() {
-        return estado;
-    }
-
-    public void setEstado(EstadoJornada estado) {
-        this.estado = estado;
     }
 
     @Column(name = "fechaInicio")

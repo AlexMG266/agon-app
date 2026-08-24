@@ -340,8 +340,8 @@ DECLARE
     slot INT;
 BEGIN
     FOR ronda IN 0..8 LOOP
-        INSERT INTO Jornada (idTorneo, numeroJornada, tipoFase, formatoJornada, estado, fechaInicio, fechaFin)
-        VALUES (torneo_id, ronda + 1, 'LIGA_GRUPO', 'LIGA_4_SETS', 'ACTIVA', fecha_base + ronda * 7, fecha_base + ronda * 7)
+        INSERT INTO Jornada (idTorneo, numeroJornada, tipoFase, formatoJornada, fechaInicio, fechaFin)
+        VALUES (torneo_id, ronda + 1, 'LIGA_GRUPO', 'LIGA_4_SETS', fecha_base + ronda * 7, fecha_base + ronda * 7)
         RETURNING id INTO jornada_id;
 
         slot := 0;
@@ -412,8 +412,8 @@ BEGIN
     SELECT ARRAY(SELECT idEquipo FROM Inscripcion WHERE idTorneo = torneo_id ORDER BY idEquipo) INTO equipos;
 
     FOR ronda IN 0..18 LOOP
-        INSERT INTO Jornada (idTorneo, numeroJornada, tipoFase, formatoJornada, estado, fechaInicio, fechaFin)
-        VALUES (torneo_id, ronda + 1, 'LIGA_GRUPO', 'LIGA_4_SETS', 'ACTIVA', fecha_base + ronda * 7, fecha_base + ronda * 7)
+        INSERT INTO Jornada (idTorneo, numeroJornada, tipoFase, formatoJornada, fechaInicio, fechaFin)
+        VALUES (torneo_id, ronda + 1, 'LIGA_GRUPO', 'LIGA_4_SETS', fecha_base + ronda * 7, fecha_base + ronda * 7)
         RETURNING id INTO jornada_id;
 
         slot := 0;
@@ -569,8 +569,8 @@ DECLARE
     estado VARCHAR(30);
 BEGIN
     FOR ronda IN 0..4 LOOP
-        INSERT INTO Jornada (idTorneo, numeroJornada, tipoFase, formatoJornada, estado, fechaInicio, fechaFin)
-        VALUES (torneo_id, ronda + 1, 'LIGA_GRUPO', 'LIGA_4_SETS', 'ACTIVA', fecha_base + ronda * 7, fecha_base + ronda * 7)
+        INSERT INTO Jornada (idTorneo, numeroJornada, tipoFase, formatoJornada, fechaInicio, fechaFin)
+        VALUES (torneo_id, ronda + 1, 'LIGA_GRUPO', 'LIGA_4_SETS', fecha_base + ronda * 7, fecha_base + ronda * 7)
         RETURNING id INTO jornada_id;
 
         slot := 0;

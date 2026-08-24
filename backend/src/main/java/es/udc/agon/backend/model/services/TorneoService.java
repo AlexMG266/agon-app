@@ -63,9 +63,6 @@ public interface TorneoService {
 
     String generarCodigoQR(Long torneoId) throws InstanceNotFoundException;
 
-    void gestionarJornadas(Long torneoId, Long jornadaId, EstadoJornada nuevoEstado)
-            throws InstanceNotFoundException, PermissionException, IllegalArgumentException;
-
     List<Solicitud> obtenerSolicitudesPendientes(Long torneoId);
 
     Torneo actualizarTorneo(Long userId, Long torneoId, Torneo datos)
