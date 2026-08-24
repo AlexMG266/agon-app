@@ -81,17 +81,19 @@ public class TorneoConversor {
                 torneo.getPuntosEmpate(),
                 torneo.getPuntosDerrota(),
                 torneo.getFormatoPartidos(),
-                torneo.getCriterioDesempate(),
                 diasList,
                 torneo.getHoraInicio(),
                 torneo.getHoraFin(),
                 torneo.getDuracionPartido(),
                 fechasExcluidasList,
-                torneo.getEstrategiaDistribucion(),
+                torneo.getEstrategiaDistribucion() != null
+                        ? torneo.getEstrategiaDistribucion().name() : null,
                 torneo.getDiasEntreJornadas(),
-                torneo.getEstrategiaPlayoff(),
+                torneo.getEstrategiaPlayoff() != null
+                        ? torneo.getEstrategiaPlayoff().name() : null,
                 torneo.getDiasEntrePlayoff(),
-                torneo.getRondaInicioPlayoff()
+                torneo.getRondaInicioPlayoff() != null
+                        ? torneo.getRondaInicioPlayoff().name() : null
         );
     }
 

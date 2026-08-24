@@ -18,6 +18,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import es.udc.agon.backend.model.entities.Encuentro;
 import es.udc.agon.backend.model.entities.Equipo;
+import es.udc.agon.backend.model.entities.EstrategiaPlayoff;
 import es.udc.agon.backend.model.entities.EstadoTorneo;
 import es.udc.agon.backend.model.entities.Grupo;
 import es.udc.agon.backend.model.entities.GrupoDao;
@@ -25,6 +26,7 @@ import es.udc.agon.backend.model.entities.Inscripcion;
 import es.udc.agon.backend.model.entities.InscripcionDao;
 import es.udc.agon.backend.model.entities.Jornada;
 import es.udc.agon.backend.model.entities.JornadaDao;
+import es.udc.agon.backend.model.entities.RondaPlayoff;
 import es.udc.agon.backend.model.entities.SetEntity;
 import es.udc.agon.backend.model.entities.Solicitud;
 import es.udc.agon.backend.model.entities.TipoFase;
@@ -105,7 +107,7 @@ public class PlayoffServiceTest {
 
     private Torneo configurarConPlayoffStrategy(Torneo torneo, TipoTorneo tipoTorneo,
             int numGrupos, int equiposPorGrupo, boolean tienePlayoff, boolean idaVueltaPlayoff,
-            String estrategiaPlayoff, Integer diasEntrePlayoff)
+            EstrategiaPlayoff estrategiaPlayoff, Integer diasEntrePlayoff)
             throws InstanceNotFoundException {
         return torneoService.configurarEstructuraYGenerarCalendario(
                 torneo.getId(), tipoTorneo, numGrupos, equiposPorGrupo,
@@ -114,7 +116,7 @@ public class PlayoffServiceTest {
 
     private Torneo configurarConRonda(Torneo torneo, TipoTorneo tipoTorneo,
             int numGrupos, int equiposPorGrupo, boolean tienePlayoff, boolean idaVueltaPlayoff,
-            String rondaInicioPlayoff)
+            RondaPlayoff rondaInicioPlayoff)
             throws InstanceNotFoundException {
         return torneoService.configurarEstructuraYGenerarCalendario(
                 torneo.getId(), tipoTorneo, numGrupos, equiposPorGrupo,
@@ -175,7 +177,7 @@ public class PlayoffServiceTest {
     public void testGenerarPlayoffsGeneraFinalConDosClasificados()
             throws InstanceNotFoundException, PermissionException {
         Torneo torneo = prepararTorneoConEquipos(4, "FINAL2");
-        configurarConPlayoffStrategy(torneo, TipoTorneo.GRUPOS_PLAYOFF, 1, 4, true, false, "RAPIDO", null);
+        configurarConPlayoffStrategy(torneo, TipoTorneo.GRUPOS_PLAYOFF, 1, 4, true, false, EstrategiaPlayoff.RAPIDO, null);
 
         asignarPuntosPorGrupo(torneo.getId(), List.of(8, 6, 4, 2));
         List<Jornada> jornadas = torneoService.generarPlayoffs(torneo.getId());
@@ -192,7 +194,7 @@ public class PlayoffServiceTest {
     public void testGenerarPlayoffsAutoAlCompletarFaseDeGrupos()
             throws InstanceNotFoundException, PermissionException {
         Torneo torneo = prepararTorneoConEquipos(4, "AUTO_PO");
-        configurarConPlayoffStrategy(torneo, TipoTorneo.GRUPOS_PLAYOFF, 1, 4, true, false, "RAPIDO", null);
+        configurarConPlayoffStrategy(torneo, TipoTorneo.GRUPOS_PLAYOFF, 1, 4, true, false, EstrategiaPlayoff.RAPIDO, null);
 
         jugarLiga(torneo.getId());
 
@@ -206,7 +208,7 @@ public class PlayoffServiceTest {
     public void testGenerarPlayoffsNoAutoSiLaLigaIncompleta()
             throws InstanceNotFoundException, PermissionException {
         Torneo torneo = prepararTorneoConEquipos(4, "INCOMPL");
-        configurarConPlayoffStrategy(torneo, TipoTorneo.GRUPOS_PLAYOFF, 1, 4, true, false, "RAPIDO", null);
+        configurarConPlayoffStrategy(torneo, TipoTorneo.GRUPOS_PLAYOFF, 1, 4, true, false, EstrategiaPlayoff.RAPIDO, null);
 
         // jugar solo el primer encuentro de la liga
         Jornada primera = jornadaDao.findByTorneoIdOrderByNumeroJornadaAsc(torneo.getId()).get(0);
@@ -222,7 +224,7 @@ public class PlayoffServiceTest {
     public void testGenerarPlayoffsRechazaSegundaLlamada()
             throws InstanceNotFoundException, PermissionException {
         Torneo torneo = prepararTorneoConEquipos(4, "DUP_PO");
-        configurarConPlayoffStrategy(torneo, TipoTorneo.GRUPOS_PLAYOFF, 1, 4, true, false, "RAPIDO", null);
+        configurarConPlayoffStrategy(torneo, TipoTorneo.GRUPOS_PLAYOFF, 1, 4, true, false, EstrategiaPlayoff.RAPIDO, null);
 
         asignarPuntosPorGrupo(torneo.getId(), List.of(8, 6, 4, 2));
         torneoService.generarPlayoffs(torneo.getId());
@@ -235,7 +237,7 @@ public class PlayoffServiceTest {
     public void testGenerarPlayoffsConRondaDeInicioCalibrada()
             throws InstanceNotFoundException, PermissionException {
         Torneo torneo = prepararTorneoConEquipos(8, "CUARTOS");
-        configurarConRonda(torneo, TipoTorneo.GRUPOS_PLAYOFF, 2, 4, true, false, "CUARTOS");
+        configurarConRonda(torneo, TipoTorneo.GRUPOS_PLAYOFF, 2, 4, true, false, RondaPlayoff.CUARTOS);
         asignarPuntosPorGrupo(torneo.getId(), List.of(8, 6, 4, 2));
 
         List<Jornada> jornadas = torneoService.generarPlayoffs(torneo.getId());
@@ -252,7 +254,7 @@ public class PlayoffServiceTest {
     public void testGenerarPlayoffsIdaVuelta()
             throws InstanceNotFoundException, PermissionException {
         Torneo torneo = prepararTorneoConEquipos(8, "CUARTOS_IV");
-        configurarConRonda(torneo, TipoTorneo.GRUPOS_PLAYOFF, 2, 4, true, true, "CUARTOS");
+        configurarConRonda(torneo, TipoTorneo.GRUPOS_PLAYOFF, 2, 4, true, true, RondaPlayoff.CUARTOS);
         asignarPuntosPorGrupo(torneo.getId(), List.of(8, 6, 4, 2));
 
         List<Jornada> jornadas = torneoService.generarPlayoffs(torneo.getId());
@@ -270,7 +272,7 @@ public class PlayoffServiceTest {
         Torneo torneo = prepararTorneoConEquipos(6, "3GRUPOS");
 
         assertThrows(IllegalArgumentException.class,
-                () -> configurarConRonda(torneo, TipoTorneo.GRUPOS_PLAYOFF, 3, 2, true, false, "CUARTOS"));
+                () -> configurarConRonda(torneo, TipoTorneo.GRUPOS_PLAYOFF, 3, 2, true, false, RondaPlayoff.CUARTOS));
     }
 
     @Test
@@ -283,7 +285,7 @@ public class PlayoffServiceTest {
     public void testEliminatoriasUsanFormatoPlayoff()
             throws InstanceNotFoundException, PermissionException {
         Torneo torneo = prepararTorneoConEquipos(4, "FORMATO");
-        configurarConPlayoffStrategy(torneo, TipoTorneo.GRUPOS_PLAYOFF, 1, 4, true, false, "RAPIDO", null);
+        configurarConPlayoffStrategy(torneo, TipoTorneo.GRUPOS_PLAYOFF, 1, 4, true, false, EstrategiaPlayoff.RAPIDO, null);
 
         asignarPuntosPorGrupo(torneo.getId(), List.of(8, 6, 4, 2));
         List<Jornada> jornadas = torneoService.generarPlayoffs(torneo.getId());

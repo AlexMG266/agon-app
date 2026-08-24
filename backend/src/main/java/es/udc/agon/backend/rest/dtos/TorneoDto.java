@@ -58,7 +58,6 @@ public class TorneoDto {
     private Integer puntosEmpate;
     private Integer puntosDerrota;
     private String formatoPartidos;
-    private String criterioDesempate;
     private List<String> diasDisponibles;
     private String horaInicio;
     private String horaFin;
@@ -80,7 +79,7 @@ public class TorneoDto {
                      List<InscripcionDto> inscripciones,
                      LocalDate fechaInicio, LocalDate fechaFin, LocalDate fechaLimiteInscripcion,
                      Integer puntosVictoria, Integer puntosEmpate, Integer puntosDerrota,
-                     String formatoPartidos, String criterioDesempate, List<String> diasDisponibles,
+                     String formatoPartidos, List<String> diasDisponibles,
                      String horaInicio, String horaFin, Integer duracionPartido,
                      List<String> fechasExcluidas, String estrategiaDistribucion,
                      Integer diasEntreJornadas, String estrategiaPlayoff,
@@ -106,7 +105,6 @@ public class TorneoDto {
         this.puntosEmpate = puntosEmpate;
         this.puntosDerrota = puntosDerrota;
         this.formatoPartidos = formatoPartidos;
-        this.criterioDesempate = criterioDesempate;
         this.diasDisponibles = diasDisponibles;
         this.horaInicio = horaInicio;
         this.horaFin = horaFin;
@@ -183,9 +181,6 @@ public class TorneoDto {
 
     public String getFormatoPartidos() { return formatoPartidos; }
     public void setFormatoPartidos(String formatoPartidos) { this.formatoPartidos = formatoPartidos; }
-
-    public String getCriterioDesempate() { return criterioDesempate; }
-    public void setCriterioDesempate(String criterioDesempate) { this.criterioDesempate = criterioDesempate; }
 
     public List<String> getDiasDisponibles() { return diasDisponibles; }
     public void setDiasDisponibles(List<String> diasDisponibles) { this.diasDisponibles = diasDisponibles; }

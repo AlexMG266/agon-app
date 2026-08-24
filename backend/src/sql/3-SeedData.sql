@@ -136,7 +136,7 @@ VALUES
 INSERT INTO Torneo (idOrganizador, nombre, privado, codigoTorneo, numGrupos, equiposPorGrupo, tienePlayoff, tipoTorneo, idaVueltaPlayoff, estado,
                     fechaInicio, fechaFin, fechaLimiteInscripcion,
                     puntosVictoria, puntosEmpate, puntosDerrota,
-                    formatoPartidos, criterioDesempate,
+                    formatoPartidos,
                     diasDisponibles, horaInicio, horaFin, duracionPartido,
                     fechasExcluidas, estrategiaDistribucion, diasEntreJornadas)
 SELECT
@@ -145,7 +145,7 @@ SELECT
     NULL, NULL, NULL, NULL, NULL, 'RECLUTANDO',
     '2026-03-01', '2026-04-30', '2026-02-20',
     3, 1, 0,
-    '4_SETS', 'PUNTOS',
+    '4_SETS',
     'L,M,X,J,V', '16:00', '22:00', 45,
     '2026-04-01,2026-04-02', 'JORNADAS', 7;
 
@@ -254,7 +254,7 @@ VALUES
 INSERT INTO Torneo (idOrganizador, nombre, privado, codigoTorneo, numGrupos, equiposPorGrupo, tienePlayoff, tipoTorneo, idaVueltaPlayoff, estado,
                     fechaInicio, fechaFin, fechaLimiteInscripcion,
                     puntosVictoria, puntosEmpate, puntosDerrota,
-                    formatoPartidos, criterioDesempate,
+                    formatoPartidos,
                     diasDisponibles, horaInicio, horaFin, duracionPartido,
                     fechasExcluidas, estrategiaDistribucion, diasEntreJornadas,
                     estrategiaPlayoff, diasEntrePlayoff, rondaInicioPlayoff)
@@ -262,14 +262,14 @@ VALUES
     (1, 'Liga + Playoff 2026', FALSE, 'T82-LIGAPL', 2, 10, TRUE, 'GRUPOS_PLAYOFF', FALSE, 'FASE_GRUPOS',
      '2026-06-15', '2026-08-10', '2026-06-01',
      3, 1, 0,
-     '4_SETS', 'PUNTOS',
+     '4_SETS',
      'L,M,X,J,V,S,D', '16:00', '22:00', 45,
      NULL, 'JORNADAS', 7,
      'RAPIDO', NULL, 'CUARTOS'),
     (1, 'Liga Única 2026', FALSE, 'T83-LIGAON', 1, 20, FALSE, 'LIGA_UNICA', FALSE, 'FASE_GRUPOS',
      '2026-03-02', '2026-07-06', '2026-02-20',
      3, 1, 0,
-     '4_SETS', 'PUNTOS',
+     '4_SETS',
      'L,M,X,J,V,S,D', '16:00', '22:00', 45,
      NULL, 'JORNADAS', 7,
      NULL, NULL, NULL);
@@ -520,7 +520,7 @@ END $$;
 INSERT INTO Torneo (idOrganizador, nombre, privado, codigoTorneo, numGrupos, equiposPorGrupo, tienePlayoff, tipoTorneo, idaVueltaPlayoff, estado,
                     fechaInicio, fechaFin, fechaLimiteInscripcion,
                     puntosVictoria, puntosEmpate, puntosDerrota,
-                    formatoPartidos, criterioDesempate,
+                    formatoPartidos,
                     diasDisponibles, horaInicio, horaFin, duracionPartido,
                     fechasExcluidas, estrategiaDistribucion, diasEntreJornadas,
                     estrategiaPlayoff, diasEntrePlayoff, rondaInicioPlayoff)
@@ -528,7 +528,7 @@ VALUES
     (1, 'Liga Media Temporada 2026', FALSE, 'T84-LIGAPL2', 2, 5, TRUE, 'GRUPOS_PLAYOFF', FALSE, 'FASE_GRUPOS',
      CURRENT_DATE - 14, CURRENT_DATE + 21, CURRENT_DATE - 21,
      3, 1, 0,
-     '4_SETS', 'PUNTOS',
+     '4_SETS',
      'L,M,X,J,V,S,D', '16:00', '22:00', 45,
      NULL, 'JORNADAS', 7,
      'RAPIDO', NULL, 'SEMIFINALES');

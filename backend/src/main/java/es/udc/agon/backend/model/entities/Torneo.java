@@ -29,17 +29,16 @@ public class Torneo {
     private Integer puntosEmpate;
     private Integer puntosDerrota;
     private String formatoPartidos;
-    private String criterioDesempate;
-    private String diasDisponibles;       
+    private String diasDisponibles;
     private String horaInicio;
     private String horaFin;
     private Integer duracionPartido;
     private String fechasExcluidas;       // almacenados como coma-separados, ej: "2026-04-01,2026-04-02"
-    private String estrategiaDistribucion;
+    private EstrategiaDistribucion estrategiaDistribucion;
     private Integer diasEntreJornadas;
-    private String estrategiaPlayoff;
+    private EstrategiaPlayoff estrategiaPlayoff;
     private Integer diasEntrePlayoff;
-    private String rondaInicioPlayoff; // FINAL, SEMIFINALES, CUARTOS, OCTAVOS, DIECISEISAVOS
+    private RondaPlayoff rondaInicioPlayoff; // FINAL, SEMIFINALES, CUARTOS, OCTAVOS, DIECISEISAVOS
 
     private List<Grupo> grupos = new ArrayList<>();
     private List<Jornada> jornadas = new ArrayList<>();
@@ -194,10 +193,6 @@ public class Torneo {
     public String getFormatoPartidos() { return formatoPartidos; }
     public void setFormatoPartidos(String formatoPartidos) { this.formatoPartidos = formatoPartidos; }
 
-    @Column(name = "criterioDesempate")
-    public String getCriterioDesempate() { return criterioDesempate; }
-    public void setCriterioDesempate(String criterioDesempate) { this.criterioDesempate = criterioDesempate; }
-
     @Column(name = "diasDisponibles")
     public String getDiasDisponibles() { return diasDisponibles; }
     public void setDiasDisponibles(String diasDisponibles) { this.diasDisponibles = diasDisponibles; }
@@ -218,25 +213,28 @@ public class Torneo {
     public String getFechasExcluidas() { return fechasExcluidas; }
     public void setFechasExcluidas(String fechasExcluidas) { this.fechasExcluidas = fechasExcluidas; }
 
+    @Enumerated(EnumType.STRING)
     @Column(name = "estrategiaDistribucion")
-    public String getEstrategiaDistribucion() { return estrategiaDistribucion; }
-    public void setEstrategiaDistribucion(String estrategiaDistribucion) { this.estrategiaDistribucion = estrategiaDistribucion; }
+    public EstrategiaDistribucion getEstrategiaDistribucion() { return estrategiaDistribucion; }
+    public void setEstrategiaDistribucion(EstrategiaDistribucion estrategiaDistribucion) { this.estrategiaDistribucion = estrategiaDistribucion; }
 
     @Column(name = "diasEntreJornadas")
     public Integer getDiasEntreJornadas() { return diasEntreJornadas; }
     public void setDiasEntreJornadas(Integer diasEntreJornadas) { this.diasEntreJornadas = diasEntreJornadas; }
 
+    @Enumerated(EnumType.STRING)
     @Column(name = "estrategiaPlayoff")
-    public String getEstrategiaPlayoff() { return estrategiaPlayoff; }
-    public void setEstrategiaPlayoff(String estrategiaPlayoff) { this.estrategiaPlayoff = estrategiaPlayoff; }
+    public EstrategiaPlayoff getEstrategiaPlayoff() { return estrategiaPlayoff; }
+    public void setEstrategiaPlayoff(EstrategiaPlayoff estrategiaPlayoff) { this.estrategiaPlayoff = estrategiaPlayoff; }
 
     @Column(name = "diasEntrePlayoff")
     public Integer getDiasEntrePlayoff() { return diasEntrePlayoff; }
     public void setDiasEntrePlayoff(Integer diasEntrePlayoff) { this.diasEntrePlayoff = diasEntrePlayoff; }
 
+    @Enumerated(EnumType.STRING)
     @Column(name = "rondaInicioPlayoff", length = 20)
-    public String getRondaInicioPlayoff() { return rondaInicioPlayoff; }
-    public void setRondaInicioPlayoff(String rondaInicioPlayoff) { this.rondaInicioPlayoff = rondaInicioPlayoff; }
+    public RondaPlayoff getRondaInicioPlayoff() { return rondaInicioPlayoff; }
+    public void setRondaInicioPlayoff(RondaPlayoff rondaInicioPlayoff) { this.rondaInicioPlayoff = rondaInicioPlayoff; }
 
     @OneToMany(mappedBy = "torneo", cascade = CascadeType.ALL, orphanRemoval = true)
     public List<Grupo> getGrupos() {

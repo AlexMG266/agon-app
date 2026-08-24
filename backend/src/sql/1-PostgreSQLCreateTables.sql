@@ -93,7 +93,6 @@ CREATE TABLE Torneo (
     puntosEmpate INTEGER,
     puntosDerrota INTEGER,
     formatoPartidos VARCHAR(20),
-    criterioDesempate VARCHAR(20),
     diasDisponibles VARCHAR(50),
     horaInicio VARCHAR(5),
     horaFin VARCHAR(5),

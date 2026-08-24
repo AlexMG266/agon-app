@@ -18,6 +18,8 @@ import org.junit.jupiter.api.Test;
 
 import es.udc.agon.backend.model.entities.Encuentro;
 import es.udc.agon.backend.model.entities.Equipo;
+import es.udc.agon.backend.model.entities.EstrategiaDistribucion;
+import es.udc.agon.backend.model.entities.EstrategiaPlayoff;
 import es.udc.agon.backend.model.entities.EstadoEncuentro;
 import es.udc.agon.backend.model.entities.EstadoEquipo;
 import es.udc.agon.backend.model.entities.EstadoSolicitud;
@@ -25,6 +27,7 @@ import es.udc.agon.backend.model.entities.Grupo;
 import es.udc.agon.backend.model.entities.Inscripcion;
 import es.udc.agon.backend.model.entities.Jornada;
 import es.udc.agon.backend.model.entities.Notification;
+import es.udc.agon.backend.model.entities.RondaPlayoff;
 import es.udc.agon.backend.model.entities.SetEntity;
 import es.udc.agon.backend.model.entities.Solicitud;
 import es.udc.agon.backend.model.entities.TipoFase;
@@ -120,11 +123,11 @@ public class ConversorTest {
         torneo.setHoraInicio("10:00");
         torneo.setHoraFin("20:00");
         torneo.setDuracionPartido(60);
-        torneo.setEstrategiaDistribucion("DISPERSO");
+        torneo.setEstrategiaDistribucion(EstrategiaDistribucion.JORNADAS);
         torneo.setDiasEntreJornadas(3);
-        torneo.setEstrategiaPlayoff("RAPIDO");
+        torneo.setEstrategiaPlayoff(EstrategiaPlayoff.RAPIDO);
         torneo.setDiasEntrePlayoff(1);
-        torneo.setRondaInicioPlayoff("CUARTOS");
+        torneo.setRondaInicioPlayoff(RondaPlayoff.CUARTOS);
 
         Grupo grupo = new Grupo(torneo, "Grupo A");
         grupo.setId(9L);

@@ -1,5 +1,8 @@
 package es.udc.agon.backend.rest.controllers;
 
+import es.udc.agon.backend.model.entities.EstrategiaDistribucion;
+import es.udc.agon.backend.model.entities.EstrategiaPlayoff;
+import es.udc.agon.backend.model.entities.RondaPlayoff;
 import es.udc.agon.backend.model.entities.Solicitud;
 import es.udc.agon.backend.model.entities.TipoTorneo;
 import es.udc.agon.backend.model.entities.Torneo;
@@ -75,7 +78,6 @@ public class TorneoController {
         torneo.setPuntosEmpate(params.getPuntosEmpate());
         torneo.setPuntosDerrota(params.getPuntosDerrota());
         torneo.setFormatoPartidos(params.getFormatoPartidos());
-        torneo.setCriterioDesempate("PUNTOS");
         if (params.getDiasDisponibles() != null) {
             torneo.setDiasDisponibles(String.join(",", params.getDiasDisponibles()));
         }
@@ -85,8 +87,10 @@ public class TorneoController {
         if (params.getFechasExcluidas() != null) {
             torneo.setFechasExcluidas(String.join(",", params.getFechasExcluidas()));
         }
-        torneo.setEstrategiaDistribucion("UNIFORME".equals(params.getEstrategiaDistribucion())
-                ? "RAPIDO" : params.getEstrategiaDistribucion());
+        String estrDistribucion = "UNIFORME".equals(params.getEstrategiaDistribucion())
+                ? "RAPIDO" : params.getEstrategiaDistribucion();
+        torneo.setEstrategiaDistribucion(estrDistribucion != null
+                ? EstrategiaDistribucion.valueOf(estrDistribucion) : null);
         torneo.setDiasEntreJornadas(params.getDiasEntreJornadas());
 
         Torneo savedTorneo = torneoService.crearTorneo(userId, torneo, params.getPrivado());
@@ -133,8 +137,10 @@ public class TorneoController {
         if (params.getFechasExcluidas() != null) {
             datos.setFechasExcluidas(String.join(",", params.getFechasExcluidas()));
         }
-        datos.setEstrategiaDistribucion("UNIFORME".equals(params.getEstrategiaDistribucion())
-                ? "RAPIDO" : params.getEstrategiaDistribucion());
+        String estrDistribucion = "UNIFORME".equals(params.getEstrategiaDistribucion())
+                ? "RAPIDO" : params.getEstrategiaDistribucion();
+        datos.setEstrategiaDistribucion(estrDistribucion != null
+                ? EstrategiaDistribucion.valueOf(estrDistribucion) : null);
         datos.setDiasEntreJornadas(params.getDiasEntreJornadas());
 
         Torneo torneo = torneoService.actualizarTorneo(userId, id, datos);
@@ -170,10 +176,12 @@ public class TorneoController {
                 params.getEquiposPorGrupo(),
                 params.isTienePlayoff(),
                 params.isIdaVueltaPlayoff(),
-                params.getEstrategiaPlayoff(),
+                params.getEstrategiaPlayoff() != null
+                        ? EstrategiaPlayoff.valueOf(params.getEstrategiaPlayoff()) : null,
                 params.getDiasEntrePlayoff(),
                 params.getFechaFin(),
-                params.getRondaInicioPlayoff()
+                params.getRondaInicioPlayoff() != null
+                        ? RondaPlayoff.valueOf(params.getRondaInicioPlayoff()) : null
         );
         return TorneoConversor.toTorneoDto(torneo);
     }
