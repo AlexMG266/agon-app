@@ -59,7 +59,7 @@ public class Solicitud {
     }
 
     @ManyToOne(optional = false, fetch = FetchType.LAZY)
-    @JoinColumn(name = "candidato_id")
+    @JoinColumn(name = "candidatoId")
     public User getCandidato() {
         return candidato;
     }
@@ -69,7 +69,7 @@ public class Solicitud {
     }
 
     @ManyToOne(optional = false, fetch = FetchType.LAZY)
-    @JoinColumn(name = "decisor_id")
+    @JoinColumn(name = "decisorId")
     public User getDecisor() {
         return decisor;
     }
@@ -79,7 +79,7 @@ public class Solicitud {
     }
 
     @ManyToOne(optional = false, fetch = FetchType.LAZY)
-    @JoinColumn(name = "equipo_id")
+    @JoinColumn(name = "equipoId")
     public Equipo getEquipo() {
         return equipo;
     }
@@ -89,7 +89,7 @@ public class Solicitud {
     }
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "torneo_id")
+    @JoinColumn(name = "torneoId")
     public Torneo getTorneo() {
         return torneo;
     }
@@ -109,7 +109,7 @@ public class Solicitud {
     }
 
     @Enumerated(EnumType.STRING)
-    @Column(name = "tipo_solicitud")
+    @Column(name = "tipoSolicitud")
     public TipoSolicitud getTipoSolicitud() {
         return tipoSolicitud;
     }
@@ -118,7 +118,7 @@ public class Solicitud {
         this.tipoSolicitud = tipoSolicitud;
     }
 
-    @Column(name = "fecha_creacion")
+    @Column(name = "fechaCreacion")
     public LocalDateTime getFechaCreacion() {
         return fechaCreacion;
     }

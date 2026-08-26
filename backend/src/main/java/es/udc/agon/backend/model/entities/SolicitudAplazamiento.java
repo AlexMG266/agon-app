@@ -5,7 +5,7 @@ import jakarta.persistence.*;
 import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "solicitud_aplazamiento")
+@Table(name = "SolicitudAplazamiento")
 public class SolicitudAplazamiento {
 
     private Long id;

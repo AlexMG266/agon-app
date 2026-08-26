@@ -1,14 +1,22 @@
-DROP TABLE IF EXISTS Elo_Historial CASCADE;
+-- DROP both naming variants (snake_case legacy + camelCase) so this script is
+-- idempotent against databases created with the old schema. Unquoted identifiers
+-- fold to lowercase in PostgreSQL, so 'elo_historial' and 'EloHistorial' target
+-- different tables and each DROP is a no-op if the table does not exist.
+DROP TABLE IF EXISTS EloHistorial CASCADE;
+DROP TABLE IF EXISTS elo_historial CASCADE;
 DROP TABLE IF EXISTS SeguimientoTorneo CASCADE;
-DROP TABLE IF EXISTS Solicitud_Aplazamiento CASCADE;
-DROP TABLE IF EXISTS Set_Entity CASCADE;
+DROP TABLE IF EXISTS SolicitudAplazamiento CASCADE;
+DROP TABLE IF EXISTS solicitud_aplazamiento CASCADE;
+DROP TABLE IF EXISTS SetEntity CASCADE;
+DROP TABLE IF EXISTS set_entity CASCADE;
 DROP TABLE IF EXISTS Encuentro CASCADE;
 DROP TABLE IF EXISTS Jornada CASCADE;
 DROP TABLE IF EXISTS Inscripcion CASCADE;
 DROP TABLE IF EXISTS Grupo CASCADE;
 DROP TABLE IF EXISTS Torneo CASCADE;
 DROP TABLE IF EXISTS Solicitud CASCADE;
-DROP TABLE IF EXISTS Equipo_Miembros CASCADE;
+DROP TABLE IF EXISTS EquipoMiembros CASCADE;
+DROP TABLE IF EXISTS equipo_miembros CASCADE;
 DROP TABLE IF EXISTS Equipo CASCADE;
 DROP TABLE IF EXISTS Notification CASCADE;
 DROP TABLE IF EXISTS "User" CASCADE;
@@ -55,21 +63,21 @@ CREATE TABLE Equipo (
     nombreEquipo VARCHAR(60) NOT NULL,
     descripcion VARCHAR(500) NOT NULL,
     estado VARCHAR(20) NOT NULL,
-    creador_id BIGINT NOT NULL,
-    codigo_equipo VARCHAR(8) NOT NULL,
-    fecha_creacion TIMESTAMP NOT NULL DEFAULT NOW(),
+    creadorId BIGINT NOT NULL,
+    codigoEquipo VARCHAR(8) NOT NULL,
+    fechaCreacion TIMESTAMP NOT NULL DEFAULT NOW(),
     CONSTRAINT EquipoPK PRIMARY KEY (id),
     CONSTRAINT EquipoNombreUniqueKey UNIQUE (nombreEquipo),
-    CONSTRAINT EquipoCodigoUniqueKey UNIQUE (codigo_equipo),
-    CONSTRAINT EquipoCreadorIdFK FOREIGN KEY (creador_id) REFERENCES "User"(id) ON DELETE CASCADE
+    CONSTRAINT EquipoCodigoUniqueKey UNIQUE (codigoEquipo),
+    CONSTRAINT EquipoCreadorIdFK FOREIGN KEY (creadorId) REFERENCES "User"(id) ON DELETE CASCADE
 );
 
-CREATE TABLE Equipo_Miembros (
-    equipo_id BIGINT NOT NULL,
-    usuario_id BIGINT NOT NULL,
-    CONSTRAINT EquipoMiembrosPK PRIMARY KEY (equipo_id, usuario_id),
-    CONSTRAINT EquipoMiembrosEquipoIdFK FOREIGN KEY (equipo_id) REFERENCES Equipo(id) ON DELETE CASCADE,
-    CONSTRAINT EquipoMiembrosUsuarioIdFK FOREIGN KEY (usuario_id) REFERENCES "User"(id) ON DELETE CASCADE
+CREATE TABLE EquipoMiembros (
+    equipoId BIGINT NOT NULL,
+    usuarioId BIGINT NOT NULL,
+    CONSTRAINT EquipoMiembrosPK PRIMARY KEY (equipoId, usuarioId),
+    CONSTRAINT EquipoMiembrosEquipoIdFK FOREIGN KEY (equipoId) REFERENCES Equipo(id) ON DELETE CASCADE,
+    CONSTRAINT EquipoMiembrosUsuarioIdFK FOREIGN KEY (usuarioId) REFERENCES "User"(id) ON DELETE CASCADE
 );
 
 
@@ -111,22 +119,22 @@ CREATE INDEX TorneoIndexByOrganizador ON Torneo (idOrganizador);
 
 CREATE TABLE Solicitud (
     id BIGSERIAL NOT NULL,
-    candidato_id BIGINT NOT NULL,
-    decisor_id BIGINT NOT NULL,
-    equipo_id BIGINT NOT NULL,
-    torneo_id BIGINT,
+    candidatoId BIGINT NOT NULL,
+    decisorId BIGINT NOT NULL,
+    equipoId BIGINT NOT NULL,
+    torneoId BIGINT,
     estado VARCHAR(20) NOT NULL,
-    tipo_solicitud VARCHAR(30) NOT NULL,
-    fecha_creacion TIMESTAMP NOT NULL,
+    tipoSolicitud VARCHAR(30) NOT NULL,
+    fechaCreacion TIMESTAMP NOT NULL,
     CONSTRAINT SolicitudPK PRIMARY KEY (id),
-    CONSTRAINT SolicitudCandidatoIdFK FOREIGN KEY (candidato_id) REFERENCES "User"(id) ON DELETE CASCADE,
-    CONSTRAINT SolicitudDecisorIdFK FOREIGN KEY (decisor_id) REFERENCES "User"(id) ON DELETE CASCADE,
-    CONSTRAINT SolicitudEquipoIdFK FOREIGN KEY (equipo_id) REFERENCES Equipo(id) ON DELETE CASCADE,
-    CONSTRAINT SolicitudTorneoIdFK FOREIGN KEY (torneo_id) REFERENCES Torneo(id) ON DELETE CASCADE
+    CONSTRAINT SolicitudCandidatoIdFK FOREIGN KEY (candidatoId) REFERENCES "User"(id) ON DELETE CASCADE,
+    CONSTRAINT SolicitudDecisorIdFK FOREIGN KEY (decisorId) REFERENCES "User"(id) ON DELETE CASCADE,
+    CONSTRAINT SolicitudEquipoIdFK FOREIGN KEY (equipoId) REFERENCES Equipo(id) ON DELETE CASCADE,
+    CONSTRAINT SolicitudTorneoIdFK FOREIGN KEY (torneoId) REFERENCES Torneo(id) ON DELETE CASCADE
 );
 
-CREATE INDEX SolicitudIndexByCandidatoId ON Solicitud (candidato_id);
-CREATE INDEX SolicitudIndexByDecisorId ON Solicitud (decisor_id);
+CREATE INDEX SolicitudIndexByCandidatoId ON Solicitud (candidatoId);
+CREATE INDEX SolicitudIndexByDecisorId ON Solicitud (decisorId);
 
 CREATE TABLE Grupo (
     id BIGSERIAL NOT NULL,
@@ -193,7 +201,7 @@ CREATE TABLE Encuentro (
 
 CREATE INDEX EncuentroIndexByJornada ON Encuentro (idJornada);
 
-CREATE TABLE Set_Entity (
+CREATE TABLE SetEntity (
     id BIGSERIAL NOT NULL,
     idEncuentro BIGINT NOT NULL,
     numeroSet INTEGER NOT NULL,
@@ -203,9 +211,9 @@ CREATE TABLE Set_Entity (
     CONSTRAINT SetEntityEncuentroIdFK FOREIGN KEY (idEncuentro) REFERENCES Encuentro(id) ON DELETE CASCADE
 );
 
-CREATE INDEX SetEntityIndexByEncuentro ON Set_Entity (idEncuentro);
+CREATE INDEX SetEntityIndexByEncuentro ON SetEntity (idEncuentro);
 
-CREATE TABLE Solicitud_Aplazamiento (
+CREATE TABLE SolicitudAplazamiento (
     id BIGSERIAL NOT NULL,
     idEncuentro BIGINT NOT NULL,
     idEquipoSolicitante BIGINT NOT NULL,
@@ -216,7 +224,7 @@ CREATE TABLE Solicitud_Aplazamiento (
     CONSTRAINT SolicitudAplEquipoIdFK FOREIGN KEY (idEquipoSolicitante) REFERENCES Equipo(id) ON DELETE CASCADE
 );
 
-CREATE INDEX SolicitudAplazamientoIndexByEncuentro ON Solicitud_Aplazamiento (idEncuentro);
+CREATE INDEX SolicitudAplazamientoIndexByEncuentro ON SolicitudAplazamiento (idEncuentro);
 
 CREATE TABLE SeguimientoTorneo (
     id BIGSERIAL NOT NULL,
@@ -232,7 +240,7 @@ CREATE TABLE SeguimientoTorneo (
 CREATE INDEX SeguimientoTorneoIndexByUsuarioId ON SeguimientoTorneo (usuarioId);
 CREATE INDEX SeguimientoTorneoIndexByTorneoId ON SeguimientoTorneo (torneoId);
 
-CREATE TABLE Elo_Historial (
+CREATE TABLE EloHistorial (
     id BIGSERIAL NOT NULL,
     idUsuario BIGINT NOT NULL,
     idEncuentro BIGINT NOT NULL,
@@ -245,4 +253,4 @@ CREATE TABLE Elo_Historial (
     CONSTRAINT EloHistorialEncuentroIdFK FOREIGN KEY (idEncuentro) REFERENCES Encuentro(id) ON DELETE CASCADE
 );
 
-CREATE INDEX EloHistorialIndexByUsuarioId ON Elo_Historial (idUsuario);
+CREATE INDEX EloHistorialIndexByUsuarioId ON EloHistorial (idUsuario);

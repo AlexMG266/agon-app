@@ -70,12 +70,12 @@ VALUES
 -- ============================================================
 -- 2. EQUIPOS (20 equipos, 2 miembros cada uno, códigos auto-generados)
 -- ============================================================
-INSERT INTO Equipo (nombreEquipo, descripcion, estado, creador_id, codigo_equipo)
+INSERT INTO Equipo (nombreEquipo, descripcion, estado, creadorId, codigoEquipo)
 SELECT
     v.nombreEquipo,
     v.descripcion,
     v.estado::TEXT,
-    v.creador_id::BIGINT,
+    v.creadorId::BIGINT,
     UPPER(SUBSTR(MD5(RANDOM()::TEXT || CLOCK_TIMESTAMP()::TEXT), 1, 8))
 FROM (VALUES
     ('Los Alfa',      'Equipo formado por test001 y test002',   'ACTIVO', 2),
@@ -98,12 +98,12 @@ FROM (VALUES
     ('Los Sigma',     'Equipo formado por test035 y test036',   'ACTIVO', 36),
     ('Los Tau',       'Equipo formado por test037 y test038',   'ACTIVO', 38),
     ('Los Omega',     'Equipo formado por test039 y test040',   'ACTIVO', 40)
-) AS v(nombreEquipo, descripcion, estado, creador_id);
+) AS v(nombreEquipo, descripcion, estado, creadorId);
 
 -- ============================================================
 -- 3. MIEMBROS DE EQUIPOS (2 miembros por equipo)
 -- ============================================================
-INSERT INTO Equipo_Miembros (equipo_id, usuario_id)
+INSERT INTO EquipoMiembros (equipoId, usuarioId)
 VALUES
     (1,  2),  (1,  3),   -- Los Alfa:   test001 + test002
     (2,  4),  (2,  5),   -- Los Beta:   test003 + test004
@@ -175,7 +175,7 @@ ORDER BY id;
 -- ============================================================
 -- 5. SOLICITUDES DE INSCRIPCIÓN (20 solicitudes ACEPTADAS al torneo principal)
 -- ============================================================
-INSERT INTO Solicitud (candidato_id, decisor_id, equipo_id, torneo_id, estado, tipo_solicitud, fecha_creacion)
+INSERT INTO Solicitud (candidatoId, decisorId, equipoId, torneoId, estado, tipoSolicitud, fechaCreacion)
 VALUES
     (2,  1, 1,  1, 'ACEPTADA', 'SOLICITUD_INSCRIPCION', NOW() - INTERVAL '10 days'),
     (4,  1, 2,  1, 'ACEPTADA', 'SOLICITUD_INSCRIPCION', NOW() - INTERVAL '9 days'),
@@ -368,19 +368,19 @@ BEGIN
                 -- Cada set a "mejor de 9 bolas": el primero que llega a 5 gana el set.
                 IF enc_num % 4 = 0 THEN
                     -- Local gana 3-1
-                    INSERT INTO Set_Entity (idEncuentro, numeroSet, golesLocal, golesVisitante) VALUES
+                    INSERT INTO SetEntity (idEncuentro, numeroSet, golesLocal, golesVisitante) VALUES
                         (enc_id, 1, 5, 3), (enc_id, 2, 5, 1), (enc_id, 3, 4, 5), (enc_id, 4, 5, 2);
                 ELSIF enc_num % 4 = 1 THEN
                     -- Local gana 4-0
-                    INSERT INTO Set_Entity (idEncuentro, numeroSet, golesLocal, golesVisitante) VALUES
+                    INSERT INTO SetEntity (idEncuentro, numeroSet, golesLocal, golesVisitante) VALUES
                         (enc_id, 1, 5, 0), (enc_id, 2, 5, 4), (enc_id, 3, 5, 2), (enc_id, 4, 5, 3);
                 ELSIF enc_num % 4 = 2 THEN
                     -- Empate 2-2
-                    INSERT INTO Set_Entity (idEncuentro, numeroSet, golesLocal, golesVisitante) VALUES
+                    INSERT INTO SetEntity (idEncuentro, numeroSet, golesLocal, golesVisitante) VALUES
                         (enc_id, 1, 5, 4), (enc_id, 2, 3, 5), (enc_id, 3, 5, 2), (enc_id, 4, 4, 5);
                 ELSE
                     -- Visitante gana 3-1
-                    INSERT INTO Set_Entity (idEncuentro, numeroSet, golesLocal, golesVisitante) VALUES
+                    INSERT INTO SetEntity (idEncuentro, numeroSet, golesLocal, golesVisitante) VALUES
                         (enc_id, 1, 2, 5), (enc_id, 2, 5, 3), (enc_id, 3, 1, 5), (enc_id, 4, 4, 5);
                 END IF;
             END LOOP;
@@ -388,7 +388,7 @@ BEGIN
     END LOOP;
 
     UPDATE Encuentro SET estadoEncuentro = 'PENDIENTE' WHERE id = enc_id;
-    DELETE FROM Set_Entity WHERE idEncuentro = enc_id;
+    DELETE FROM SetEntity WHERE idEncuentro = enc_id;
 END $$;
 
 -- Torneo 83: 1 grupo de 20, 19 jornadas (método round-robin). Solo queda PENDIENTE el último partido.
@@ -435,26 +435,26 @@ BEGIN
             -- Cada set a "mejor de 9 bolas": el primero que llega a 5 gana el set.
             IF enc_num % 4 = 0 THEN
                 -- Local gana 3-1
-                INSERT INTO Set_Entity (idEncuentro, numeroSet, golesLocal, golesVisitante) VALUES
+                INSERT INTO SetEntity (idEncuentro, numeroSet, golesLocal, golesVisitante) VALUES
                     (enc_id, 1, 5, 3), (enc_id, 2, 5, 1), (enc_id, 3, 4, 5), (enc_id, 4, 5, 2);
             ELSIF enc_num % 4 = 1 THEN
                 -- Local gana 4-0
-                INSERT INTO Set_Entity (idEncuentro, numeroSet, golesLocal, golesVisitante) VALUES
+                INSERT INTO SetEntity (idEncuentro, numeroSet, golesLocal, golesVisitante) VALUES
                     (enc_id, 1, 5, 0), (enc_id, 2, 5, 4), (enc_id, 3, 5, 2), (enc_id, 4, 5, 3);
             ELSIF enc_num % 4 = 2 THEN
                 -- Empate 2-2
-                INSERT INTO Set_Entity (idEncuentro, numeroSet, golesLocal, golesVisitante) VALUES
+                INSERT INTO SetEntity (idEncuentro, numeroSet, golesLocal, golesVisitante) VALUES
                     (enc_id, 1, 5, 4), (enc_id, 2, 3, 5), (enc_id, 3, 5, 2), (enc_id, 4, 4, 5);
             ELSE
                 -- Visitante gana 3-1
-                INSERT INTO Set_Entity (idEncuentro, numeroSet, golesLocal, golesVisitante) VALUES
+                INSERT INTO SetEntity (idEncuentro, numeroSet, golesLocal, golesVisitante) VALUES
                     (enc_id, 1, 2, 5), (enc_id, 2, 5, 3), (enc_id, 3, 1, 5), (enc_id, 4, 4, 5);
             END IF;
         END LOOP;
     END LOOP;
 
     UPDATE Encuentro SET estadoEncuentro = 'PENDIENTE' WHERE id = enc_id;
-    DELETE FROM Set_Entity WHERE idEncuentro = enc_id;
+    DELETE FROM SetEntity WHERE idEncuentro = enc_id;
 END $$;
 
 -- Recalcular estadísticas de inscripciones (misma lógica que actualizarEstadisticas).
@@ -474,7 +474,7 @@ BEGIN
     LOOP
         sets_l := 0;
         sets_v := 0;
-        FOR set_row IN SELECT golesLocal, golesVisitante FROM Set_Entity WHERE idEncuentro = enc.enc_id LOOP
+        FOR set_row IN SELECT golesLocal, golesVisitante FROM SetEntity WHERE idEncuentro = enc.enc_id LOOP
             IF set_row.golesLocal > set_row.golesVisitante THEN
                 sets_l := sets_l + 1;
             ELSE
@@ -606,19 +606,19 @@ BEGIN
                         -- Cada set a "mejor de 9 bolas": el primero que llega a 5 gana el set.
                         IF enc_num % 4 = 0 THEN
                             -- Local gana 3-1
-                            INSERT INTO Set_Entity (idEncuentro, numeroSet, golesLocal, golesVisitante) VALUES
+                            INSERT INTO SetEntity (idEncuentro, numeroSet, golesLocal, golesVisitante) VALUES
                                 (enc_id, 1, 5, 3), (enc_id, 2, 5, 1), (enc_id, 3, 4, 5), (enc_id, 4, 5, 2);
                         ELSIF enc_num % 4 = 1 THEN
                             -- Local gana 4-0
-                            INSERT INTO Set_Entity (idEncuentro, numeroSet, golesLocal, golesVisitante) VALUES
+                            INSERT INTO SetEntity (idEncuentro, numeroSet, golesLocal, golesVisitante) VALUES
                                 (enc_id, 1, 5, 0), (enc_id, 2, 5, 4), (enc_id, 3, 5, 2), (enc_id, 4, 5, 3);
                         ELSIF enc_num % 4 = 2 THEN
                             -- Empate 2-2
-                            INSERT INTO Set_Entity (idEncuentro, numeroSet, golesLocal, golesVisitante) VALUES
+                            INSERT INTO SetEntity (idEncuentro, numeroSet, golesLocal, golesVisitante) VALUES
                                 (enc_id, 1, 5, 4), (enc_id, 2, 3, 5), (enc_id, 3, 5, 2), (enc_id, 4, 4, 5);
                         ELSE
                             -- Visitante gana 3-1
-                            INSERT INTO Set_Entity (idEncuentro, numeroSet, golesLocal, golesVisitante) VALUES
+                            INSERT INTO SetEntity (idEncuentro, numeroSet, golesLocal, golesVisitante) VALUES
                                 (enc_id, 1, 2, 5), (enc_id, 2, 5, 3), (enc_id, 3, 1, 5), (enc_id, 4, 4, 5);
                         END IF;
                     END IF;
@@ -646,7 +646,7 @@ BEGIN
     LOOP
         sets_l := 0;
         sets_v := 0;
-        FOR set_row IN SELECT golesLocal, golesVisitante FROM Set_Entity WHERE idEncuentro = enc.enc_id LOOP
+        FOR set_row IN SELECT golesLocal, golesVisitante FROM SetEntity WHERE idEncuentro = enc.enc_id LOOP
             IF set_row.golesLocal > set_row.golesVisitante THEN
                 sets_l := sets_l + 1;
             ELSE
@@ -691,7 +691,7 @@ INSERT INTO "User" (elo, nombre, email, imagenPerfil, password, fechaNacimiento,
 VALUES (1500, 'pagesUser', 'pagesUser@email.com', NULL, '$2a$10$RlIGiRvr.ctt1EDUZcBL2.YTRlnjyJloKLGMchqEQgaF.e0EfIDba', '1995-06-15', FALSE, 'USER');
 
 -- 11.2 20 equipos creados por pagesUser (ids 21-40)
-INSERT INTO Equipo (nombreEquipo, descripcion, estado, creador_id, codigo_equipo)
+INSERT INTO Equipo (nombreEquipo, descripcion, estado, creadorId, codigoEquipo)
 SELECT
     'Equipo_Pages_' || LPAD(i::TEXT, 2, '0'),
     'Equipo ' || i || ' creado por pagesUser para probar paginacion',
@@ -701,11 +701,11 @@ SELECT
 FROM generate_series(1, 20) AS i;
 
 -- 11.3 miembros: el creador es miembro de sus 20 equipos
-INSERT INTO Equipo_Miembros (equipo_id, usuario_id)
-SELECT id, 42 FROM Equipo WHERE creador_id = 42;
+INSERT INTO EquipoMiembros (equipoId, usuarioId)
+SELECT id, 42 FROM Equipo WHERE creadorId = 42;
 
 -- el equipo 21 se usa para las inscripciones: pagesUser + test001 (id 2)
-INSERT INTO Equipo_Miembros (equipo_id, usuario_id)
+INSERT INTO EquipoMiembros (equipoId, usuarioId)
 VALUES (21, 2);
 
 -- 11.4 10 torneos creados por pagesUser (ids 85-94)
@@ -725,7 +725,7 @@ FROM Torneo t
 WHERE t.idOrganizador BETWEEN 2 AND 11 AND t.privado = FALSE;
 
 -- 11.6 equipo 21 inscrito en los 10 torneos publicos de test001-test010
-INSERT INTO Solicitud (candidato_id, decisor_id, equipo_id, torneo_id, estado, tipo_solicitud, fecha_creacion)
+INSERT INTO Solicitud (candidatoId, decisorId, equipoId, torneoId, estado, tipoSolicitud, fechaCreacion)
 SELECT 42, t.idOrganizador, 21, t.id, 'ACEPTADA', 'SOLICITUD_INSCRIPCION', NOW() - INTERVAL '5 days'
 FROM Torneo t
 WHERE t.idOrganizador BETWEEN 2 AND 11 AND t.privado = FALSE;
@@ -797,8 +797,8 @@ DECLARE
 BEGIN
     FOR usr IN SELECT id, elo FROM "User" ORDER BY id LOOP
         -- Equipo al que pertenece el usuario (si existe)
-        SELECT em.equipo_id INTO equipo_id FROM Equipo_Miembros em
-        WHERE em.usuario_id = usr.id LIMIT 1;
+        SELECT em.equipoId INTO equipo_id FROM EquipoMiembros em
+        WHERE em.usuarioId = usr.id LIMIT 1;
 
         -- ¿Juega el usuario en el torneo 83?
         participa := equipo_id IS NOT NULL AND EXISTS (
@@ -838,7 +838,7 @@ BEGIN
                 -- Resultado real derivado de los sets del encuentro
                 sets_l := 0;
                 sets_v := 0;
-                FOR srow IN SELECT golesLocal, golesVisitante FROM Set_Entity WHERE idEncuentro = enc.id LOOP
+                FOR srow IN SELECT golesLocal, golesVisitante FROM SetEntity WHERE idEncuentro = enc.id LOOP
                     IF srow.golesLocal > srow.golesVisitante THEN
                         sets_l := sets_l + 1;
                     ELSE
@@ -885,7 +885,7 @@ BEGIN
         elo_actual := base;
 
         FOR i IN 1..array_length(enc_ids, 1) LOOP
-            INSERT INTO Elo_Historial (idUsuario, idEncuentro, eloAnterior, eloNuevo, resultado, fecha)
+            INSERT INTO EloHistorial (idUsuario, idEncuentro, eloAnterior, eloNuevo, resultado, fecha)
             VALUES (usr.id, enc_ids[i], elo_actual, elo_actual + var_arr[i], res_arr[i], fecha_arr[i]);
             elo_actual := elo_actual + var_arr[i];
         END LOOP;

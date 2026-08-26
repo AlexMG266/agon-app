@@ -66,7 +66,7 @@ public class Equipo {
         this.id = id;
     }
 
-    @Column(name = "nombreequipo")
+    @Column(name = "nombreEquipo")
     public String getNombreEquipo() {
         return nombreEquipo;
     }
@@ -85,7 +85,7 @@ public class Equipo {
     }
 
     @ManyToOne(optional = false)
-    @JoinColumn(name = "creador_id")
+    @JoinColumn(name = "creadorId")
     public User getCreador() {
         return creador;
     }
@@ -94,7 +94,7 @@ public class Equipo {
         this.creador = creador;
     }
 
-    @Column(name = "codigo_equipo", nullable = false, unique = true, length = 8)
+    @Column(name = "codigoEquipo", nullable = false, unique = true, length = 8)
     public String getCodigoEquipo() {
         return codigoEquipo;
     }
@@ -105,9 +105,9 @@ public class Equipo {
 
     @ManyToMany
     @JoinTable(
-            name = "equipo_miembros",
-            joinColumns = @JoinColumn(name = "equipo_id"),
-            inverseJoinColumns = @JoinColumn(name = "usuario_id")
+            name = "EquipoMiembros",
+            joinColumns = @JoinColumn(name = "equipoId"),
+            inverseJoinColumns = @JoinColumn(name = "usuarioId")
     )
     public Set<User> getMiembros() {
         return miembros;
@@ -134,7 +134,7 @@ public class Equipo {
         this.descripcion = descripcion;
     }
 
-    @Column(name = "fecha_creacion", nullable = false)
+    @Column(name = "fechaCreacion", nullable = false)
     public LocalDateTime getFechaCreacion() {
         return fechaCreacion;
     }

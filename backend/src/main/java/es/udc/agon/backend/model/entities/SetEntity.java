@@ -3,7 +3,7 @@ package es.udc.agon.backend.model.entities;
 import jakarta.persistence.*;
 
 @Entity
-@Table(name = "set_entity")
+@Table(name = "SetEntity")
 public class SetEntity {
 
     private Long id;
