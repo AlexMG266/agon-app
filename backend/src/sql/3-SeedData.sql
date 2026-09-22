@@ -133,6 +133,11 @@ VALUES
 -- ============================================================
 
 -- 4.1 Torneo principal de user000 (idOrganizador = 1, público, RECLUTANDO)
+--     NOTA: fechaFin queda a NULL a propósito. Este torneo aún no tiene estructura
+--     ni calendario: la fecha de fin se decide al cerrar inscripciones y configurar
+--     el calendario (o se autopropone en la interfaz). Si se fijara aquí un valor
+--     concreto, cualquier configuración que necesite más jornadas (p. ej. 2 grupos
+--     de 10 equipos con playoff) fallaría con "No caben todas las jornadas".
 INSERT INTO Torneo (idOrganizador, nombre, privado, codigoTorneo, numGrupos, equiposPorGrupo, tienePlayoff, tipoTorneo, idaVueltaPlayoff, estado,
                     fechaInicio, fechaFin, fechaLimiteInscripcion,
                     puntosVictoria, puntosEmpate, puntosDerrota,
@@ -143,7 +148,7 @@ SELECT
     1, 'Torneo de Prueba 2026', FALSE,
     'T' || LPAD(FLOOR(RANDOM() * 100)::INT::TEXT, 2, '0') || '-' || UPPER(SUBSTR(MD5(RANDOM()::TEXT || CLOCK_TIMESTAMP()::TEXT), 1, 4)),
     NULL, NULL, NULL, NULL, NULL, 'RECLUTANDO',
-    '2026-09-28', '2026-11-27', '2026-09-24',
+    '2026-09-28', NULL, '2026-09-24',
     3, 1, 0,
     '4_SETS',
     'L,M,X,J,V', '16:00', '22:00', 45,
