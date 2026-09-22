@@ -50,10 +50,23 @@ const renderMyMatches = (user = { id: 1 }) => {
   );
 };
 
-const hoy = () => {
+const toIsoDate = (d) =>
+  `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+
+// Fechas relativas al día actual para que el orden sea determinista
+// sea cual sea la fecha en la que se ejecuten los tests.
+const hoy = () => toIsoDate(new Date());
+const fechaFutura = () => {
   const d = new Date();
-  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+  d.setDate(d.getDate() + 7);
+  return toIsoDate(d);
 };
+
+// Réplica exacta del formateo que usa el componente (mismo parser y opciones)
+// para no depender del mes concreto en el que se ejecute la suite.
+const formatFechaLarga = (iso) =>
+  new Intl.DateTimeFormat('es', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })
+    .format(new Date(iso));
 
 const fechasFixture = () => [
   {
@@ -63,9 +76,9 @@ const fechasFixture = () => [
     ]
   },
   {
-    fecha: '2026-09-01',
+    fecha: fechaFutura(),
     encuentros: [
-      { id: 2, equipoLocalNombre: 'Gamma', equipoVisitanteNombre: 'Delta', estado: 'PENDIENTE', fechaRealizacion: '2026-09-01T18:00:00' }
+      { id: 2, equipoLocalNombre: 'Gamma', equipoVisitanteNombre: 'Delta', estado: 'PENDIENTE', fechaRealizacion: `${fechaFutura()}T18:00:00` }
     ]
   }
 ];
@@ -116,7 +129,8 @@ describe('MyMatches', () => {
   });
 
   it('navega entre fechas con los botones del carrusel', async () => {
-    backend.tournamentService.getMyMatches.mockResolvedValue({ ok: true, payload: fechasFixture() });
+    const fechas = fechasFixture();
+    backend.tournamentService.getMyMatches.mockResolvedValue({ ok: true, payload: fechas });
     const { container } = renderMyMatches();
     expect(await screen.findByText('Hoy')).toBeInTheDocument();
     const prev = screen.getByRole('button', { name: 'Fecha anterior' });
@@ -124,7 +138,7 @@ describe('MyMatches', () => {
     expect(prev).toBeDisabled();
     expect(next).not.toBeDisabled();
     fireEvent.click(next);
-    await waitFor(() => expect(container.querySelector('.mm-day-title')).toHaveTextContent(/septiembre/));
+    await waitFor(() => expect(container.querySelector('.mm-day-title')).toHaveTextContent(formatFechaLarga(fechas[1].fecha)));
     expect(screen.getByText('Pendiente')).toBeInTheDocument();
     expect(screen.queryByText('Jugado')).not.toBeInTheDocument();
     expect(prev).not.toBeDisabled();
@@ -133,11 +147,12 @@ describe('MyMatches', () => {
   });
 
   it('cambia de fecha con el selector movil', async () => {
-    backend.tournamentService.getMyMatches.mockResolvedValue({ ok: true, payload: fechasFixture() });
+    const fechas = fechasFixture();
+    backend.tournamentService.getMyMatches.mockResolvedValue({ ok: true, payload: fechas });
     const { container } = renderMyMatches();
     await screen.findByText('Hoy');
     fireEvent.change(screen.getByLabelText('Seleccionar fecha'), { target: { value: '1' } });
-    await waitFor(() => expect(container.querySelector('.mm-day-title')).toHaveTextContent(/septiembre/));
+    await waitFor(() => expect(container.querySelector('.mm-day-title')).toHaveTextContent(formatFechaLarga(fechas[1].fecha)));
   });
 
   it('abre el modal de detalle al pulsar un partido', async () => {
