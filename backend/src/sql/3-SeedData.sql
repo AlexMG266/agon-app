@@ -78,26 +78,26 @@ SELECT
     v.creadorId::BIGINT,
     UPPER(SUBSTR(MD5(RANDOM()::TEXT || CLOCK_TIMESTAMP()::TEXT), 1, 8))
 FROM (VALUES
-    ('Los Alfa',      'Equipo formado por test001 y test002',   'ACTIVO', 2),
-    ('Los Beta',      'Equipo formado por test003 y test004',   'ACTIVO', 4),
-    ('Los Gamma',     'Equipo formado por test005 y test006',   'ACTIVO', 6),
-    ('Los Delta',     'Equipo formado por test007 y test008',   'ACTIVO', 8),
-    ('Los Epsilon',   'Equipo formado por test009 y test010',   'ACTIVO', 10),
-    ('Los Zeta',      'Equipo formado por test011 y test012',   'ACTIVO', 12),
-    ('Los Eta',       'Equipo formado por test013 y test014',   'ACTIVO', 14),
-    ('Los Theta',     'Equipo formado por test015 y test016',   'ACTIVO', 16),
-    ('Los Iota',      'Equipo formado por test017 y test018',   'ACTIVO', 18),
-    ('Los Kappa',     'Equipo formado por test019 y test020',   'ACTIVO', 20),
-    ('Los Lambda',    'Equipo formado por test021 y test022',   'ACTIVO', 22),
-    ('Los Mu',        'Equipo formado por test023 y test024',   'ACTIVO', 24),
-    ('Los Nu',        'Equipo formado por test025 y test026',   'ACTIVO', 26),
-    ('Los Xi',        'Equipo formado por test027 y test028',   'ACTIVO', 28),
-    ('Los Ómicron',   'Equipo formado por test029 y test030',   'ACTIVO', 30),
-    ('Los Pi',        'Equipo formado por test031 y test032',   'ACTIVO', 32),
-    ('Los Rho',       'Equipo formado por test033 y test034',   'ACTIVO', 34),
-    ('Los Sigma',     'Equipo formado por test035 y test036',   'ACTIVO', 36),
-    ('Los Tau',       'Equipo formado por test037 y test038',   'ACTIVO', 38),
-    ('Los Omega',     'Equipo formado por test039 y test040',   'ACTIVO', 40)
+    ('Alfa',      'Equipo formado por test001 y test002',   'ACTIVO', 2),
+    ('Beta',      'Equipo formado por test003 y test004',   'ACTIVO', 4),
+    ('Gamma',     'Equipo formado por test005 y test006',   'ACTIVO', 6),
+    ('Delta',     'Equipo formado por test007 y test008',   'ACTIVO', 8),
+    ('Epsilon',   'Equipo formado por test009 y test010',   'ACTIVO', 10),
+    ('Zeta',      'Equipo formado por test011 y test012',   'ACTIVO', 12),
+    ('Eta',       'Equipo formado por test013 y test014',   'ACTIVO', 14),
+    ('Theta',     'Equipo formado por test015 y test016',   'ACTIVO', 16),
+    ('Iota',      'Equipo formado por test017 y test018',   'ACTIVO', 18),
+    ('Kappa',     'Equipo formado por test019 y test020',   'ACTIVO', 20),
+    ('Lambda',    'Equipo formado por test021 y test022',   'ACTIVO', 22),
+    ('Mu',        'Equipo formado por test023 y test024',   'ACTIVO', 24),
+    ('Nu',        'Equipo formado por test025 y test026',   'ACTIVO', 26),
+    ('Xi',        'Equipo formado por test027 y test028',   'ACTIVO', 28),
+    ('Ómicron',   'Equipo formado por test029 y test030',   'ACTIVO', 30),
+    ('Pi',        'Equipo formado por test031 y test032',   'ACTIVO', 32),
+    ('Rho',       'Equipo formado por test033 y test034',   'ACTIVO', 34),
+    ('Sigma',     'Equipo formado por test035 y test036',   'ACTIVO', 36),
+    ('Tau',       'Equipo formado por test037 y test038',   'ACTIVO', 38),
+    ('Omega',     'Equipo formado por test039 y test040',   'ACTIVO', 40)
 ) AS v(nombreEquipo, descripcion, estado, creadorId);
 
 -- ============================================================
@@ -105,26 +105,26 @@ FROM (VALUES
 -- ============================================================
 INSERT INTO EquipoMiembros (equipoId, usuarioId)
 VALUES
-    (1,  2),  (1,  3),   -- Los Alfa:   test001 + test002
-    (2,  4),  (2,  5),   -- Los Beta:   test003 + test004
-    (3,  6),  (3,  7),   -- Los Gamma:  test005 + test006
-    (4,  8),  (4,  9),   -- Los Delta:  test007 + test008
-    (5,  10), (5,  11),  -- Los Epsilon: test009 + test010
-    (6,  12), (6,  13),  -- Los Zeta:   test011 + test012
-    (7,  14), (7,  15),  -- Los Eta:    test013 + test014
-    (8,  16), (8,  17),  -- Los Theta:  test015 + test016
-    (9,  18), (9,  19),  -- Los Iota:   test017 + test018
-    (10, 20), (10, 21),  -- Los Kappa:  test019 + test020
-    (11, 22), (11, 23),  -- Los Lambda: test021 + test022
-    (12, 24), (12, 25),  -- Los Mu:     test023 + test024
-    (13, 26), (13, 27),  -- Los Nu:     test025 + test026
-    (14, 28), (14, 29),  -- Los Xi:     test027 + test028
-    (15, 30), (15, 31),  -- Los Ómicron: test029 + test030
-    (16, 32), (16, 33),  -- Los Pi:     test031 + test032
-    (17, 34), (17, 35),  -- Los Rho:    test033 + test034
-    (18, 36), (18, 37),  -- Los Sigma:  test035 + test036
-    (19, 38), (19, 39),  -- Los Tau:    test037 + test038
-    (20, 40), (20, 41);  -- Los Omega:  test039 + test040
+    (1,  2),  (1,  3),   -- Alfa:    test001 + test002
+    (2,  4),  (2,  5),   -- Beta:    test003 + test004
+    (3,  6),  (3,  7),   -- Gamma:   test005 + test006
+    (4,  8),  (4,  9),   -- Delta:   test007 + test008
+    (5,  10), (5,  11),  -- Epsilon: test009 + test010
+    (6,  12), (6,  13),  -- Zeta:    test011 + test012
+    (7,  14), (7,  15),  -- Eta:     test013 + test014
+    (8,  16), (8,  17),  -- Theta:   test015 + test016
+    (9,  18), (9,  19),  -- Iota:    test017 + test018
+    (10, 20), (10, 21),  -- Kappa:   test019 + test020
+    (11, 22), (11, 23),  -- Lambda:  test021 + test022
+    (12, 24), (12, 25),  -- Mu:      test023 + test024
+    (13, 26), (13, 27),  -- Nu:      test025 + test026
+    (14, 28), (14, 29),  -- Xi:      test027 + test028
+    (15, 30), (15, 31),  -- Ómicron: test029 + test030
+    (16, 32), (16, 33),  -- Pi:      test031 + test032
+    (17, 34), (17, 35),  -- Rho:     test033 + test034
+    (18, 36), (18, 37),  -- Sigma:   test035 + test036
+    (19, 38), (19, 39),  -- Tau:     test037 + test038
+    (20, 40), (20, 41);  -- Omega:   test039 + test040
 
 -- ============================================================
 -- 4. TORNEOS
@@ -143,11 +143,11 @@ SELECT
     1, 'Torneo de Prueba 2026', FALSE,
     'T' || LPAD(FLOOR(RANDOM() * 100)::INT::TEXT, 2, '0') || '-' || UPPER(SUBSTR(MD5(RANDOM()::TEXT || CLOCK_TIMESTAMP()::TEXT), 1, 4)),
     NULL, NULL, NULL, NULL, NULL, 'RECLUTANDO',
-    '2026-03-01', '2026-04-30', '2026-02-20',
+    '2026-09-28', '2026-11-27', '2026-09-24',
     3, 1, 0,
     '4_SETS',
     'L,M,X,J,V', '16:00', '22:00', 45,
-    '2026-04-01,2026-04-02', 'JORNADAS', 7;
+    '2026-11-02,2026-11-03', 'JORNADAS', 7;
 
 -- 4.2 Torneos de cada test user (40 públicos + 40 privados, con código auto-generado)
 INSERT INTO Torneo (idOrganizador, nombre, privado, codigoTorneo, estado)
@@ -260,14 +260,14 @@ INSERT INTO Torneo (idOrganizador, nombre, privado, codigoTorneo, numGrupos, equ
                     estrategiaPlayoff, diasEntrePlayoff, rondaInicioPlayoff)
 VALUES
     (1, 'Liga + Playoff 2026', FALSE, 'T82-LIGAPL', 2, 10, TRUE, 'GRUPOS_PLAYOFF', FALSE, 'FASE_GRUPOS',
-     '2026-06-15', '2026-08-10', '2026-06-01',
+     '2026-04-13', '2026-06-08', '2026-04-01',
      3, 1, 0,
      '4_SETS',
      'L,M,X,J,V,S,D', '16:00', '22:00', 45,
      NULL, 'JORNADAS', 7,
      'RAPIDO', NULL, 'CUARTOS'),
     (1, 'Liga Única 2026', FALSE, 'T83-LIGAON', 1, 20, FALSE, 'LIGA_UNICA', FALSE, 'FASE_GRUPOS',
-     '2026-03-02', '2026-07-06', '2026-02-20',
+     '2026-01-05', '2026-05-18', '2025-12-20',
      3, 1, 0,
      '4_SETS',
      'L,M,X,J,V,S,D', '16:00', '22:00', 45,
@@ -326,7 +326,7 @@ INSERT INTO Inscripcion (idTorneo, idEquipo, idGrupo, partidosJugados, partidosG
 DO $$
 DECLARE
     torneo_id BIGINT := 82;
-    fecha_base DATE := '2026-06-15';
+    fecha_base DATE := '2026-04-13';
     grupo_id BIGINT;
     equipos BIGINT[];
     n INT;
@@ -397,7 +397,7 @@ END $$;
 DO $$
 DECLARE
     torneo_id BIGINT := 83;
-    fecha_base DATE := '2026-03-02';
+    fecha_base DATE := '2026-01-05';
     equipos BIGINT[];
     n INT := 20;
     idx_l INT;
@@ -514,7 +514,7 @@ END $$;
 -- pendientes con fechas futuras relativas.
 --
 -- Ningún encuentro tiene una solicitud de aplazamiento: la solicitas tú desde
--- la app (p. ej. como test017, capitán de Los Iota, en sus partidos pendientes
+-- la app (p. ej. como test017, capitán de Iota, en sus partidos pendientes
 -- de las jornadas 3 y 5) para comprobar el flujo completo de aplazamiento.
 
 INSERT INTO Torneo (idOrganizador, nombre, privado, codigoTorneo, numGrupos, equiposPorGrupo, tienePlayoff, tipoTorneo, idaVueltaPlayoff, estado,

@@ -8,6 +8,10 @@
 #   Job "frontend": npm ci + eslint + vitest + build de producción (Vite)
 #   Job "deploy":   SOLO en main y SOLO si backend+frontend pasan.
 #                   Despliega en el VPS por SSH (git pull + docker compose up).
+#                   Toda la configuración específica del VPS (host, usuario,
+#                   clave, puerto y ruta) vive en Secrets/Variables de GitHub,
+#                   por lo que cambiar de VPS NO obliga a tocar este archivo:
+#                   basta con actualizar los secretos VPS_* (ver job "deploy").
 #
 # El job de deploy vive AQUÍ (no en un workflow aparte) porque así GitHub
 # garantiza el orden: primero validación (CI), y solo si es verde, despliegue (CD).
@@ -129,28 +133,91 @@ jobs:
     # Garantiza el orden CI -> CD: solo se ejecuta si ambos jobs previos pasan.
     needs: [backend, frontend]
     # Solo en pushes a main (nunca en PRs ni en otras ramas).
-    # OJO: el contexto `secrets` NO se puede usar en condiciones `if` a nivel
-    # de job (GitHub lo rechaza como "invalid workflow file"). Si el deploy aún
-    # no está configurado, el job fallará al no existir los secrets VPS_*.
-    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    # OJO: el contexto `secrets` NO se puede usar en condiciones `if` a nivel de
+    # job (GitHub lo rechaza como "invalid workflow file"). El contexto `vars`
+    # SÍ se permite: si defines la variable de repositorio ENABLE_DEPLOY=false
+    # (Settings > Secrets and variables > Actions > Variables), el despliegue
+    # se salta por completo. Útil mientras provisionas el VPS nuevo.
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push' && vars.ENABLE_DEPLOY != 'false'
 
     steps:
       - uses: actions/checkout@v4
 
       - name: Deploy por SSH
         uses: appleboy/ssh-action@v1.2.0
+        # Valores específicos del VPS (NO se hardcodean aquí). Configúralos o
+        # actualízalos en Settings > Secrets and variables > Actions:
+        #   VPS_HOST      IP o dominio del (nuevo) VPS           [obligatorio]
+        #   VPS_USER      usuario SSH con acceso a Docker        [obligatorio]
+        #   VPS_SSH_KEY   clave privada autorizada en el VPS     [obligatorio]
+        #   VPS_PORT      puerto SSH                             [opcional, 22]
+        #   VPS_APP_DIR   ruta del clon en el VPS                [opcional, /opt/docker/agon-app]
+        #   VPS_BRANCH    rama a desplegar                       [opcional, main]
+        #   VPS_REPO_URL  repo a clonar si VPS_APP_DIR no existe [opcional]
+        # Se pasan como variables de entorno al script remoto (evita inyección
+        # y problemas de comillas al interpolar secretos dentro del script).
+        env:
+          APP_DIR: ${{ secrets.VPS_APP_DIR }}
+          BRANCH: ${{ secrets.VPS_BRANCH }}
+          REPO_URL: ${{ secrets.VPS_REPO_URL }}
         with:
           host: ${{ secrets.VPS_HOST }}
           username: ${{ secrets.VPS_USER }}
           key: ${{ secrets.VPS_SSH_KEY }}
-          # Si no defines VPS_APP_DIR, usamos /opt/docker/agon-app
+          # Puerto SSH configurable (por defecto 22 si VPS_PORT está vacío).
+          port: ${{ secrets.VPS_PORT || 22 }}
+          # Aborta el script remoto en el primer comando que falle.
+          script_stop: true
+          # Propaga APP_DIR/BRANCH/REPO_URL al entorno del script remoto.
+          envs: APP_DIR,BRANCH,REPO_URL
           script: |
-            set -e
-            cd "${{ secrets.VPS_APP_DIR || '/opt/docker/agon-app' }}"
-            echo "==> git pull (main)"
-            git pull --ff-only origin main
+            # NOTA: appleboy ejecuta el script con `sh` (dash en Ubuntu), que no
+            # soporta `pipefail`; por eso solo `set -eu`.
+            set -eu
+
+            APP_DIR="${APP_DIR:-/opt/docker/agon-app}"
+            BRANCH="${BRANCH:-main}"
+
+            # 1) Un VPS recién provisionado no tiene el repo clonado. Si
+            #    VPS_REPO_URL está definido, se clona en el primer deploy; para
+            #    repos privados usa una URL con token o una deploy key.
+            if [ ! -d "$APP_DIR/.git" ]; then
+              if [ -z "${REPO_URL:-}" ]; then
+                echo "ERROR: $APP_DIR no existe en este VPS y no se definió VPS_REPO_URL."
+                echo "       Clona el repositorio en el VPS o define el secret VPS_REPO_URL."
+                exit 1
+              fi
+              echo "==> Clonando $REPO_URL en $APP_DIR"
+              mkdir -p "$(dirname "$APP_DIR")"
+              git clone --branch "$BRANCH" "$REPO_URL" "$APP_DIR"
+            fi
+
+            cd "$APP_DIR"
+
+            # 2) El .env no viaja en el repo (es secreto); debe existir en el
+            #    VPS nuevo o el stack arrancará sin credenciales ni CORS.
+            if [ ! -f .env ]; then
+              echo "ERROR: falta .env en $APP_DIR. Cópialo de .env.example y rellénalo."
+              exit 1
+            fi
+
+            # 3) La red externa la crea el reverse proxy (NPM). Si no existe,
+            #    backend/frontend fallarían al unirse a ella.
+            if ! docker network inspect global-proxy-net >/dev/null 2>&1; then
+              echo "ERROR: la red externa 'global-proxy-net' no existe en este VPS."
+              echo "       Créala (docker network create global-proxy-net) o arráncala con NPM."
+              exit 1
+            fi
+
+            echo "==> git pull (origin/$BRANCH)"
+            git fetch --prune origin "$BRANCH"
+            git checkout "$BRANCH"
+            git pull --ff-only origin "$BRANCH"
+
             echo "==> docker compose up -d --build (prod)"
-            docker compose -f docker-compose.prod.yml up -d --build
+            docker compose -f docker-compose.prod.yml up -d --build --remove-orphans
+
             echo "==> Limpieza de imágenes viejas"
             docker image prune -f
+
             echo "==> Deploy completado"
